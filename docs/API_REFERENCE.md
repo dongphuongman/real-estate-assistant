@@ -26,6 +26,24 @@ To configure the key, set the `API_ACCESS_KEY` environment variable (defaults to
     *   **Headers**: `X-API-Key: your-api-key
     *   **Returns**: `{"message": "Authenticated successfully", "valid": true}`
 
+#### Search
+
+*   `POST /api/v1/search`
+    *   Search for properties using semantic search and metadata filters.
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **Body**:
+        ```json
+        {
+          "query": "2 bedroom apartment in Krakow with balcony",
+          "limit": 10,
+          "filters": {
+            "city": "Krakow",
+            "min_price": 2000
+          }
+        }
+        ```
+    *   **Returns**: `SearchResponse` object containing list of properties with similarity scores.
+
 ## Analytics
 
 ### HedonicValuationModel
