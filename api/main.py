@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from api.auth import get_api_key
 from api.models import HealthCheck
-from api.routers import search, chat
+from api.routers import search, chat, tools
 from config.settings import get_settings
 
 settings = get_settings()
@@ -33,6 +33,11 @@ app.include_router(
 )
 app.include_router(
     chat.router,
+    prefix="/api/v1",
+    dependencies=[Depends(get_api_key)]
+)
+app.include_router(
+    tools.router,
     prefix="/api/v1",
     dependencies=[Depends(get_api_key)]
 )

@@ -58,6 +58,27 @@ To configure the key, set the `API_ACCESS_KEY` environment variable (defaults to
         ```
     *   **Returns**: `ChatResponse` object containing the agent's answer and sources.
 
+#### Tools
+
+*   `GET /api/v1/tools`
+    *   List all available property analysis tools.
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **Returns**: List of tools with names and descriptions.
+
+*   `POST /api/v1/tools/mortgage-calculator`
+    *   Calculate mortgage payments and breakdown.
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **Body**:
+        ```json
+        {
+          "property_price": 500000,
+          "down_payment_percent": 20.0,
+          "interest_rate": 4.5,
+          "loan_years": 30
+        }
+        ```
+    *   **Returns**: `MortgageResult` with monthly payment, total interest, and cost breakdown.
+
 ## Analytics
 
 ### HedonicValuationModel

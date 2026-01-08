@@ -45,6 +45,60 @@ class MortgageCalculatorTool(BaseTool):
         "Returns monthly payment, total interest, and breakdown."
     )
 
+    @staticmethod
+    def calculate(
+        property_price: float,
+        down_payment_percent: float = 20.0,
+        interest_rate: float = 4.5,
+        loan_years: int = 30
+    ) -> MortgageResult:
+        """Pure calculation logic returning structured data."""
+        # Validate inputs (raising ValueError instead of returning string error)
+        if property_price <= 0:
+            raise ValueError("Property price must be positive")
+        if not 0 <= down_payment_percent <= 100:
+            raise ValueError("Down payment must be between 0 and 100%")
+        if interest_rate < 0:
+            raise ValueError("Interest rate cannot be negative")
+        if loan_years <= 0:
+            raise ValueError("Loan term must be positive")
+
+        # Calculate values
+        down_payment = property_price * (down_payment_percent / 100)
+        loan_amount = property_price - down_payment
+
+        # Monthly interest rate
+        monthly_rate = (interest_rate / 100) / 12
+        num_payments = loan_years * 12
+
+        # Calculate monthly payment using mortgage formula
+        if monthly_rate == 0:
+            monthly_payment = loan_amount / num_payments
+        else:
+            monthly_payment = (
+                loan_amount
+                * monthly_rate
+                * math.pow(1 + monthly_rate, num_payments)
+            ) / (math.pow(1 + monthly_rate, num_payments) - 1)
+
+        # Total costs
+        total_paid = monthly_payment * num_payments
+        total_interest = total_paid - loan_amount
+        total_cost = total_paid + down_payment
+
+        return MortgageResult(
+            monthly_payment=monthly_payment,
+            total_interest=total_interest,
+            total_cost=total_cost,
+            down_payment=down_payment,
+            loan_amount=loan_amount,
+            breakdown={
+                "principal": loan_amount,
+                "interest": total_interest,
+                "down_payment": down_payment
+            }
+        )
+
     def _run(
         self,
         property_price: float,
@@ -54,63 +108,36 @@ class MortgageCalculatorTool(BaseTool):
     ) -> str:
         """Execute mortgage calculation."""
         try:
-            # Validate inputs
-            if property_price <= 0:
-                return "Error: Property price must be positive"
-
-            if not 0 <= down_payment_percent <= 100:
-                return "Error: Down payment must be between 0 and 100%"
-
-            if interest_rate < 0:
-                return "Error: Interest rate cannot be negative"
-
-            if loan_years <= 0:
-                return "Error: Loan term must be positive"
-
-            # Calculate values
-            down_payment = property_price * (down_payment_percent / 100)
-            loan_amount = property_price - down_payment
-
-            # Monthly interest rate
-            monthly_rate = (interest_rate / 100) / 12
-            num_payments = loan_years * 12
-
-            # Calculate monthly payment using mortgage formula
-            if monthly_rate == 0:
-                monthly_payment = loan_amount / num_payments
-            else:
-                monthly_payment = (
-                    loan_amount
-                    * monthly_rate
-                    * math.pow(1 + monthly_rate, num_payments)
-                ) / (math.pow(1 + monthly_rate, num_payments) - 1)
-
-            # Total costs
-            total_paid = monthly_payment * num_payments
-            total_interest = total_paid - loan_amount
-            total_cost = total_paid + down_payment
+            result = self.calculate(
+                property_price, 
+                down_payment_percent, 
+                interest_rate, 
+                loan_years
+            )
 
             # Format result
-            result = f"""
+            formatted = f"""
 Mortgage Calculation for ${property_price:,.2f} Property:
 
-Down Payment ({down_payment_percent}%): ${down_payment:,.2f}
-Loan Amount: ${loan_amount:,.2f}
+Down Payment ({down_payment_percent}%): ${result.down_payment:,.2f}
+Loan Amount: ${result.loan_amount:,.2f}
 
-Monthly Payment: ${monthly_payment:,.2f}
-Annual Payment: ${monthly_payment * 12:,.2f}
+Monthly Payment: ${result.monthly_payment:,.2f}
+Annual Payment: ${result.monthly_payment * 12:,.2f}
 
-Total Interest ({loan_years} years): ${total_interest:,.2f}
-Total Amount Paid: ${total_paid:,.2f}
-Total Cost (with down payment): ${total_cost:,.2f}
+Total Interest ({loan_years} years): ${result.total_interest:,.2f}
+Total Amount Paid: ${result.total_cost - result.down_payment:,.2f}
+Total Cost (with down payment): ${result.total_cost:,.2f}
 
 Breakdown:
-- Principal: ${loan_amount:,.2f}
-- Interest: ${total_interest:,.2f}
-- Down Payment: ${down_payment:,.2f}
+- Principal: ${result.loan_amount:,.2f}
+- Interest: ${result.total_interest:,.2f}
+- Down Payment: ${result.down_payment:,.2f}
 """
-            return result.strip()
+            return formatted.strip()
 
+        except ValueError as e:
+            return f"Error: {str(e)}"
         except Exception as e:
             return f"Error calculating mortgage: {str(e)}"
 
