@@ -44,6 +44,20 @@ To configure the key, set the `API_ACCESS_KEY` environment variable (defaults to
         ```
     *   **Returns**: `SearchResponse` object containing list of properties with similarity scores.
 
+#### Chat
+
+*   `POST /api/v1/chat`
+    *   Process a natural language query using the hybrid agent (RAG + Tools).
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **Body**:
+        ```json
+        {
+          "message": "Find me a cheap apartment in Warsaw with a balcony",
+          "session_id": "optional-session-id"
+        }
+        ```
+    *   **Returns**: `ChatResponse` object containing the agent's answer and sources.
+
 ## Analytics
 
 ### HedonicValuationModel

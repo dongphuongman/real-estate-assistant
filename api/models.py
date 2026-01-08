@@ -22,3 +22,15 @@ class SearchResponse(BaseModel):
     """Search response model."""
     results: List[SearchResultItem]
     count: int
+
+class ChatRequest(BaseModel):
+    """Chat request model."""
+    message: str
+    session_id: Optional[str] = None
+    stream: bool = False
+
+class ChatResponse(BaseModel):
+    """Chat response model."""
+    response: str
+    sources: List[Dict[str, Any]] = []
+    session_id: Optional[str] = None

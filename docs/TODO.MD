@@ -66,6 +66,9 @@
 - [STARTED] Provide authenticated API for search, chat, and tools
   - [DONE] Foundation: FastAPI setup, Auth middleware, Health check
   - [DONE] Search endpoint with vector store integration
+  - [DONE] Chat endpoint with hybrid agent integration
+  - [TODO] Tools endpoint (if separate from chat) or specific tool execution
+  - [TODO] Streaming support
 - Support hybrid retrieval (semantic + keyword) with metadata filters
 - Support geospatial filters (radius) and sorting (price, price/m²)
 - Support multi-provider LLM execution with consistent configuration
