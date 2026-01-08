@@ -53,10 +53,15 @@ To configure the key, set the `API_ACCESS_KEY` environment variable (defaults to
         ```json
         {
           "message": "Find me a cheap apartment in Warsaw with a balcony",
-          "session_id": "optional-session-id"
+          "session_id": "optional-session-id",
+          "stream": false
         }
         ```
     *   **Returns**: `ChatResponse` object containing the agent's answer and sources.
+    *   **Streaming**: Set `"stream": true` to receive Server-Sent Events (SSE).
+        *   Content Type: `text/event-stream`
+        *   Events: `data: {"content": "..."}` or `data: {"error": "..."}`
+        *   End of stream: `data: [DONE]`
 
 #### Tools
 

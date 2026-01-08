@@ -8,7 +8,8 @@ This module provides intelligent orchestration between:
 """
 
 import logging
-from typing import Dict, Any, List, Optional
+import json
+from typing import Dict, Any, List, Optional, AsyncIterator
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.tools import BaseTool
@@ -276,6 +277,115 @@ Context from property database will be provided when relevant."""),
         except Exception:
             # Fallback to RAG-only
             return self._process_with_rag(query, analysis)
+
+    async def astream_query(
+        self,
+        query: str
+    ) -> AsyncIterator[str]:
+        """
+        Process a query using the hybrid approach and stream the response.
+        
+        Yields:
+            JSON string chunks containing 'content' or 'error'.
+        """
+        try:
+            # Analyze query
+            analysis = self.analyzer.analyze(query)
+            
+            # Route to appropriate processor
+            if analysis.should_use_rag_only():
+                async for chunk in self._astream_with_rag(query, analysis):
+                    yield chunk
+            elif analysis.should_use_agent():
+                async for chunk in self._astream_with_agent(query, analysis):
+                    yield chunk
+            else:
+                # Hybrid
+                async for chunk in self._astream_hybrid(query, analysis):
+                    yield chunk
+                    
+        except Exception as e:
+            logger.error(f"Streaming failed: {e}")
+            yield json.dumps({"error": str(e)})
+
+    async def _astream_with_rag(
+        self,
+        query: str,
+        analysis: QueryAnalysis
+    ) -> AsyncIterator[str]:
+        """Stream RAG response."""
+        try:
+            async for event in self.rag_chain.astream_events(
+                {"question": query},
+                version="v1"
+            ):
+                kind = event["event"]
+                if kind == "on_chat_model_stream":
+                    content = event["data"]["chunk"].content
+                    if content:
+                        yield json.dumps({"content": content})
+        except Exception as e:
+             yield json.dumps({"error": str(e)})
+
+    async def _astream_with_agent(
+        self,
+        query: str,
+        analysis: QueryAnalysis,
+        rag_context: str = ""
+    ) -> AsyncIterator[str]:
+        """Stream Agent response."""
+        
+        # Prepare input
+        input_text = query
+        if rag_context:
+            input_text = f"Based on this information about properties:\n\n{rag_context}\n\nNow answer this: {query}"
+        elif analysis.intent not in [QueryIntent.CALCULATION, QueryIntent.GENERAL_QUESTION]:
+             # Async fetch docs
+             try:
+                 docs = await self.retriever.ainvoke(query)
+                 context_docs = docs[:3]
+                 if context_docs:
+                    context_text = "\n\n".join([
+                        f"Property {i+1}: {doc.page_content[:200]}..."
+                        for i, doc in enumerate(context_docs)
+                    ])
+                    input_text = f"{query}\n\nRelevant properties:\n{context_text}"
+             except Exception:
+                 # If async retrieval fails, fallback to no context
+                 pass
+
+        async for event in self.tool_agent.astream_events(
+            {"input": input_text},
+            version="v1"
+        ):
+            kind = event["event"]
+            if kind == "on_chat_model_stream":
+                content = event["data"]["chunk"].content
+                if content:
+                    yield json.dumps({"content": content})
+
+    async def _astream_hybrid(
+        self,
+        query: str,
+        analysis: QueryAnalysis
+    ) -> AsyncIterator[str]:
+        """Stream Hybrid response."""
+        try:
+            # 1. Run RAG silently
+            rag_response = await self.rag_chain.ainvoke({"question": query})
+            answer = rag_response["answer"]
+            
+            if analysis.requires_computation or analysis.complexity == Complexity.COMPLEX:
+                # We need agent. Stream agent.
+                async for chunk in self._astream_with_agent(query, analysis, rag_context=answer):
+                    yield chunk
+            else:
+                # RAG is enough. Yield as single chunk (simulating stream end)
+                yield json.dumps({"content": answer})
+        except Exception as e:
+            # Fallback to streaming RAG
+            async for chunk in self._astream_with_rag(query, analysis):
+                yield chunk
 
     def clear_memory(self) -> None:
         """Clear conversation memory."""

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 from typing import Any
 from api.dependencies import get_agent
 from api.models import ChatRequest, ChatResponse
@@ -18,6 +19,17 @@ async def chat_endpoint(
     Process a chat message using the hybrid agent.
     """
     try:
+        if request.stream:
+            async def event_generator():
+                async for chunk in agent.astream_query(request.message):
+                    yield f"data: {chunk}\n\n"
+                yield "data: [DONE]\n\n"
+
+            return StreamingResponse(
+                event_generator(),
+                media_type="text/event-stream"
+            )
+
         # For now, we don't persist sessions in this simple endpoint, 
         # but the agent has memory. To truly support sessions across requests,
         # we'd need to load/save memory based on session_id.
