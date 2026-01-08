@@ -2,6 +2,30 @@
 
 This document provides a reference for the core Python APIs of the AI Real Estate Assistant.
 
+## V4 API
+
+The V4 API is built with FastAPI and provides a RESTful interface for the AI Real Estate Assistant.
+
+### Authentication
+
+The API uses API Key authentication via the `X-API-Key` header.
+To configure the key, set the `API_ACCESS_KEY` environment variable (defaults to `dev-secret-key` for development).
+
+### Endpoints
+
+#### System
+
+*   `GET /health`
+    *   Health check endpoint to verify API status.
+    *   **Returns**: `{"status": "healthy", "version": "..."}`
+
+#### Auth
+
+*   `GET /api/v1/verify-auth`
+    *   Verify API key validity.
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **Returns**: `{"message": "Authenticated successfully", "valid": true}`
+
 ## Analytics
 
 ### HedonicValuationModel

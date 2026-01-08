@@ -63,7 +63,8 @@
 - Ship a production-grade web application (V4) while keeping V3 as reference implementation.
 
 ### Backend: 10 Functional Requirements
-- Provide authenticated API for search, chat, and tools
+- [STARTED] Provide authenticated API for search, chat, and tools
+  - [DONE] Foundation: FastAPI setup, Auth middleware, Health check
 - Support hybrid retrieval (semantic + keyword) with metadata filters
 - Support geospatial filters (radius) and sorting (price, price/m²)
 - Support multi-provider LLM execution with consistent configuration

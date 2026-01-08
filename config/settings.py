@@ -39,6 +39,11 @@ class AppSettings(BaseModel):
     deepseek_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("DEEPSEEK_API_KEY")
     )
+    
+    # API Access Control
+    api_access_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("API_ACCESS_KEY", "dev-secret-key")
+    )
 
     # Model Defaults
     default_temperature: float = 0.0
