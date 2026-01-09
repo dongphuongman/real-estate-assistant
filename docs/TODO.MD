@@ -92,7 +92,10 @@
 - Compliance: data minimization, retention rules, and redaction for sensitive fields
 
 ### Epics (split for implementation)
-- Frontend (Next.js): UI shell, auth UI, chat, search, expert dashboards
+- [STARTED] Frontend (Next.js): UI shell, auth UI, chat, search, expert dashboards
+  - [DONE] Initialize Next.js project with TypeScript, Tailwind CSS, and ESLint
+  - [DONE] Setup UI Shell (Layout, Navbar, Theming)
+  - [DONE] Configure API Proxy to Backend
 - API (Python): endpoints, streaming, session persistence, tool execution
 - Retrieval: vector store service + indexing + geo filters + reranking
 - Analytics: indices, trends, anomaly detection, export endpoints
