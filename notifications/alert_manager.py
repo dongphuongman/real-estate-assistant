@@ -85,6 +85,124 @@ class AlertManager:
         self._sent_alerts: Set[str] = self._load_sent_alerts()
         self._pending_alerts: List[Alert] = []
 
+    def queue_alert(self, alert: Alert):
+        """
+        Queue an alert for later delivery.
+
+        Args:
+            alert: Alert object to queue
+        """
+        self._pending_alerts.append(alert)
+        self._save_pending_alerts()
+        logger.info(f"Queued alert {alert.alert_type} for {alert.user_email}")
+
+    def process_pending_alerts(self) -> int:
+        """
+        Process pending alerts.
+
+        Returns:
+            Number of alerts sent
+        """
+        sent_count = 0
+        remaining_alerts = []
+        
+        # Load latest pending in case changed by other process
+        self._pending_alerts = self._load_pending_alerts()
+
+        for alert in self._pending_alerts:
+            success = False
+            try:
+                # Re-check quiet hours handled by scheduler, or we check here?
+                # Better to let the scheduler control WHEN to call this, 
+                # OR pass a preferences manager here.
+                # For now, we assume if this is called, we should try to send.
+                
+                if alert.alert_type == AlertType.PRICE_DROP:
+                    success = self.send_price_drop_alert(
+                        alert.user_email, 
+                        alert.data, 
+                        send_email=True
+                    )
+                elif alert.alert_type == AlertType.NEW_PROPERTY:
+                    # Reconstruct properties from data
+                    props_data = alert.data.get("properties", [])
+                    props = [Property(**p) for p in props_data]
+                    success = self.send_new_property_alerts(
+                        alert.user_email,
+                        alert.data.get("search_id"),
+                        alert.data.get("search_name"),
+                        props,
+                        send_email=True
+                    )
+                elif alert.alert_type == AlertType.DIGEST:
+                    success = self.send_digest(
+                        alert.user_email,
+                        alert.data.get("digest_type"),
+                        alert.data.get("content"),
+                        send_email=True
+                    )
+                
+                if success:
+                    sent_count += 1
+                else:
+                    # Keep if failed (maybe transient error)
+                    # But if it failed because it was already sent, we should drop it?
+                    # send_... returns False if already sent.
+                    # So we should probably drop it to avoid infinite loop.
+                    pass 
+
+            except Exception as e:
+                logger.error(f"Error processing pending alert: {e}")
+                remaining_alerts.append(alert)
+        
+        self._pending_alerts = remaining_alerts
+        self._save_pending_alerts()
+        return sent_count
+
+    def _load_pending_alerts(self) -> List[Alert]:
+        """Load pending alerts from disk."""
+        if not self.pending_alerts_file.exists():
+            return []
+        
+        try:
+            with open(self.pending_alerts_file, 'r') as f:
+                data = json.load(f)
+                alerts = []
+                for a_data in data.get('alerts', []):
+                    # Convert dict back to Alert object
+                    # Handle datetime conversion
+                    if 'created_at' in a_data and a_data['created_at']:
+                        a_data['created_at'] = datetime.fromisoformat(a_data['created_at'])
+                    if 'sent_at' in a_data and a_data['sent_at']:
+                        a_data['sent_at'] = datetime.fromisoformat(a_data['sent_at'])
+                    
+                    alerts.append(Alert(**a_data))
+                return alerts
+        except Exception as e:
+            logger.error(f"Error loading pending alerts: {e}")
+            return []
+
+    def _save_pending_alerts(self):
+        """Save pending alerts to disk."""
+        try:
+            with open(self.pending_alerts_file, 'w') as f:
+                # Convert alerts to dicts, handling datetime
+                alerts_data = []
+                for alert in self._pending_alerts:
+                    a_dict = asdict(alert) if hasattr(alert, '__dataclass_fields__') else alert.__dict__
+                    if a_dict.get('created_at'):
+                        a_dict['created_at'] = a_dict['created_at'].isoformat()
+                    if a_dict.get('sent_at'):
+                        a_dict['sent_at'] = a_dict['sent_at'].isoformat()
+                    alerts_data.append(a_dict)
+                
+                json.dump({
+                    'alerts': alerts_data,
+                    'last_updated': datetime.now().isoformat()
+                }, f, indent=2)
+        except Exception as e:
+            logger.error(f"Error saving pending alerts: {e}")
+
     def check_price_drops(
         self,
         current_properties: PropertyCollection,

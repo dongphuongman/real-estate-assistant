@@ -105,7 +105,14 @@ def get_digest_scheduler():
     email_service = EmailServiceFactory.create_from_env()
     if email_service is None:
         return None
-    scheduler = DigestScheduler(email_service=email_service)
+    
+    # Initialize dependencies
+    vector_store = get_vector_store()
+    
+    scheduler = NotificationScheduler(
+        email_service=email_service,
+        vector_store=vector_store
+    )
     scheduler.start()
     return scheduler
 
