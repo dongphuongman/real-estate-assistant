@@ -7,6 +7,7 @@ using ChromaDB with FastEmbed embeddings.
 
 from concurrent.futures import Future, ThreadPoolExecutor
 import platform
+import math
 from datetime import datetime
 import logging
 import os
@@ -38,6 +39,11 @@ try:
     from langchain_community.embeddings.fastembed import FastEmbedEmbeddings as _FastEmbedEmbeddings
 except Exception:
     pass
+
+try:
+    from rank_bm25 import BM25Okapi
+except ImportError:
+    BM25Okapi = None
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -280,7 +286,7 @@ class ChromaPropertyStore:
         sanitized = {}
         for k, v in metadata.items():
             sv = _sanitize_val(v)
-            if sv is not None or v is None:
+            if sv is not None:
                 sanitized[k] = sv
 
         metadata = sanitized
@@ -289,6 +295,48 @@ class ChromaPropertyStore:
             page_content=text,
             metadata=metadata
         )
+
+    def get_properties_by_ids(self, property_ids: List[str]) -> List[Document]:
+        """
+        Retrieve specific properties by their IDs.
+
+        Args:
+            property_ids: List of property IDs to retrieve
+
+        Returns:
+            List of Documents
+        """
+        if not self.vector_store:
+            # Fallback to cache
+            with self._cache_lock:
+                return [
+                    doc for doc in self._documents 
+                    if str(doc.metadata.get("id")) in property_ids
+                ]
+
+        try:
+            # Fetch from Chroma
+            results = self.vector_store._collection.get(
+                ids=property_ids,
+                include=["documents", "metadatas"]
+            )
+            
+            documents = []
+            if results and results["ids"]:
+                for i, doc_id in enumerate(results["ids"]):
+                    # Handle potential missing data
+                    content = results["documents"][i] if results["documents"] else ""
+                    metadata = results["metadatas"][i] if results["metadatas"] else {}
+                    
+                    documents.append(Document(
+                        page_content=content,
+                        metadata=metadata
+                    ))
+            
+            return documents
+        except Exception as e:
+            logger.error(f"Error retrieving properties by IDs: {e}")
+            return []
 
     def add_properties(
         self,
@@ -458,6 +506,72 @@ class ChromaPropertyStore:
         self._index_future = executor.submit(_work)
         return self._index_future
 
+    def _build_chroma_filter(self, filters: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        Build ChromaDB filter dictionary from user filters.
+        
+        Args:
+            filters: Dictionary of filters from QueryAnalysis or SearchCriteria
+            
+        Returns:
+            ChromaDB compatible filter dict or None
+        """
+        if not filters:
+            return None
+            
+        conditions = []
+        
+        # City (Case insensitive handled by query analyzer normalization, 
+        # but Chroma is exact match. We rely on metadata being normalized)
+        if "city" in filters:
+            conditions.append({"city": filters["city"]})
+            
+        # Price Range
+        if "min_price" in filters:
+            conditions.append({"price": {"$gte": float(filters["min_price"])}})
+        if "max_price" in filters:
+            conditions.append({"price": {"$lte": float(filters["max_price"])}})
+            
+        # Rooms (treat as minimum)
+        if "rooms" in filters:
+            conditions.append({"rooms": {"$gte": float(filters["rooms"])}})
+            
+        # Year Built
+        if "year_built_min" in filters:
+            conditions.append({"year_built": {"$gte": int(filters["year_built_min"])}})
+        if "year_built_max" in filters:
+            conditions.append({"year_built": {"$lte": int(filters["year_built_max"])}})
+            
+        # Amenities (Booleans)
+        for key in ["has_parking", "has_garden", "has_pool", "has_elevator", 
+                   "has_garage", "has_bike_room", "is_furnished", "pets_allowed", "has_balcony"]:
+            if filters.get(key) is True:
+                conditions.append({key: True})
+            elif filters.get(key) is False:
+                conditions.append({key: False})
+        
+        # Energy Ratings
+        if "energy_ratings" in filters and filters["energy_ratings"]:
+            ratings = filters["energy_ratings"]
+            if len(ratings) == 1:
+                conditions.append({"energy_cert": ratings[0]})
+            else:
+                conditions.append({"energy_cert": {"$in": ratings}})
+                
+        # Property Type
+        if "property_type" in filters:
+            ptype = filters["property_type"]
+            val = ptype.value if hasattr(ptype, "value") else str(ptype)
+            conditions.append({"property_type": val})
+
+        if not conditions:
+            return None
+            
+        if len(conditions) == 1:
+            return conditions[0]
+            
+        return {"$and": conditions}
+
     def search(
         self,
         query: str,
@@ -471,7 +585,7 @@ class ChromaPropertyStore:
         Args:
             query: Search query
             k: Number of results to return
-            filter: Optional metadata filter
+            filter: Optional metadata filter (Chroma format or user format)
             **kwargs: Additional search parameters
 
         Returns:
@@ -480,11 +594,21 @@ class ChromaPropertyStore:
         try:
             # We trust the lock to handle concurrency with indexing
             if self.vector_store is not None:
+                # Build filter if it looks like user filters (flat dict)
+                # If it has operators like $and, assume it's already Chroma format
+                chroma_filter = filter
+                if filter and not any(k.startswith("$") for k in filter.keys()):
+                    # Check if it needs conversion (heuristic)
+                    # If keys are simple fields but values are just values, it might be simple chroma filter
+                    # But if we want to support range queries passed as "min_price", we need conversion
+                    if any(k in ["min_price", "max_price", "year_built_min"] for k in filter.keys()):
+                        chroma_filter = self._build_chroma_filter(filter)
+                
                 with self._vector_lock:
                     results = self.vector_store.similarity_search_with_score(
                         query=query,
                         k=k,
-                        filter=filter,
+                        filter=chroma_filter,
                         **kwargs
                     )
                     return results
@@ -504,7 +628,15 @@ class ChromaPropertyStore:
                     logger.warning(f"Search failed and no cached docs: {e}")
                     return []
 
-                for d in docs:
+                # Apply filters manually for fallback
+                filtered_docs = docs
+                if filter:
+                     # Basic manual filtering (simplified)
+                    if "city" in filter:
+                        filtered_docs = [d for d in filtered_docs if d.metadata.get("city") == filter["city"]]
+                    # ... add more manual filters if needed, but this is fallback
+
+                for d in filtered_docs:
                     txt = d.page_content.lower()
                     s = float(sum(1 for t in q if t in txt))
                     if s > 0:
@@ -514,6 +646,181 @@ class ChromaPropertyStore:
             except Exception:
                 logger.error(f"Search error: {e}")
                 return []
+
+    def _build_geo_filter(self, lat: float, lon: float, radius_km: float) -> List[Dict[str, Any]]:
+        """
+        Build ChromaDB filter for bounding box around a point.
+        """
+        # 1 deg lat ~ 111.32 km
+        lat_delta = radius_km / 111.32
+        min_lat = lat - lat_delta
+        max_lat = lat + lat_delta
+        
+        # 1 deg lon ~ 111.32 * cos(lat) km
+        # Clamp lat to -89/89 to avoid division by zero or extreme distortion
+        clamped_lat = max(min(lat, 89.0), -89.0)
+        lon_delta = radius_km / (111.32 * math.cos(math.radians(clamped_lat)))
+        min_lon = lon - lon_delta
+        max_lon = lon + lon_delta
+        
+        return [
+            {"lat": {"$gte": min_lat}},
+            {"lat": {"$lte": max_lat}},
+            {"lon": {"$gte": min_lon}},
+            {"lon": {"$lte": max_lon}}
+        ]
+
+    def _haversine(self, lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+        """Calculate Haversine distance in km."""
+        R = 6371  # Earth radius in km
+        dlat = math.radians(lat2 - lat1)
+        dlon = math.radians(lon2 - lon1)
+        a = math.sin(dlat / 2) * math.sin(dlat / 2) + \
+            math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * \
+            math.sin(dlon / 2) * math.sin(dlon / 2)
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+        return R * c
+
+    def hybrid_search(
+        self,
+        query: str,
+        filters: Optional[Dict[str, Any]] = None,
+        k: int = 5,
+        alpha: float = 0.7,
+        lat: Optional[float] = None,
+        lon: Optional[float] = None,
+        radius_km: Optional[float] = None,
+        sort_by: Optional[str] = None,
+        sort_order: Optional[str] = "desc"
+    ) -> List[tuple[Document, float]]:
+        """
+        Perform hybrid search (Vector + Keyword Rescoring) with filters, geo, and sorting.
+        
+        Args:
+            query: Search query
+            filters: Metadata filters
+            k: Number of results
+            alpha: Weight for vector score
+            lat: Latitude for geo-search
+            lon: Longitude for geo-search
+            radius_km: Radius in km
+            sort_by: Field to sort by (e.g. 'price', 'price_per_sqm')
+            sort_order: 'asc' or 'desc'
+            
+        Returns:
+            List of (Document, combined_score) tuples
+        """
+        # 0. Prepare Filters
+        final_filter = filters
+        # Convert simple dict to Chroma filter if needed
+        if filters and not any(key.startswith("$") for key in filters.keys()):
+            final_filter = self._build_chroma_filter(filters)
+            
+        # Add Geo Bounding Box
+        if lat is not None and lon is not None and radius_km is not None:
+            geo_conditions = self._build_geo_filter(lat, lon, radius_km)
+            if final_filter:
+                if "$and" in final_filter:
+                    final_filter["$and"].extend(geo_conditions)
+                else:
+                    final_filter = {"$and": [final_filter] + geo_conditions}
+            else:
+                final_filter = {"$and": geo_conditions}
+
+        # 1. Get initial results from Vector Store
+        # Fetch more if sorting or geo-filtering to allow for post-processing
+        fetch_k = k * 5 if (sort_by or radius_km) else k * 3
+        
+        # If query is empty, we can't use similarity_search efficiently with relevance.
+        # But we rely on 'search' method fallback or behavior.
+        # If 'search' handles empty query by returning cached docs or random, we use that.
+        vector_results = self.search(query, k=fetch_k, filter=final_filter)
+        
+        if not vector_results:
+            return []
+            
+        # Post-filter for precise Geo Radius (Bounding box is square, we want circle)
+        if lat is not None and lon is not None and radius_km is not None:
+            filtered_results = []
+            for doc, score in vector_results:
+                d_lat = doc.metadata.get("lat")
+                d_lon = doc.metadata.get("lon")
+                if d_lat is not None and d_lon is not None:
+                    dist = self._haversine(lat, lon, float(d_lat), float(d_lon))
+                    if dist <= radius_km:
+                        filtered_results.append((doc, score))
+            vector_results = filtered_results
+            
+        if not vector_results:
+            return []
+            
+        if not query.strip():
+            # If no query, we just return results (sorted if needed)
+            # Assign dummy score if needed, or keep vector score (which might be meaningless)
+            combined_results = vector_results
+        else:
+            # 2. Rescore with BM25 or Simple Term Overlap
+            # ... (BM25 logic) ...
+            docs = [doc for doc, _ in vector_results]
+            texts = [doc.page_content for doc in docs]
+            tokenized_query = query.lower().split()
+            
+            bm25_scores = []
+            if BM25Okapi:
+                try:
+                    tokenized_corpus = [doc.lower().split() for doc in texts]
+                    bm25 = BM25Okapi(tokenized_corpus)
+                    bm25_scores = bm25.get_scores(tokenized_query)
+                    # Normalize BM25 scores (min-max)
+                    if len(bm25_scores) > 0:
+                        min_s = min(bm25_scores)
+                        max_s = max(bm25_scores)
+                        if max_s > min_s:
+                            bm25_scores = [(s - min_s) / (max_s - min_s) for s in bm25_scores]
+                        else:
+                            bm25_scores = [1.0 if max_s > 0 else 0.0 for _ in bm25_scores]
+                except Exception as e:
+                    logger.warning(f"BM25 scoring failed: {e}")
+                    bm25_scores = [0.0] * len(docs)
+            else:
+                # Fallback: Simple Term Frequency
+                for text in texts:
+                    txt_lower = text.lower()
+                    score = sum(1 for term in tokenized_query if term in txt_lower)
+                    bm25_scores.append(float(score))
+                # Normalize
+                max_s = max(bm25_scores) if bm25_scores else 0
+                if max_s > 0:
+                    bm25_scores = [s / max_s for s in bm25_scores]
+                    
+            # 3. Combine Scores
+            combined_results = []
+            for i, (doc, vec_score) in enumerate(vector_results):
+                sim_score = 1.0 / (1.0 + vec_score) 
+                keyword_score = bm25_scores[i] if i < len(bm25_scores) else 0.0
+                final_score = (alpha * sim_score) + ((1 - alpha) * keyword_score)
+                combined_results.append((doc, final_score))
+            
+        # 4. Sort and return top K
+        if sort_by and sort_by != "relevance":
+            reverse = (sort_order == "desc")
+            def get_sort_val(item):
+                doc = item[0]
+                val = doc.metadata.get(sort_by)
+                # Handle None/Missing: put at end
+                if val is None:
+                    # If desc, we want None at end -> -inf? No, if desc (High to Low), None should be Low?
+                    # Usually None is last.
+                    # If Asc (Low to High), None should be Last (High)?
+                    # Let's say None is always last.
+                    return float('-inf') if reverse else float('inf') 
+                return val
+            
+            combined_results.sort(key=get_sort_val, reverse=reverse)
+        else:
+            combined_results.sort(key=lambda x: x[1], reverse=True)
+            
+        return combined_results[:k]
 
     def search_by_metadata(
         self,

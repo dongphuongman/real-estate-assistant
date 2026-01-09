@@ -29,7 +29,7 @@ To configure the key, set the `API_ACCESS_KEY` environment variable (defaults to
 #### Search
 
 *   `POST /api/v1/search`
-    *   Search for properties using semantic search and metadata filters.
+    *   Search for properties using hybrid search (Semantic + Keyword) and metadata filters.
     *   **Headers**: `X-API-Key: your-api-key
     *   **Body**:
         ```json
@@ -39,10 +39,13 @@ To configure the key, set the `API_ACCESS_KEY` environment variable (defaults to
           "filters": {
             "city": "Krakow",
             "min_price": 2000
-          }
+          },
+          "alpha": 0.7
         }
         ```
-    *   **Returns**: `SearchResponse` object containing list of properties with similarity scores.
+    *   **Parameters**:
+        *   `alpha` (float, optional): Weight for vector similarity (0.0 to 1.0). 1.0 = Pure Vector, 0.0 = Pure Keyword. Default: 0.7.
+    *   **Returns**: `SearchResponse` object containing list of properties with hybrid scores.
 
 #### Chat
 

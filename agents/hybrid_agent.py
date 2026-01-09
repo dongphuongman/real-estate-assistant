@@ -15,6 +15,7 @@ from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.tools import BaseTool
 from langchain_core.language_models import BaseChatModel
 from langchain_core.retrievers import BaseRetriever
+from langchain_core.documents import Document
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
 
@@ -60,7 +61,11 @@ class HybridPropertyAgent:
             return_messages=True,
             output_key="output"
         )
-        self.tools = tools or create_property_tools()
+        
+        # Try to extract vector_store from retriever to enable tool actions
+        vector_store = getattr(retriever, "vector_store", None)
+        self.tools = tools or create_property_tools(vector_store=vector_store)
+        
         self.verbose = verbose
 
         # Initialize query analyzer
@@ -162,6 +167,37 @@ Context from property database will be provided when relevant."""),
 
         return result
 
+    def _retrieve_documents(
+        self,
+        query: str,
+        analysis: QueryAnalysis,
+        k: int = 5
+    ) -> List[Document]:
+        """
+        Retrieve documents using hybrid search with explicit filters if available.
+        
+        Args:
+            query: User query
+            analysis: Query analysis result
+            k: Number of documents to retrieve
+            
+        Returns:
+            List of relevant documents
+        """
+        # Check if we have extracted filters
+        filters = analysis.extracted_filters
+        
+        # Check if retriever supports explicit filtering (HybridPropertyRetriever)
+        if filters and hasattr(self.retriever, "search_with_filters"):
+            if self.verbose:
+                logger.info(f"Using hybrid search with filters: {filters}")
+            return self.retriever.search_with_filters(query, filters, k=k)
+            
+        # Fallback to standard retrieval
+        if self.verbose:
+            logger.info("Using standard retrieval")
+        return self.retriever.get_relevant_documents(query)
+
     def _process_with_rag(
         self,
         query: str,
@@ -172,6 +208,32 @@ Context from property database will be provided when relevant."""),
             logger.info("Processing with RAG only")
 
         try:
+            # If we have filters, we should use them for better retrieval
+            if analysis.extracted_filters:
+                docs = self._retrieve_documents(query, analysis)
+                
+                # Construct context from docs
+                context_text = "\n\n".join([doc.page_content for doc in docs])
+                
+                # Simple generation without history rephrasing for now
+                # (Or we could implement rephrasing if needed)
+                prompt = (
+                    f"Answer the question based only on the following context:\n\n"
+                    f"{context_text}\n\n"
+                    f"Question: {query}"
+                )
+                
+                response_msg = self.llm.invoke(prompt)
+                answer = response_msg.content if hasattr(response_msg, "content") else str(response_msg)
+                
+                return {
+                    "answer": answer,
+                    "source_documents": docs,
+                    "method": "rag_filtered",
+                    "intent": analysis.intent.value
+                }
+
+            # Standard RAG chain
             response = self.rag_chain({"question": query})
 
             return {
@@ -202,8 +264,8 @@ Context from property database will be provided when relevant."""),
             # First, get relevant context from RAG if needed
             context_docs = []
             if analysis.intent not in [QueryIntent.CALCULATION, QueryIntent.GENERAL_QUESTION]:
-                rag_results = self.retriever.get_relevant_documents(query)
-                context_docs = rag_results[:3]  # Top 3 for context
+                # Use hybrid retrieval with filters
+                context_docs = self._retrieve_documents(query, analysis, k=3)
 
             # Add context to query if available
             enhanced_query = query
@@ -245,8 +307,8 @@ Context from property database will be provided when relevant."""),
             logger.info("Processing with hybrid approach")
 
         try:
-            # Start with RAG for property retrieval
-            rag_response = self.rag_chain({"question": query})
+            # Start with RAG for property retrieval (using filtered search if applicable)
+            rag_response = self._process_with_rag(query, analysis)
 
             # Check if RAG answer is sufficient
             answer = rag_response["answer"]
@@ -342,16 +404,17 @@ Context from property database will be provided when relevant."""),
         elif analysis.intent not in [QueryIntent.CALCULATION, QueryIntent.GENERAL_QUESTION]:
              # Async fetch docs
              try:
-                 docs = await self.retriever.ainvoke(query)
-                 context_docs = docs[:3]
+                 # We use sync retrieval here for now to support filters
+                 context_docs = self._retrieve_documents(query, analysis, k=3)
                  if context_docs:
                     context_text = "\n\n".join([
                         f"Property {i+1}: {doc.page_content[:200]}..."
                         for i, doc in enumerate(context_docs)
                     ])
                     input_text = f"{query}\n\nRelevant properties:\n{context_text}"
-             except Exception:
-                 # If async retrieval fails, fallback to no context
+             except Exception as e:
+                 logger.warning(f"Retrieval failed in stream: {e}")
+                 # If retrieval fails, fallback to no context
                  pass
 
         async for event in self.tool_agent.astream_events(
@@ -455,6 +518,7 @@ class SimpleRAGAgent:
 def create_hybrid_agent(
     llm: BaseChatModel,
     retriever: BaseRetriever,
+    memory: Optional[ConversationBufferMemory] = None,
     use_tools: bool = True,
     verbose: bool = False
 ) -> Any:
@@ -464,6 +528,7 @@ def create_hybrid_agent(
     Args:
         llm: Language model
         retriever: Vector store retriever
+        memory: Optional memory instance
         use_tools: Whether to use tool-based agent (default: True)
         verbose: Enable verbose output
 
@@ -474,11 +539,13 @@ def create_hybrid_agent(
         return HybridPropertyAgent(
             llm=llm,
             retriever=retriever,
+            memory=memory,
             verbose=verbose
         )
     else:
         return SimpleRAGAgent(
             llm=llm,
             retriever=retriever,
+            memory=memory,
             verbose=verbose
         )

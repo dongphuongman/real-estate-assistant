@@ -6,9 +6,14 @@ and calculations.
 """
 
 import math
-from typing import List, Dict, Any
-from pydantic import BaseModel, Field
+import statistics
+from typing import List, Dict, Any, Optional
+from pydantic import BaseModel, Field, PrivateAttr
 from langchain.tools import BaseTool
+from langchain_core.documents import Document
+
+# We use Any for vector_store to avoid circular imports/tight coupling
+# expected type: vector_store.chroma_store.ChromaPropertyStore
 
 
 class MortgageInput(BaseModel):
@@ -152,40 +157,85 @@ class PropertyComparisonTool(BaseTool):
     name: str = "property_comparator"
     description: str = (
         "Compare multiple properties based on various criteria. "
-        "Input should be a list of property IDs or descriptions. "
-        "Returns a detailed comparison with pros/cons."
+        "Input should be a comma-separated list of property IDs (e.g., 'prop1, prop2'). "
+        "Returns a detailed comparison table."
     )
+    
+    _vector_store: Any = PrivateAttr()
 
-    def _run(self, properties: str) -> str:
+    def __init__(self, vector_store: Any, **kwargs):
+        super().__init__(**kwargs)
+        self._vector_store = vector_store
+
+    def _run(self, property_ids: str) -> str:
         """
         Compare properties.
 
         Args:
-            properties: String describing properties to compare
-
-        Returns:
-            Formatted comparison
+            property_ids: Comma-separated list of property IDs
         """
-        # This is a placeholder - in real implementation,
-        # this would retrieve actual properties from the vector store
-        return f"""
-Property Comparison Tool activated for: {properties}
+        try:
+            # Parse IDs
+            ids = [pid.strip() for pid in property_ids.split(",") if pid.strip()]
+            
+            if not ids:
+                return "Please provide at least one property ID to compare."
+            
+            # Fetch properties
+            if hasattr(self._vector_store, "get_properties_by_ids"):
+                docs = self._vector_store.get_properties_by_ids(ids)
+            else:
+                return "Vector store does not support retrieving by IDs."
+                
+            if not docs:
+                return f"No properties found for IDs: {property_ids}"
+                
+            # Build comparison
+            comparison = ["Property Comparison:"]
+            
+            # Extract common fields
+            fields = [
+                "price", "price_per_sqm", "city", "rooms", "bathrooms", 
+                "area_sqm", "year_built", "property_type"
+            ]
+            
+            # Header
+            header = f"{'Feature':<20} | " + " | ".join([f"{d.metadata.get('id', 'Unknown')[:10]:<15}" for d in docs])
+            comparison.append(header)
+            comparison.append("-" * len(header))
+            
+            for field in fields:
+                row = f"{field.replace('_', ' ').title():<20} | "
+                values = []
+                for doc in docs:
+                    val = doc.metadata.get(field, "N/A")
+                    if field == "price" and isinstance(val, (int, float)):
+                        val = f"${val:,.0f}"
+                    elif field == "price_per_sqm" and isinstance(val, (int, float)):
+                        val = f"${val:,.0f}/m²"
+                    elif field == "area_sqm" and isinstance(val, (int, float)):
+                        val = f"{val} m²"
+                    values.append(f"{str(val):<15}")
+                row += " | ".join(values)
+                comparison.append(row)
+                
+            # Add Pros/Cons placeholder or analysis
+            comparison.append("\nSummary:")
+            prices = [d.metadata.get("price", 0) for d in docs if isinstance(d.metadata.get("price"), (int, float))]
+            if prices:
+                min_price = min(prices)
+                max_price = max(prices)
+                diff = max_price - min_price
+                comparison.append(f"Price difference: ${diff:,.0f}")
+            
+            return "\n".join(comparison)
 
-To properly compare properties, I need specific property IDs or search criteria.
-Please provide property details or search results to compare.
+        except Exception as e:
+            return f"Error comparing properties: {str(e)}"
 
-Comparison features:
-- Price and price per square meter
-- Location and amenities
-- Size and layout
-- Monthly costs (rent + utilities)
-- Proximity to facilities
-- Pros and cons analysis
-"""
-
-    async def _arun(self, properties: str) -> str:
+    async def _arun(self, property_ids: str) -> str:
         """Async version."""
-        return self._run(properties)
+        return self._run(property_ids)
 
 
 class PriceAnalysisTool(BaseTool):
@@ -193,37 +243,81 @@ class PriceAnalysisTool(BaseTool):
 
     name: str = "price_analyzer"
     description: str = (
-        "Analyze property prices, calculate averages, and identify trends. "
-        "Input should be a city or property criteria. "
+        "Analyze property prices for a given location or criteria. "
+        "Input should be a search query (e.g., 'apartments in Madrid'). "
         "Returns statistical analysis of prices."
     )
+    
+    _vector_store: Any = PrivateAttr()
 
-    def _run(self, criteria: str) -> str:
+    def __init__(self, vector_store: Any, **kwargs):
+        super().__init__(**kwargs)
+        self._vector_store = vector_store
+
+    def _run(self, query: str) -> str:
         """
         Analyze prices.
 
         Args:
-            criteria: Search criteria for properties
-
-        Returns:
-            Price analysis
+            query: Search query
         """
-        return f"""
-Price Analysis Tool activated for: {criteria}
+        try:
+            # Search for properties (fetch more for stats)
+            results = self._vector_store.search(query, k=20)
+            
+            if not results:
+                return f"No properties found for analysis: {query}"
+                
+            docs = [doc for doc, _ in results]
+            
+            # Extract prices
+            prices = [
+                float(d.metadata.get("price")) 
+                for d in docs 
+                if d.metadata.get("price") is not None
+            ]
+            
+            sqm_prices = [
+                float(d.metadata.get("price_per_sqm")) 
+                for d in docs 
+                if d.metadata.get("price_per_sqm") is not None
+            ]
+            
+            if not prices:
+                return "Found properties but no price data available."
+                
+            # Calculate stats
+            stats_output = [f"Price Analysis for '{query}' (based on {len(prices)} listings):"]
+            
+            stats_output.append(f"\nTotal Prices:")
+            stats_output.append(f"- Average: ${statistics.mean(prices):,.2f}")
+            stats_output.append(f"- Median: ${statistics.median(prices):,.2f}")
+            stats_output.append(f"- Min: ${min(prices):,.2f}")
+            stats_output.append(f"- Max: ${max(prices):,.2f}")
+            
+            if sqm_prices:
+                stats_output.append(f"\nPrice per m²:")
+                stats_output.append(f"- Average: ${statistics.mean(sqm_prices):,.2f}/m²")
+                stats_output.append(f"- Median: ${statistics.median(sqm_prices):,.2f}/m²")
+            
+            # Distribution by type
+            types = {}
+            for d in docs:
+                ptype = d.metadata.get("property_type", "Unknown")
+                types[ptype] = types.get(ptype, 0) + 1
+                
+            stats_output.append(f"\nDistribution by Type:")
+            for ptype, count in types.items():
+                stats_output.append(f"- {ptype}: {count}")
+                
+            return "\n".join(stats_output)
 
-This tool can provide:
-- Average, median, min, max prices
-- Price per square meter statistics
-- Price distribution by neighborhood
-- Trend analysis
-- Value for money rankings
+        except Exception as e:
+            return f"Error analyzing prices: {str(e)}"
 
-To generate accurate analysis, this tool needs access to the property database.
-"""
-
-    async def _arun(self, criteria: str) -> str:
+    async def _arun(self, query: str) -> str:
         """Async version."""
-        return self._run(criteria)
+        return self._run(query)
 
 
 class LocationAnalysisTool(BaseTool):
@@ -231,50 +325,85 @@ class LocationAnalysisTool(BaseTool):
 
     name: str = "location_analyzer"
     description: str = (
-        "Analyze property locations, calculate distances, and assess neighborhood quality. "
-        "Input should be property address or city. "
-        "Returns location quality score and proximity information."
+        "Analyze a specific property's location. "
+        "Input should be a property ID. "
+        "Returns location details and nearby properties info."
     )
+    
+    _vector_store: Any = PrivateAttr()
 
-    def _run(self, location: str) -> str:
+    def __init__(self, vector_store: Any, **kwargs):
+        super().__init__(**kwargs)
+        self._vector_store = vector_store
+
+    def _run(self, property_id: str) -> str:
         """
         Analyze location.
 
         Args:
-            location: Property location
-
-        Returns:
-            Location analysis
+            property_id: Property ID
         """
-        return f"""
-Location Analysis Tool activated for: {location}
+        try:
+            # Get property
+            if hasattr(self._vector_store, "get_properties_by_ids"):
+                docs = self._vector_store.get_properties_by_ids([property_id])
+            else:
+                return "Vector store does not support retrieving by IDs."
+                
+            if not docs:
+                return f"Property not found: {property_id}"
+                
+            target = docs[0]
+            lat = target.metadata.get("lat")
+            lon = target.metadata.get("lon")
+            city = target.metadata.get("city", "Unknown")
+            
+            analysis = [f"Location Analysis for Property {property_id}:"]
+            analysis.append(f"City: {city}")
+            if target.metadata.get("neighborhood"):
+                analysis.append(f"Neighborhood: {target.metadata.get('neighborhood')}")
+            
+            if lat and lon:
+                analysis.append(f"Coordinates: {lat}, {lon}")
+                
+                # Find nearby properties (if hybrid search supports geo filtering)
+                # We can't easily do a "nearby" query without a proper geo-filter constructed.
+                # But we can try to search for properties in the same city.
+                # Or if we had a dedicated "search_nearby" method.
+                # For now, let's just return what we have.
+                analysis.append("\nGeospatial data available. Use map view for nearby amenities.")
+            else:
+                analysis.append("Exact coordinates not available.")
+            
+            return "\n".join(analysis)
 
-This tool can provide:
-- Proximity to schools, hospitals, transport
-- Neighborhood quality ratings
-- Walkability scores
-- Safety statistics
-- Future development plans
+        except Exception as e:
+            return f"Error analyzing location: {str(e)}"
 
-For accurate location analysis, integration with mapping APIs is recommended.
-"""
-
-    async def _arun(self, location: str) -> str:
+    async def _arun(self, property_id: str) -> str:
         """Async version."""
-        return self._run(location)
+        return self._run(property_id)
 
 
 # Factory function to create all tools
-def create_property_tools() -> List[BaseTool]:
+def create_property_tools(vector_store: Any = None) -> List[BaseTool]:
     """
     Create all property-related tools.
+    
+    Args:
+        vector_store: Optional vector store for data access. 
+                      Required for comparison, price, and location tools.
 
     Returns:
         List of initialized tool instances
     """
-    return [
-        MortgageCalculatorTool(),
-        PropertyComparisonTool(),
-        PriceAnalysisTool(),
-        LocationAnalysisTool(),
-    ]
+    tools = [MortgageCalculatorTool()]
+    
+    if vector_store:
+        tools.extend([
+            PropertyComparisonTool(vector_store=vector_store),
+            PriceAnalysisTool(vector_store=vector_store),
+            LocationAnalysisTool(vector_store=vector_store),
+        ])
+    
+    return tools

@@ -36,7 +36,7 @@ def test_search_properties_success(mock_store, valid_headers):
     metadata = {k: v for k, v in metadata.items() if v is not None}
     
     mock_doc = Document(page_content="test content", metadata=metadata)
-    mock_store.search.return_value = [(mock_doc, 0.95)]
+    mock_store.hybrid_search.return_value = [(mock_doc, 0.95)]
 
     # Override dependency
     app.dependency_overrides[get_vector_store] = lambda: mock_store
@@ -90,7 +90,7 @@ def test_search_store_unavailable(valid_headers):
     app.dependency_overrides = {}
 
 def test_search_internal_error(mock_store, valid_headers):
-    mock_store.search.side_effect = Exception("DB Error")
+    mock_store.hybrid_search.side_effect = Exception("DB Error")
     app.dependency_overrides[get_vector_store] = lambda: mock_store
 
     response = client.post(

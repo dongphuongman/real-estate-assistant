@@ -46,6 +46,8 @@ class AppSettings(BaseModel):
     )
 
     # Model Defaults
+    default_provider: str = Field(default="openai", description="Default LLM provider")
+    default_model: Optional[str] = Field(default=None, description="Default model ID (overrides provider default)")
     default_temperature: float = 0.0
     default_max_tokens: int = 4096
     default_k_results: int = 5

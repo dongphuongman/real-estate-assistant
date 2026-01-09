@@ -26,25 +26,33 @@ def get_vector_store() -> Optional[ChromaPropertyStore]:
 def get_llm() -> BaseChatModel:
     """
     Get Language Model instance.
-    Defaults to OpenAI if available, otherwise tries others or raises error.
+    Uses settings to determine provider and model.
     """
-    # Simple logic: prefer OpenAI, then Anthropic, then fallback
-    provider = "openai"
-    if not settings.openai_api_key:
-        if settings.anthropic_api_key:
-            provider = "anthropic"
-        # Add more fallbacks if needed
+    provider_name = settings.default_provider
+    model_id = settings.default_model
     
     try:
-        factory_provider = ModelProviderFactory.get_provider(provider)
-        # Get default model for provider
-        models = factory_provider.list_models()
-        model_id = models[0].id if models else None
-        return factory_provider.create_model(model_id=model_id)
+        factory_provider = ModelProviderFactory.get_provider(provider_name)
+        
+        # If no specific model configured, pick the first available one from the provider
+        if not model_id:
+            models = factory_provider.list_models()
+            if not models:
+                raise RuntimeError(f"No models available for provider '{provider_name}'")
+            # Prefer a model marked as recommended if available, otherwise first
+            # We don't have a structured "is_default" flag, but recommended_for list exists.
+            # For now, just pick the first one as they are usually ordered by relevance/recency in implementation
+            model_id = models[0].id
+            
+        return factory_provider.create_model(
+            model_id=model_id,
+            provider_name=provider_name,
+            temperature=settings.default_temperature,
+            max_tokens=settings.default_max_tokens
+        )
     except Exception as e:
-        # Fallback for tests or when no keys configured (might mock in tests)
-        # raising error so endpoint knows service is unavailable
-        raise RuntimeError(f"Could not initialize LLM: {e}")
+        # Fallback for tests or when no keys configured
+        raise RuntimeError(f"Could not initialize LLM with provider '{provider_name}': {e}")
 
 def get_agent(
     store: Optional[ChromaPropertyStore] = Depends(get_vector_store),

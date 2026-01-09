@@ -15,6 +15,7 @@ from .providers.google import GoogleProvider
 from .providers.ollama import OllamaProvider
 from .providers.grok import GrokProvider
 from .providers.deepseek import DeepSeekProvider
+from config.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +81,28 @@ class ModelProviderFactory:
 
         # Check cache
         if use_cache and provider_name in cls._instances:
-            return cls._instances[provider_name]
+            # If config is provided, we might want to update the cached instance or create a new one.
+            # For now, we assume cached instances are reused unless explicit new config is needed.
+            # If config is passed, we skip cache to ensure config is applied.
+            if config is None:
+                return cls._instances[provider_name]
+
+        # Prepare config with defaults from settings
+        if config is None:
+            config = {}
+        
+        # Inject API key from settings if not present
+        if "api_key" not in config:
+            if provider_name == "openai":
+                config["api_key"] = settings.openai_api_key
+            elif provider_name == "anthropic":
+                config["api_key"] = settings.anthropic_api_key
+            elif provider_name == "google":
+                config["api_key"] = settings.google_api_key
+            elif provider_name == "grok":
+                config["api_key"] = settings.grok_api_key
+            elif provider_name == "deepseek":
+                config["api_key"] = settings.deepseek_api_key
 
         # Create new instance
         provider_class = cls._PROVIDERS[provider_name]
@@ -108,6 +130,7 @@ class ModelProviderFactory:
 
         for provider_name in cls.list_providers():
             try:
+                # Use cached provider (will use settings API keys)
                 provider = cls.get_provider(provider_name)
 
                 # Check connection if requested
@@ -154,7 +177,7 @@ class ModelProviderFactory:
         cls,
         model_id: str,
         provider_name: Optional[str] = None,
-        temperature: float = 0.0,
+        temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
         streaming: bool = True,
         **kwargs: Any
@@ -176,6 +199,13 @@ class ModelProviderFactory:
         Raises:
             ValueError: If model not found or provider not available
         """
+        # Apply defaults from settings if not provided
+        if temperature is None:
+            temperature = settings.default_temperature
+        
+        if max_tokens is None:
+            max_tokens = settings.default_max_tokens
+
         # If provider specified, use it directly
         if provider_name:
             provider = cls.get_provider(provider_name)

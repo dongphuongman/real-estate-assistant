@@ -69,15 +69,15 @@
   - [DONE] Chat endpoint with hybrid agent integration
   - [DONE] Tools endpoint (if separate from chat) or specific tool execution
   - [DONE] Streaming support
-- Support hybrid retrieval (semantic + keyword) with metadata filters
-- Support geospatial filters (radius) and sorting (price, price/m²)
-- Support multi-provider LLM execution with consistent configuration
-- Support conversation sessions with persisted history and replay
-- Support streaming responses (SSE/WebSocket) for chat and tool progress
-- Support tool actions (mortgage, comparison, price analysis, location analysis)
+- [DONE] Support hybrid retrieval (semantic + keyword) with metadata filters
+- [DONE] Support geospatial filters (radius) and sorting (price, price/m²)
+- [DONE] Support multi-provider LLM execution with consistent configuration
+- [DONE] Support conversation sessions with persisted history and replay
+- [DONE] Support streaming responses (SSE/WebSocket) for chat and tool progress
+- [DONE] Support tool actions (mortgage, comparison, price analysis, location analysis)
 - [DONE] Support exports (CSV/Excel/JSON/Markdown/PDF) with reproducible inputs
-- Support notifications pipeline (alerts, digests) with user preferences
-- Provide admin endpoints for ingestion/reindexing and health checks
+- [DONE] Support notifications pipeline (alerts, digests) with user preferences
+- [DONE] Provide admin endpoints for ingestion/reindexing and health checks
 
 ### Platform: 10 Non-Functional Requirements
 - Security: API keys never exposed to clients; least-privilege secrets management

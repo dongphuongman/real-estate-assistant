@@ -38,10 +38,57 @@ class HybridPropertyRetriever(BaseRetriever):
     search_type: str = "mmr"  # Maximum Marginal Relevance
     fetch_k: int = 20
     lambda_mult: float = 0.5  # Diversity parameter for MMR
+    alpha: float = 0.7  # Weight for vector search (vs keyword) in hybrid search
     forced_filters: Optional[Dict[str, Any]] = None
 
     class Config:
         arbitrary_types_allowed = True
+
+    def search_with_filters(
+        self,
+        query: str,
+        filters: Dict[str, Any],
+        k: Optional[int] = None
+    ) -> List[Document]:
+        """
+        Search with explicit filters (bypassing internal extraction).
+        
+        Args:
+            query: Search query
+            filters: Metadata filters
+            k: Optional override for k
+            
+        Returns:
+            List of documents
+        """
+        effective_k = k if k is not None else self.k
+        
+        # Merge with forced filters
+        if self.forced_filters:
+            for key, val in self.forced_filters.items():
+                filters[key] = val
+                
+        # Use hybrid search
+        results_with_scores = self.vector_store.hybrid_search(
+            query=query,
+            filters=filters,
+            k=effective_k,
+            alpha=self.alpha
+        )
+        
+        results = [doc for doc, _ in results_with_scores]
+        
+        # Apply post-filtering just in case (though hybrid_search should handle it)
+        # We rely on hybrid_search to handle Chroma filters, but complex logic 
+        # might need post-processing. For now, assume hybrid_search is sufficient 
+        # for retrieval, and we trust it.
+        
+        # If we are AdvancedPropertyRetriever, we might want to apply extra logic?
+        # No, search_with_filters is intended to be a direct entry point.
+        # But if we want sorting/ranges that Chroma doesn't support fully?
+        # The _build_chroma_filter handles ranges.
+        
+        return results
 
     def _get_relevant_documents(
         self,
@@ -66,56 +113,40 @@ class HybridPropertyRetriever(BaseRetriever):
                 filters[forced_key] = forced_val
         candidate_k = max(self.fetch_k, self.k)
 
-        # Perform semantic search
+        # Perform search
         initial_scores = None
+        
+        # Always use hybrid search if available
+        # Note: MMR logic is harder to combine with hybrid scoring (BM25)
+        # If search_type is MMR, we might skip hybrid scoring or apply it after?
+        # For now, let's prioritize hybrid search over MMR if it's "similarity"
+        # If it's MMR, we use vector store retriever.
+        
         if self.search_type == "mmr":
-            # Use MMR for diversity
-            retriever = self.vector_store.get_retriever(
+            # Use MMR for diversity (Vector only)
+            retriever = self.vector_store.vector_store.as_retriever(
                 search_type="mmr",
-                k=candidate_k,
-                fetch_k=max(self.fetch_k, candidate_k),
-                lambda_mult=self.lambda_mult,
-                filter=filters if filters else None,
+                search_kwargs={
+                    "k": candidate_k,
+                    "fetch_k": max(self.fetch_k, candidate_k),
+                    "lambda_mult": self.lambda_mult,
+                    "filter": self.vector_store._build_chroma_filter(filters) if filters else None,
+                }
             )
             results = retriever.get_relevant_documents(query)
-            # MMR doesn't return scores, so we assume uniform or rely on rank
+            # MMR doesn't return scores
             initial_scores = [1.0 - (i * 0.01) for i in range(len(results))]
 
         else:
-            # Use regular similarity search
-            results_with_scores = self.vector_store.search(
+            # Use Hybrid Search
+            results_with_scores = self.vector_store.hybrid_search(
                 query=query,
+                filters=filters,
                 k=candidate_k,
-                filter=filters if filters else None,
+                alpha=self.alpha
             )
             results = [doc for doc, score in results_with_scores]
             initial_scores = [score for doc, score in results_with_scores]
-
-        # Apply post-filtering if needed
-        if filters:
-            # Note: If we filtered out documents, we need to filter scores too
-            # This is a bit tricky if we separated them.
-            # Let's re-pair them if we need to filter
-            if initial_scores:
-                paired = list(zip(results, initial_scores))
-                filtered_paired = []
-                for doc, score in paired:
-                     # Reuse _apply_filters logic for single doc?
-                     # No, _apply_filters takes a list.
-                     # Let's just filter the list of docs and keep scores for those that remain.
-                     # This is slightly inefficient but safe.
-                     pass
-                
-                # Simpler: just re-run filter on docs
-                filtered_results = self._apply_filters(results, filters)
-                
-                # Keep scores for surviving docs
-                # We need to map doc ID to score
-                score_map = {id(d): s for d, s in zip(results, initial_scores)}
-                results = filtered_results
-                initial_scores = [score_map.get(id(d), 0.0) for d in results]
-            else:
-                results = self._apply_filters(results, filters)
 
         # Apply Reranking if enabled
         if self.reranker:
@@ -244,22 +275,28 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
                 filters[forced_key] = forced_val
         candidate_k = max(self.fetch_k, self.k)
 
+        # Perform search
         initial_scores = None
+        
         if self.search_type == "mmr":
-            retriever = self.vector_store.get_retriever(
+            retriever = self.vector_store.vector_store.as_retriever(
                 search_type="mmr",
-                k=candidate_k,
-                fetch_k=max(self.fetch_k, candidate_k),
-                lambda_mult=self.lambda_mult,
-                filter=filters if filters else None,
+                search_kwargs={
+                    "k": candidate_k,
+                    "fetch_k": max(self.fetch_k, candidate_k),
+                    "lambda_mult": self.lambda_mult,
+                    "filter": self.vector_store._build_chroma_filter(filters) if filters else None,
+                }
             )
             results = retriever.get_relevant_documents(query)
             initial_scores = [1.0 - (i * 0.01) for i in range(len(results))]
         else:
-            results_with_scores = self.vector_store.search(
+            # Use Hybrid Search
+            results_with_scores = self.vector_store.hybrid_search(
                 query=query,
+                filters=filters,
                 k=candidate_k,
-                filter=filters if filters else None,
+                alpha=self.alpha
             )
             results = [doc for doc, score in results_with_scores]
             initial_scores = [score for doc, score in results_with_scores]
@@ -279,9 +316,11 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
             filtered_scores = [score_map.get(id(d), 0.0) for d in filtered_docs]
             return filtered_docs, filtered_scores
 
-        if filters:
-            results, initial_scores = apply_filtering(results, initial_scores, lambda d: self._apply_filters(d, filters))
-
+        # Note: hybrid_search already applies most filters (price, rooms, etc) via Chroma
+        # But AdvancedRetriever might have explicit properties set (min_price, etc) 
+        # that are NOT in the extracted filters if they came from UI/Config, not query.
+        # So we must still apply them.
+        
         if self.min_price is not None or self.max_price is not None:
             results, initial_scores = apply_filtering(results, initial_scores, self._filter_by_price)
 
