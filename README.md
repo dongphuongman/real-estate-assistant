@@ -73,6 +73,21 @@ The AI Real Estate Assistant is a conversational AI application that helps users
 
 ---
 
+## 🧪 Testing
+
+The project maintains high test coverage standards.
+
+### Frontend
+- **Stack**: Jest, React Testing Library
+- **Coverage**: ≥90% required
+- **Run**: `cd frontend && npm test`
+
+### Backend
+- **Stack**: Pytest
+- **Run**: `pytest`
+
+---
+
 ## 🚀 Quick Start
 
 Choose your preferred installation method:

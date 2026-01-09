@@ -1,5 +1,29 @@
 # Developer Notes
 
+## Frontend Development (Next.js)
+
+### Architecture
+- **Framework**: Next.js 14 (App Router)
+- **Styling**: Tailwind CSS + Shadcn UI
+- **State Management**: React Hooks
+- **Testing**: Jest + React Testing Library
+
+### Directory Structure
+- `src/app`: Pages and layouts (App Router).
+- `src/components/ui`: Atomic UI components (Button, Input, Card, etc.).
+- `src/components/layout`: Global layout components (MainNav).
+- `src/lib`: Utility functions (cn, etc.).
+
+### Testing Guidelines
+- **Unit Tests**: Located in `__tests__` directories next to the components/pages.
+- **Mocking**:
+    - Use `jest.mock` for `next/navigation`.
+    - Mock `fetch` for API calls.
+    - Mock `ResizeObserver` or other browser APIs if needed (setup in `jest.setup.ts`).
+- **Coverage**: Ensure ≥90% coverage. Check with `npm run test:coverage`.
+
+---
+
 ## Notifications System - Digest Generator
 
 ### Overview

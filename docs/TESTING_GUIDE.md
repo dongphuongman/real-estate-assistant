@@ -8,7 +8,30 @@ This guide provides comprehensive testing procedures for all Phase 2 (Intelligen
 
 ## 🧪 Test Environment Setup
 
-### Prerequisites
+### Frontend Testing
+The frontend application (Next.js) includes a comprehensive test suite using Jest and React Testing Library.
+
+#### Running Frontend Tests
+```bash
+cd frontend
+npm install              # Ensure dependencies are installed
+npm test                 # Run all tests
+npm run test:coverage    # Run tests with coverage report
+npm run test:watch       # Run tests in watch mode
+```
+
+#### Test Coverage Requirements
+- **Global Threshold**: ≥90% for statements, branches, functions, and lines.
+- **Critical Components**: UI components and main pages must have 100% coverage where possible.
+
+#### Key Testing Practices
+- **Mocking**: Next.js hooks (`useRouter`, `usePathname`) and `fetch` are mocked globally or per test.
+- **Async Handling**: Use `act()` and `waitFor()` for state updates. Use `jest.useFakeTimers()` for time-dependent logic.
+- **Accessibility**: Prefer accessible queries (`getByRole`, `getByLabelText`).
+
+---
+
+### Backend Prerequisites
 ```bash
 # 1. Ensure dependencies are installed
 pip install -r requirements.txt

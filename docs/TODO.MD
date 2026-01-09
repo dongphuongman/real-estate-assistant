@@ -100,6 +100,7 @@
   - [DONE] Create Chat Page (UI only)
   - [DONE] Create Search Page (UI only)
   - [DONE] Create Analytics Page (Placeholder)
+  - [DONE] Implement Frontend Unit & Integration Tests (≥90% coverage)
 - API (Python): endpoints, streaming, session persistence, tool execution
 - Retrieval: vector store service + indexing + geo filters + reranking
 - Analytics: indices, trends, anomaly detection, export endpoints
