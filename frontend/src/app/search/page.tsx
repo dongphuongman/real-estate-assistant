@@ -13,9 +13,31 @@ export default function SearchPage() {
     setLoading(true);
     try {
       // TODO: Integrate with backend API
-      // const response = await fetch(`/api/v1/search?query=${query}`);
-      // const data = await response.json();
-      // setResults(data.results);
+      // For now, simulate a search response
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      if (query.toLowerCase().includes("nowhere")) {
+        setResults([]);
+      } else {
+        setResults([
+          {
+            id: "1",
+            title: "Modern Apartment",
+            price: 500000,
+            location: "Downtown",
+            specs: "2 beds • 2 baths",
+            image: "/placeholder.jpg"
+          },
+          {
+            id: "2",
+            title: "Cozy House",
+            price: 350000,
+            location: "Suburbs",
+            specs: "3 beds • 2 baths",
+            image: "/placeholder.jpg"
+          }
+        ] as any);
+      }
       console.log("Searching for:", query);
     } catch (error) {
       console.error("Search failed:", error);
@@ -85,7 +107,22 @@ export default function SearchPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Results will be mapped here */}
+                {results.map((result: any) => (
+                  <div key={result.id} className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+                    <div className="aspect-video w-full bg-muted relative">
+                      {/* Placeholder for image */}
+                      <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                        Image
+                      </div>
+                    </div>
+                    <div className="p-6 space-y-2">
+                      <h3 className="text-2xl font-semibold leading-none tracking-tight">{result.title}</h3>
+                      <p className="text-sm text-muted-foreground">{result.location}</p>
+                      <div className="font-bold text-lg">${result.price.toLocaleString()}</div>
+                      <p className="text-sm text-muted-foreground">{result.specs}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>

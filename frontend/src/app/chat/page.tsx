@@ -78,7 +78,7 @@ export default function ChatPage() {
           </div>
         ))}
         {isLoading && (
-          <div className="flex w-full items-start gap-4 p-4 rounded-lg bg-background border">
+          <div className="flex w-full items-start gap-4 p-4 rounded-lg bg-background border" role="status" aria-label="Loading">
             <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md border shadow bg-primary text-primary-foreground">
               <Bot className="h-4 w-4" />
             </div>
@@ -100,6 +100,7 @@ export default function ChatPage() {
         />
         <button
           type="submit"
+          aria-label="Send message"
           disabled={isLoading || !input.trim()}
           className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 w-12"
         >
