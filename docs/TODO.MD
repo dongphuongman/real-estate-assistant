@@ -96,6 +96,9 @@
   - [DONE] Initialize Next.js project with TypeScript, Tailwind CSS, and ESLint
   - [DONE] Setup UI Shell (Layout, Navbar, Theming)
   - [DONE] Configure API Proxy to Backend
+  - [DONE] Create Chat Page (UI only)
+  - [DONE] Create Search Page (UI only)
+  - [DONE] Create Analytics Page (Placeholder)
 - API (Python): endpoints, streaming, session persistence, tool execution
 - Retrieval: vector store service + indexing + geo filters + reranking
 - Analytics: indices, trends, anomaly detection, export endpoints
