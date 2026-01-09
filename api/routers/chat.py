@@ -1,8 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
-from typing import Any
-from api.dependencies import get_agent
+from typing import Any, Optional
+from langchain_core.language_models import BaseChatModel
+from langchain.memory import ConversationBufferMemory
+import uuid
+
+from api.dependencies import get_llm, get_vector_store
 from api.models import ChatRequest, ChatResponse
+from agents.hybrid_agent import create_hybrid_agent
+from vector_store.chroma_store import ChromaPropertyStore
+from ai.memory import get_session_history
 import logging
 
 # Configure logger
@@ -13,12 +20,40 @@ router = APIRouter()
 @router.post("/chat", response_model=ChatResponse, tags=["Chat"])
 async def chat_endpoint(
     request: ChatRequest,
-    agent: Any = Depends(get_agent)
+    llm: BaseChatModel = Depends(get_llm),
+    store: Optional[ChromaPropertyStore] = Depends(get_vector_store)
 ):
     """
-    Process a chat message using the hybrid agent.
+    Process a chat message using the hybrid agent with session persistence.
     """
     try:
+        if not store:
+             raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Vector store unavailable"
+            )
+
+        # Handle Session ID
+        session_id = request.session_id
+        if not session_id:
+            session_id = str(uuid.uuid4())
+        
+        # Initialize Memory with Persistence
+        chat_history = get_session_history(session_id)
+        memory = ConversationBufferMemory(
+            chat_memory=chat_history,
+            memory_key="chat_history",
+            return_messages=True,
+            output_key="output" 
+        )
+        
+        # Create Agent
+        agent = create_hybrid_agent(
+            llm=llm, 
+            retriever=store.get_retriever(), 
+            memory=memory
+        )
+
         if request.stream:
             async def event_generator():
                 async for chunk in agent.astream_query(request.message):
@@ -30,13 +65,6 @@ async def chat_endpoint(
                 media_type="text/event-stream"
             )
 
-        # For now, we don't persist sessions in this simple endpoint, 
-        # but the agent has memory. To truly support sessions across requests,
-        # we'd need to load/save memory based on session_id.
-        # This implementation assumes a stateless request or single-turn for now,
-        # or relies on the agent being re-instantiated (which wipes memory).
-        # TODO: Implement persistent session storage (Redis/DB).
-        
         result = agent.process_query(request.message)
         
         # HybridPropertyAgent returns dict with 'answer', 'source_documents', etc.
@@ -53,7 +81,7 @@ async def chat_endpoint(
         return ChatResponse(
             response=answer,
             sources=sources,
-            session_id=request.session_id # Echo back for now
+            session_id=session_id
         )
 
     except Exception as e:

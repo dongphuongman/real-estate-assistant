@@ -26,11 +26,17 @@ async def search_properties(
         )
 
     try:
-        # Perform search
-        results = store.search(
+        # Perform hybrid search (Vector + Keyword)
+        results = store.hybrid_search(
             query=request.query,
             k=request.limit,
-            filter=request.filters
+            filters=request.filters,
+            alpha=request.alpha,
+            lat=request.lat,
+            lon=request.lon,
+            radius_km=request.radius_km,
+            sort_by=request.sort_by.value if request.sort_by else None,
+            sort_order=request.sort_order.value if request.sort_order else None
         )
         
         items = []
