@@ -2,45 +2,26 @@
 
 import { useState } from "react";
 import { Search as SearchIcon, MapPin, Filter } from "lucide-react";
+import { searchProperties } from "@/lib/api";
+import { SearchResultItem } from "@/lib/types";
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState<SearchResultItem[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     try {
-      // TODO: Integrate with backend API
-      // For now, simulate a search response
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      if (query.toLowerCase().includes("nowhere")) {
-        setResults([]);
-      } else {
-        setResults([
-          {
-            id: "1",
-            title: "Modern Apartment",
-            price: 500000,
-            location: "Downtown",
-            specs: "2 beds • 2 baths",
-            image: "/placeholder.jpg"
-          },
-          {
-            id: "2",
-            title: "Cozy House",
-            price: 350000,
-            location: "Suburbs",
-            specs: "3 beds • 2 baths",
-            image: "/placeholder.jpg"
-          }
-        ] as any);
-      }
-      console.log("Searching for:", query);
-    } catch (error) {
-      console.error("Search failed:", error);
+      const response = await searchProperties({ query });
+      setResults(response.results);
+      console.log("Search results:", response);
+    } catch (err) {
+      console.error("Search failed:", err);
+      setError("Failed to perform search. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -100,29 +81,40 @@ export default function SearchPage() {
                 <div className="p-4 rounded-full bg-muted/50 mb-4">
                   <MapPin className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <h3 className="text-lg font-semibold">No results found</h3>
+                <h3 className="text-lg font-semibold">{error ? "Error" : "No results found"}</h3>
                 <p className="text-sm text-muted-foreground max-w-sm mt-2">
-                  Try adjusting your search terms or filters to find what you're looking for.
+                  {error || "Try adjusting your search terms or filters to find what you're looking for."}
                 </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {results.map((result: any) => (
-                  <div key={result.id} className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
-                    <div className="aspect-video w-full bg-muted relative">
-                      {/* Placeholder for image */}
-                      <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                        Image
+                {results.map((item) => {
+                  const prop = item.property;
+                  return (
+                    <div key={prop.id || Math.random().toString()} className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+                      <div className="aspect-video w-full bg-muted relative">
+                        {/* Placeholder for image */}
+                        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                          Image
+                        </div>
+                      </div>
+                      <div className="p-6 space-y-2">
+                        <h3 className="text-2xl font-semibold leading-none tracking-tight">{prop.title || "Untitled Property"}</h3>
+                        <p className="text-sm text-muted-foreground">{prop.city}, {prop.country}</p>
+                        <div className="font-bold text-lg">
+                          {prop.price ? `$${prop.price.toLocaleString()}` : "Price on request"}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {[
+                            prop.rooms ? `${prop.rooms} beds` : null,
+                            prop.bathrooms ? `${prop.bathrooms} baths` : null,
+                            prop.area_sqm ? `${prop.area_sqm} m²` : null
+                          ].filter(Boolean).join(" • ")}
+                        </p>
                       </div>
                     </div>
-                    <div className="p-6 space-y-2">
-                      <h3 className="text-2xl font-semibold leading-none tracking-tight">{result.title}</h3>
-                      <p className="text-sm text-muted-foreground">{result.location}</p>
-                      <div className="font-bold text-lg">${result.price.toLocaleString()}</div>
-                      <p className="text-sm text-muted-foreground">{result.specs}</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

@@ -1,16 +1,20 @@
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
+import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import ChatPage from "../page"
+import { chatMessage } from "@/lib/api"
+
+// Mock the API module
+jest.mock("@/lib/api", () => ({
+  chatMessage: jest.fn(),
+}))
+
+const mockChatMessage = chatMessage as jest.Mock
 
 // Mock scrollIntoView
 window.HTMLElement.prototype.scrollIntoView = jest.fn()
 
 describe("ChatPage", () => {
   beforeEach(() => {
-    jest.useFakeTimers()
-  })
-
-  afterEach(() => {
-    jest.useRealTimers()
+    jest.clearAllMocks()
   })
 
   it("renders chat interface", () => {
@@ -25,6 +29,12 @@ describe("ChatPage", () => {
   })
 
   it("handles message submission", async () => {
+    mockChatMessage.mockResolvedValueOnce({
+      response: "This is a real API response",
+      sources: [],
+      session_id: "123"
+    })
+
     render(<ChatPage />)
     
     const input = screen.getByPlaceholderText("Ask about properties, market trends, or investment advice...")
@@ -39,17 +49,20 @@ describe("ChatPage", () => {
     // Input should be cleared
     expect(input).toHaveValue("")
 
-    act(() => {
-      jest.runAllTimers()
-    })
-
     // Wait for bot response
     await waitFor(() => {
-      expect(screen.getByText("I'm connected to the frontend, but the backend integration is pending. I can help you once I'm fully wired up!")).toBeInTheDocument()
+      expect(screen.getByText("This is a real API response")).toBeInTheDocument()
     })
   })
 
   it("handles loading state", async () => {
+    // Return a promise that doesn't resolve immediately to test loading state
+    mockChatMessage.mockImplementation(() => new Promise(resolve => setTimeout(() => resolve({
+      response: "Delayed response",
+      sources: [],
+      session_id: "123"
+    }), 100)))
+
     render(<ChatPage />)
     
     const input = screen.getByPlaceholderText("Ask about properties, market trends, or investment advice...")
@@ -61,12 +74,34 @@ describe("ChatPage", () => {
     expect(screen.getByLabelText("Loading")).toBeInTheDocument()
     expect(sendButton).toBeDisabled()
     
-    act(() => {
-      jest.runAllTimers()
-    })
-    
     await waitFor(() => {
       expect(screen.queryByLabelText("Loading")).not.toBeInTheDocument()
     })
+  })
+
+  it("handles error state", async () => {
+    mockChatMessage.mockRejectedValueOnce(new Error("API Error"))
+
+    render(<ChatPage />)
+    
+    const input = screen.getByPlaceholderText("Ask about properties, market trends, or investment advice...")
+    const sendButton = screen.getByRole("button", { name: /send message/i })
+
+    fireEvent.change(input, { target: { value: "Error" } })
+    fireEvent.click(sendButton)
+
+    await waitFor(() => {
+      expect(screen.getByText("I apologize, but I encountered an error connecting to the server. Please try again later.")).toBeInTheDocument()
+    })
+  })
+
+  it("does not submit empty message", async () => {
+    render(<ChatPage />)
+    
+    const sendButton = screen.getByRole("button", { name: /send message/i })
+    
+    fireEvent.click(sendButton)
+    
+    expect(mockChatMessage).not.toHaveBeenCalled()
   })
 })

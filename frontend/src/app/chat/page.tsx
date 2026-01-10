@@ -3,10 +3,12 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, User, Bot, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { chatMessage } from "@/lib/api";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
+  sources?: any[];
 }
 
 export default function ChatPage() {
@@ -15,6 +17,7 @@ export default function ChatPage() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -35,20 +38,28 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Integrate with backend API
-      // const response = await fetch('/api/v1/chat', { ... });
+      const response = await chatMessage({ 
+        message: userMessage,
+        session_id: sessionId
+      });
       
-      // Simulate delay for now
-      setTimeout(() => {
-        setMessages(prev => [...prev, { 
-          role: "assistant", 
-          content: "I'm connected to the frontend, but the backend integration is pending. I can help you once I'm fully wired up!" 
-        }]);
-        setIsLoading(false);
-      }, 1000);
+      if (response.session_id) {
+        setSessionId(response.session_id);
+      }
+
+      setMessages(prev => [...prev, { 
+        role: "assistant", 
+        content: response.response,
+        sources: response.sources
+      }]);
 
     } catch (error) {
       console.error("Chat error:", error);
+      setMessages(prev => [...prev, { 
+        role: "assistant", 
+        content: "I apologize, but I encountered an error connecting to the server. Please try again later." 
+      }]);
+    } finally {
       setIsLoading(false);
     }
   };
