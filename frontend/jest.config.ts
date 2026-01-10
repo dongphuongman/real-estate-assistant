@@ -19,8 +19,9 @@ const config: Config = {
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',
+    '!src/lib/types.ts',
     '!src/**/layout.tsx',
-    '!src/**/page.tsx', // Initially exclude pages until we mock everything, but user asked for coverage. I will include them but maybe exclude specific layout files if needed.
+    // '!src/**/page.tsx', // Initially exclude pages until we mock everything, but user asked for coverage. I will include them but maybe exclude specific layout files if needed.
     // Actually, user wants >90% coverage, so I should include pages.
     // Let's exclude standard Next.js files that are hard to test or purely declarative
     '!src/app/layout.tsx',
