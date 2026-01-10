@@ -97,8 +97,9 @@
   - [DONE] Setup UI Shell (Layout, Navbar, Theming)
   - [DONE] Configure API Proxy to Backend
   - [DONE] Create Auth Pages (Login/Register)
-  - [DONE] Create Chat Page (UI only)
-  - [DONE] Create Search Page (UI only)
+  - [DONE] Create Chat Page (UI + Integration)
+  - [DONE] Create Search Page (UI + Integration)
+  - [DONE] Setup API Client & Type Definitions
   - [DONE] Create Analytics Page (Placeholder)
   - [DONE] Implement Frontend Unit & Integration Tests (≥90% coverage)
 - API (Python): endpoints, streaming, session persistence, tool execution

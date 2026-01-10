@@ -12,13 +12,16 @@
 - `src/app`: Pages and layouts (App Router).
 - `src/components/ui`: Atomic UI components (Button, Input, Card, etc.).
 - `src/components/layout`: Global layout components (MainNav).
-- `src/lib`: Utility functions (cn, etc.).
+- `src/lib`: Utility functions, API clients, and types.
+    - `api.ts`: API client functions wrapping `fetch`.
+    - `types.ts`: Shared TypeScript interfaces (mirrors Pydantic models).
+    - `utils.ts`: Helper functions (cn, etc.).
 
 ### Testing Guidelines
 - **Unit Tests**: Located in `__tests__` directories next to the components/pages.
 - **Mocking**:
     - Use `jest.mock` for `next/navigation`.
-    - Mock `fetch` for API calls.
+    - Mock `src/lib/api.ts` for integration tests to avoid real network calls.
     - Mock `ResizeObserver` or other browser APIs if needed (setup in `jest.setup.ts`).
 - **Coverage**: Ensure ≥90% coverage. Check with `npm run test:coverage`.
 
