@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException
 from api.models import (
     IngestRequest, 
     IngestResponse, 
@@ -7,14 +6,12 @@ from api.models import (
     ReindexResponse, 
     HealthCheck
 )
-from api.auth import get_api_key
 from api.dependencies import get_vector_store
 from data.csv_loader import DataLoaderCsv
 from utils.property_cache import save_collection, load_collection
 from data.schemas import Property, PropertyCollection
 from config.settings import settings
 from vector_store.chroma_store import ChromaPropertyStore
-import pandas as pd
 import logging
 
 logger = logging.getLogger(__name__)
@@ -49,7 +46,7 @@ async def ingest_data(request: IngestRequest):
                 for record in records:
                     try:
                         props.append(Property(**record))
-                    except Exception as e:
+                    except Exception:
                         # Skip invalid records but log?
                         pass
                         

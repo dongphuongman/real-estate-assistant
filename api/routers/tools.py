@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
-from typing import List, Dict, Any
+from typing import List
 from pydantic import BaseModel
 
 from tools.property_tools import (

@@ -40,11 +40,24 @@ To configure the key, set the `API_ACCESS_KEY` environment variable (defaults to
             "city": "Krakow",
             "min_price": 2000
           },
-          "alpha": 0.7
+          "alpha": 0.7,
+          "lat": 50.0647,
+          "lon": 19.9450,
+          "radius_km": 3.0,
+          "min_lat": 50.00,
+          "max_lat": 50.12,
+          "min_lon": 19.85,
+          "max_lon": 20.05,
+          "sort_by": "price",
+          "sort_order": "asc"
         }
         ```
     *   **Parameters**:
         *   `alpha` (float, optional): Weight for vector similarity (0.0 to 1.0). 1.0 = Pure Vector, 0.0 = Pure Keyword. Default: 0.7.
+        *   `lat/lon/radius_km` (optional): Geo radius filter (in kilometers).
+        *   `min_lat/max_lat/min_lon/max_lon` (optional): Geo bounding box filter.
+        *   `sort_by` (optional): `relevance`, `price`, `price_per_sqm`, `area_sqm`, `year_built`.
+        *   `sort_order` (optional): `asc` or `desc`.
     *   **Returns**: `SearchResponse` object containing list of properties with hybrid scores.
 
 #### Chat

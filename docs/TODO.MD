@@ -105,6 +105,7 @@
   - [DONE] Implement Frontend Unit & Integration Tests (Coverage ≥ 90%)
 - [DONE] API (Python): endpoints, streaming, session persistence, tool execution
 - Retrieval: vector store service + indexing + geo filters + reranking
+  - [DONE] Add bounding box geo filters to V4 `/api/v1/search`
 - Analytics: indices, trends, anomaly detection, export endpoints
 - [DONE] Notifications: digests, schedules, templates, preference management
 - DevOps: CI gates, environments, secrets, deploy pipelines, monitoring

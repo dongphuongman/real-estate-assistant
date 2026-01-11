@@ -1,6 +1,6 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 from api.models import NotificationSettings
-from notifications.notification_preferences import NotificationPreferencesManager, NotificationPreferences, AlertFrequency, AlertType
+from notifications.notification_preferences import NotificationPreferencesManager, AlertFrequency, AlertType
 import logging
 
 logger = logging.getLogger(__name__)

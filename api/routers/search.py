@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List, Optional
+from typing import Optional
 from api.dependencies import get_vector_store
 from api.models import SearchRequest, SearchResponse, SearchResultItem
 from vector_store.chroma_store import ChromaPropertyStore
@@ -35,6 +35,10 @@ async def search_properties(
             lat=request.lat,
             lon=request.lon,
             radius_km=request.radius_km,
+            min_lat=request.min_lat,
+            max_lat=request.max_lat,
+            min_lon=request.min_lon,
+            max_lon=request.max_lon,
             sort_by=request.sort_by.value if request.sort_by else None,
             sort_order=request.sort_order.value if request.sort_order else None
         )

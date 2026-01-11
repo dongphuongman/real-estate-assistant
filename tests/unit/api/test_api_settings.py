@@ -1,6 +1,5 @@
 from fastapi.testclient import TestClient
 from api.main import app
-from api.models import NotificationSettings
 from notifications.notification_preferences import NotificationPreferences, AlertType, AlertFrequency
 from unittest.mock import MagicMock, patch
 
@@ -30,10 +29,10 @@ def test_get_settings(mock_get_settings, mock_prefs_manager):
     
     assert response.status_code == 200
     data = response.json()
-    assert data["email_digest"] == True
+    assert data["email_digest"]
     assert data["frequency"] == "weekly"
-    assert data["expert_mode"] == True
-    assert data["marketing_emails"] == False
+    assert data["expert_mode"]
+    assert not data["marketing_emails"]
 
 @patch("api.routers.settings.PREFS_MANAGER")
 @patch("api.auth.get_settings")
@@ -61,7 +60,7 @@ def test_update_settings(mock_get_settings, mock_prefs_manager):
     
     assert response.status_code == 200
     data = response.json()
-    assert data["email_digest"] == True
+    assert data["email_digest"]
     assert data["frequency"] == "daily"
     
     # Verify save called
@@ -69,5 +68,5 @@ def test_update_settings(mock_get_settings, mock_prefs_manager):
     saved_prefs = mock_prefs_manager.save_preferences.call_args[0][0]
     assert AlertType.DIGEST in saved_prefs.enabled_alerts
     assert saved_prefs.alert_frequency == AlertFrequency.DAILY
-    assert saved_prefs.expert_mode == True
-    assert saved_prefs.marketing_emails == True
+    assert saved_prefs.expert_mode
+    assert saved_prefs.marketing_emails

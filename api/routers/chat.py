@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
-from typing import Any, Optional
+from typing import Optional
 from langchain_core.language_models import BaseChatModel
 from langchain.memory import ConversationBufferMemory
 import uuid

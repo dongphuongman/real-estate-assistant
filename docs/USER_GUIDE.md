@@ -29,6 +29,7 @@ To ensure your digest contains relevant properties:
 1. Use the **Search** tab to define your criteria (Location, Price, Rooms, etc.).
 2. Click **Save Search** and give it a memorable name (e.g., "2-bed in Downtown").
 3. These searches will automatically feed into your digest.
+4. For map-based searches, you can narrow results by geo radius or a bounding box area.
 
 ## Market Analytics
 

@@ -1,8 +1,8 @@
 import pytest
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import MagicMock, patch
 from fastapi.testclient import TestClient
 from api.main import app
-from api.dependencies import get_agent
+from api.dependencies import get_llm, get_vector_store
 
 client = TestClient(app)
 
@@ -11,18 +11,18 @@ def valid_headers():
     return {"X-API-Key": "dev-secret-key"}
 
 def test_chat_streaming(valid_headers):
-    # Mock the agent
     mock_agent = MagicMock()
     
-    # Mock astream_query to yield chunks
     async def mock_stream(query):
         yield '{"content": "Hello"}'
         yield '{"content": " World"}'
         
     mock_agent.astream_query = mock_stream
     
-    # Override dependency
-    app.dependency_overrides[get_agent] = lambda: mock_agent
+    mock_store = MagicMock()
+    mock_store.get_retriever.return_value = MagicMock()
+    app.dependency_overrides[get_vector_store] = lambda: mock_store
+    app.dependency_overrides[get_llm] = lambda: MagicMock()
     
     try:
         payload = {
@@ -30,11 +30,12 @@ def test_chat_streaming(valid_headers):
             "stream": True
         }
         
-        response = client.post(
-            "/api/v1/chat",
-            json=payload,
-            headers=valid_headers
-        )
+        with patch("api.routers.chat.create_hybrid_agent", return_value=mock_agent):
+            response = client.post(
+                "/api/v1/chat",
+                json=payload,
+                headers=valid_headers
+            )
         
         assert response.status_code == 200
         # Media type can include charset

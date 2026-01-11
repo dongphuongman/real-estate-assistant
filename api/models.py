@@ -30,6 +30,10 @@ class SearchRequest(BaseModel):
     lat: Optional[float] = Field(None, ge=-90, le=90, description="Latitude for geo-search")
     lon: Optional[float] = Field(None, ge=-180, le=180, description="Longitude for geo-search")
     radius_km: Optional[float] = Field(None, gt=0, description="Radius in kilometers")
+    min_lat: Optional[float] = Field(None, ge=-90, le=90, description="Bounding box min latitude")
+    max_lat: Optional[float] = Field(None, ge=-90, le=90, description="Bounding box max latitude")
+    min_lon: Optional[float] = Field(None, ge=-180, le=180, description="Bounding box min longitude")
+    max_lon: Optional[float] = Field(None, ge=-180, le=180, description="Bounding box max longitude")
     
     # Sorting
     sort_by: Optional[SortField] = SortField.RELEVANCE

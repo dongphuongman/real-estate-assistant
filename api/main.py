@@ -8,7 +8,6 @@ from config.settings import get_settings
 from notifications.scheduler import NotificationScheduler
 from notifications.email_service import EmailServiceFactory, EmailConfig, EmailProvider, EmailService
 import logging
-import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

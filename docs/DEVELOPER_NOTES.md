@@ -91,6 +91,16 @@ The `FinancialCalculator` module (`analytics/financial_metrics.py`) provides sta
 from analytics.financial_metrics import FinancialCalculator, MortgageParams
 
 metrics = FinancialCalculator.analyze_investment(
+
+## V4 API Notes
+
+### Search
+
+`POST /api/v1/search` supports:
+- Hybrid retrieval weight: `alpha`
+- Geo radius filter: `lat`, `lon`, `radius_km`
+- Geo bounding box filter: `min_lat`, `max_lat`, `min_lon`, `max_lon`
+- Sorting: `sort_by`, `sort_order`
     property_price=250000,
     monthly_rent=2000,
     mortgage=MortgageParams(interest_rate=5.5, down_payment_percent=20)
