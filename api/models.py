@@ -2,6 +2,9 @@ from typing import List, Optional, Dict, Any
 from enum import Enum
 from pydantic import BaseModel, Field
 from data.schemas import Property
+from pydantic import model_validator
+
+from utils.exporters import ExportFormat
 
 
 class SortOrder(str, Enum):
@@ -179,3 +182,24 @@ class LocationAnalysisResponse(BaseModel):
     neighborhood: Optional[str] = None
     lat: Optional[float] = None
     lon: Optional[float] = None
+
+
+class ExportPropertiesRequest(BaseModel):
+    format: ExportFormat
+    property_ids: Optional[List[str]] = None
+    search: Optional[SearchRequest] = None
+
+    columns: Optional[List[str]] = None
+    include_header: bool = True
+
+    include_summary: bool = True
+    include_statistics: bool = True
+    include_metadata: bool = True
+    pretty: bool = True
+    max_properties: Optional[int] = None
+
+    @model_validator(mode="after")
+    def validate_input(self) -> "ExportPropertiesRequest":
+        if not self.property_ids and self.search is None:
+            raise ValueError("Either property_ids or search must be provided")
+        return self
