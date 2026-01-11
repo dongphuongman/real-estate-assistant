@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from api.auth import get_api_key
 from api.models import HealthCheck
-from api.routers import search, chat, tools, admin
+from api.routers import search, chat, tools, admin, settings as settings_router
 from api.dependencies import get_vector_store
 from config.settings import get_settings
 from notifications.scheduler import NotificationScheduler
@@ -96,6 +96,11 @@ app.include_router(
 )
 app.include_router(
     chat.router,
+    prefix="/api/v1",
+    dependencies=[Depends(get_api_key)]
+)
+app.include_router(
+    settings_router.router,
     prefix="/api/v1",
     dependencies=[Depends(get_api_key)]
 )

@@ -98,6 +98,8 @@ class NotificationPreferences:
     max_alerts_per_day: int = 10
     per_search_settings: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     enabled: bool = True
+    expert_mode: bool = False
+    marketing_emails: bool = False
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: datetime = field(default_factory=datetime.now)
 

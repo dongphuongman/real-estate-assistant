@@ -103,10 +103,10 @@
   - [DONE] Create Analytics Page (Mortgage Calculator Integration)
   - [DONE] Create Settings Page (Notification Preferences)
   - [DONE] Implement Frontend Unit & Integration Tests (Coverage ≥ 90%)
-- API (Python): endpoints, streaming, session persistence, tool execution
+- [DONE] API (Python): endpoints, streaming, session persistence, tool execution
 - Retrieval: vector store service + indexing + geo filters + reranking
 - Analytics: indices, trends, anomaly detection, export endpoints
-- Notifications: digests, schedules, templates, preference management
+- [DONE] Notifications: digests, schedules, templates, preference management
 - DevOps: CI gates, environments, secrets, deploy pipelines, monitoring
 
 ## Sprints

@@ -76,3 +76,10 @@ class ReindexResponse(BaseModel):
     """Response model for reindexing."""
     message: str
     count: int
+
+class NotificationSettings(BaseModel):
+    """User notification settings."""
+    email_digest: bool = True
+    frequency: str = "weekly"
+    expert_mode: bool = False
+    marketing_emails: bool = False
