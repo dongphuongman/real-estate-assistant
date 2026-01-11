@@ -8,7 +8,6 @@ import pandas as pd
 import re
 import requests
 from faker import Faker
-from typing import Any
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -50,7 +49,7 @@ class DataLoaderCsv:
         if not is_valid_url:
             return False  # URL structure is not valid
         try:
-            response = requests.head(str(url), allow_redirects=True)
+            response = requests.head(str(url), allow_redirects=True, timeout=10)
             return response.status_code < 400
         except requests.RequestException:
             return False  # Handle any exceptions during the request

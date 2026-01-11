@@ -1,4 +1,3 @@
-import pytest
 from pathlib import Path
 from data.providers.factory import DataProviderFactory
 from data.providers.csv_provider import CSVDataProvider

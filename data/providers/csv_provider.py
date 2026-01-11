@@ -14,12 +14,7 @@ class CSVDataProvider(BaseDataProvider):
 
     def validate_source(self) -> bool:
         """Check if the source file or URL exists."""
-        if isinstance(self.source, (str, Path)):
-            # DataLoaderCsv handles validation internally in __init__ by setting csv_path to None
-            # or we can check explicitly. 
-            # However, DataLoaderCsv implementation stores None if invalid.
-            return self._loader.csv_path is not None
-        return False
+        return self._loader.csv_path is not None
 
     def load_data(self) -> pd.DataFrame:
         """Load data from the CSV/Excel source."""
@@ -61,7 +56,7 @@ class CSVDataProvider(BaseDataProvider):
                 # For now, let's skip invalid rows to avoid crashing the whole batch.
                 prop = Property(**clean_data)
                 properties.append(prop)
-            except Exception as e:
+            except Exception:
                 # In a real scenario, we might want to log this
                 continue
                 

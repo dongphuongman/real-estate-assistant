@@ -1,6 +1,5 @@
 import pytest
-from unittest.mock import patch, MagicMock, mock_open
-from pathlib import Path
+from unittest.mock import patch, MagicMock
 import json
 import pandas as pd
 from data.providers.json_provider import JSONDataProvider

@@ -1,4 +1,4 @@
-from typing import List, Union, Dict, Any
+from typing import List, Any
 from pathlib import Path
 import json
 import requests
@@ -20,18 +20,15 @@ class JSONDataProvider(BaseDataProvider):
 
     def validate_source(self) -> bool:
         """Check if the source file or URL exists."""
-        if isinstance(self.source, (str, Path)):
-            src_str = str(self.source)
-            if src_str.startswith(("http://", "https://")):
-                src_str = self._convert_github_url(src_str)
-                try:
-                    response = requests.head(src_str, allow_redirects=True, timeout=5)
-                    return response.status_code < 400
-                except requests.RequestException:
-                    return False
-            else:
-                return Path(self.source).is_file()
-        return False
+        src_str = str(self.source)
+        if src_str.startswith(("http://", "https://")):
+            src_str = self._convert_github_url(src_str)
+            try:
+                response = requests.head(src_str, allow_redirects=True, timeout=5)
+                return response.status_code < 400
+            except requests.RequestException:
+                return False
+        return Path(self.source).is_file()
 
     def load_data(self) -> pd.DataFrame:
         """Load data from the JSON source into a DataFrame."""

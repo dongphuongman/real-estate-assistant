@@ -1,8 +1,8 @@
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 import pandas as pd
 from data.providers.csv_provider import CSVDataProvider
-from data.schemas import Property, PropertyType, ListingType
+from data.schemas import Property, PropertyType
 
 class TestCSVDataProvider:
     

@@ -2,7 +2,7 @@
 Base Data Provider Interface.
 """
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Union
+from typing import List, Optional, Union
 from pathlib import Path
 import pandas as pd
 from data.schemas import Property

@@ -1,8 +1,5 @@
 import pytest
-import pandas as pd
-from pathlib import Path
 import json
-import threading
 from data.providers.json_provider import JSONDataProvider
 from data.schemas import PropertyCollection
 from vector_store.chroma_store import ChromaPropertyStore

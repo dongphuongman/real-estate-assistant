@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional, Union
+from typing import Union
 from yarl import URL
 
 from .base import BaseDataProvider
@@ -25,10 +25,10 @@ class DataProviderFactory:
         
         # Determine extension
         if source_str.lower().endswith('.json'):
-            return JSONDataProvider(source)
+            return JSONDataProvider(source_str)
         elif source_str.lower().endswith(('.csv', '.xlsx', '.xls')):
-            return CSVDataProvider(source)
+            return CSVDataProvider(source_str)
         else:
             # Default to CSV provider for unknown extensions (legacy behavior compatibility)
             # or could check content type if it's a URL
-            return CSVDataProvider(source)
+            return CSVDataProvider(source_str)
