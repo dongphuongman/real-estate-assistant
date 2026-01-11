@@ -95,3 +95,7 @@ If you are using the V4 API (FastAPI), the same tool capabilities are available 
 - Compare properties by IDs
 - Basic price analysis for a query
 - Basic location lookup for a property ID
+
+### API Export (V4)
+To export search results or specific property IDs via the V4 API:
+- `POST /api/v1/export/properties` supports `format`: `csv`, `xlsx`, `json`, `md`, `pdf`

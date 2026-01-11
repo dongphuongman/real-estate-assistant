@@ -117,6 +117,11 @@ The V4 API exposes tool endpoints under `/api/v1/tools/*`:
 - `POST /api/v1/tools/price-analysis` returns price stats and distribution by type
 - `POST /api/v1/tools/location-analysis` returns basic location fields (city/coords)
 
+### Export
+
+The V4 API exposes export endpoints under `/api/v1/export/*`:
+- `POST /api/v1/export/properties` exports property IDs or search results to `csv`, `xlsx`, `json`, `md`, `pdf`
+
 ---
 
 ## Analytics - Regional Market Insights

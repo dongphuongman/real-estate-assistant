@@ -1,5 +1,8 @@
 # Open Issues & Tasks
 
+## V4 API
+- [DONE] Add property export endpoint (`POST /api/v1/export/properties`)
+
 ## Internationalization (i18n)
 - Translate remaining non‑English strings (especially Polish) in the Notifications tab:
   - "Email Provider"

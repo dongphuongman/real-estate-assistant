@@ -133,6 +133,32 @@ To configure the key, set the `API_ACCESS_KEY` environment variable (defaults to
         ```
     *   **Returns**: `LocationAnalysisResponse`.
 
+#### Export
+
+*   `POST /api/v1/export/properties`
+    *   Export properties to CSV, Excel, JSON, Markdown, or PDF.
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **Body** (export by IDs):
+        ```json
+        {
+          "format": "csv",
+          "property_ids": ["prop1", "prop2"]
+        }
+        ```
+    *   **Body** (export by search):
+        ```json
+        {
+          "format": "pdf",
+          "search": {
+            "query": "2 bedroom apartment in Krakow",
+            "limit": 25,
+            "filters": { "city": "Krakow" },
+            "alpha": 0.7
+          }
+        }
+        ```
+    *   **Returns**: File download with `Content-Disposition: attachment`.
+
 #### Settings
 
 *   `GET /api/v1/settings/notifications`
