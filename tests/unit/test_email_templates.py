@@ -1,7 +1,6 @@
 
 import unittest
-from unittest.mock import MagicMock
-from notifications.email_templates import DigestTemplate, EmailTemplate
+from notifications.email_templates import DigestTemplate
 
 class TestDigestTemplate(unittest.TestCase):
     def test_render_expert_section(self):

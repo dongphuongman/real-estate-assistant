@@ -62,9 +62,7 @@ from notifications import (
     NotificationPreferencesManager,
     TestEmailTemplate,
 )
-from notifications.notification_preferences import DigestScheduler
 from streaming import StreamHandler
-from ui.comparison_viz import display_comparison_ui
 from ui.dev_dashboard import render_dev_dashboard
 from ui.geo_viz import _get_city_coordinates, create_historical_trends_map
 from utils import (
@@ -81,6 +79,8 @@ from utils.api_key_validator import APIKeyValidator
 from utils.ollama_detector import OllamaDetector
 from vector_store.chroma_store import get_vector_store
 from vector_store.reranker import create_reranker
+from notifications.scheduler import NotificationScheduler
+from ui.comparison_dashboard import display_comparison_dashboard
 
 # LangChain imports
 
@@ -270,7 +270,7 @@ def render_sidebar():
                 st.session_state.user_email = new_email
                 # Update prefs if manager exists
                 if st.session_state.notification_prefs_manager:
-                    prefs = st.session_state.notification_prefs_manager.get_preferences(new_email)
+                    st.session_state.notification_prefs_manager.get_preferences(new_email)
                     # We might want to auto-save or wait for explicit save
             
             if st.session_state.user_email:

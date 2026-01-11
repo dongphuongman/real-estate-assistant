@@ -9,17 +9,15 @@ Handles:
 
 import logging
 import threading
-import time
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
-from data.schemas import Property, PropertyCollection
+from data.schemas import PropertyCollection
 from notifications.alert_manager import AlertManager, Alert, AlertType
 from notifications.email_service import EmailService
 from notifications.notification_preferences import (
     NotificationPreferencesManager, 
     AlertFrequency, 
-    DigestDay, 
     NotificationPreferences
 )
 from notifications.notification_history import (
@@ -29,7 +27,7 @@ from notifications.notification_history import (
 )
 from notifications.digest_generator import DigestGenerator
 from utils.saved_searches import SavedSearchManager
-from utils.property_cache import load_collection, load_previous_collection, CACHE_FILE
+from utils.property_cache import load_collection, load_previous_collection
 from analytics import MarketInsights
 from vector_store.chroma_store import ChromaPropertyStore
 
@@ -117,7 +115,6 @@ class NotificationScheduler:
             stats["queued_alerts"] += instant_stats["queued"]
             
             # 3. Process Pending/Queued Alerts (if quiet hours ended)
-            am = AlertManager(email_service=self._email_service, storage_path=self._storage_path_alerts)
             # We should only process if we are NOT in quiet hours for the user.
             # But process_pending_alerts() in AlertManager is global.
             # This is a limitation. Ideally, AlertManager.process_pending_alerts() should take a callback 
@@ -234,13 +231,12 @@ class NotificationScheduler:
         """Build digest data using DigestGenerator logic."""
         # Load fresh data
         current = load_collection()
-        previous = load_previous_collection()
+        load_previous_collection()
         
         # We need a vector store for DigestGenerator
         # If not provided, we might have limited functionality
         # For now, we mock or skip parts requiring vector store if missing
         
-        am = AlertManager(email_service=self._email_service, storage_path=self._storage_path_alerts)
         market_insights = MarketInsights(current)
         
         # We need to construct a DigestGenerator instance

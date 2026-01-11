@@ -410,7 +410,9 @@ class DigestTemplate(EmailTemplate):
 
                 location = f"{city}{f' — {district}' if district else ''}"
                 headline = title if title else location
-                subline_bits = [meta] if meta else []
+                subline_bits = [location]
+                if meta:
+                    subline_bits.append(meta)
                 subline_bits.append(f"{rooms} rooms • {baths} baths")
                 if area != "—":
                     subline_bits.append(f"{area} m²")
@@ -596,7 +598,7 @@ class DigestTemplate(EmailTemplate):
             if city_indices or yoy_up or yoy_down or market_table:
                 content += """
 <div style="margin: 30px 0; padding-top: 10px; border-top: 1px solid {border};">
-    <h2 style="color: {primary}; margin-top: 0;">🧠 Expert Market Insights</h2>
+    <h2 style="color: {primary}; margin-top: 0;">🧠 Expert Digest — Expert Market Insights</h2>
 </div>
 """.format(
                     border=EmailTemplate.COLORS["border"],

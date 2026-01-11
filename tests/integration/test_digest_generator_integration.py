@@ -3,8 +3,7 @@ Integration tests for DigestGenerator and AlertManager workflow.
 """
 
 import pytest
-from unittest.mock import MagicMock, patch
-from datetime import datetime
+from unittest.mock import MagicMock
 
 from notifications.digest_generator import DigestGenerator
 from notifications.alert_manager import AlertManager

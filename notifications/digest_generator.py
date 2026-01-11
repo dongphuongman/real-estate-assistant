@@ -5,14 +5,12 @@ This module is responsible for gathering data from various sources (saved search
 market analytics, property store) to construct the payload for digest emails.
 """
 
-from typing import Any, Dict, List, Optional
-from datetime import datetime, timedelta
+from typing import Any, Dict, List
 import logging
 
 from utils.saved_searches import SavedSearch, UserPreferences
 from analytics.market_insights import MarketInsights
 from vector_store.chroma_store import ChromaPropertyStore
-from data.schemas import Property
 
 logger = logging.getLogger(__name__)
 

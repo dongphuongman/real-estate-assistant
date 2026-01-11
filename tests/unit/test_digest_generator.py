@@ -3,8 +3,7 @@ Unit tests for DigestGenerator.
 """
 
 import unittest
-from unittest.mock import MagicMock, patch
-from datetime import datetime
+from unittest.mock import MagicMock
 
 from notifications.digest_generator import DigestGenerator
 from utils.saved_searches import SavedSearch, UserPreferences

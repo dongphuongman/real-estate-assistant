@@ -1,13 +1,11 @@
 
 import pytest
-from unittest.mock import MagicMock, patch, ANY
-from datetime import datetime, time, timedelta
-import threading
+from unittest.mock import MagicMock, patch
+from datetime import datetime
 
 from notifications.scheduler import NotificationScheduler
-from notifications.alert_manager import AlertManager, AlertType, Alert
-from notifications.notification_preferences import NotificationPreferences, AlertFrequency, DigestDay
-from notifications.notification_history import NotificationType
+from notifications.alert_manager import AlertType
+from notifications.notification_preferences import NotificationPreferences, AlertFrequency
 from data.schemas import Property, PropertyCollection
 
 @pytest.fixture

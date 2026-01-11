@@ -11,7 +11,7 @@ Handles:
 import logging
 from typing import List, Dict, Any, Optional, Set
 from datetime import datetime
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from enum import Enum
 import json
 from pathlib import Path
