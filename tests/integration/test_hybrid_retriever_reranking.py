@@ -1,9 +1,9 @@
 
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from langchain_core.documents import Document
 
-from vector_store.hybrid_retriever import create_retriever, HybridPropertyRetriever, AdvancedPropertyRetriever
+from vector_store.hybrid_retriever import create_retriever
 from vector_store.chroma_store import ChromaPropertyStore
 from vector_store.reranker import StrategicReranker
 
@@ -87,7 +87,7 @@ def test_advanced_retriever_with_reranker_and_filters(mock_vector_store, mock_re
         reranker=mock_reranker
     )
     
-    results = retriever.get_relevant_documents("query")
+    retriever.get_relevant_documents("query")
     
     # Verify reranker called with only 2 docs (doc1, doc3)
     mock_reranker.rerank_with_strategy.assert_called_once()

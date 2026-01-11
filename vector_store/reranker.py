@@ -8,7 +8,6 @@ just vector similarity.
 
 from typing import Any, Dict, List, Tuple, Optional, Set, Union
 from langchain_core.documents import Document
-import re
 import logging
 
 from data.schemas import Property
@@ -139,7 +138,6 @@ class PropertyReranker:
 
     def _calculate_metadata_boost(self, doc: Document, preferences: Dict[str, Any]) -> float:
         """Calculate boost based on user preferences matching metadata."""
-        score = 0.0
         metadata = doc.metadata
         total_prefs = 0
         matches = 0
@@ -245,10 +243,10 @@ class StrategicReranker(PropertyReranker):
     """
     
     def __init__(
-        self, 
-        valuation_model=None,
-        **kwargs
-    ):
+        self,
+        valuation_model: Any = None,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(**kwargs)
         self.valuation_model = valuation_model
         
@@ -307,16 +305,18 @@ class StrategicReranker(PropertyReranker):
                 
                 # Simple heuristic boosts if no model (or if model failed)
                 if metadata.get("price") and metadata.get("area_sqm"):
-                    try:
-                        price = float(metadata.get("price"))
-                        area = float(metadata.get("area_sqm"))
-                        if area > 0:
-                            pp_sqm = price / area
-                            # Lower pp_sqm is better (simplified)
-                            if pp_sqm < 3000: # Arbitrary threshold
-                                strategy_boost += 0.3
-                    except (ValueError, TypeError):
-                        pass
+                    raw_price = metadata.get("price")
+                    raw_area = metadata.get("area_sqm")
+                    if raw_price is not None and raw_area is not None:
+                        try:
+                            price = float(raw_price)
+                            area = float(raw_area)
+                            if area > 0:
+                                pp_sqm = price / area
+                                if pp_sqm < 3000:
+                                    strategy_boost += 0.3
+                        except (ValueError, TypeError):
+                            pass
                         
             elif strategy == "family":
                 # Boost rooms, garden, area, parking

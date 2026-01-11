@@ -7,10 +7,9 @@ and calculations.
 
 import math
 import statistics
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from pydantic import BaseModel, Field, PrivateAttr
 from langchain.tools import BaseTool
-from langchain_core.documents import Document
 
 # We use Any for vector_store to avoid circular imports/tight coupling
 # expected type: vector_store.chroma_store.ChromaPropertyStore
@@ -163,7 +162,7 @@ class PropertyComparisonTool(BaseTool):
     
     _vector_store: Any = PrivateAttr()
 
-    def __init__(self, vector_store: Any, **kwargs):
+    def __init__(self, vector_store: Any = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._vector_store = vector_store
 
@@ -175,6 +174,13 @@ class PropertyComparisonTool(BaseTool):
             property_ids: Comma-separated list of property IDs
         """
         try:
+            if self._vector_store is None:
+                return (
+                    "Property Comparison:\n"
+                    "Provide a comma-separated list of property IDs to compare.\n"
+                    "Comparison includes price, area, rooms, and key features."
+                )
+
             # Parse IDs
             ids = [pid.strip() for pid in property_ids.split(",") if pid.strip()]
             
@@ -250,7 +256,7 @@ class PriceAnalysisTool(BaseTool):
     
     _vector_store: Any = PrivateAttr()
 
-    def __init__(self, vector_store: Any, **kwargs):
+    def __init__(self, vector_store: Any = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._vector_store = vector_store
 
@@ -262,6 +268,16 @@ class PriceAnalysisTool(BaseTool):
             query: Search query
         """
         try:
+            if self._vector_store is None:
+                return (
+                    f"Price Analysis for '{query}':\n"
+                    "- Average: N/A\n"
+                    "- Median: N/A\n"
+                    "- Min: N/A\n"
+                    "- Max: N/A\n"
+                    "Provide a data source to compute statistics."
+                )
+
             # Search for properties (fetch more for stats)
             results = self._vector_store.search(query, k=20)
             
@@ -271,17 +287,25 @@ class PriceAnalysisTool(BaseTool):
             docs = [doc for doc, _ in results]
             
             # Extract prices
-            prices = [
-                float(d.metadata.get("price")) 
-                for d in docs 
-                if d.metadata.get("price") is not None
-            ]
-            
-            sqm_prices = [
-                float(d.metadata.get("price_per_sqm")) 
-                for d in docs 
-                if d.metadata.get("price_per_sqm") is not None
-            ]
+            prices: List[float] = []
+            for d in docs:
+                raw_price = d.metadata.get("price")
+                if raw_price is None:
+                    continue
+                try:
+                    prices.append(float(raw_price))
+                except (TypeError, ValueError):
+                    continue
+
+            sqm_prices: List[float] = []
+            for d in docs:
+                raw_ppsqm = d.metadata.get("price_per_sqm")
+                if raw_ppsqm is None:
+                    continue
+                try:
+                    sqm_prices.append(float(raw_ppsqm))
+                except (TypeError, ValueError):
+                    continue
             
             if not prices:
                 return "Found properties but no price data available."
@@ -289,24 +313,24 @@ class PriceAnalysisTool(BaseTool):
             # Calculate stats
             stats_output = [f"Price Analysis for '{query}' (based on {len(prices)} listings):"]
             
-            stats_output.append(f"\nTotal Prices:")
+            stats_output.append("\nTotal Prices:")
             stats_output.append(f"- Average: ${statistics.mean(prices):,.2f}")
             stats_output.append(f"- Median: ${statistics.median(prices):,.2f}")
             stats_output.append(f"- Min: ${min(prices):,.2f}")
             stats_output.append(f"- Max: ${max(prices):,.2f}")
             
             if sqm_prices:
-                stats_output.append(f"\nPrice per m²:")
+                stats_output.append("\nPrice per m²:")
                 stats_output.append(f"- Average: ${statistics.mean(sqm_prices):,.2f}/m²")
                 stats_output.append(f"- Median: ${statistics.median(sqm_prices):,.2f}/m²")
             
             # Distribution by type
-            types = {}
+            types: Dict[str, int] = {}
             for d in docs:
                 ptype = d.metadata.get("property_type", "Unknown")
                 types[ptype] = types.get(ptype, 0) + 1
                 
-            stats_output.append(f"\nDistribution by Type:")
+            stats_output.append("\nDistribution by Type:")
             for ptype, count in types.items():
                 stats_output.append(f"- {ptype}: {count}")
                 
@@ -332,7 +356,7 @@ class LocationAnalysisTool(BaseTool):
     
     _vector_store: Any = PrivateAttr()
 
-    def __init__(self, vector_store: Any, **kwargs):
+    def __init__(self, vector_store: Any = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._vector_store = vector_store
 
@@ -344,6 +368,14 @@ class LocationAnalysisTool(BaseTool):
             property_id: Property ID
         """
         try:
+            if self._vector_store is None:
+                return (
+                    f"Location Analysis for '{property_id}':\n"
+                    "Neighborhood: N/A\n"
+                    "Proximity: N/A\n"
+                    "Provide a data source to compute distances and nearby listings."
+                )
+
             # Get property
             if hasattr(self._vector_store, "get_properties_by_ids"):
                 docs = self._vector_store.get_properties_by_ids([property_id])
@@ -397,13 +429,9 @@ def create_property_tools(vector_store: Any = None) -> List[BaseTool]:
     Returns:
         List of initialized tool instances
     """
-    tools = [MortgageCalculatorTool()]
-    
-    if vector_store:
-        tools.extend([
-            PropertyComparisonTool(vector_store=vector_store),
-            PriceAnalysisTool(vector_store=vector_store),
-            LocationAnalysisTool(vector_store=vector_store),
-        ])
-    
-    return tools
+    return [
+        MortgageCalculatorTool(),
+        PropertyComparisonTool(vector_store=vector_store),
+        PriceAnalysisTool(vector_store=vector_store),
+        LocationAnalysisTool(vector_store=vector_store),
+    ]

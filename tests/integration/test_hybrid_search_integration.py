@@ -3,7 +3,6 @@ import pytest
 from unittest.mock import MagicMock, patch
 from langchain_core.documents import Document
 from vector_store.chroma_store import ChromaPropertyStore
-from vector_store.hybrid_retriever import HybridPropertyRetriever
 
 @pytest.fixture
 def mock_vector_store_backend():

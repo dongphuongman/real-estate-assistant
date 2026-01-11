@@ -9,13 +9,13 @@ This module provides advanced retrieval capabilities by combining:
 """
 
 import logging
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Callable, Tuple
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
 
 from .chroma_store import ChromaPropertyStore
-from .reranker import StrategicReranker, PropertyReranker
+from .reranker import StrategicReranker
 
 logger = logging.getLogger(__name__)
 
@@ -114,7 +114,7 @@ class HybridPropertyRetriever(BaseRetriever):
         candidate_k = max(self.fetch_k, self.k)
 
         # Perform search
-        initial_scores = None
+        initial_scores: List[float]
         
         # Always use hybrid search if available
         # Note: MMR logic is harder to combine with hybrid scoring (BM25)
@@ -124,18 +124,24 @@ class HybridPropertyRetriever(BaseRetriever):
         
         if self.search_type == "mmr":
             # Use MMR for diversity (Vector only)
-            retriever = self.vector_store.vector_store.as_retriever(
+            retriever = self.vector_store.get_retriever(
                 search_type="mmr",
-                search_kwargs={
-                    "k": candidate_k,
-                    "fetch_k": max(self.fetch_k, candidate_k),
-                    "lambda_mult": self.lambda_mult,
-                    "filter": self.vector_store._build_chroma_filter(filters) if filters else None,
-                }
+                k=candidate_k,
+                fetch_k=max(self.fetch_k, candidate_k),
+                lambda_mult=self.lambda_mult,
+                filter=filters if filters else None,
             )
             results = retriever.get_relevant_documents(query)
-            # MMR doesn't return scores
             initial_scores = [1.0 - (i * 0.01) for i in range(len(results))]
+
+        elif self.search_type == "similarity":
+            results_with_scores = self.vector_store.search(
+                query=query,
+                k=candidate_k,
+                filter=filters if filters else None,
+            )
+            results = [doc for doc, _score in results_with_scores]
+            initial_scores = [float(score) for _doc, score in results_with_scores]
 
         else:
             # Use Hybrid Search
@@ -147,6 +153,21 @@ class HybridPropertyRetriever(BaseRetriever):
             )
             results = [doc for doc, score in results_with_scores]
             initial_scores = [score for doc, score in results_with_scores]
+
+        def apply_simple_filters(
+            docs: List[Document],
+            scores: List[float],
+            raw_filters: Dict[str, Any],
+        ) -> tuple[List[Document], List[float]]:
+            simple = {k: v for k, v in raw_filters.items() if not isinstance(v, dict)}
+            if not simple:
+                return docs, scores
+            score_map = {id(d): s for d, s in zip(docs, scores)}
+            filtered_docs = self._apply_filters(docs, simple)
+            filtered_scores = [score_map.get(id(d), 0.0) for d in filtered_docs]
+            return filtered_docs, filtered_scores
+
+        results, initial_scores = apply_simple_filters(results, initial_scores, filters)
 
         # Apply Reranking if enabled
         if self.reranker:
@@ -276,20 +297,26 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
         candidate_k = max(self.fetch_k, self.k)
 
         # Perform search
-        initial_scores = None
+        initial_scores: List[float]
         
         if self.search_type == "mmr":
-            retriever = self.vector_store.vector_store.as_retriever(
+            retriever = self.vector_store.get_retriever(
                 search_type="mmr",
-                search_kwargs={
-                    "k": candidate_k,
-                    "fetch_k": max(self.fetch_k, candidate_k),
-                    "lambda_mult": self.lambda_mult,
-                    "filter": self.vector_store._build_chroma_filter(filters) if filters else None,
-                }
+                k=candidate_k,
+                fetch_k=max(self.fetch_k, candidate_k),
+                lambda_mult=self.lambda_mult,
+                filter=filters if filters else None,
             )
             results = retriever.get_relevant_documents(query)
             initial_scores = [1.0 - (i * 0.01) for i in range(len(results))]
+        elif self.search_type == "similarity":
+            results_with_scores = self.vector_store.search(
+                query=query,
+                k=candidate_k,
+                filter=filters if filters else None,
+            )
+            results = [doc for doc, _score in results_with_scores]
+            initial_scores = [float(score) for _doc, score in results_with_scores]
         else:
             # Use Hybrid Search
             results_with_scores = self.vector_store.hybrid_search(
@@ -302,7 +329,11 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
             initial_scores = [score for doc, score in results_with_scores]
 
         # Helper to filter results and scores together
-        def apply_filtering(docs, scores, filter_func):
+        def apply_filtering(
+            docs: List[Document],
+            scores: List[float],
+            filter_func: Callable[[List[Document]], List[Document]],
+        ) -> Tuple[List[Document], List[float]]:
             if not docs:
                 return [], []
             
@@ -315,6 +346,14 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
             # Reconstruct scores
             filtered_scores = [score_map.get(id(d), 0.0) for d in filtered_docs]
             return filtered_docs, filtered_scores
+
+        simple_filters = {k: v for k, v in filters.items() if not isinstance(v, dict)}
+        if simple_filters:
+            results, initial_scores = apply_filtering(
+                results,
+                initial_scores,
+                lambda docs: self._apply_filters(docs, simple_filters),
+            )
 
         # Note: hybrid_search already applies most filters (price, rooms, etc) via Chroma
         # But AdvancedRetriever might have explicit properties set (min_price, etc) 

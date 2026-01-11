@@ -1,7 +1,6 @@
 """Unit tests for PRO filters."""
 
 import pytest
-import pandas as pd
 from datetime import datetime
 from data.schemas import Property, PropertyCollection
 from analytics.market_insights import MarketInsights

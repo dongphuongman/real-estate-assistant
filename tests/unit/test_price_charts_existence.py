@@ -1,5 +1,4 @@
 
-import pytest
 from ui.price_charts import create_price_comparison_chart
 
 def test_create_price_comparison_chart_exists():

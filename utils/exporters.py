@@ -19,7 +19,6 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 
-from data.schemas import PropertyCollection
 from analytics import MarketInsights
 
 

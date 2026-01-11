@@ -13,7 +13,7 @@ import logging
 import os
 from pathlib import Path
 import threading
-from typing import Any, Dict, List, Optional, Set, cast
+from typing import Any, Dict, List, Optional, Set, Sequence, Union, Mapping, cast
 
 import pandas as pd
 
@@ -109,7 +109,7 @@ class ChromaPropertyStore:
 
         self._documents: List[Document] = []
         # We no longer load all IDs into memory to avoid startup freeze
-        # self._doc_ids: Set[str] = set() 
+        self._doc_ids: Set[str] = set()
         self._cache_lock = threading.Lock()
         self._vector_lock = threading.Lock()
         self._indexing_event = threading.Event()
@@ -425,11 +425,31 @@ class ChromaPropertyStore:
                 # 3. Write to DB - WITH LOCK
                 with self._vector_lock:
                     if embeddings:
+                        EmbeddingVector = Union[Sequence[float], Sequence[int]]
+                        embeddings_for_chroma: List[EmbeddingVector] = []
+                        for vec in embeddings:
+                            embeddings_for_chroma.append(vec)
+
+                        MetadataValue = Union[str, int, float, bool, None]
+
+                        def _sanitize_metadata(md: Dict[str, Any]) -> Dict[str, MetadataValue]:
+                            sanitized: Dict[str, MetadataValue] = {}
+                            for key, value in md.items():
+                                if isinstance(value, (str, int, float, bool)) or value is None:
+                                    sanitized[str(key)] = value
+                                else:
+                                    sanitized[str(key)] = str(value)
+                            return sanitized
+
+                        metadatas_for_chroma: List[Mapping[str, MetadataValue]] = []
+                        for md in metadatas:
+                            metadatas_for_chroma.append(_sanitize_metadata(md))
+
                         # Direct add to collection to avoid re-embedding
                         self.vector_store._collection.add(
                             ids=batch_ids,
-                            embeddings=embeddings,
-                            metadatas=metadatas,
+                            embeddings=embeddings_for_chroma,
+                            metadatas=cast(Any, metadatas_for_chroma),
                             documents=texts
                         )
                     else:
@@ -670,6 +690,24 @@ class ChromaPropertyStore:
             {"lon": {"$lte": max_lon}}
         ]
 
+    def _build_bbox_filter(
+        self,
+        min_lat: Optional[float],
+        max_lat: Optional[float],
+        min_lon: Optional[float],
+        max_lon: Optional[float],
+    ) -> List[Dict[str, Any]]:
+        conditions: List[Dict[str, Any]] = []
+        if min_lat is not None:
+            conditions.append({"lat": {"$gte": min_lat}})
+        if max_lat is not None:
+            conditions.append({"lat": {"$lte": max_lat}})
+        if min_lon is not None:
+            conditions.append({"lon": {"$gte": min_lon}})
+        if max_lon is not None:
+            conditions.append({"lon": {"$lte": max_lon}})
+        return conditions
+
     def _haversine(self, lat1: float, lon1: float, lat2: float, lon2: float) -> float:
         """Calculate Haversine distance in km."""
         R = 6371  # Earth radius in km
@@ -690,6 +728,10 @@ class ChromaPropertyStore:
         lat: Optional[float] = None,
         lon: Optional[float] = None,
         radius_km: Optional[float] = None,
+        min_lat: Optional[float] = None,
+        max_lat: Optional[float] = None,
+        min_lon: Optional[float] = None,
+        max_lon: Optional[float] = None,
         sort_by: Optional[str] = None,
         sort_order: Optional[str] = "desc"
     ) -> List[tuple[Document, float]]:
@@ -726,6 +768,16 @@ class ChromaPropertyStore:
                     final_filter = {"$and": [final_filter] + geo_conditions}
             else:
                 final_filter = {"$and": geo_conditions}
+
+        bbox_conditions = self._build_bbox_filter(min_lat, max_lat, min_lon, max_lon)
+        if bbox_conditions:
+            if final_filter:
+                if "$and" in final_filter:
+                    final_filter["$and"].extend(bbox_conditions)
+                else:
+                    final_filter = {"$and": [final_filter] + bbox_conditions}
+            else:
+                final_filter = {"$and": bbox_conditions}
 
         # 1. Get initial results from Vector Store
         # Fetch more if sorting or geo-filtering to allow for post-processing
@@ -804,7 +856,7 @@ class ChromaPropertyStore:
         # 4. Sort and return top K
         if sort_by and sort_by != "relevance":
             reverse = (sort_order == "desc")
-            def get_sort_val(item):
+            def get_sort_val(item: tuple[Document, float]) -> float:
                 doc = item[0]
                 val = doc.metadata.get(sort_by)
                 # Handle None/Missing: put at end
@@ -814,7 +866,10 @@ class ChromaPropertyStore:
                     # If Asc (Low to High), None should be Last (High)?
                     # Let's say None is always last.
                     return float('-inf') if reverse else float('inf') 
-                return val
+                try:
+                    return float(val)
+                except (TypeError, ValueError):
+                    return float('-inf') if reverse else float('inf')
             
             combined_results.sort(key=get_sort_val, reverse=reverse)
         else:

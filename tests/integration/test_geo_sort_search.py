@@ -2,7 +2,6 @@ import pytest
 from unittest.mock import MagicMock, patch
 from langchain_core.documents import Document
 from vector_store.chroma_store import ChromaPropertyStore
-from api.models import SortField, SortOrder
 
 @pytest.fixture
 def mock_store():
@@ -22,8 +21,8 @@ class TestGeoSortSearch:
     def store_with_mocked_search(self):
         # Create a store instance with mocked internals
         # We patch the methods called in __init__ to avoid side effects
-        with patch.object(ChromaPropertyStore, '_create_embeddings', return_value=MagicMock()) as mock_create_embeddings, \
-             patch.object(ChromaPropertyStore, '_initialize_vector_store', return_value=MagicMock()) as mock_init_store:
+        with patch.object(ChromaPropertyStore, '_create_embeddings', return_value=MagicMock()), \
+             patch.object(ChromaPropertyStore, '_initialize_vector_store', return_value=MagicMock()):
             
             store = ChromaPropertyStore()
             # Mock the search method to return predefined docs
@@ -152,3 +151,27 @@ class TestGeoSortSearch:
         
         # So in both cases, it should be last. Correct.
 
+    def test_bbox_filter_is_applied_to_search_call(self, store_with_mocked_search):
+        store = store_with_mocked_search
+
+        doc1 = Document(page_content="In bbox", metadata={"id": "1", "lat": 50.5, "lon": 19.5, "price": 100000})
+        store.search.return_value = [(doc1, 0.1)]
+
+        store.hybrid_search(
+            query="apartment",
+            min_lat=50.0,
+            max_lat=51.0,
+            min_lon=19.0,
+            max_lon=20.0,
+            alpha=1.0,
+        )
+
+        call_args = store.search.call_args
+        assert call_args is not None
+        filters = call_args[1].get("filter")
+        assert filters is not None
+        assert "$and" in filters
+        assert {"lat": {"$gte": 50.0}} in filters["$and"]
+        assert {"lat": {"$lte": 51.0}} in filters["$and"]
+        assert {"lon": {"$gte": 19.0}} in filters["$and"]
+        assert {"lon": {"$lte": 20.0}} in filters["$and"]

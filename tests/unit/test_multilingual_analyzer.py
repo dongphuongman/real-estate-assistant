@@ -1,6 +1,5 @@
 """Unit tests for Multilingual Query Analyzer."""
 
-import pytest
 from agents.query_analyzer import get_query_analyzer, QueryIntent
 
 def test_multilingual_query_analyzer():
