@@ -1,4 +1,13 @@
-import { searchProperties, chatMessage, streamChatMessage } from "../api";
+import {
+  ChatResponse,
+  MortgageResult,
+} from "../types";
+import {
+  calculateMortgage,
+  chatMessage,
+  searchProperties,
+  streamChatMessage,
+} from "../api";
 import { TextEncoder, TextDecoder } from 'util';
 
 global.fetch = jest.fn();
@@ -11,7 +20,44 @@ if (typeof global.TextEncoder === 'undefined') {
 
 describe("API Client", () => {
   beforeEach(() => {
-    (global.fetch as jest.Mock).mockClear();
+    jest.resetAllMocks();
+    (global.fetch as jest.Mock) = jest.fn();
+  });
+
+  describe("calculateMortgage", () => {
+    it("calls /tools/mortgage-calculator endpoint", async () => {
+      const mockResult: MortgageResult = {
+        monthly_payment: 2500,
+        total_interest: 400000,
+        total_cost: 900000,
+        down_payment: 100000,
+        loan_amount: 400000,
+        breakdown: { principal: 1000, interest: 1500 },
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResult,
+      });
+
+      const input = {
+        property_price: 500000,
+        down_payment_percent: 20,
+        interest_rate: 4.5,
+        loan_years: 30,
+      };
+
+      const result = await calculateMortgage(input);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/tools/mortgage-calculator"),
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify(input),
+        })
+      );
+      expect(result).toEqual(mockResult);
+    });
   });
 
   describe("searchProperties", () => {
@@ -36,6 +82,7 @@ describe("API Client", () => {
         (global.fetch as jest.Mock).mockResolvedValueOnce({
             ok: false,
             statusText: "Bad Request",
+            text: async () => JSON.stringify({ detail: "Invalid query" }),
             json: async () => ({ detail: "Invalid query" }),
         });
 
@@ -46,10 +93,22 @@ describe("API Client", () => {
         (global.fetch as jest.Mock).mockResolvedValueOnce({
             ok: false,
             statusText: "Server Error",
+            text: async () => "Server Error",
             json: async () => { throw new Error() },
         });
 
-        await expect(searchProperties({ query: "" })).rejects.toThrow("API Error: Server Error");
+        await expect(searchProperties({ query: "" })).rejects.toThrow("Server Error");
+    });
+
+    it("throws fallback error if text is empty", async () => {
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
+            ok: false,
+            statusText: "Server Error",
+            text: async () => "",
+            json: async () => { throw new Error() },
+        });
+
+        await expect(searchProperties({ query: "" })).rejects.toThrow("API request failed");
     });
   });
 

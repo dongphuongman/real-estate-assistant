@@ -62,3 +62,29 @@ You can export property listings and search results for offline analysis or shar
 2. Click the **Export** button in the sidebar or results view.
 3. Select your desired format (e.g., "PDF Report").
 4. The file will be generated and downloaded automatically.
+
+## Chat Interface
+
+The AI-powered chat interface allows you to search for properties using natural language.
+
+### How to Use
+1. Navigate to the **Chat** tab.
+2. Type your request (e.g., "Find me a 2-bedroom apartment in Warsaw under 3000 PLN").
+3. The AI will analyze your request, search the database, and present the best matches.
+4. You can ask follow-up questions or refine your criteria conversationally.
+
+## Financial Tools
+
+### Mortgage Calculator
+Plan your budget effectively with our integrated Mortgage Calculator.
+
+**Features**:
+- **Monthly Payment**: Calculate your estimated monthly mortgage payment.
+- **Total Interest**: See how much interest you'll pay over the life of the loan.
+- **Cost Breakdown**: Visualize the split between principal and interest.
+
+**How to Use**:
+1. Navigate to the **Analytics & Tools** tab.
+2. Scroll to the **Mortgage Calculator** section.
+3. Enter the **Property Price**, **Down Payment**, **Interest Rate**, and **Loan Term**.
+4. Click **Calculate** to view detailed results.

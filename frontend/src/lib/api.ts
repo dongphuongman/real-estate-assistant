@@ -1,14 +1,29 @@
-import { SearchRequest, SearchResponse, ChatRequest, ChatResponse } from "./types";
+import {
+  ChatRequest,
+  ChatResponse,
+  MortgageInput,
+  MortgageResult,
+  SearchRequest,
+  SearchResponse,
+} from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-// Helper to handle API errors
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || `API Error: ${response.statusText}`);
+    const error = await response.text();
+    throw new Error(error || "API request failed");
   }
   return response.json();
+}
+
+export async function calculateMortgage(input: MortgageInput): Promise<MortgageResult> {
+  const response = await fetch(`${API_URL}/tools/mortgage-calculator`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  return handleResponse<MortgageResult>(response);
 }
 
 export async function searchProperties(request: SearchRequest): Promise<SearchResponse> {

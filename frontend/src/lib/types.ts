@@ -70,3 +70,19 @@ export interface ChatResponse {
   }>;
   session_id?: string;
 }
+
+export interface MortgageInput {
+  property_price: number;
+  down_payment_percent?: number;
+  interest_rate?: number;
+  loan_years?: number;
+}
+
+export interface MortgageResult {
+  monthly_payment: number;
+  total_interest: number;
+  total_cost: number;
+  down_payment: number;
+  loan_amount: number;
+  breakdown: Record<string, number>;
+}
