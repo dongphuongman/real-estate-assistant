@@ -9,7 +9,7 @@ This module provides intelligent orchestration between:
 
 import logging
 import json
-from typing import Dict, Any, List, Optional, AsyncIterator
+from typing import Dict, Any, List, Optional, AsyncIterator, cast
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.tools import BaseTool
@@ -191,7 +191,7 @@ Context from property database will be provided when relevant."""),
         if filters and hasattr(self.retriever, "search_with_filters"):
             if self.verbose:
                 logger.info(f"Using hybrid search with filters: {filters}")
-            return self.retriever.search_with_filters(query, filters, k=k)
+            return cast(List[Document], self.retriever.search_with_filters(query, filters, k=k))
             
         # Fallback to standard retrieval
         if self.verbose:
@@ -445,7 +445,7 @@ Context from property database will be provided when relevant."""),
             else:
                 # RAG is enough. Yield as single chunk (simulating stream end)
                 yield json.dumps({"content": answer})
-        except Exception as e:
+        except Exception:
             # Fallback to streaming RAG
             async for chunk in self._astream_with_rag(query, analysis):
                 yield chunk

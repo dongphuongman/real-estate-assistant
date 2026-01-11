@@ -9,8 +9,8 @@ This module provides calculators for:
 - Detailed expense breakdown
 """
 
-from dataclasses import dataclass, field
-from typing import Optional, Dict, Any
+from dataclasses import dataclass
+from typing import Optional, Dict
 import logging
 
 logger = logging.getLogger(__name__)

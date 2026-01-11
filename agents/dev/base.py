@@ -3,7 +3,7 @@ Base class for Development Agents.
 """
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -48,7 +48,7 @@ class DevAgent(ABC):
             raise
 
     @abstractmethod
-    def run(self, task: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
+    def run(self, task: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Execute the agent's task."""
         pass
 
@@ -59,4 +59,7 @@ class DevAgent(ABC):
             HumanMessage(content=user_input)
         ]
         response = self.llm.invoke(messages)
-        return response.content
+        content = response.content
+        if isinstance(content, str):
+            return content
+        return str(content)

@@ -2,7 +2,7 @@
 Base classes for the Rule Engine.
 """
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 from pydantic import BaseModel
 
 class RuleViolation(BaseModel):

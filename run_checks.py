@@ -5,7 +5,6 @@ CLI Script to run Rule Engine checks on a file or directory.
 import sys
 import os
 import argparse
-from typing import List
 
 # Add project root to path
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))

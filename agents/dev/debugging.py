@@ -1,14 +1,14 @@
 """
 Debugging Agent implementation.
 """
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from .base import DevAgent
 
 class DebuggingAgent(DevAgent):
-    def __init__(self, provider: str = "openai", model_config: dict = None):
+    def __init__(self, provider: str = "openai", model_config: Optional[Dict[str, Any]] = None) -> None:
         super().__init__("Debugging", provider, model_config)
 
-    def run(self, task: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
+    def run(self, task: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         context = context or {}
         code = context.get("code", "")
         error = context.get("error", "")

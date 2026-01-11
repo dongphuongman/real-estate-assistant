@@ -5,9 +5,7 @@ This module implements a simplified hedonic pricing model that estimates
 fair market value based on property characteristics and local market statistics.
 """
 
-from typing import Dict, List, Optional, Tuple
-import numpy as np
-import pandas as pd
+from typing import Dict, List
 from dataclasses import dataclass
 
 from data.schemas import Property
@@ -86,7 +84,6 @@ class HedonicValuationModel:
         base_value = base_price_sqm * area
         
         # 2. Adjustments
-        adjustments = 0.0
         factors = {"base_value": base_value}
         
         # Amenities

@@ -1,15 +1,17 @@
 import pytest
 from unittest.mock import patch
 from models.provider_factory import ModelProviderFactory
-from config.settings import AppSettings
 
 @pytest.fixture
 def mock_settings_env():
     with patch("config.settings.os.getenv") as mock_getenv:
         def get_env(key, default=None):
-            if key == "OPENAI_API_KEY": return "sk-test-openai"
-            if key == "ANTHROPIC_API_KEY": return "sk-ant-test"
-            if key == "GOOGLE_API_KEY": return "AIza-test"
+            if key == "OPENAI_API_KEY":
+                return "sk-test-openai"
+            if key == "ANTHROPIC_API_KEY":
+                return "sk-ant-test"
+            if key == "GOOGLE_API_KEY":
+                return "AIza-test"
             return default
         mock_getenv.side_effect = get_env
         

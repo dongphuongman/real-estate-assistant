@@ -143,7 +143,6 @@ def test_display_compact_comparison(mock_st, comparison_properties):
 
 def test_get_property_pros_cons(comparison_properties):
     """Test pros and cons generation."""
-    prop1 = comparison_properties[0]  # Krakow, 850, 2 rooms
     prop2 = comparison_properties[1]  # Warsaw, 1400, 3 rooms (most expensive, most rooms)
     
     pros = _get_property_pros(prop2, comparison_properties)

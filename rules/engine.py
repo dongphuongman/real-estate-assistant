@@ -1,7 +1,7 @@
 """
 Engine to execute rules.
 """
-from typing import List, Dict, Any
+from typing import List
 from .base import BaseRule, RuleViolation
 from .definitions import LineLengthRule, NoSecretsRule, PerformanceLoopRule
 

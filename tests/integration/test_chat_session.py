@@ -4,7 +4,6 @@ from unittest.mock import MagicMock, patch
 from api.main import app
 from api.dependencies import get_llm, get_vector_store
 from api.auth import get_api_key
-from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.chat_history import BaseChatMessageHistory
 
 client = TestClient(app)
