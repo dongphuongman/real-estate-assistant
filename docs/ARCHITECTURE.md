@@ -52,6 +52,13 @@
 - Provider abstraction for multi-LLM support with consistent settings and policy controls
 - Optional voice layer (ElevenLabs) for TTS/voice UX
 
+## API Surface (V4)
+- Search: `/api/v1/search`
+- Chat: `/api/v1/chat` (SSE supported)
+- Tools: `/api/v1/tools/*` (mortgage, compare, price analysis, location analysis)
+- Settings: `/api/v1/settings/notifications`
+- Admin: `/api/v1/admin/*` (ingest/reindex/health)
+
 ## Deployment Target
 - Web: Vercel
 - API: container-based deployment (separate from web), versioned endpoints

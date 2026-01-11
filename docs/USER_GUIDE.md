@@ -89,3 +89,9 @@ Plan your budget effectively with our integrated Mortgage Calculator.
 2. Scroll to the **Mortgage Calculator** section.
 3. Enter the **Property Price**, **Down Payment**, **Interest Rate**, and **Loan Term**.
 4. Click **Calculate** to view detailed results.
+
+### API Tools (V4)
+If you are using the V4 API (FastAPI), the same tool capabilities are available over HTTP:
+- Compare properties by IDs
+- Basic price analysis for a query
+- Basic location lookup for a property ID

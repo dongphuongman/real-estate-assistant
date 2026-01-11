@@ -100,6 +100,39 @@ To configure the key, set the `API_ACCESS_KEY` environment variable (defaults to
         ```
     *   **Returns**: `MortgageResult` with monthly payment, total interest, and cost breakdown.
 
+*   `POST /api/v1/tools/compare-properties`
+    *   Compare multiple properties by ID (basic fields + summary).
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **Body**:
+        ```json
+        {
+          "property_ids": ["prop1", "prop2", "prop3"]
+        }
+        ```
+    *   **Returns**: `ComparePropertiesResponse` with `properties[]` and `summary` (min/max/difference).
+
+*   `POST /api/v1/tools/price-analysis`
+    *   Compute basic price statistics from retrieved listings.
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **Body**:
+        ```json
+        {
+          "query": "apartments in Madrid"
+        }
+        ```
+    *   **Returns**: `PriceAnalysisResponse` (count, avg/median/min/max, price/m² stats, distribution by type).
+
+*   `POST /api/v1/tools/location-analysis`
+    *   Fetch basic location information for a property by ID (city/neighborhood/coords).
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **Body**:
+        ```json
+        {
+          "property_id": "prop1"
+        }
+        ```
+    *   **Returns**: `LocationAnalysisResponse`.
+
 #### Settings
 
 *   `GET /api/v1/settings/notifications`

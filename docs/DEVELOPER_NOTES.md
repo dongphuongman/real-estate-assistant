@@ -108,6 +108,15 @@ metrics = FinancialCalculator.analyze_investment(
 print(f"CoC Return: {metrics.cash_on_cash_return}%")
 ```
 
+### Tools
+
+The V4 API exposes tool endpoints under `/api/v1/tools/*`:
+- `GET /api/v1/tools` lists available tools (name + description)
+- `POST /api/v1/tools/mortgage-calculator` returns structured `MortgageResult`
+- `POST /api/v1/tools/compare-properties` returns a minimal comparison + summary
+- `POST /api/v1/tools/price-analysis` returns price stats and distribution by type
+- `POST /api/v1/tools/location-analysis` returns basic location fields (city/coords)
+
 ---
 
 ## Analytics - Regional Market Insights

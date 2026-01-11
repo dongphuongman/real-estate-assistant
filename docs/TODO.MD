@@ -67,7 +67,7 @@
   - [DONE] Foundation: FastAPI setup, Auth middleware, Health check
   - [DONE] Search endpoint with vector store integration
   - [DONE] Chat endpoint with hybrid agent integration
-  - [DONE] Tools endpoint (if separate from chat) or specific tool execution
+  - [DONE] Tools endpoints (mortgage, compare, price analysis, location analysis)
   - [DONE] Streaming support
 - [DONE] Support hybrid retrieval (semantic + keyword) with metadata filters
 - [DONE] Support geospatial filters (radius) and sorting (price, price/m²)
