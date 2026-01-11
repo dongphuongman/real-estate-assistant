@@ -3,6 +3,7 @@ import {
   ChatResponse,
   MortgageInput,
   MortgageResult,
+  NotificationSettings,
   SearchRequest,
   SearchResponse,
 } from "./types";
@@ -15,6 +16,27 @@ async function handleResponse<T>(response: Response): Promise<T> {
     throw new Error(error || "API request failed");
   }
   return response.json();
+}
+
+export async function getNotificationSettings(): Promise<NotificationSettings> {
+  const response = await fetch(`${API_URL}/settings/notifications`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return handleResponse<NotificationSettings>(response);
+}
+
+export async function updateNotificationSettings(settings: NotificationSettings): Promise<NotificationSettings> {
+  const response = await fetch(`${API_URL}/settings/notifications`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(settings),
+  });
+  return handleResponse<NotificationSettings>(response);
 }
 
 export async function calculateMortgage(input: MortgageInput): Promise<MortgageResult> {

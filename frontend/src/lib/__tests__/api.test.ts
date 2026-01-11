@@ -1,12 +1,15 @@
 import {
   ChatResponse,
   MortgageResult,
+  NotificationSettings,
 } from "../types";
 import {
   calculateMortgage,
   chatMessage,
+  getNotificationSettings,
   searchProperties,
   streamChatMessage,
+  updateNotificationSettings,
 } from "../api";
 import { TextEncoder, TextDecoder } from 'util';
 
@@ -22,6 +25,49 @@ describe("API Client", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     (global.fetch as jest.Mock) = jest.fn();
+  });
+
+  describe("Notification Settings", () => {
+    const mockSettings: NotificationSettings = {
+      email_digest: true,
+      frequency: "weekly",
+      expert_mode: false,
+      marketing_emails: false,
+    };
+
+    it("fetches settings", async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockSettings,
+      });
+
+      const result = await getNotificationSettings();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/settings/notifications"),
+        expect.objectContaining({ method: "GET" })
+      );
+      expect(result).toEqual(mockSettings);
+    });
+
+    it("updates settings", async () => {
+      const newSettings = { ...mockSettings, frequency: "daily" as const };
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => newSettings,
+      });
+
+      const result = await updateNotificationSettings(newSettings);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/settings/notifications"),
+        expect.objectContaining({
+          method: "PUT",
+          body: JSON.stringify(newSettings),
+        })
+      );
+      expect(result).toEqual(newSettings);
+    });
   });
 
   describe("calculateMortgage", () => {

@@ -101,7 +101,8 @@
   - [DONE] Create Search Page (UI + Integration)
   - [DONE] Setup API Client & Type Definitions
   - [DONE] Create Analytics Page (Mortgage Calculator Integration)
-  - [DONE] Implement Frontend Unit & Integration Tests (≥90% coverage)
+  - [DONE] Create Settings Page (Notification Preferences)
+  - [DONE] Implement Frontend Unit & Integration Tests (Coverage ≥ 90%)
 - API (Python): endpoints, streaming, session persistence, tool execution
 - Retrieval: vector store service + indexing + geo filters + reranking
 - Analytics: indices, trends, anomaly detection, export endpoints

@@ -86,3 +86,10 @@ export interface MortgageResult {
   loan_amount: number;
   breakdown: Record<string, number>;
 }
+
+export interface NotificationSettings {
+  email_digest: boolean;
+  frequency: "daily" | "weekly";
+  expert_mode: boolean;
+  marketing_emails: boolean;
+}

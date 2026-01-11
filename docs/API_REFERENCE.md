@@ -87,6 +87,27 @@ To configure the key, set the `API_ACCESS_KEY` environment variable (defaults to
         ```
     *   **Returns**: `MortgageResult` with monthly payment, total interest, and cost breakdown.
 
+#### Settings
+
+*   `GET /api/v1/settings/notifications`
+    *   Get user notification preferences.
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **Returns**: `NotificationSettings` object.
+
+*   `PUT /api/v1/settings/notifications`
+    *   Update user notification preferences.
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **Body**:
+        ```json
+        {
+          "email_digest": true,
+          "frequency": "weekly",
+          "expert_mode": false,
+          "marketing_emails": false
+        }
+        ```
+    *   **Returns**: Updated `NotificationSettings` object.
+
 ## Analytics
 
 ### HedonicValuationModel
