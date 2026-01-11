@@ -4,6 +4,7 @@ from api.auth import get_api_key
 from api.models import HealthCheck
 from api.routers import search, chat, tools, admin, settings as settings_router, exports
 from api.dependencies import get_vector_store
+from api.observability import add_observability
 from config.settings import get_settings
 from notifications.scheduler import NotificationScheduler
 from notifications.email_service import (
@@ -29,6 +30,8 @@ app = FastAPI(
     openapi_url="/openapi.json",
 )
 
+add_observability(app, logger)
+
 # Global scheduler instance
 scheduler = None
 
@@ -43,7 +46,8 @@ async def startup_event():
     vector_store = get_vector_store()
     if not vector_store:
         logger.warning(
-            "Vector Store could not be initialized. Notifications relying on vector search will be disabled."
+            "Vector Store could not be initialized. "
+            "Notifications relying on vector search will be disabled."
         )
 
     # 2. Initialize Email Service
@@ -52,7 +56,8 @@ async def startup_event():
 
     if not email_service:
         logger.warning(
-            "No email configuration found in environment. Using dummy service (emails will not be sent)."
+            "No email configuration found in environment. "
+            "Using dummy service (emails will not be sent)."
         )
         # Create dummy service for scheduler to function without crashing
         dummy_config = EmailConfig(
@@ -83,7 +88,6 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     """Clean up resources on shutdown."""
-    global scheduler
     if scheduler:
         logger.info("Stopping Notification Scheduler...")
         scheduler.stop()

@@ -11,6 +11,11 @@ The V4 API is built with FastAPI and provides a RESTful interface for the AI Rea
 The API uses API Key authentication via the `X-API-Key` header.
 To configure the key, set the `API_ACCESS_KEY` environment variable (defaults to `dev-secret-key` for development).
 
+### Request IDs
+
+All API responses include an `X-Request-ID` header.
+You can optionally provide your own `X-Request-ID` (letters/numbers plus `._-`, up to 128 chars) to correlate client logs with server logs.
+
 ### Endpoints
 
 #### System

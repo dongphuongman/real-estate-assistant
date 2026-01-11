@@ -42,6 +42,24 @@ def test_protected_route_valid_auth():
     assert response.json()["valid"] is True
 
 
+def test_request_id_is_added_to_responses():
+    response = client.get("/health")
+    assert response.headers.get("x-request-id")
+
+
+def test_request_id_is_echoed_when_provided():
+    request_id = "test-req-123"
+    response = client.get("/health", headers={"X-Request-ID": request_id})
+    assert response.headers.get("x-request-id") == request_id
+
+
+def test_request_id_is_present_on_error_responses():
+    request_id = "test-req-err"
+    response = client.get("/api/v1/verify-auth", headers={"X-Request-ID": request_id})
+    assert response.status_code == 401
+    assert response.headers.get("x-request-id") == request_id
+
+
 def test_tools_auth_enforced():
     response = client.post("/api/v1/tools/price-analysis", json={"query": "x"})
     assert response.status_code == 401
