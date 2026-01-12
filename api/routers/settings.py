@@ -11,12 +11,11 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Settings"])
 
-DEFAULT_USER_EMAIL = "user@example.com"
 PREFS_MANAGER = NotificationPreferencesManager()
 
 
 def _resolve_user_email(user_email: str | None, x_user_email: str | None) -> str:
-    resolved = (user_email or x_user_email or DEFAULT_USER_EMAIL).strip()
+    resolved = (user_email or x_user_email or "").strip()
     if not resolved:
         raise HTTPException(status_code=400, detail="Missing user email")
     return resolved
