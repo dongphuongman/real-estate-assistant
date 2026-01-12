@@ -2,6 +2,7 @@
 
 ## V4 API
 - [DONE] Add property export endpoint (`POST /api/v1/export/properties`)
+- [DONE] Scope notification settings by user email (`X-User-Email` / `user_email`)
 
 ## Internationalization (i18n)
 - [DONE] Translate remaining non‑English strings (especially Polish) in the Notifications tab.

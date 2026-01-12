@@ -177,11 +177,13 @@ If you exceed the limit, you will receive:
 *   `GET /api/v1/settings/notifications`
     *   Get user notification preferences.
     *   **Headers**: `X-API-Key: your-api-key
+    *   **User selection**: Provide `X-User-Email: <user@example.com>` header or `?user_email=<user@example.com>` query param (query param overrides header).
     *   **Returns**: `NotificationSettings` object.
 
 *   `PUT /api/v1/settings/notifications`
     *   Update user notification preferences.
     *   **Headers**: `X-API-Key: your-api-key
+    *   **User selection**: Provide `X-User-Email: <user@example.com>` header or `?user_email=<user@example.com>` query param (query param overrides header).
     *   **Body**:
         ```json
         {

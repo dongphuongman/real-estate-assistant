@@ -77,6 +77,7 @@
 - [DONE] Support tool actions (mortgage, comparison, price analysis, location analysis)
 - [DONE] Support exports (CSV/Excel/JSON/Markdown/PDF) with reproducible inputs
 - [DONE] Support notifications pipeline (alerts, digests) with user preferences
+  - [DONE] Scope `/api/v1/settings/notifications` by user email
 - [DONE] Provide admin endpoints for ingestion/reindexing and health checks
 
 ### Platform: 10 Non-Functional Requirements
