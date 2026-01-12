@@ -3,6 +3,8 @@ from api.main import app
 from config.settings import get_settings
 from api.dependencies import get_vector_store
 from langchain_core.documents import Document
+from notifications.notification_preferences import NotificationPreferencesManager
+from unittest.mock import patch
 
 client = TestClient(app)
 
@@ -127,3 +129,57 @@ def test_tools_compare_properties_happy_path_with_stub_store():
     assert data["summary"]["price_difference"] == 50000
 
     app.dependency_overrides = {}
+
+
+def test_notification_settings_are_scoped_by_user_email(tmp_path):
+    settings = get_settings()
+    key = settings.api_access_key
+
+    prefs_manager = NotificationPreferencesManager(storage_path=str(tmp_path))
+
+    with patch("api.routers.settings.PREFS_MANAGER", prefs_manager):
+        user1_headers = {"X-API-Key": key, "X-User-Email": "user1@example.com"}
+        user2_headers = {"X-API-Key": key, "X-User-Email": "user2@example.com"}
+
+        r1 = client.put(
+            "/api/v1/settings/notifications",
+            json={
+                "email_digest": True,
+                "frequency": "daily",
+                "expert_mode": True,
+                "marketing_emails": False,
+            },
+            headers=user1_headers,
+        )
+        assert r1.status_code == 200
+
+        r2 = client.put(
+            "/api/v1/settings/notifications",
+            json={
+                "email_digest": False,
+                "frequency": "weekly",
+                "expert_mode": False,
+                "marketing_emails": True,
+            },
+            headers=user2_headers,
+        )
+        assert r2.status_code == 200
+
+        g1 = client.get("/api/v1/settings/notifications", headers=user1_headers)
+        g2 = client.get("/api/v1/settings/notifications", headers=user2_headers)
+
+        assert g1.status_code == 200
+        assert g2.status_code == 200
+
+        d1 = g1.json()
+        d2 = g2.json()
+
+        assert d1["frequency"] == "daily"
+        assert d1["email_digest"] is True
+        assert d1["expert_mode"] is True
+        assert d1["marketing_emails"] is False
+
+        assert d2["frequency"] == "weekly"
+        assert d2["email_digest"] is False
+        assert d2["expert_mode"] is False
+        assert d2["marketing_emails"] is True
