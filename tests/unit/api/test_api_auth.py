@@ -5,6 +5,7 @@ from api.observability import (
     client_id_from_api_key,
     generate_request_id,
     normalize_request_id,
+    RateLimiter,
 )
 from config.settings import AppSettings
 from unittest.mock import patch
@@ -70,3 +71,36 @@ def test_client_id_from_api_key_is_stable_and_uniqueish():
     assert a1 == a2
     assert a1 != b1
     assert len(a1) == 12
+
+
+def test_rate_limiter_allows_requests_within_window():
+    limiter = RateLimiter(max_requests=2, window_seconds=60)
+
+    allowed1, limit1, remaining1, reset1 = limiter.check("client", now=1000.0)
+    allowed2, limit2, remaining2, reset2 = limiter.check("client", now=1001.0)
+
+    assert allowed1 is True
+    assert allowed2 is True
+    assert limit1 == 2
+    assert limit2 == 2
+    assert remaining1 == 1
+    assert remaining2 == 0
+    assert reset1 >= 1
+    assert reset2 >= 1
+
+
+def test_rate_limiter_blocks_when_exceeded_and_recovers_after_window():
+    limiter = RateLimiter(max_requests=2, window_seconds=60)
+
+    limiter.check("client", now=1000.0)
+    limiter.check("client", now=1001.0)
+
+    allowed3, limit3, remaining3, reset3 = limiter.check("client", now=1002.0)
+    assert allowed3 is False
+    assert limit3 == 2
+    assert remaining3 == 0
+    assert reset3 >= 1
+
+    allowed4, _limit4, remaining4, _reset4 = limiter.check("client", now=1061.0)
+    assert allowed4 is True
+    assert remaining4 == 1

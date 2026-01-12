@@ -60,6 +60,36 @@ def test_request_id_is_present_on_error_responses():
     assert response.headers.get("x-request-id") == request_id
 
 
+def test_rate_limiting_blocks_after_threshold_and_includes_headers():
+    settings = get_settings()
+    key = settings.api_access_key
+
+    old_enabled = getattr(settings, "api_rate_limit_enabled", False)
+    old_rpm = getattr(settings, "api_rate_limit_rpm", 600)
+    settings.api_rate_limit_enabled = True
+    settings.api_rate_limit_rpm = 2
+
+    try:
+        app.state.rate_limiter.reset()
+
+        r1 = client.get("/api/v1/verify-auth", headers={"X-API-Key": key})
+        r2 = client.get("/api/v1/verify-auth", headers={"X-API-Key": key})
+        r3 = client.get("/api/v1/verify-auth", headers={"X-API-Key": key})
+
+        assert r1.status_code == 200
+        assert r2.status_code == 200
+        assert r3.status_code == 429
+        assert r3.headers.get("retry-after")
+        assert r3.headers.get("x-request-id")
+        assert r3.headers.get("x-ratelimit-limit") == "2"
+        assert r3.headers.get("x-ratelimit-remaining") == "0"
+        assert r3.headers.get("x-ratelimit-reset")
+    finally:
+        settings.api_rate_limit_enabled = old_enabled
+        settings.api_rate_limit_rpm = old_rpm
+        app.state.rate_limiter.reset()
+
+
 def test_tools_auth_enforced():
     response = client.post("/api/v1/tools/price-analysis", json={"query": "x"})
     assert response.status_code == 401
