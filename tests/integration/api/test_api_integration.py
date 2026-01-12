@@ -183,3 +183,30 @@ def test_notification_settings_are_scoped_by_user_email(tmp_path):
         assert d2["email_digest"] is False
         assert d2["expert_mode"] is False
         assert d2["marketing_emails"] is True
+
+
+def test_notification_settings_requires_user_email(tmp_path):
+    settings = get_settings()
+    key = settings.api_access_key
+
+    prefs_manager = NotificationPreferencesManager(storage_path=str(tmp_path))
+
+    with patch("api.routers.settings.PREFS_MANAGER", prefs_manager):
+        headers = {"X-API-Key": key}
+
+        r_get = client.get("/api/v1/settings/notifications", headers=headers)
+        assert r_get.status_code == 400
+        assert r_get.json()["detail"] == "Missing user email"
+
+        r_put = client.put(
+            "/api/v1/settings/notifications",
+            json={
+                "email_digest": True,
+                "frequency": "weekly",
+                "expert_mode": False,
+                "marketing_emails": False,
+            },
+            headers=headers,
+        )
+        assert r_put.status_code == 400
+        assert r_put.json()["detail"] == "Missing user email"

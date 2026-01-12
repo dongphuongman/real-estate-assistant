@@ -11,6 +11,7 @@ client = TestClient(app)
 
 # Mock API Key
 HEADERS = {"X-API-Key": "test-key", "X-User-Email": "u1@example.com"}
+HEADERS_NO_USER = {"X-API-Key": "test-key"}
 
 
 @patch("api.routers.settings.PREFS_MANAGER")
@@ -105,3 +106,42 @@ def test_settings_query_user_email_overrides_header(
 
     assert response.status_code == 200
     mock_prefs_manager.get_preferences.assert_called_once_with("u2@example.com")
+
+
+@patch("api.routers.settings.PREFS_MANAGER")
+@patch("api.auth.get_settings")
+def test_get_settings_missing_user_email_returns_400(mock_get_settings, mock_prefs_manager):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+
+    response = client.get("/api/v1/settings/notifications", headers=HEADERS_NO_USER)
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Missing user email"
+    assert not mock_prefs_manager.get_preferences.called
+
+
+@patch("api.routers.settings.PREFS_MANAGER")
+@patch("api.auth.get_settings")
+def test_update_settings_missing_user_email_returns_400(
+    mock_get_settings, mock_prefs_manager
+):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+
+    response = client.put(
+        "/api/v1/settings/notifications",
+        json={
+            "email_digest": True,
+            "frequency": "daily",
+            "expert_mode": False,
+            "marketing_emails": False,
+        },
+        headers=HEADERS_NO_USER,
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Missing user email"
+    assert not mock_prefs_manager.get_preferences.called
