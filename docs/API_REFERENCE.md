@@ -16,6 +16,14 @@ To configure the key, set the `API_ACCESS_KEY` environment variable (defaults to
 All API responses include an `X-Request-ID` header.
 You can optionally provide your own `X-Request-ID` (letters/numbers plus `._-`, up to 128 chars) to correlate client logs with server logs.
 
+### Rate Limiting
+
+The API enforces per-client request rate limits on `/api/v1/*` endpoints.
+
+If you exceed the limit, you will receive:
+- **Status**: `429 Too Many Requests`
+- **Headers**: `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
+
 ### Endpoints
 
 #### System

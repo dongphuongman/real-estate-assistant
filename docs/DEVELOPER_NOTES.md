@@ -94,6 +94,11 @@ metrics = FinancialCalculator.analyze_investment(
 
 ## V4 API Notes
 
+### General
+- All API responses include an `X-Request-ID` header for log correlation.
+- Rate limiting is enforced per client (API key) with defaults: 100 requests per 60 seconds.
+- Rate limit headers returned: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`.
+
 ### Search
 
 `POST /api/v1/search` supports:
