@@ -44,6 +44,13 @@ class AppSettings(BaseModel):
     api_access_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("API_ACCESS_KEY", "dev-secret-key")
     )
+    api_rate_limit_enabled: bool = Field(
+        default_factory=lambda: os.getenv("API_RATE_LIMIT_ENABLED", "true").strip().lower()
+        in {"1", "true", "yes", "on"}
+    )
+    api_rate_limit_rpm: int = Field(
+        default_factory=lambda: int(os.getenv("API_RATE_LIMIT_RPM", "600"))
+    )
 
     # Model Defaults
     default_provider: str = Field(default="openai", description="Default LLM provider")
