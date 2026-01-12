@@ -2290,19 +2290,20 @@ def render_notifications_tab():
     with st.expander(
         get_text("configure_email", lang), expanded=st.session_state.email_service is None
     ):
-        provider_options = {
-            "Gmail": EmailProvider.GMAIL,
-            "Outlook": EmailProvider.OUTLOOK,
-            "Custom SMTP": EmailProvider.CUSTOM,
-        }
+        provider_options = [
+            (get_text("gmail", lang), EmailProvider.GMAIL),
+            (get_text("outlook", lang), EmailProvider.OUTLOOK),
+            (get_text("custom_smtp", lang), EmailProvider.CUSTOM),
+        ]
+        provider_by_label = dict(provider_options)
 
         selected_provider = st.selectbox(
             get_text("email_provider", lang),
-            options=list(provider_options.keys()),
+            options=[label for label, _ in provider_options],
             help=get_text("email_provider", lang),
         )
 
-        provider = provider_options[selected_provider]
+        provider = provider_by_label[selected_provider]
 
         col1, col2 = st.columns(2)
         with col1:
@@ -2372,8 +2373,8 @@ def render_notifications_tab():
                     st.success(get_text("test_email_success", lang))
                 else:
                     st.error(get_text("test_email_error", lang))
-            except Exception as e:
-                st.error(f"❌ Error sending test email: {str(e)}")
+            except Exception:
+                st.error(get_text("test_email_error", lang))
 
     st.divider()
 
@@ -2385,19 +2386,17 @@ def render_notifications_tab():
         prefs = prefs_manager.get_preferences(user_email)
 
         # Enable/Disable notifications
-        enabled = st.checkbox(
-            "Enable Notifications", value=prefs.enabled, help="Turn notifications on or off"
-        )
+        enabled = st.checkbox(get_text("enable_notifications", lang), value=prefs.enabled)
 
         col1, col2 = st.columns(2)
 
         with col1:
             # Alert frequency
             frequency_options = {
-                "Instant": AlertFrequency.INSTANT,
-                "Hourly": AlertFrequency.HOURLY,
-                "Daily Digest": AlertFrequency.DAILY,
-                "Weekly Digest": AlertFrequency.WEEKLY,
+                get_text("instant", lang): AlertFrequency.INSTANT,
+                get_text("hourly", lang): AlertFrequency.HOURLY,
+                get_text("daily_digest", lang): AlertFrequency.DAILY,
+                get_text("weekly_digest", lang): AlertFrequency.WEEKLY,
             }
 
             current_freq = next(
@@ -2405,40 +2404,42 @@ def render_notifications_tab():
             )
 
             selected_frequency = st.selectbox(
-                "Alert Frequency",
+                get_text("alert_frequency", lang),
                 options=list(frequency_options.keys()),
                 index=list(frequency_options.keys()).index(current_freq),
-                help="How often to receive notifications",
+                help=get_text("frequency_help", lang),
             )
 
             # Price drop threshold
             price_threshold = st.slider(
-                "Price Drop Threshold (%)",
+                get_text("price_drop_threshold", lang),
                 min_value=1.0,
                 max_value=20.0,
                 value=prefs.price_drop_threshold,
                 step=0.5,
-                help="Minimum price drop percentage to trigger alert",
+                help=get_text("threshold_help", lang),
             )
 
             # Max alerts per day
             max_alerts = st.number_input(
-                "Max Alerts Per Day",
+                get_text("max_alerts_per_day", lang),
                 min_value=1,
                 max_value=100,
                 value=prefs.max_alerts_per_day,
-                help="Maximum number of alerts to receive per day",
+                help=get_text("alerts_limit_help", lang),
             )
 
         with col2:
             # Quiet hours
-            st.write("**Quiet Hours** (No alerts during these times)")
+            st.write(
+                f"**{get_text('quiet_hours', lang)}** ({get_text('quiet_hours_desc', lang)})"
+            )
             quiet_start = st.time_input(
-                "Quiet Hours Start",
+                get_text("quiet_hours_start", lang),
                 value=datetime.strptime(prefs.quiet_hours_start or "22:00", "%H:%M").time(),
             )
             quiet_end = st.time_input(
-                "Quiet Hours End",
+                get_text("quiet_hours_end", lang),
                 value=datetime.strptime(prefs.quiet_hours_end or "08:00", "%H:%M").time(),
             )
 
@@ -2448,63 +2449,49 @@ def render_notifications_tab():
                 AlertFrequency.WEEKLY,
             ]:
                 digest_time = st.time_input(
-                    "Digest Send Time",
+                    get_text("digest_send_time", lang),
                     value=datetime.strptime(prefs.daily_digest_time, "%H:%M").time(),
                 )
 
                 if frequency_options[selected_frequency] == AlertFrequency.WEEKLY:
+                    day_options = [(get_text(day.value, lang), day) for day in DigestDay]
+                    day_by_label = dict(day_options)
                     digest_day = st.selectbox(
-                        "Weekly Digest Day",
-                        options=[
-                            "Monday",
-                            "Tuesday",
-                            "Wednesday",
-                            "Thursday",
-                            "Friday",
-                            "Saturday",
-                            "Sunday",
-                        ],
-                        index=[
-                            "monday",
-                            "tuesday",
-                            "wednesday",
-                            "thursday",
-                            "friday",
-                            "saturday",
-                            "sunday",
-                        ].index(prefs.weekly_digest_day.value),
+                        get_text("weekly_digest_day", lang),
+                        options=[label for label, _ in day_options],
+                        index=[day.value for day in DigestDay].index(prefs.weekly_digest_day.value),
                     )
 
         # Alert type toggles
-        st.write("**Alert Types**")
+        st.write(f"**{get_text('alert_types', lang)}**")
         alert_col1, alert_col2 = st.columns(2)
 
         with alert_col1:
             enable_price_drops = st.checkbox(
-                "💰 Price Drop Alerts",
+                get_text("price_drop_alerts", lang),
                 value="price_drop" in [a.value for a in prefs.enabled_alerts],
-                help="Get notified when property prices drop",
+                help=get_text("price_drop_help", lang),
             )
             enable_new_properties = st.checkbox(
-                "🏠 New Property Alerts",
+                get_text("new_property_alerts", lang),
                 value="new_property" in [a.value for a in prefs.enabled_alerts],
-                help="Get notified about new properties",
+                help=get_text("new_property_help", lang),
             )
 
         with alert_col2:
             enable_saved_searches = st.checkbox(
-                "🔍 Saved Search Matches",
+                get_text("saved_search_matches", lang),
                 value="saved_search_match" in [a.value for a in prefs.enabled_alerts],
-                help="Get notified when properties match your saved searches",
+                help=get_text("saved_search_help", lang),
             )
             enable_market_updates = st.checkbox(
-                "📈 Market Updates",
+                get_text("market_updates", lang),
                 value="market_update" in [a.value for a in prefs.enabled_alerts],
-                help="Get market insights and trends",
+                help=get_text("market_updates_help", lang),
             )
 
         # Save preferences button
-        if st.button("💾 Save Notification Preferences", type="primary"):
+        if st.button(get_text("save_preferences", lang), type="primary"):
             try:
                 from notifications.notification_preferences import AlertType as PrefAlertType
 
@@ -2539,35 +2526,26 @@ def render_notifications_tab():
                         user_email, daily_digest_time=digest_time.strftime("%H:%M")
                     )
 
-                    if frequency_options[selected_frequency] == AlertFrequency.WEEKLY:
-                        day_map = {
-                            "Monday": DigestDay.MONDAY,
-                            "Tuesday": DigestDay.TUESDAY,
-                            "Wednesday": DigestDay.WEDNESDAY,
-                            "Thursday": DigestDay.THURSDAY,
-                            "Friday": DigestDay.FRIDAY,
-                            "Saturday": DigestDay.SATURDAY,
-                            "Sunday": DigestDay.SUNDAY,
-                        }
-                        prefs_manager.update_preferences(
-                            user_email, weekly_digest_day=day_map[digest_day]
-                        )
+                if frequency_options[selected_frequency] == AlertFrequency.WEEKLY:
+                    prefs_manager.update_preferences(
+                        user_email, weekly_digest_day=day_by_label[digest_day]
+                    )
 
-                st.success("✅ Notification preferences saved successfully!")
-            except Exception as e:
-                st.error(f"❌ Error saving preferences: {str(e)}")
+                st.success(get_text("preferences_saved", lang))
+            except Exception:
+                st.error(get_text("preferences_error", lang))
 
     st.divider()
 
     # Notification History
     if user_email:
-        st.subheader("📊 Notification History")
+        st.subheader(f"📊 {get_text('notification_history', lang)}")
 
         history = st.session_state.notification_history
         user_notifications = history.get_user_notifications(user_email, limit=20)
 
         if user_notifications:
-            st.write("**Recent Notifications** (Last 20)")
+            st.write(f"**{get_text('recent_notifications', lang)}** ({get_text('last_20', lang)})")
 
             for notification in user_notifications:
                 with st.expander(
@@ -2575,34 +2553,38 @@ def render_notifications_tab():
                 ):
                     col1, col2 = st.columns(2)
                     with col1:
-                        st.write(f"**Type:** {notification.notification_type.value}")
-                        st.write(f"**Status:** {notification.status.value}")
+                        st.write(
+                            f"**{get_text('notification_type', lang)}:** {notification.notification_type.value}"
+                        )
+                        st.write(f"**{get_text('status', lang)}:** {notification.status.value}")
                     with col2:
                         if notification.sent_at:
-                            st.write(f"**Sent:** {notification.sent_at.strftime('%Y-%m-%d %H:%M')}")
+                            st.write(
+                                f"**{get_text('sent', lang)}:** {notification.sent_at.strftime('%Y-%m-%d %H:%M')}"
+                            )
                         if notification.delivered_at:
                             st.write(
-                                f"**Delivered:** {notification.delivered_at.strftime('%Y-%m-%d %H:%M')}"
+                                f"**{get_text('delivered', lang)}:** {notification.delivered_at.strftime('%Y-%m-%d %H:%M')}"
                             )
 
                     if notification.error_message:
-                        st.error(f"Error: {notification.error_message}")
+                        st.error(f"{get_text('error', lang)}: {notification.error_message}")
 
             # Statistics
             stats = history.get_user_statistics(user_email)
 
             st.divider()
-            st.write("**Your Notification Statistics**")
+            st.write(f"**{get_text('notification_stats', lang)}**")
 
             col1, col2, col3, col4 = st.columns(4)
             with col1:
-                st.metric("Total Sent", stats["total_sent"])
+                st.metric(get_text("total_sent", lang), stats["total_sent"])
             with col2:
-                st.metric("Delivered", stats["total_delivered"])
+                st.metric(get_text("delivered", lang), stats["total_delivered"])
             with col3:
-                st.metric("Delivery Rate", f"{stats['delivery_rate']:.1f}%")
+                st.metric(get_text("delivery_rate", lang), f"{stats['delivery_rate']:.1f}%")
             with col4:
-                st.metric("Failed", stats["total_failed"])
+                st.metric(get_text("failed", lang), stats["total_failed"])
         else:
             st.info(get_text("no_notifications_yet", lang))
 

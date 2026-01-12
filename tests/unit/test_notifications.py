@@ -798,3 +798,65 @@ class TestNotificationHistory:
 
         assert history.get_notification(old_record.id) is None
         assert history.get_notification(recent_record.id) is not None
+
+
+def test_i18n_contains_notification_ui_keys():
+    from i18n.translations import TRANSLATIONS
+
+    required_keys = {
+        "gmail",
+        "outlook",
+        "custom_smtp",
+        "enable_notifications",
+        "instant",
+        "hourly",
+        "daily_digest",
+        "weekly_digest",
+        "alert_frequency",
+        "frequency_help",
+        "price_drop_threshold",
+        "threshold_help",
+        "max_alerts_per_day",
+        "alerts_limit_help",
+        "quiet_hours",
+        "quiet_hours_desc",
+        "quiet_hours_start",
+        "quiet_hours_end",
+        "digest_send_time",
+        "weekly_digest_day",
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
+        "alert_types",
+        "price_drop_alerts",
+        "price_drop_help",
+        "new_property_alerts",
+        "new_property_help",
+        "saved_search_matches",
+        "saved_search_help",
+        "market_updates",
+        "market_updates_help",
+        "save_preferences",
+        "preferences_saved",
+        "preferences_error",
+        "notification_history",
+        "recent_notifications",
+        "last_20",
+        "notification_type",
+        "status",
+        "sent",
+        "delivered",
+        "error",
+        "notification_stats",
+        "total_sent",
+        "delivery_rate",
+        "failed",
+    }
+
+    for lang, strings in TRANSLATIONS.items():
+        missing = sorted(k for k in required_keys if k not in strings)
+        assert missing == [], f"Missing i18n keys for {lang}: {missing}"
