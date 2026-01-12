@@ -4,6 +4,8 @@
 
 The AI Real Estate Assistant helps you stay on top of the market with personalized email digests. Whether you're a homebuyer looking for your dream house or an investor monitoring market trends, our digests provide the insights you need.
 
+All notification settings and labels follow your selected app language.
+
 ### Consumer Digest
 Designed for homebuyers and renters, the Consumer Digest highlights:
 - **New Matches**: Properties matching your saved searches that were added since your last update.

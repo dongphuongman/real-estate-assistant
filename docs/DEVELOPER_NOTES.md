@@ -32,6 +32,8 @@
 ### Overview
 The digest system is built around `DigestGenerator`, which bridges the gap between raw property data (`VectorStore`) and user-facing notifications (`AlertManager`, `EmailService`).
 
+The Streamlit Notifications tab uses `i18n.get_text(...)` for all user-facing labels.
+
 ### Key Components
 
 1.  **DigestGenerator (`notifications/digest_generator.py`)**
