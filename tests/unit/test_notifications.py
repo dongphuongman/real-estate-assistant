@@ -860,3 +860,55 @@ def test_i18n_contains_notification_ui_keys():
     for lang, strings in TRANSLATIONS.items():
         missing = sorted(k for k in required_keys if k not in strings)
         assert missing == [], f"Missing i18n keys for {lang}: {missing}"
+
+
+def test_i18n_all_languages_cover_english_keys():
+    from i18n.translations import TRANSLATIONS
+
+    english_keys = set(TRANSLATIONS["en"].keys())
+    assert english_keys, "English translation keys should not be empty"
+
+    for lang, strings in TRANSLATIONS.items():
+        missing = sorted(k for k in english_keys if k not in strings)
+        assert missing == [], f"Missing i18n keys for {lang}: {missing}"
+
+        non_string = sorted(k for k in english_keys if not isinstance(strings.get(k), str))
+        assert non_string == [], f"Non-string i18n values for {lang}: {non_string}"
+
+
+def test_app_modern_get_text_keys_exist_in_translations():
+    import re
+    from pathlib import Path
+
+    from i18n.translations import TRANSLATIONS
+
+    app_path = Path(__file__).resolve().parents[2] / "app_modern.py"
+    content = app_path.read_text(encoding="utf-8")
+
+    keys = set(re.findall(r"get_text\(\s*['\"]([^'\"]+)['\"]", content))
+    missing = sorted(k for k in keys if k not in TRANSLATIONS["en"])
+    assert missing == [], f"app_modern.py uses unknown i18n keys: {missing}"
+
+
+def test_i18n_get_text_fallbacks_and_helpers():
+    from i18n.translations import get_text, get_language_name, get_available_languages
+
+    assert get_text("app_title", "en") != "app_title"
+    assert get_text("does_not_exist", "en") == "does_not_exist"
+    assert get_text("app_title", "xx") == get_text("app_title", "en")
+    assert get_language_name("en")
+    assert get_language_name("xx") == "xx"
+    langs = get_available_languages()
+    assert "en" in langs
+
+
+def test_i18n_normalize_translations_repairs_non_string_values():
+    from i18n.translations import TRANSLATIONS, _normalize_translations
+
+    original = TRANSLATIONS["pl"]["app_title"]
+    try:
+        TRANSLATIONS["pl"]["app_title"] = 123
+        _normalize_translations(TRANSLATIONS, base_lang="en")
+        assert TRANSLATIONS["pl"]["app_title"] == TRANSLATIONS["en"]["app_title"]
+    finally:
+        TRANSLATIONS["pl"]["app_title"] = original
