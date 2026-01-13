@@ -13,8 +13,8 @@
 - [DONE] Clean up redundant or outdated docs and files; make the documentation production‑ready.
 
 ## Model Comparison Tab
-- Show token and price information per provider/model.
-- Include local models in comparison (when available) with guidance on capabilities and costs.
+- [DONE] Show token and price information per provider/model.
+- [DONE] Include local models in comparison (when available) with guidance on capabilities and costs.
 - [DONE] Expose provider/model metadata via `GET /api/v1/settings/models`.
 
 ## Theming

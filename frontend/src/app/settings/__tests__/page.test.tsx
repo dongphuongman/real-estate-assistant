@@ -1,10 +1,12 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import SettingsPage from "../page";
+import { getModelsCatalog } from "@/lib/api";
 
 // Mock API
 jest.mock("@/lib/api", () => ({
   getNotificationSettings: jest.fn(),
   updateNotificationSettings: jest.fn(),
+  getModelsCatalog: jest.fn(),
 }));
 
 // Mock child component to simplify integration test
@@ -13,6 +15,13 @@ jest.mock("@/components/settings/notification-settings", () => ({
 }));
 
 describe("SettingsPage", () => {
+  const mockGetModelsCatalog = getModelsCatalog as jest.Mock;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetModelsCatalog.mockResolvedValue([]);
+  });
+
   it("renders page title and description", () => {
     render(<SettingsPage />);
     expect(screen.getByText("Settings")).toBeInTheDocument();
@@ -23,5 +32,105 @@ describe("SettingsPage", () => {
     render(<SettingsPage />);
     expect(screen.getByText("Notifications")).toBeInTheDocument();
     expect(screen.getByTestId("notification-settings")).toBeInTheDocument();
+  });
+
+  it("renders models section and loads catalog", async () => {
+    mockGetModelsCatalog.mockResolvedValueOnce([
+      {
+        name: "openai",
+        display_name: "OpenAI",
+        is_local: false,
+        requires_api_key: true,
+        models: [
+          {
+            id: "gpt-4o",
+            display_name: "GPT-4o",
+            provider_name: "OpenAI",
+            context_window: 128000,
+            pricing: { input_price_per_1m: 2.5, output_price_per_1m: 10, currency: "USD" },
+            capabilities: ["streaming", "vision"],
+            description: null,
+            recommended_for: [],
+          },
+        ],
+      },
+    ]);
+
+    render(<SettingsPage />);
+
+    expect(screen.getByText("Models & Costs")).toBeInTheDocument();
+    expect(screen.getByText("Loading model catalog...")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText("OpenAI")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("GPT-4o")).toBeInTheDocument();
+    expect(screen.getByText("gpt-4o")).toBeInTheDocument();
+    expect(screen.getByText("128,000")).toBeInTheDocument();
+    expect(screen.getByText("USD 2.50")).toBeInTheDocument();
+    expect(screen.getByText("USD 10.00")).toBeInTheDocument();
+    expect(screen.getByText("streaming, vision")).toBeInTheDocument();
+  });
+
+  it("shows retry on catalog load failure", async () => {
+    mockGetModelsCatalog.mockRejectedValueOnce(new Error("API Error"));
+
+    render(<SettingsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Failed to load model catalog. Please try again.")).toBeInTheDocument();
+    });
+
+    mockGetModelsCatalog.mockResolvedValueOnce([]);
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+
+    await waitFor(() => {
+      expect(mockGetModelsCatalog).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it("shows no models available when catalog is empty", async () => {
+    mockGetModelsCatalog.mockResolvedValueOnce([]);
+
+    render(<SettingsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("No models available.")).toBeInTheDocument();
+    });
+  });
+
+  it("renders model rows with missing pricing and capabilities", async () => {
+    mockGetModelsCatalog.mockResolvedValueOnce([
+      {
+        name: "ollama",
+        display_name: "Ollama",
+        is_local: true,
+        requires_api_key: false,
+        models: [
+          {
+            id: "llama3",
+            display_name: "Llama 3",
+            provider_name: "Ollama",
+            context_window: 8192,
+            pricing: null,
+            capabilities: [],
+            description: null,
+            recommended_for: [],
+          },
+        ],
+      },
+    ]);
+
+    render(<SettingsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Ollama")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Local")).toBeInTheDocument();
+    expect(screen.getByText("No API key required")).toBeInTheDocument();
+    expect(screen.getByText(/Local models run on your machine/i)).toBeInTheDocument();
+    expect(screen.getAllByText("—").length).toBeGreaterThan(0);
   });
 });

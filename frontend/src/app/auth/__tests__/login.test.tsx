@@ -46,6 +46,7 @@ describe("LoginPage", () => {
     // Check loading state
     expect(submitButton).toBeDisabled()
     expect(window.localStorage.getItem("userEmail")).toBe("test@example.com")
+    expect(document.querySelector(".animate-spin")).toBeTruthy()
     
     // Fast-forward time wrapped in act
     act(() => {

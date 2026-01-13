@@ -1,10 +1,12 @@
 import {
+  ModelProviderCatalog,
   MortgageResult,
   NotificationSettings,
 } from "../types";
 import {
   calculateMortgage,
   chatMessage,
+  getModelsCatalog,
   getNotificationSettings,
   searchProperties,
   streamChatMessage,
@@ -164,6 +166,42 @@ describe("API Client", () => {
         })
       );
       expect(result).toEqual(mockResult);
+    });
+  });
+
+  describe("getModelsCatalog", () => {
+    it("calls /settings/models endpoint", async () => {
+      window.localStorage.setItem("userEmail", "user@example.com");
+      process.env.NEXT_PUBLIC_API_KEY = "public-test-key";
+
+      const mockCatalog: ModelProviderCatalog[] = [
+        {
+          name: "openai",
+          display_name: "OpenAI",
+          is_local: false,
+          requires_api_key: true,
+          models: [],
+        },
+      ];
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockCatalog,
+      });
+
+      const result = await getModelsCatalog();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/settings/models"),
+        expect.objectContaining({
+          method: "GET",
+          headers: expect.objectContaining({
+            "X-API-Key": "public-test-key",
+            "X-User-Email": "user@example.com",
+          }),
+        })
+      );
+      expect(result).toEqual(mockCatalog);
     });
   });
 

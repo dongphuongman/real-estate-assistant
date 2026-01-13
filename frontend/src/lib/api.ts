@@ -1,6 +1,7 @@
 import {
   ChatRequest,
   ChatResponse,
+  ModelProviderCatalog,
   MortgageInput,
   MortgageResult,
   NotificationSettings,
@@ -64,6 +65,16 @@ export async function updateNotificationSettings(settings: NotificationSettings)
     body: JSON.stringify(settings),
   });
   return handleResponse<NotificationSettings>(response);
+}
+
+export async function getModelsCatalog(): Promise<ModelProviderCatalog[]> {
+  const response = await fetch(`${getApiUrl()}/settings/models`, {
+    method: "GET",
+    headers: {
+      ...buildHeaders(),
+    },
+  });
+  return handleResponse<ModelProviderCatalog[]>(response);
 }
 
 export async function calculateMortgage(input: MortgageInput): Promise<MortgageResult> {

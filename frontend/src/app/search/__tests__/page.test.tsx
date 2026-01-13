@@ -121,4 +121,32 @@ describe("SearchPage", () => {
       expect(screen.getByText("Price on request")).toBeInTheDocument()
     })
   })
+
+  it("handles missing id and renders area", async () => {
+    mockSearchProperties.mockResolvedValueOnce({
+      results: [
+        {
+          property: {
+            city: "Anywhere",
+            country: "US",
+            area_sqm: 55,
+          },
+          score: 0.8
+        }
+      ],
+      count: 1
+    })
+
+    render(<SearchPage />)
+    
+    const input = screen.getByPlaceholderText("Describe what you are looking for (e.g., 'Modern apartment in downtown with 2 bedrooms under $500k')...")
+    const searchButton = screen.getByRole("button", { name: /search/i })
+
+    fireEvent.change(input, { target: { value: "Area" } })
+    fireEvent.click(searchButton)
+
+    await waitFor(() => {
+      expect(screen.getByText("55 m²")).toBeInTheDocument()
+    })
+  })
 })

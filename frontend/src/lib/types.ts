@@ -93,3 +93,28 @@ export interface NotificationSettings {
   expert_mode: boolean;
   marketing_emails: boolean;
 }
+
+export interface ModelPricing {
+  input_price_per_1m: number;
+  output_price_per_1m: number;
+  currency: string;
+}
+
+export interface ModelCatalogItem {
+  id: string;
+  display_name: string;
+  provider_name: string;
+  context_window: number;
+  pricing: ModelPricing | null;
+  capabilities: string[];
+  description: string | null;
+  recommended_for: string[];
+}
+
+export interface ModelProviderCatalog {
+  name: string;
+  display_name: string;
+  is_local: boolean;
+  requires_api_key: boolean;
+  models: ModelCatalogItem[];
+}
