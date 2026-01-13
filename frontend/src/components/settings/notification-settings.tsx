@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
@@ -29,8 +31,20 @@ export function NotificationSettings() {
     }
   };
 
+  if (loading) {
+    return <div className="p-4 text-center">Loading settings...</div>;
+  }
+
+  if (!settings) {
+    return (
+      <div className="p-4 text-center text-red-500">
+        {error || "Something went wrong."}
+        <Button onClick={fetchSettings} className="ml-4">Retry</Button>
+      </div>
+    );
+  }
+
   const handleSave = async () => {
-    if (!settings) return;
     setSaving(true);
     setError(null);
     setSuccess(null);
@@ -47,24 +61,9 @@ export function NotificationSettings() {
     }
   };
 
-  const toggleSetting = (key: keyof SettingsType) => {
-    if (!settings) return;
-    if (key === "frequency") return; // Handle separately
+  const toggleSetting = (key: Exclude<keyof SettingsType, "frequency">) => {
     setSettings({ ...settings, [key]: !settings[key] });
   };
-
-  if (loading) {
-    return <div className="p-4 text-center">Loading settings...</div>;
-  }
-
-  if (!settings) {
-    return (
-      <div className="p-4 text-center text-red-500">
-        {error || "Something went wrong."}
-        <Button onClick={fetchSettings} className="ml-4">Retry</Button>
-      </div>
-    );
-  }
 
   return (
     <div className="grid gap-6">

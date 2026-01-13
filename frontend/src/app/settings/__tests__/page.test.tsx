@@ -1,6 +1,5 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import SettingsPage from "../page";
-import { getNotificationSettings } from "@/lib/api";
 
 // Mock API
 jest.mock("@/lib/api", () => ({
