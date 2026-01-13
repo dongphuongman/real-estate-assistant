@@ -16,6 +16,8 @@
     - `api.ts`: API client functions wrapping `fetch`.
     - `types.ts`: Shared TypeScript interfaces (mirrors Pydantic models).
     - `utils.ts`: Helper functions (cn, etc.).
+    - `api.ts` automatically adds `X-API-Key` from `NEXT_PUBLIC_API_KEY` when set.
+    - `api.ts` automatically adds `X-User-Email` from `localStorage.userEmail` when available.
 
 ### Testing Guidelines
 - **Unit Tests**: Located in `__tests__` directories next to the components/pages.

@@ -25,7 +25,11 @@ This is the Next.js frontend for the AI Real Estate Assistant (V4).
 
     Open [http://localhost:3000](http://localhost:3000) with your browser.
 
-    The app proxies `/api` requests to the Python backend running on `http://localhost:8000`.
+    The frontend calls the Python backend directly. Configure:
+    - `NEXT_PUBLIC_API_URL` (default `http://localhost:8000/api/v1`)
+    - `NEXT_PUBLIC_API_KEY` (sent as `X-API-Key` when set)
+
+    The login/register pages store the submitted email in `localStorage` (`userEmail`), which is sent as `X-User-Email` for settings endpoints.
 
 ## Project Structure
 
