@@ -25,6 +25,10 @@ export default function RegisterPage() {
     event.preventDefault()
     setIsLoading(true)
 
+    const data = new FormData(event.currentTarget)
+    const email = (data.get("email") || "").toString().trim()
+    window.localStorage.setItem("userEmail", email)
+
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false)
@@ -60,6 +64,7 @@ export default function RegisterPage() {
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
+              name="email"
               type="email"
               placeholder="name@example.com"
               required

@@ -16,6 +16,7 @@ describe("RegisterPage", () => {
       push: mockPush,
     })
     jest.clearAllMocks()
+    window.localStorage.clear()
   })
 
   afterEach(() => {
@@ -47,6 +48,7 @@ describe("RegisterPage", () => {
 
     // Check loading state
     expect(submitButton).toBeDisabled()
+    expect(window.localStorage.getItem("userEmail")).toBe("test@example.com")
     
     // Fast-forward time wrapped in act
     act(() => {
