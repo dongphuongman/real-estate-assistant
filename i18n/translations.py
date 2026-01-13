@@ -51,6 +51,30 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "theme": "Theme",
         "light_theme": "☀️ Light",
         "dark_theme": "🌙 Dark",
+        "preferences": "Preferences",
+        "expert_panel": "🧠 Expert Panel",
+        "map_filters": "Map Filters",
+        "min_price": "Min Price",
+        "max_price": "Max Price",
+        "min_price_sqm": "Min Price/sqm",
+        "max_price_sqm": "Max Price/sqm",
+        "rooms": "Rooms",
+        "property_type": "Property Type",
+        "no_properties_match_map_filters": "No properties match the current map filters.",
+        "monthly_price_index_yoy": "Monthly Price Index (YoY)",
+        "time_series_city": "Time Series City",
+        "moving_average_months": "Moving Average (months)",
+        "highlight_anomalies_zscore": "Highlight anomalies (z-score)",
+        "export_indices": "Export Indices",
+        "dataset": "Dataset",
+        "format": "Format",
+        "generate_expert_digest": "Generate Expert Digest",
+        "digest_format": "Digest Format",
+        "generate_indices_export": "Generate Indices Export",
+        "download_expert_digest_md": "Download Expert Digest (MD)",
+        "download_expert_digest_pdf": "Download Expert Digest (PDF)",
+        "city_indices": "City Indices",
+        "monthly_index": "Monthly Index",
 
         # Data Management
         "data_sources": "Data Sources",
@@ -114,6 +138,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "tab_export": "💾 Export",
         "tab_analytics": "📊 Analytics",
         "tab_notifications": "🔔 Notifications",
+        "tab_dev_dashboard": "🛠️ Dev Dashboard",
 
         # Chat Tab
         "please_load_data": "👈 Please load property data from the sidebar to get started",
@@ -143,6 +168,9 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "complexity": "Complexity",
         "processing_method": "Processing Method",
         "sources_used": "Sources Used",
+        "tools_needed": "Tools needed",
+        "extracted_filters": "Extracted filters",
+        "should_use_agent": "Should use agent",
 
         # Market Insights Tab
         "please_load_data_insights": "👈 Please load property data from the sidebar to view market insights",
@@ -196,6 +224,10 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "type": "Type",
         "city": "City",
         "amenities": "Amenities",
+        "balcony": "Balcony",
+        "elevator": "Elevator",
+        "furnished": "Furnished",
+        "parking": "Parking",
 
         # Export Tab
         "please_load_data_export": "👈 Please load property data from the sidebar to export",
@@ -268,8 +300,9 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "email_config_success": "✅ Email service configured successfully!",
         "email_config_error": "❌ Error configuring email service",
         "send_test_email": "📧 Send Test Email",
+        "sending_test_email": "Sending test email...",
         "test_email_success": "✅ Test email sent successfully! Check your inbox.",
-        "test_email_error": "❌ Failed to send test email. Check your configuration.",
+        "test_email_error": "❌ Failed to send test email. Check configuration.",
         "notification_preferences": "Notification Preferences",
         "enable_notifications": "Enable Notifications",
         "enable_help": "Turn notifications on or off",
@@ -2647,6 +2680,21 @@ TRANSLATIONS["zh"] = {
     "loading_data_url": "正在从URL加载数据...",
     "loading_local_files": "正在加载文件...",
 }
+
+def _normalize_translations(translations: Dict[str, Dict[str, Any]], base_lang: str = "en") -> None:
+    base = translations.get(base_lang, {})
+    base_keys = set(base.keys())
+    for lang, strings in translations.items():
+        if lang == base_lang:
+            continue
+        for key in base_keys:
+            if key not in strings:
+                strings[key] = base[key]
+            elif not isinstance(strings.get(key), str) and isinstance(base.get(key), str):
+                strings[key] = base[key]
+
+
+_normalize_translations(TRANSLATIONS, base_lang="en")
 
 
 def get_text(key: str, lang: str = "en") -> str:
