@@ -1,5 +1,4 @@
 import {
-  ChatResponse,
   MortgageResult,
   NotificationSettings,
 } from "../types";
@@ -17,14 +16,16 @@ global.fetch = jest.fn();
 
 // Polyfill for TextEncoder/TextDecoder if missing in test env
 if (typeof global.TextEncoder === 'undefined') {
-    (global as any).TextEncoder = TextEncoder;
-    (global as any).TextDecoder = TextDecoder;
+    (global as unknown as { TextEncoder?: typeof TextEncoder }).TextEncoder = TextEncoder;
+    (global as unknown as { TextDecoder?: typeof TextDecoder }).TextDecoder = TextDecoder;
 }
 
 describe("API Client", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     (global.fetch as jest.Mock) = jest.fn();
+    window.localStorage.clear();
+    delete process.env.NEXT_PUBLIC_API_KEY;
   });
 
   describe("Notification Settings", () => {
@@ -35,7 +36,54 @@ describe("API Client", () => {
       marketing_emails: false,
     };
 
+    it("omits auth headers when no user or API key", async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockSettings,
+      });
+
+      await getNotificationSettings();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/settings/notifications"),
+        expect.objectContaining({
+          method: "GET",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+          }),
+        })
+      );
+
+      const [, options] = (global.fetch as jest.Mock).mock.calls[0];
+      expect(options.headers["X-API-Key"]).toBeUndefined();
+      expect(options.headers["X-User-Email"]).toBeUndefined();
+    });
+
+    it("omits user email header when running without window", async () => {
+      const globalWithWindow = globalThis as unknown as { window?: unknown };
+      const originalWindow = globalWithWindow.window;
+      delete globalWithWindow.window;
+
+      process.env.NEXT_PUBLIC_API_KEY = "public-test-key";
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockSettings,
+      });
+
+      await getNotificationSettings();
+
+      const [, options] = (global.fetch as jest.Mock).mock.calls[0];
+      expect(options.headers["X-API-Key"]).toBe("public-test-key");
+      expect(options.headers["X-User-Email"]).toBeUndefined();
+
+      globalWithWindow.window = originalWindow;
+    });
+
     it("fetches settings", async () => {
+      window.localStorage.setItem("userEmail", "user@example.com");
+      process.env.NEXT_PUBLIC_API_KEY = "public-test-key";
+
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
         json: async () => mockSettings,
@@ -45,12 +93,21 @@ describe("API Client", () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         expect.stringContaining("/settings/notifications"),
-        expect.objectContaining({ method: "GET" })
+        expect.objectContaining({
+          method: "GET",
+          headers: expect.objectContaining({
+            "X-API-Key": "public-test-key",
+            "X-User-Email": "user@example.com",
+          }),
+        })
       );
       expect(result).toEqual(mockSettings);
     });
 
     it("updates settings", async () => {
+      window.localStorage.setItem("userEmail", "user@example.com");
+      process.env.NEXT_PUBLIC_API_KEY = "public-test-key";
+
       const newSettings = { ...mockSettings, frequency: "daily" as const };
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
@@ -63,6 +120,10 @@ describe("API Client", () => {
         expect.stringContaining("/settings/notifications"),
         expect.objectContaining({
           method: "PUT",
+          headers: expect.objectContaining({
+            "X-API-Key": "public-test-key",
+            "X-User-Email": "user@example.com",
+          }),
           body: JSON.stringify(newSettings),
         })
       );

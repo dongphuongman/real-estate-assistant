@@ -8,7 +8,34 @@ import {
   SearchResponse,
 } from "./types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+function getApiUrl(): string {
+  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+}
+
+function getApiKey(): string | undefined {
+  const key = process.env.NEXT_PUBLIC_API_KEY;
+  return key && key.trim() ? key.trim() : undefined;
+}
+
+function getUserEmail(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  const email = window.localStorage.getItem("userEmail");
+  return email && email.trim() ? email.trim() : undefined;
+}
+
+function buildHeaders(extra?: Record<string, string>): Record<string, string> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  const apiKey = getApiKey();
+  if (apiKey) headers["X-API-Key"] = apiKey;
+
+  const userEmail = getUserEmail();
+  if (userEmail) headers["X-User-Email"] = userEmail;
+
+  return { ...headers, ...(extra || {}) };
+}
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
@@ -19,20 +46,20 @@ async function handleResponse<T>(response: Response): Promise<T> {
 }
 
 export async function getNotificationSettings(): Promise<NotificationSettings> {
-  const response = await fetch(`${API_URL}/settings/notifications`, {
+  const response = await fetch(`${getApiUrl()}/settings/notifications`, {
     method: "GET",
     headers: {
-      "Content-Type": "application/json",
+      ...buildHeaders(),
     },
   });
   return handleResponse<NotificationSettings>(response);
 }
 
 export async function updateNotificationSettings(settings: NotificationSettings): Promise<NotificationSettings> {
-  const response = await fetch(`${API_URL}/settings/notifications`, {
+  const response = await fetch(`${getApiUrl()}/settings/notifications`, {
     method: "PUT",
     headers: {
-      "Content-Type": "application/json",
+      ...buildHeaders(),
     },
     body: JSON.stringify(settings),
   });
@@ -40,32 +67,28 @@ export async function updateNotificationSettings(settings: NotificationSettings)
 }
 
 export async function calculateMortgage(input: MortgageInput): Promise<MortgageResult> {
-  const response = await fetch(`${API_URL}/tools/mortgage-calculator`, {
+  const response = await fetch(`${getApiUrl()}/tools/mortgage-calculator`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: buildHeaders(),
     body: JSON.stringify(input),
   });
   return handleResponse<MortgageResult>(response);
 }
 
 export async function searchProperties(request: SearchRequest): Promise<SearchResponse> {
-  const response = await fetch(`${API_URL}/search`, {
+  const response = await fetch(`${getApiUrl()}/search`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      // Add API key if needed, e.g., from env or auth context
-      // "X-API-Key": process.env.NEXT_PUBLIC_API_KEY
-    },
+    headers: buildHeaders(),
     body: JSON.stringify(request),
   });
   return handleResponse<SearchResponse>(response);
 }
 
 export async function chatMessage(request: ChatRequest): Promise<ChatResponse> {
-  const response = await fetch(`${API_URL}/chat`, {
+  const response = await fetch(`${getApiUrl()}/chat`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
+      ...buildHeaders(),
     },
     body: JSON.stringify(request),
   });
@@ -76,10 +99,10 @@ export async function streamChatMessage(
   request: ChatRequest,
   onChunk: (chunk: string) => void
 ): Promise<void> {
-  const response = await fetch(`${API_URL}/chat`, {
+  const response = await fetch(`${getApiUrl()}/chat`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
+      ...buildHeaders(),
     },
     body: JSON.stringify({ ...request, stream: true }),
   });
