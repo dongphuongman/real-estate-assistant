@@ -100,7 +100,8 @@ def add_observability(app: FastAPI, logger: logging.Logger) -> None:
 
         if getattr(settings, "api_rate_limit_enabled", False):
             path = request.url.path
-            if path.startswith("/api/v1") and not path.startswith(_RATE_LIMIT_EXCLUDED_PREFIXES):
+            excluded = _RATE_LIMIT_EXCLUDED_PREFIXES
+            if path.startswith("/api/v1") and not path.startswith(excluded):
                 api_key = request.headers.get("X-API-Key")
                 client_id = client_id_from_api_key(api_key) or "anonymous"
                 rpm = int(getattr(settings, "api_rate_limit_rpm", 600))
@@ -118,7 +119,8 @@ def add_observability(app: FastAPI, logger: logging.Logger) -> None:
                 if not allowed:
                     response_headers["Retry-After"] = str(reset_in)
                     logger.info(
-                        "api_rate_limited request_id=%s client_id=%s method=%s path=%s retry_after=%s",
+                        "api_rate_limited request_id=%s client_id=%s method=%s "
+                        "path=%s retry_after=%s",
                         request_id,
                         client_id,
                         request.method,

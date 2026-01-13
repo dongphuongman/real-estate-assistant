@@ -195,6 +195,33 @@ If you exceed the limit, you will receive:
         ```
     *   **Returns**: Updated `NotificationSettings` object.
 
+*   `GET /api/v1/settings/models`
+    *   List available model providers and their models (pricing/capabilities/metadata).
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **Returns**: Array of providers:
+        ```json
+        [
+          {
+            "name": "openai",
+            "display_name": "OpenAI",
+            "is_local": false,
+            "requires_api_key": true,
+            "models": [
+              {
+                "id": "gpt-4o",
+                "display_name": "GPT-4o (Latest)",
+                "provider_name": "OpenAI",
+                "context_window": 128000,
+                "pricing": { "input_price_per_1m": 2.5, "output_price_per_1m": 10.0, "currency": "USD" },
+                "capabilities": ["streaming", "function_calling", "json_mode", "system_messages"],
+                "description": "Latest flagship model",
+                "recommended_for": ["general purpose"]
+              }
+            ]
+          }
+        ]
+        ```
+
 ## Analytics
 
 ### HedonicValuationModel

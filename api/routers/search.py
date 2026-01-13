@@ -40,7 +40,7 @@ async def search_properties(
             min_lon=request.min_lon,
             max_lon=request.max_lon,
             sort_by=request.sort_by.value if request.sort_by else None,
-            sort_order=request.sort_order.value if request.sort_order else None
+            sort_order=request.sort_order.value if request.sort_order else None,
         )
         
         items = []
@@ -54,7 +54,8 @@ async def search_properties(
                 if "id" not in metadata:
                     metadata["id"] = "unknown"
                 
-                # 'rooms' might be stored as float in Chroma metadata (no int type support sometimes)
+                # 'rooms' might be stored as float in Chroma metadata
+                # (no int type support sometimes)
                 # Pydantic handles this conversion usually
                 
                 # Construct Property model

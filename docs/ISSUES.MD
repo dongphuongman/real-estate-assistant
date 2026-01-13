@@ -15,6 +15,7 @@
 ## Model Comparison Tab
 - Show token and price information per provider/model.
 - Include local models in comparison (when available) with guidance on capabilities and costs.
+- [DONE] Expose provider/model metadata via `GET /api/v1/settings/models`.
 
 ## Theming
 - Integrate a free theme for the AI Real Estate UI (consistent colors, typography, dark/light modes).

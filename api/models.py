@@ -128,6 +128,31 @@ class NotificationSettings(BaseModel):
     marketing_emails: bool = False
 
 
+class ModelPricing(BaseModel):
+    input_price_per_1m: float
+    output_price_per_1m: float
+    currency: str = "USD"
+
+
+class ModelCatalogItem(BaseModel):
+    id: str
+    display_name: str
+    provider_name: str
+    context_window: int
+    pricing: Optional[ModelPricing] = None
+    capabilities: List[str] = Field(default_factory=list)
+    description: Optional[str] = None
+    recommended_for: List[str] = Field(default_factory=list)
+
+
+class ModelProviderCatalog(BaseModel):
+    name: str
+    display_name: str
+    is_local: bool
+    requires_api_key: bool
+    models: List[ModelCatalogItem]
+
+
 class ComparePropertiesRequest(BaseModel):
     property_ids: List[str]
 

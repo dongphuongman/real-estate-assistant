@@ -1,10 +1,11 @@
 from fastapi import APIRouter, HTTPException, Header, Query
-from api.models import NotificationSettings
+from api.models import NotificationSettings, ModelProviderCatalog, ModelCatalogItem, ModelPricing
 from notifications.notification_preferences import (
     NotificationPreferencesManager,
     AlertFrequency,
     AlertType,
 )
+from models.provider_factory import ModelProviderFactory
 import logging
 
 logger = logging.getLogger(__name__)
@@ -87,4 +88,50 @@ async def update_notification_settings(
         raise
     except Exception as e:
         logger.error(f"Error updating settings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/settings/models", response_model=list[ModelProviderCatalog])
+async def list_model_catalog():
+    """List available model providers and their models."""
+    try:
+        providers: list[ModelProviderCatalog] = []
+        for provider_name in ModelProviderFactory.list_providers():
+            provider = ModelProviderFactory.get_provider(provider_name)
+            models: list[ModelCatalogItem] = []
+
+            for model_info in provider.list_models():
+                pricing = None
+                if model_info.pricing:
+                    pricing = ModelPricing(
+                        input_price_per_1m=model_info.pricing.input_price_per_1m,
+                        output_price_per_1m=model_info.pricing.output_price_per_1m,
+                        currency=model_info.pricing.currency,
+                    )
+
+                models.append(
+                    ModelCatalogItem(
+                        id=model_info.id,
+                        display_name=model_info.display_name,
+                        provider_name=model_info.provider_name,
+                        context_window=model_info.context_window,
+                        pricing=pricing,
+                        capabilities=[c.value for c in model_info.capabilities],
+                        description=model_info.description,
+                        recommended_for=model_info.recommended_for,
+                    )
+                )
+
+            providers.append(
+                ModelProviderCatalog(
+                    name=provider.name,
+                    display_name=provider.display_name,
+                    is_local=provider.is_local,
+                    requires_api_key=provider.requires_api_key,
+                    models=models,
+                )
+            )
+        return providers
+    except Exception as e:
+        logger.error(f"Error listing model catalog: {e}")
         raise HTTPException(status_code=500, detail=str(e))

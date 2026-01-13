@@ -84,11 +84,16 @@ async def reindex_data(
     """
     collection = load_collection()
     if not collection:
-        raise HTTPException(status_code=404, detail="No data in cache. Run ingestion first.")
+        raise HTTPException(
+            status_code=404,
+            detail="No data in cache. Run ingestion first.",
+        )
         
     try:
-        # In a real scenario, we might want to clear the collection first if request.clear_existing is True
-        # Currently ChromaPropertyStore doesn't expose a clear method publicly in the interface we checked.
+        # In a real scenario, we might want to clear the collection first if
+        # request.clear_existing is True.
+        # Currently ChromaPropertyStore doesn't expose a clear method publicly in the
+        # interface we checked.
         # We will just add documents (upsert behavior usually).
         
         if not store:

@@ -41,7 +41,7 @@ def get_llm() -> BaseChatModel:
                 raise RuntimeError(f"No models available for provider '{provider_name}'")
             # Prefer a model marked as recommended if available, otherwise first
             # We don't have a structured "is_default" flag, but recommended_for list exists.
-            # For now, just pick the first one as they are usually ordered by relevance/recency in implementation
+            # For now, just pick the first one as they are usually ordered by relevance/recency
             model_id = models[0].id
             
         return factory_provider.create_model(

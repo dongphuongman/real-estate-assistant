@@ -98,6 +98,10 @@ If you are using the V4 API (FastAPI), the same tool capabilities are available 
 - Basic price analysis for a query
 - Basic location lookup for a property ID
 
+### Models & Costs (V4 API)
+If you are building a client that needs to display available models/providers (and token pricing where applicable):
+- `GET /api/v1/settings/models` returns provider + model metadata, including context windows, capabilities, and pricing (when available).
+
 ### API Export (V4)
 To export search results or specific property IDs via the V4 API:
-- `POST /api/v1/export/properties` supports `format`: `csv`, `xlsx`, `json`, `md`, `pdf`
+103| - `POST /api/v1/export/properties` supports `format`: `csv`, `xlsx`, `json`, `md`, `pdf`

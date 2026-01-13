@@ -57,7 +57,7 @@
 - Search: `/api/v1/search`
 - Chat: `/api/v1/chat` (SSE supported)
 - Tools: `/api/v1/tools/*` (mortgage, compare, price analysis, location analysis)
-- Settings: `/api/v1/settings/notifications`
+- Settings: `/api/v1/settings/notifications`, `/api/v1/settings/models`
 - Admin: `/api/v1/admin/*` (ingest/reindex/health)
 
 ## Deployment Target

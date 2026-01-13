@@ -210,3 +210,32 @@ def test_notification_settings_requires_user_email(tmp_path):
         )
         assert r_put.status_code == 400
         assert r_put.json()["detail"] == "Missing user email"
+
+
+def test_model_catalog_lists_providers_and_models():
+    settings = get_settings()
+    key = settings.api_access_key
+
+    response = client.get("/api/v1/settings/models", headers={"X-API-Key": key})
+    assert response.status_code == 200
+
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) >= 1
+
+    provider_names = {p["name"] for p in data}
+    assert "openai" in provider_names
+    assert "ollama" in provider_names
+
+    openai = next(p for p in data if p["name"] == "openai")
+    assert openai["requires_api_key"] is True
+    assert openai["is_local"] is False
+    assert isinstance(openai["models"], list)
+    assert len(openai["models"]) >= 1
+
+    m = openai["models"][0]
+    assert m["id"]
+    assert m["display_name"]
+    assert m["provider_name"]
+    assert isinstance(m["context_window"], int)
+    assert isinstance(m["capabilities"], list)

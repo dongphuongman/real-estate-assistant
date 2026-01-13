@@ -126,6 +126,12 @@ The V4 API exposes tool endpoints under `/api/v1/tools/*`:
 - `POST /api/v1/tools/price-analysis` returns price stats and distribution by type
 - `POST /api/v1/tools/location-analysis` returns basic location fields (city/coords)
 
+### Settings
+
+- `GET /api/v1/settings/notifications` reads user digest preferences (scoped by `X-User-Email` or `?user_email=...`).
+- `PUT /api/v1/settings/notifications` updates user digest preferences (scoped by `X-User-Email` or `?user_email=...`).
+- `GET /api/v1/settings/models` lists providers/models (pricing/capabilities/metadata) for model comparison and cost UX.
+
 ### Export
 
 The V4 API exposes export endpoints under `/api/v1/export/*`:

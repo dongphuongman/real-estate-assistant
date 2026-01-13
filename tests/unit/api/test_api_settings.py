@@ -145,3 +145,77 @@ def test_update_settings_missing_user_email_returns_400(
     assert response.status_code == 400
     assert response.json()["detail"] == "Missing user email"
     assert not mock_prefs_manager.get_preferences.called
+
+
+@patch("api.routers.settings.ModelProviderFactory")
+@patch("api.auth.get_settings")
+def test_list_model_catalog(mock_get_settings, mock_factory):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+
+    mock_factory.list_providers.return_value = ["openai", "ollama"]
+
+    openai_provider = MagicMock()
+    openai_provider.name = "openai"
+    openai_provider.display_name = "OpenAI"
+    openai_provider.is_local = False
+    openai_provider.requires_api_key = True
+
+    cap_streaming = MagicMock()
+    cap_streaming.value = "streaming"
+
+    pricing = MagicMock()
+    pricing.input_price_per_1m = 2.5
+    pricing.output_price_per_1m = 10.0
+    pricing.currency = "USD"
+
+    openai_model = MagicMock()
+    openai_model.id = "gpt-4o"
+    openai_model.display_name = "GPT-4o"
+    openai_model.provider_name = "OpenAI"
+    openai_model.context_window = 128000
+    openai_model.pricing = pricing
+    openai_model.capabilities = [cap_streaming]
+    openai_model.description = "desc"
+    openai_model.recommended_for = ["general"]
+    openai_provider.list_models.return_value = [openai_model]
+
+    ollama_provider = MagicMock()
+    ollama_provider.name = "ollama"
+    ollama_provider.display_name = "Ollama"
+    ollama_provider.is_local = True
+    ollama_provider.requires_api_key = False
+
+    ollama_model = MagicMock()
+    ollama_model.id = "llama3.2:3b"
+    ollama_model.display_name = "Llama 3.2 3B"
+    ollama_model.provider_name = "Ollama"
+    ollama_model.context_window = 128000
+    ollama_model.pricing = None
+    ollama_model.capabilities = []
+    ollama_model.description = None
+    ollama_model.recommended_for = []
+    ollama_provider.list_models.return_value = [ollama_model]
+
+    def _get_provider(name):
+        return openai_provider if name == "openai" else ollama_provider
+
+    mock_factory.get_provider.side_effect = _get_provider
+
+    response = client.get("/api/v1/settings/models", headers=HEADERS_NO_USER)
+    assert response.status_code == 200
+
+    data = response.json()
+    assert len(data) == 2
+    assert data[0]["name"] == "openai"
+    assert data[0]["requires_api_key"] is True
+    assert data[0]["is_local"] is False
+    assert data[0]["models"][0]["id"] == "gpt-4o"
+    assert data[0]["models"][0]["pricing"]["input_price_per_1m"] == 2.5
+    assert "streaming" in data[0]["models"][0]["capabilities"]
+
+    assert data[1]["name"] == "ollama"
+    assert data[1]["requires_api_key"] is False
+    assert data[1]["is_local"] is True
+    assert data[1]["models"][0]["pricing"] is None
