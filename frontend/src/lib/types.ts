@@ -47,7 +47,7 @@ export interface SearchResponse {
 export interface SearchRequest {
   query: string;
   limit?: number;
-  filters?: Record<string, any>;
+  filters?: Record<string, unknown>;
   alpha?: number;
   lat?: number;
   lon?: number;
@@ -66,7 +66,7 @@ export interface ChatResponse {
   response: string;
   sources: Array<{
     content: string;
-    metadata: any;
+    metadata: Record<string, unknown>;
   }>;
   session_id?: string;
 }

@@ -4,11 +4,12 @@ import { useState, useRef, useEffect } from "react";
 import { Send, User, Bot, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { chatMessage } from "@/lib/api";
+import type { ChatResponse } from "@/lib/types";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
-  sources?: any[];
+  sources?: ChatResponse["sources"];
 }
 
 export default function ChatPage() {
