@@ -6,10 +6,10 @@
 
 ## Internationalization (i18n)
 - [DONE] Translate remaining non‑English strings (especially Polish) in the Notifications tab.
-- Verify all supported languages have complete coverage across tabs and controls.
+- [DONE] Verify all supported languages have complete coverage across tabs and controls.
 
 ## Documentation Improvements
-- Add a Mermaid diagram to README explaining the data preload flow, where data is stored (cache vs vector store), and session lifecycle.
+- [DONE] Add a Mermaid diagram to README explaining the data preload flow, where data is stored (cache vs vector store), and session lifecycle.
 - Clean up redundant or outdated docs and files; make the documentation production‑ready.
 
 ## Model Comparison Tab
