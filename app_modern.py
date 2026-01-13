@@ -246,7 +246,7 @@ def render_sidebar():
         st.caption(f"{get_text('version', lang)} {settings.version}")
 
         # Preferences (collapsible)
-        with st.expander("⚙️ Preferences", expanded=True):
+        with st.expander(f"⚙️ {get_text('preferences', lang)}", expanded=True):
             languages = get_available_languages()
             selected_lang = st.selectbox(
                 get_text("language", lang),
@@ -260,60 +260,59 @@ def render_sidebar():
                 st.session_state.language = selected_lang
                 st.rerun()
 
-        # Notification Settings (collapsible)
-        with st.expander(f"🔔 {get_text('notifications', lang) if lang != 'en' else 'Notifications'}", expanded=False):
-            # Email configuration
+        with st.expander(f"🔔 {get_text('notification_settings', lang)}", expanded=False):
             current_email = st.session_state.user_email
-            new_email = st.text_input("Email Address", value=current_email, key="notification_email_input")
+            new_email = st.text_input(get_text("your_email", lang), value=current_email, key="notification_email_input")
             
             if new_email != current_email:
                 st.session_state.user_email = new_email
-                # Update prefs if manager exists
                 if st.session_state.notification_prefs_manager:
                     st.session_state.notification_prefs_manager.get_preferences(new_email)
-                    # We might want to auto-save or wait for explicit save
             
             if st.session_state.user_email:
                 prefs_manager = st.session_state.notification_prefs_manager
                 user_prefs = prefs_manager.get_preferences(st.session_state.user_email)
                 
-                # Enable/Disable Toggle
                 notifications_enabled = st.checkbox(
-                    "Enable Notifications", 
+                    get_text("enable_notifications", lang),
                     value=user_prefs.email_enabled,
                     key="notifications_enabled_toggle"
                 )
                 
-                # Frequency Selection
                 freq_options = [f.value for f in AlertFrequency]
+                freq_label_key_by_value = {
+                    AlertFrequency.INSTANT.value: "instant",
+                    AlertFrequency.HOURLY.value: "hourly",
+                    AlertFrequency.DAILY.value: "daily_digest",
+                    AlertFrequency.WEEKLY.value: "weekly_digest",
+                }
                 selected_freq = st.selectbox(
-                    "Digest Frequency",
+                    get_text("alert_frequency", lang),
                     options=freq_options,
+                    format_func=lambda x: get_text(freq_label_key_by_value.get(x, x), lang),
                     index=freq_options.index(user_prefs.digest_frequency) if user_prefs.digest_frequency in freq_options else 0,
                     key="digest_freq_select"
                 )
                 
-                # Day Selection (if weekly)
                 if selected_freq == AlertFrequency.WEEKLY.value:
                     day_options = [d.value for d in DigestDay]
                     selected_day = st.selectbox(
-                        "Digest Day",
+                        get_text("weekly_digest_day", lang),
                         options=day_options,
+                        format_func=lambda x: get_text(x, lang),
                         index=day_options.index(user_prefs.digest_day) if user_prefs.digest_day in day_options else 0,
                         key="digest_day_select"
                     )
                 else:
                     selected_day = user_prefs.digest_day
 
-                # Instant Alerts Toggle
                 instant_alerts = st.checkbox(
-                    "Instant Alerts (Price Drops)",
+                    get_text("price_drop_alerts", lang),
                     value=user_prefs.instant_alerts_enabled,
                     key="instant_alerts_toggle"
                 )
                 
-                # Save Button
-                if st.button("Save Preferences", key="save_notification_prefs"):
+                if st.button(get_text("save_preferences", lang), key="save_notification_prefs"):
                     updated_prefs = user_prefs
                     updated_prefs.email_enabled = notifications_enabled
                     updated_prefs.digest_frequency = selected_freq
@@ -321,24 +320,23 @@ def render_sidebar():
                     updated_prefs.instant_alerts_enabled = instant_alerts
                     
                     prefs_manager.update_preferences(st.session_state.user_email, updated_prefs)
-                    st.success("Preferences saved!")
+                    st.success(get_text("preferences_saved", lang))
                     
-                # Test Email Button
-                if st.button("Send Test Email", key="send_test_email"):
+                if st.button(get_text("send_test_email", lang), key="send_test_email"):
                     if st.session_state.email_service:
-                        with st.spinner("Sending test email..."):
+                        with st.spinner(get_text("sending_test_email", lang)):
                             success = st.session_state.email_service.send_test_email(
                                 st.session_state.user_email,
-                                user_name="User" 
+                                user_name="User"
                             )
                             if success:
-                                st.success(f"Test email sent to {st.session_state.user_email}!")
+                                st.success(get_text("test_email_success", lang))
                             else:
-                                st.error("Failed to send test email. Check logs.")
+                                st.error(get_text("test_email_error", lang))
                     else:
-                        st.error("Email service not configured. Check .env file.")
+                        st.error(get_text("email_config_error", lang))
             else:
-                st.info("Enter your email to configure notifications.")
+                st.info(get_text("email_help", lang))
 
         st.divider()
 
@@ -1146,7 +1144,7 @@ def render_chat_tab():
                         st.json(doc.metadata)
 
     # Chat input
-    if prompt := st.chat_input("Ask about properties..."):
+    if prompt := st.chat_input(get_text("chat_placeholder", lang)):
         # Track query start time (Phase 3)
         import time
 
@@ -1161,13 +1159,13 @@ def render_chat_tab():
         # Show query analysis if enabled
         if st.session_state.show_query_analysis:
             analysis = analyze_query(prompt)
-            with st.expander("🔍 Query Analysis", expanded=False):
-                st.write(f"**Intent:** {analysis.intent.value}")
-                st.write(f"**Complexity:** {analysis.complexity.value}")
-                st.write(f"**Tools needed:** {[t.value for t in analysis.tools_needed]}")
+            with st.expander(f"🔍 {get_text('query_analysis', lang)}", expanded=False):
+                st.write(f"**{get_text('intent', lang)}:** {analysis.intent.value}")
+                st.write(f"**{get_text('complexity', lang)}:** {analysis.complexity.value}")
+                st.write(f"**{get_text('tools_needed', lang)}:** {[t.value for t in analysis.tools_needed]}")
                 if analysis.extracted_filters:
-                    st.write(f"**Extracted filters:** {analysis.extracted_filters}")
-                st.write(f"**Should use agent:** {analysis.should_use_agent()}")
+                    st.write(f"**{get_text('extracted_filters', lang)}:** {analysis.extracted_filters}")
+                st.write(f"**{get_text('should_use_agent', lang)}:** {analysis.should_use_agent()}")
 
         # Generate response
         with st.chat_message("assistant"):
@@ -1390,41 +1388,41 @@ def render_market_insights_tab():
 
     st.divider()
 
-    with st.expander("🧠 Expert Panel", expanded=False):
+    with st.expander(get_text("expert_panel", lang), expanded=False):
         cities = list(stats.cities.keys())
         colA, colB = st.columns(2)
         with colB:
-            st.caption("Map Filters")
+            st.caption(get_text("map_filters", lang))
             map_min_price = st.number_input(
-                "Min Price",
+                get_text("min_price", lang),
                 min_value=0.0,
                 value=0.0,
                 step=100.0,
                 key="map_min_price_input",
             )
             map_max_price = st.number_input(
-                "Max Price",
+                get_text("max_price", lang),
                 min_value=0.0,
                 value=0.0,
                 step=100.0,
                 key="map_max_price_input",
             )
             map_min_ppsqm = st.number_input(
-                "Min Price/sqm",
+                get_text("min_price_sqm", lang),
                 min_value=0.0,
                 value=0.0,
                 step=10.0,
                 key="map_min_ppsqm_input",
             )
             map_max_ppsqm = st.number_input(
-                "Max Price/sqm",
+                get_text("max_price_sqm", lang),
                 min_value=0.0,
                 value=0.0,
                 step=10.0,
                 key="map_max_ppsqm_input",
             )
             rooms_min, rooms_max = st.slider(
-                "Rooms",
+                get_text("rooms", lang),
                 min_value=0.0,
                 max_value=10.0,
                 value=(0.0, 10.0),
@@ -1438,7 +1436,7 @@ def render_market_insights_tab():
                 else []
             )
             map_property_types = st.multiselect(
-                "Property Type",
+                get_text("property_type", lang),
                 options=map_type_options,
                 default=map_type_options,
                 key="map_property_types",
@@ -1698,7 +1696,7 @@ def render_market_insights_tab():
 
                 if map_mode == "Historical Trends":
                     if has_coords and len(map_df) == 0:
-                        st.info("No properties match the current map filters.")
+                        st.info(get_text("no_properties_match_map_filters", lang))
 
                     # Convert filtered DataFrame to Property objects
                     props_list = []
@@ -1831,14 +1829,21 @@ def render_market_insights_tab():
         else:
             st.info(get_text("load_multiple_cities", lang))
 
-        st.caption("Monthly Price Index (YoY)")
+        st.caption(get_text("monthly_price_index_yoy", lang))
         ts_city = st.selectbox(
-            "Time Series City", options=cities or [""], index=0 if cities else 0, key="ts_city"
+            get_text("time_series_city", lang),
+            options=cities or [""],
+            index=0 if cities else 0,
+            key="ts_city",
         )
         ts_window = st.slider(
-            "Moving Average (months)", min_value=1, max_value=12, value=3, key="ts_window"
+            get_text("moving_average_months", lang),
+            min_value=1,
+            max_value=12,
+            value=3,
+            key="ts_window",
         )
-        ts_anom = st.checkbox("Highlight anomalies (z-score)", value=True, key="ts_anom")
+        ts_anom = st.checkbox(get_text("highlight_anomalies_zscore", lang), value=True, key="ts_anom")
         if ts_city:
             ts_df = insights.get_monthly_price_index(
                 ts_city, window=int(ts_window), detect_anomalies=bool(ts_anom)
@@ -1864,21 +1869,23 @@ def render_market_insights_tab():
             st.dataframe(top_down)
 
         st.divider()
-        st.caption("Export Indices")
+        st.caption(get_text("export_indices", lang))
         export_kind = st.radio(
-            "Dataset", options=["City Indices", "Monthly Index"], horizontal=True
+            get_text("dataset", lang),
+            options=[get_text("city_indices", lang), get_text("monthly_index", lang)],
+            horizontal=True,
         )
-        export_format = st.selectbox("Format", options=["csv", "xlsx", "json", "md"], index=0)
-        gen_digest = st.checkbox("Generate Expert Digest")
-        digest_format = st.selectbox("Digest Format", options=["md", "pdf"], index=0)
-        if st.button("Generate Indices Export"):
+        export_format = st.selectbox(get_text("format", lang), options=["csv", "xlsx", "json", "md"], index=0)
+        gen_digest = st.checkbox(get_text("generate_expert_digest", lang))
+        digest_format = st.selectbox(get_text("digest_format", lang), options=["md", "pdf"], index=0)
+        if st.button(get_text("generate_indices_export", lang)):
             exp = InsightsExporter(insights)
             try:
                 if gen_digest:
                     if digest_format == "md":
                         digest_md = exp.generate_digest_markdown(selected_cities or None)
                         st.download_button(
-                            label="Download Expert Digest (MD)",
+                            label=get_text("download_expert_digest_md", lang),
                             data=digest_md,
                             file_name="expert_digest.md",
                             mime="text/markdown",
@@ -1887,14 +1894,14 @@ def render_market_insights_tab():
                     else:
                         digest_pdf = exp.generate_digest_pdf(selected_cities or None)
                         st.download_button(
-                            label="Download Expert Digest (PDF)",
+                            label=get_text("download_expert_digest_pdf", lang),
                             data=digest_pdf.getvalue(),
                             file_name="expert_digest.pdf",
                             mime="application/pdf",
                             use_container_width=True,
                         )
                 else:
-                    if export_kind == "City Indices":
+                    if export_kind == get_text("city_indices", lang):
                         if export_format == "csv":
                             data = exp.export_city_indices_csv(selected_cities or None)
                             mime = "text/csv"
@@ -2606,7 +2613,7 @@ def render_main_content():
     ]
 
     if st.session_state.get("developer_mode", False):
-        tab_titles.append("🛠️ Dev Dashboard")
+        tab_titles.append(get_text("tab_dev_dashboard", lang))
 
     tabs = st.tabs(tab_titles)
 
