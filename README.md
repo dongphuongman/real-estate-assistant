@@ -263,11 +263,11 @@ GOOGLE_API_KEY = "AI-..."
 
 #### Install Ollama
 
-**Windows/macOS**: Download from [ollama.ai](https://ollama.ai/)
+**Windows/macOS**: Download from [ollama.com](https://ollama.com/download)
 
 **Linux**:
 ```bash
-curl -fsSL https://ollama.ai/install.sh | sh
+curl -fsSL https://ollama.com/install.sh | sh
 ```
 
 #### Pull Models and Run
@@ -325,7 +325,7 @@ The generated images are not embedded here to avoid stale visuals. Refer to the 
 
 ## 📖 Usage Examples
 
-See the app and `docs/PHASE3_README.md` for practical scenarios (search, mortgage, comparison, market insights). Examples are kept in documentation to avoid duplication and ensure accuracy.
+See the app and `docs/USER_GUIDE.md` for practical scenarios (search, mortgage, comparison, market insights). Examples are kept in documentation to avoid duplication and ensure accuracy.
 
 ---
 
@@ -448,11 +448,7 @@ Edit `config/settings.py` to customize:
 
 ## 🎯 Feature Phases
 
-See detailed phase docs:
-- Phase 2 — `docs/PHASE2_README.md`
-- Phase 3 — `docs/PHASE3_README.md`
-- Phase 4 — `docs/PHASE4_README.md`
-- Phase 5 — `docs/PHASE5_README.md`
+Feature work is tracked in `docs/TODO.MD` and `docs/ISSUES.MD`.
 
 ---
 
@@ -462,9 +458,7 @@ See detailed phase docs:
 - **[Streamlit Cloud Deployment](docs/DEPLOYMENT.md)**: Cloud deployment instructions
 - **[Product Requirements](docs/PRD.MD)**: Project specifications
 - **[Modernization Proposal](docs/MODERNIZATION_PROPOSAL.md)**: V3 architecture
-- **[Phase 3 README](docs/PHASE3_README.md)**: Advanced features docs
-- **[Phase 4 README](docs/PHASE4_README.md)**: Visualization docs
-- **[Phase 5 README](docs/PHASE5_README.md)**: Notification system docs
+- **[User Guide](docs/USER_GUIDE.md)**: Using the app effectively
 - **[Testing Guide](docs/TESTING_GUIDE.md)**: Comprehensive testing procedures
 
 ---
@@ -698,7 +692,7 @@ This project is licensed under the Apache 2.0 License — see the [LICENSE](LICE
 
 - [LangChain](https://langchain.com) for the AI framework
 - [Streamlit](https://streamlit.io) for the UI framework
-- [OpenAI](https://openai.com), [Anthropic](https://anthropic.com), [Google](https://ai.google), and [Ollama](https://ollama.ai) for AI models
+- [OpenAI](https://openai.com), [Anthropic](https://anthropic.com), [Google](https://ai.google), and [Ollama](https://ollama.com) for AI models
 - [ChromaDB](https://www.trychroma.com) for vector storage
 
 ---

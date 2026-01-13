@@ -15,16 +15,6 @@ Welcome to the comprehensive documentation for the AI Real Estate Assistant proj
 - **[Product Requirements Document (PRD)](PRD.MD)** - Complete product requirements and specifications
 - **[Modernization Proposal](MODERNIZATION_PROPOSAL.md)** - Detailed modernization strategy and implementation plan
 
-### Development Phases
-
-The project is organized into 5 development phases, each with dedicated documentation:
-
-1. **[Phase 1: Foundation](../README.md#phase-1)** - Core AI agent with multiple model providers
-2. **[Phase 2: Intelligent Query Processing](PHASE2_README.md)** - Hybrid agent system with query analysis
-3. **[Phase 3: Analytics & Export](PHASE3_README.md)** - Market insights, analytics, and export features
-4. **[Phase 4: Advanced Visualizations](PHASE4_README.md)** - Enhanced charts and visual analytics
-5. **[Phase 5: Notification System](PHASE5_README.md)** - Email alerts and notification preferences
-
 ### Deployment & Operations
 
 - **[Installation Guide](INSTALLATION.md)** - Platform-specific installation and setup
@@ -52,10 +42,8 @@ New to the project? Start here:
 
 - [PRD.MD](PRD.MD) - Technical requirements and specifications
 - [TESTING_GUIDE.md](TESTING_GUIDE.md) - Testing framework and coverage
-- [PHASE2_README.md](PHASE2_README.md) - Hybrid agent architecture
-- [PHASE3_README.md](PHASE3_README.md) - Analytics implementation
-- [PHASE4_README.md](PHASE4_README.md) - Visualization components
-- [PHASE5_README.md](PHASE5_README.md) - Notification system
+- [API_REFERENCE.md](API_REFERENCE.md) - API endpoints and request/response formats
+- [DEVELOPER_NOTES.md](DEVELOPER_NOTES.md) - Implementation notes and architectural details
 
 ### For DevOps
 
@@ -139,7 +127,7 @@ When contributing documentation:
 
 ## 📝 Documentation Updates
 
-Last major update: November 2024
+Last major update: January 2026
 
 For the most recent changes, check the git commit history:
 ```bash

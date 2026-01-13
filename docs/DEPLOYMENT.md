@@ -22,7 +22,7 @@ The repository is already configured with all necessary files:
 Make sure your branch is pushed to GitHub:
 
 ```bash
-git push -u origin claude/modernize-app-ui-models-011CUtSCBMxZ4kbtT7n6SzCK
+git push -u origin <your-branch>
 ```
 
 ## Step 3: Deploy to Streamlit Cloud
@@ -34,7 +34,7 @@ git push -u origin claude/modernize-app-ui-models-011CUtSCBMxZ4kbtT7n6SzCK
 2. **Create New App**
    - Click "New app" button
    - Select your repository: `AleksNeStu/ai-real-estate-assistant`
-   - Select branch: `claude/modernize-app-ui-models-011CUtSCBMxZ4kbtT7n6SzCK`
+   - Select branch: the branch you want to deploy (for example: `main`)
    - Main file path: `app_modern.py`
    - App URL: Choose a custom URL (optional)
 
@@ -52,9 +52,9 @@ ANTHROPIC_API_KEY = "sk-ant-..."
 GOOGLE_API_KEY = "..."
 
 # Optional: For local Ollama (if using a public Ollama endpoint)
-# OLLAMA_API_BASE = "http://your-ollama-server:11434"
+# OLLAMA_BASE_URL = "http://your-ollama-server:11434"
 
-# Optional: Email notifications (Phase 5)
+# Optional: Email notifications
 # SMTP_USERNAME = "your.email@gmail.com"
 # SMTP_PASSWORD = "your-app-specific-password"
 # SMTP_PROVIDER = "gmail"
@@ -83,7 +83,7 @@ Once deployed:
 
 ## Step 5: Configure Notifications (Optional)
 
-If you want to use the notification system (Phase 5):
+If you want to use the notification system:
 
 1. Navigate to the **Notifications** tab
 2. Enter your email address
@@ -128,46 +128,21 @@ If you want to use the notification system (Phase 5):
 
 **Issue:** Test email fails to send
 - **Solution:**
-  - For Gmail: Enable "Less secure app access" or use app-specific password
+  - For Gmail: Use an app-specific password
   - For Outlook: Ensure SMTP is enabled
   - Check firewall/network restrictions
   - Verify credentials are correct
 
 ## App Features Available
 
-Your deployed app includes all 5 phases:
-
-### Phase 1: Foundation ✅
+Your deployed app includes:
 - Multi-provider LLM support (OpenAI, Anthropic, Google, Ollama)
 - ChromaDB vector store with persistent storage
-- CSV data loading
-
-### Phase 2: Intelligence ✅
-- Hybrid RAG + Tools agent
-- Query analysis and intent detection
-- Mortgage calculator and comparison tools
-- Result reranking
-
-### Phase 3: Advanced Features ✅
+- Hybrid agent (retrieval + tools) with reranking
 - Market insights and analytics
-- Property comparison dashboard
-- Export to CSV/JSON/Markdown
-- Saved searches
-- Session tracking
-
-### Phase 4: Visualizations ✅
-- Interactive price charts (Plotly)
-- Radar charts for property comparison
-- Geographic maps (Folium)
-- Market dashboards
-- Metrics and KPIs
-
-### Phase 5: Notifications ✅
-- Email notification system
-- Price drop alerts
-- New property alerts
-- Notification preferences management
-- Notification history and analytics
+- Visual dashboards and charts
+- Export (CSV/JSON/Markdown/PDF)
+- Notification preferences and email alerts
 
 ## Resource Limits (Free Tier)
 
@@ -219,4 +194,4 @@ To update the deployed app:
 - [ ] All tabs are accessible
 - [ ] No errors in browser console
 
-Enjoy your deployed AI Real Estate Assistant! 🏠✨
+Enjoy your deployed AI Real Estate Assistant!

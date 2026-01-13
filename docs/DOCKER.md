@@ -57,7 +57,7 @@ GOOGLE_API_KEY=...
 #### Optional:
 ```bash
 # For local Ollama models
-OLLAMA_API_BASE=http://host.docker.internal:11434
+OLLAMA_BASE_URL=http://host.docker.internal:11434
 
 # For email notifications
 SMTP_USERNAME=your.email@gmail.com
@@ -230,11 +230,11 @@ sudo apt-get install docker-compose-plugin
 
 ### Option 1: Ollama on Host Machine
 
-1. Install Ollama on your host: https://ollama.ai
+1. Install Ollama on your host: https://ollama.com/download
 2. Start Ollama service
 3. Set environment variable:
    ```bash
-   OLLAMA_API_BASE=http://host.docker.internal:11434
+   OLLAMA_BASE_URL=http://host.docker.internal:11434
    ```
 
 ### Option 2: Ollama in Docker
@@ -267,7 +267,7 @@ docker exec -it ollama ollama pull llama3.3
 
 Set in your app:
 ```bash
-OLLAMA_API_BASE=http://ollama:11434
+OLLAMA_BASE_URL=http://ollama:11434
 ```
 
 ---
@@ -302,7 +302,7 @@ docker logs ai-real-estate-assistant
 docker exec ai-real-estate-assistant curl http://host.docker.internal:11434
 
 # For Linux, use host IP instead:
-OLLAMA_API_BASE=http://172.17.0.1:11434
+OLLAMA_BASE_URL=http://172.17.0.1:11434
 ```
 
 ### Slow Performance
@@ -473,6 +473,6 @@ docker-compose up -d --build
 ---
 
 For more information, see:
-- [Main README](README.md) - Installation and usage
+- [Main README](../README.md) - Installation and usage
 - [DEPLOYMENT.md](DEPLOYMENT.md) - Streamlit Cloud deployment
 - [Docker Documentation](https://docs.docker.com/)

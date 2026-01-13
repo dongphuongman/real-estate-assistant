@@ -10,7 +10,7 @@
 
 ## Documentation Improvements
 - [DONE] Add a Mermaid diagram to README explaining the data preload flow, where data is stored (cache vs vector store), and session lifecycle.
-- Clean up redundant or outdated docs and files; make the documentation production‑ready.
+- [DONE] Clean up redundant or outdated docs and files; make the documentation production‑ready.
 
 ## Model Comparison Tab
 - Show token and price information per provider/model.
