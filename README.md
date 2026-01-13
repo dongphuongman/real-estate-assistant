@@ -332,6 +332,29 @@ See the app and `docs/PHASE3_README.md` for practical scenarios (search, mortgag
 ## 🏗️ Architecture & Structure
 See `docs/ARCHITECTURE.md` and `docs/PROJECT_STRUCTURE.md` for up‑to‑date details.
 
+```mermaid
+flowchart TB
+  subgraph Preload["Data preload & persistence (V3 Streamlit)"]
+    Sources["Data sources<br/>- Upload CSV/Excel<br/>- Load from URL/sample"] --> Load["Load & normalize<br/>PropertyCollection"]
+    Load --> Cache["Write cache<br/>.app_cache/properties.json<br/>(properties_prev.json)"]
+    Load --> Index["Trigger background indexing<br/>add_property_collection_async"]
+    Index --> VS["Persistent vector store<br/>ChromaPropertyStore"]
+    VS --> DiskVS["On-disk DB<br/>chroma_db/"]
+    Cache --> Fallback["Fallback retrieval<br/>(when vector store unavailable)"]
+  end
+
+  subgraph Session["Chat session lifecycle (V4 API)"]
+    Client["Client"] --> Req["POST /api/v1/chat<br/>message (+ optional session_id)"]
+    Req --> Gen["If missing session_id:<br/>generate UUID"]
+    Gen --> Hist["get_session_history(session_id)<br/>SQLChatMessageHistory"]
+    Hist --> DB["SQLite persistence<br/>data/sessions.db<br/>table: message_store"]
+    DB --> Mem["ConversationBufferMemory"]
+    Mem --> Agent["Hybrid agent + retriever"]
+    Agent --> Resp["Response includes session_id"]
+    Resp --> Client
+  end
+```
+
 ---
 
 ## 📁 Project Structure
