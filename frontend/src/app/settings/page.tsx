@@ -112,9 +112,50 @@ function ModelCatalogComparison() {
               </table>
             </div>
             {provider.is_local ? (
-              <p className="mt-4 text-xs text-muted-foreground">
-                Local models run on your machine. Token pricing is not applicable; costs depend on your hardware and runtime settings.
-              </p>
+              <div className="mt-4 space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  Local models run on your machine. Token pricing is not applicable; costs depend on your hardware and runtime settings.
+                </p>
+                <div className="rounded-lg border bg-card p-4 text-sm">
+                  <div className="font-medium">Local models & offline usage</div>
+                  <div className="mt-1 text-muted-foreground">
+                    {provider.runtime_available === false
+                      ? "Local runtime not detected. Start your local runtime and ensure the API can reach it."
+                      : provider.runtime_available === true
+                        ? `Local runtime detected. Downloaded models: ${provider.available_models?.length ?? 0}.`
+                        : "Local runtime status is unknown."}
+                  </div>
+                  <div className="mt-3 space-y-2 text-muted-foreground">
+                    <div>
+                      1. Install Ollama:{" "}
+                      <a
+                        className="underline underline-offset-4"
+                        href="https://ollama.com/download"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        ollama.com/download
+                      </a>
+                    </div>
+                    <div>2. Start Ollama, then download a model:</div>
+                    <div className="rounded-md bg-muted px-3 py-2 font-mono text-xs text-foreground">
+                      ollama pull llama3.3:8b
+                    </div>
+                    <div>
+                      3. If the API runs in Docker, set <span className="font-mono">OLLAMA_BASE_URL</span> to{" "}
+                      <span className="font-mono">http://host.docker.internal:11434</span>.
+                    </div>
+                  </div>
+                  {provider.available_models?.length ? (
+                    <div className="mt-3">
+                      <div className="text-xs font-medium text-foreground">Downloaded models</div>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {provider.available_models.join(", ")}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
             ) : provider.models.some((m) => !m.pricing) ? (
               <p className="mt-4 text-xs text-muted-foreground">
                 Pricing may be unavailable for some hosted models.

@@ -198,6 +198,9 @@ If you exceed the limit, you will receive:
 *   `GET /api/v1/settings/models`
     *   List available model providers and their models (pricing/capabilities/metadata).
     *   **Headers**: `X-API-Key: your-api-key
+    *   **Notes**:
+        *   For local providers (e.g., Ollama), `runtime_available` indicates whether the local runtime is reachable from the API.
+        *   `available_models` lists models that are already downloaded in the local runtime.
     *   **Returns**: Array of providers:
         ```json
         [
@@ -216,6 +219,26 @@ If you exceed the limit, you will receive:
                 "capabilities": ["streaming", "function_calling", "json_mode", "system_messages"],
                 "description": "Latest flagship model",
                 "recommended_for": ["general purpose"]
+              }
+            ]
+          },
+          {
+            "name": "ollama",
+            "display_name": "Ollama (Local)",
+            "is_local": true,
+            "requires_api_key": false,
+            "runtime_available": false,
+            "available_models": [],
+            "models": [
+              {
+                "id": "llama3.3:8b",
+                "display_name": "Llama 3.3 8B (Recommended)",
+                "provider_name": "Ollama (Local)",
+                "context_window": 128000,
+                "pricing": null,
+                "capabilities": ["streaming", "function_calling", "system_messages"],
+                "description": "Latest balanced Llama model (8B parameters) - requires 8GB RAM",
+                "recommended_for": ["best balance", "general purpose", "local inference"]
               }
             ]
           }

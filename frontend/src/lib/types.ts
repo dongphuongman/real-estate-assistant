@@ -117,4 +117,6 @@ export interface ModelProviderCatalog {
   is_local: boolean;
   requires_api_key: boolean;
   models: ModelCatalogItem[];
+  runtime_available?: boolean | null;
+  available_models?: string[] | null;
 }

@@ -99,6 +99,8 @@ async def list_model_catalog():
         for provider_name in ModelProviderFactory.list_providers():
             provider = ModelProviderFactory.get_provider(provider_name)
             models: list[ModelCatalogItem] = []
+            runtime_available: bool | None = None
+            available_models: list[str] | None = None
 
             for model_info in provider.list_models():
                 pricing = None
@@ -122,6 +124,15 @@ async def list_model_catalog():
                     )
                 )
 
+            if provider.is_local and hasattr(provider, "list_available_models"):
+                maybe_models = provider.list_available_models()
+                if maybe_models is None:
+                    runtime_available = False
+                    available_models = []
+                else:
+                    runtime_available = True
+                    available_models = list(maybe_models)
+
             providers.append(
                 ModelProviderCatalog(
                     name=provider.name,
@@ -129,6 +140,8 @@ async def list_model_catalog():
                     is_local=provider.is_local,
                     requires_api_key=provider.requires_api_key,
                     models=models,
+                    runtime_available=runtime_available,
+                    available_models=available_models,
                 )
             )
         return providers

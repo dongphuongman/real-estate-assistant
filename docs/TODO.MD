@@ -103,6 +103,7 @@
   - [DONE] Setup API Client & Type Definitions
   - [DONE] Create Analytics Page (Mortgage Calculator Integration)
   - [DONE] Create Settings Page (Notification Preferences)
+  - [DONE] Show local runtime availability and setup guidance in settings
   - [DONE] Implement Frontend Unit & Integration Tests (Coverage ≥ 90%)
 - [DONE] API (Python): endpoints, streaming, session persistence, tool execution
 - Retrieval: vector store service + indexing + geo filters + reranking

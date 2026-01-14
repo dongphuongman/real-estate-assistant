@@ -106,6 +106,7 @@ If you are using the V4 API (FastAPI), the same tool capabilities are available 
 If you are building a client that needs to display available models/providers (and token pricing where applicable):
 - `GET /api/v1/settings/models` returns provider + model metadata, including context windows, capabilities, and pricing (when available).
 In the web app, you can view this under **Settings > Models & Costs**.
+For local providers (e.g., Ollama), the response includes `runtime_available` and `available_models`, and the UI shows setup steps when the local runtime is not detected.
 
 ### API Export (V4)
 To export search results or specific property IDs via the V4 API:

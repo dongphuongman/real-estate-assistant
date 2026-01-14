@@ -131,6 +131,78 @@ describe("SettingsPage", () => {
     expect(screen.getByText("Local")).toBeInTheDocument();
     expect(screen.getByText("No API key required")).toBeInTheDocument();
     expect(screen.getByText(/Local models run on your machine/i)).toBeInTheDocument();
+    expect(screen.getByText("Local models & offline usage")).toBeInTheDocument();
+    expect(screen.getByText(/Local runtime status is unknown/i)).toBeInTheDocument();
     expect(screen.getAllByText("—").length).toBeGreaterThan(0);
+  });
+
+  it("renders local runtime unavailable status and setup steps", async () => {
+    mockGetModelsCatalog.mockResolvedValueOnce([
+      {
+        name: "ollama",
+        display_name: "Ollama",
+        is_local: true,
+        requires_api_key: false,
+        runtime_available: false,
+        available_models: [],
+        models: [
+          {
+            id: "llama3.3:8b",
+            display_name: "Llama 3.3 8B",
+            provider_name: "Ollama",
+            context_window: 128000,
+            pricing: null,
+            capabilities: [],
+            description: null,
+            recommended_for: [],
+          },
+        ],
+      },
+    ]);
+
+    render(<SettingsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Local runtime not detected/i)).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/Install Ollama/i)).toBeInTheDocument();
+    expect(screen.getByText(/ollama\.com\/download/i)).toBeInTheDocument();
+    expect(screen.getByText(/ollama pull llama3\.3:8b/i)).toBeInTheDocument();
+    expect(screen.getByText(/host\.docker\.internal:11434/i)).toBeInTheDocument();
+  });
+
+  it("renders local runtime available status and downloaded models list", async () => {
+    mockGetModelsCatalog.mockResolvedValueOnce([
+      {
+        name: "ollama",
+        display_name: "Ollama",
+        is_local: true,
+        requires_api_key: false,
+        runtime_available: true,
+        available_models: ["llama3.3:8b", "mistral:7b"],
+        models: [
+          {
+            id: "llama3.3:8b",
+            display_name: "Llama 3.3 8B",
+            provider_name: "Ollama",
+            context_window: 128000,
+            pricing: null,
+            capabilities: [],
+            description: null,
+            recommended_for: [],
+          },
+        ],
+      },
+    ]);
+
+    render(<SettingsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Local runtime detected\. Downloaded models: 2\./i)).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Downloaded models")).toBeInTheDocument();
+    expect(screen.getByText(/llama3\.3:8b, mistral:7b/i)).toBeInTheDocument();
   });
 });

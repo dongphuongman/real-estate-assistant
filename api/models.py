@@ -151,6 +151,8 @@ class ModelProviderCatalog(BaseModel):
     is_local: bool
     requires_api_key: bool
     models: List[ModelCatalogItem]
+    runtime_available: Optional[bool] = None
+    available_models: Optional[List[str]] = None
 
 
 class ComparePropertiesRequest(BaseModel):

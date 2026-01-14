@@ -21,8 +21,8 @@
 - [DONE] Integrate a free theme for the AI Real Estate UI (consistent colors, typography, dark/light modes).
 
 ## Local Models & Offline Usage
-- Add more local models support.
-- Provide clear instructions to install/start local models if not installed, and how to run offline.
+- [DONE] Add more local models support.
+- [DONE] Provide clear instructions to install/start local models if not installed, and how to run offline.
 
 ## Configuration & Secrets
 - Ensure `OPENAI_API_KEY` and other provider keys are not stored in the repository.

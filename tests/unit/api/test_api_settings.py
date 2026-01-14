@@ -197,6 +197,7 @@ def test_list_model_catalog(mock_get_settings, mock_factory):
     ollama_model.description = None
     ollama_model.recommended_for = []
     ollama_provider.list_models.return_value = [ollama_model]
+    ollama_provider.list_available_models.return_value = ["llama3.2:3b"]
 
     def _get_provider(name):
         return openai_provider if name == "openai" else ollama_provider
@@ -218,4 +219,6 @@ def test_list_model_catalog(mock_get_settings, mock_factory):
     assert data[1]["name"] == "ollama"
     assert data[1]["requires_api_key"] is False
     assert data[1]["is_local"] is True
+    assert data[1]["runtime_available"] is True
+    assert data[1]["available_models"] == ["llama3.2:3b"]
     assert data[1]["models"][0]["pricing"] is None

@@ -223,7 +223,7 @@ class OllamaProvider(LocalModelProvider):
         except Exception as e:
             return False, f"Connection failed: {str(e)}"
 
-    def list_available_models(self) -> List[str]:
+    def list_available_models(self) -> Optional[List[str]]:
         """
         List models actually available/downloaded in local Ollama.
 
@@ -234,10 +234,10 @@ class OllamaProvider(LocalModelProvider):
             import requests
             base_url = self.config.get("base_url", "http://localhost:11434")
 
-            response = requests.get(f"{base_url}/api/tags", timeout=5)
+            response = requests.get(f"{base_url}/api/tags", timeout=3)
             if response.status_code == 200:
                 data = response.json()
                 return [model["name"] for model in data.get("models", [])]
-            return []
+            return None
         except Exception:
-            return []
+            return None

@@ -239,3 +239,8 @@ def test_model_catalog_lists_providers_and_models():
     assert m["provider_name"]
     assert isinstance(m["context_window"], int)
     assert isinstance(m["capabilities"], list)
+
+    ollama = next(p for p in data if p["name"] == "ollama")
+    assert ollama["is_local"] is True
+    assert isinstance(ollama["runtime_available"], bool)
+    assert isinstance(ollama["available_models"], list)
