@@ -1,5 +1,9 @@
 # User Guide - AI Real Estate Assistant
 
+## Appearance
+
+Use the theme button (moon/sun) in the top navigation to switch between Light and Dark mode. Your selection is saved in your browser.
+
 ## Notifications & Digests
 
 The AI Real Estate Assistant helps you stay on top of the market with personalized email digests. Whether you're a homebuyer looking for your dream house or an investor monitoring market trends, our digests provide the insights you need.

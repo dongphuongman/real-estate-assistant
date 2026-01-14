@@ -18,7 +18,7 @@
 - [DONE] Expose provider/model metadata via `GET /api/v1/settings/models`.
 
 ## Theming
-- Integrate a free theme for the AI Real Estate UI (consistent colors, typography, dark/light modes).
+- [DONE] Integrate a free theme for the AI Real Estate UI (consistent colors, typography, dark/light modes).
 
 ## Local Models & Offline Usage
 - Add more local models support.

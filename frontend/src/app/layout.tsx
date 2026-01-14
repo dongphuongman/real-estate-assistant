@@ -24,11 +24,31 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function () {
+                try {
+                  var stored = localStorage.getItem("theme");
+                  var theme = stored === "dark" || stored === "light" ? stored : null;
+                  if (!theme) {
+                    var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+                    theme = prefersDark ? "dark" : "light";
+                  }
+                  if (theme === "dark") document.documentElement.classList.add("dark");
+                  else document.documentElement.classList.remove("dark");
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <header className="border-b">
+        <header className="border-b bg-background">
           <div className="flex h-16 items-center px-4 container mx-auto">
              <div className="font-bold text-xl mr-4 hidden md:block">AI Estate</div>
              <MainNav />

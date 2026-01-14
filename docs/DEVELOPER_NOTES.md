@@ -8,6 +8,11 @@
 - **State Management**: React Hooks
 - **Testing**: Jest + React Testing Library
 
+### Theming
+- Dark/light mode is controlled by a `dark` class on the root `html` element (`frontend/src/app/globals.css`).
+- The initial theme is applied via an inline script in `frontend/src/app/layout.tsx` (reads `localStorage.theme` or system preference).
+- The theme toggle lives in `frontend/src/components/layout/main-nav.tsx` and persists selection to `localStorage.theme`.
+
 ### Directory Structure
 - `src/app`: Pages and layouts (App Router).
 - `src/components/ui`: Atomic UI components (Button, Input, Card, etc.).
