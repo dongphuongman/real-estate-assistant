@@ -284,6 +284,24 @@ If you exceed the limit, you will receive:
         ]
         ```
 
+#### Admin
+
+*   `GET /api/v1/admin/health`
+    *   Detailed health check for admin.
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **Returns**: `{"status": "healthy|degraded (...)", "version": "..."}`
+
+*   `GET /api/v1/admin/metrics`
+    *   Return simple API metrics counters.
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **Returns**:
+        ```json
+        {
+          "GET /api/v1/verify-auth": 42,
+          "POST /api/v1/search": 10
+        }
+        ```
+
 ## Analytics
 
 ### HedonicValuationModel

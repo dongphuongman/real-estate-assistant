@@ -84,6 +84,7 @@ def client_id_from_api_key(api_key: str | None) -> str | None:
 def add_observability(app: FastAPI, logger: logging.Logger) -> None:
     limiter = RateLimiter()
     app.state.rate_limiter = limiter
+    app.state.metrics: dict[str, int] = {}
 
     @app.middleware("http")
     async def _request_id_middleware(request: Request, call_next):
@@ -150,5 +151,8 @@ def add_observability(app: FastAPI, logger: logging.Logger) -> None:
             getattr(response, "status_code", "-"),
             elapsed_ms,
         )
+
+        key = f"{request.method} {request.url.path}"
+        app.state.metrics[key] = int(app.state.metrics.get(key, 0)) + 1
 
         return response

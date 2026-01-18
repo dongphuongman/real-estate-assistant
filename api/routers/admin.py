@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from api.models import (
     IngestRequest, 
     IngestResponse, 
@@ -125,3 +125,15 @@ async def admin_health_check(store: ChromaPropertyStore = Depends(get_vector_sto
         status = "degraded (vector store unavailable)"
         
     return HealthCheck(status=status, version=settings.version)
+
+@router.get("/admin/metrics", response_model=dict)
+async def admin_metrics(request: Request):
+    """
+    Return simple API metrics.
+    """
+    try:
+        metrics = getattr(request.app.state, "metrics", {})
+        return dict(metrics)
+    except Exception as e:
+        logger.error(f"Metrics retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

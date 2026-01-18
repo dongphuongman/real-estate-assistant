@@ -135,6 +135,7 @@ metrics = FinancialCalculator.analyze_investment(
 - All API responses include an `X-Request-ID` header for log correlation.
 - Rate limiting is enforced per client (API key) and controlled by `API_RATE_LIMIT_ENABLED` and `API_RATE_LIMIT_RPM`.
 - Rate limit headers returned: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`.
+- Basic metrics are collected per route and exposed under `GET /api/v1/admin/metrics` for quick counters.
 
 ### Search
 
