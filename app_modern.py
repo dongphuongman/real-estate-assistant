@@ -1763,6 +1763,45 @@ def render_market_insights_tab():
                             disabled=True,
                             key="viz_cluster_toggle",
                         )
+                    st.markdown(
+                        "<style>input[type='radio']:focus, input[type='checkbox']:focus {outline: 2px solid #2563eb !important; outline-offset: 2px !important;}</style>",
+                        unsafe_allow_html=True,
+                    )
+                    col_extras_1, col_extras_2, col_extras_3 = st.columns([2, 2, 3])
+                    with col_extras_1:
+                        if "viz_heatmap_radius" not in st.session_state:
+                            st.session_state.viz_heatmap_radius = 15
+                        st.session_state.viz_heatmap_radius = st.slider(
+                            "Heatmap Radius",
+                            min_value=5,
+                            max_value=50,
+                            value=int(st.session_state.viz_heatmap_radius),
+                            help="Controls the radius of each point in the heatmap",
+                            disabled=st.session_state.viz_mode != "Heatmap",
+                            key="viz_heatmap_radius",
+                        )
+                    with col_extras_2:
+                        if "viz_heatmap_blur" not in st.session_state:
+                            st.session_state.viz_heatmap_blur = 25
+                        st.session_state.viz_heatmap_blur = st.slider(
+                            "Heatmap Blur",
+                            min_value=0,
+                            max_value=50,
+                            value=int(st.session_state.viz_heatmap_blur),
+                            help="Controls the blur intensity of the heatmap",
+                            disabled=st.session_state.viz_mode != "Heatmap",
+                            key="viz_heatmap_blur",
+                        )
+                    with col_extras_3:
+                        if "viz_city_show_stats" not in st.session_state:
+                            st.session_state.viz_city_show_stats = True
+                        st.session_state.viz_city_show_stats = st.checkbox(
+                            "Show Aggregate Statistics",
+                            value=bool(st.session_state.viz_city_show_stats),
+                            help="Display city-level counts, averages, and medians in popups",
+                            disabled=st.session_state.viz_mode != "City Overview",
+                            key="viz_city_show_stats",
+                        )
                     props_list = []
                     if has_coords and len(map_df) > 0:
                         for _, row in map_df.head(int(map_max_points)).iterrows():
@@ -1782,8 +1821,8 @@ def render_market_insights_tab():
                                 coll,
                                 center_city=center_city,
                                 zoom_start=11,
-                                radius=15,
-                                blur=25,
+                                radius=int(st.session_state.viz_heatmap_radius),
+                                blur=int(st.session_state.viz_heatmap_blur),
                                 jitter=bool(st.session_state.viz_jitter),
                             )
                             folium.Circle(
@@ -1795,7 +1834,7 @@ def render_market_insights_tab():
                             ).add_to(fmap)
                             st.caption("Heatmap active")
                         else:
-                            fmap = create_city_overview_map(coll, show_statistics=True)
+                            fmap = create_city_overview_map(coll, show_statistics=bool(st.session_state.viz_city_show_stats))
                             st.caption("City Overview active")
                         st_folium(fmap, height=350, use_container_width=True)
                 

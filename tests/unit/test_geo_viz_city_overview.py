@@ -39,3 +39,13 @@ def test_create_city_overview_large_dataset_performance():
     coll = PropertyCollection(properties=props, total_count=len(props))
     m = create_city_overview_map(coll)
     assert isinstance(m, folium.Map)
+
+
+def test_create_city_overview_no_stats_returns_map():
+    props = [
+        Property(city="Warsaw", price=5000, rooms=2),
+        Property(city="Krakow", price=4000, rooms=3),
+    ]
+    coll = PropertyCollection(properties=props, total_count=len(props))
+    m = create_city_overview_map(coll, show_statistics=False)
+    assert isinstance(m, folium.Map)

@@ -30,3 +30,13 @@ def test_create_price_heatmap_large_dataset_performance():
     coll = PropertyCollection(properties=props, total_count=len(props))
     m = create_price_heatmap(coll, center_city="Warsaw", jitter=False)
     assert isinstance(m, folium.Map)
+
+
+def test_create_price_heatmap_respects_radius_blur_params():
+    props = [
+        Property(city="Warsaw", latitude=52.23, longitude=21.01, price=5000),
+        Property(city="Krakow", latitude=50.06, longitude=19.94, price=4000),
+    ]
+    coll = PropertyCollection(properties=props, total_count=len(props))
+    m = create_price_heatmap(coll, center_city="Warsaw", radius=5, blur=10, jitter=False)
+    assert isinstance(m, folium.Map)

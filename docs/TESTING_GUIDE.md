@@ -611,6 +611,8 @@ Should use agent: False
 - Toggle states:
   - Jitter: enabled for Heatmap, disabled for City Overview
   - Clustering: disabled (not applicable in these modes)
+  - Heatmap Radius/Blur: sliders active in Heatmap mode
+  - City Overview Aggregates: checkbox controls popup statistics
 - Accessibility:
   - Verify keyboard navigation for radio and checkbox controls
   - Check screen reader labels and help text
