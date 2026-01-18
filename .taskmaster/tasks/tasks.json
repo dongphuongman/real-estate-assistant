@@ -1,115 +1,238 @@
 {
-  "tasks": [
-    {
-      "id": "1",
-      "title": "Integration with Real Estate APIs",
-      "description": "Develop adapters for real estate APIs to fetch property data dynamically.",
-      "status": "completed",
-      "priority": "high",
-      "subtasks": []
-    },
-    {
-      "id": "2",
-      "title": "Geographical Mapping",
-      "description": "Integrate with mapping services (e.g., Mapbox, Folium) to visualize property locations in the UI.",
-      "status": "pending",
-      "priority": "medium",
-      "subtasks": []
-    },
-    {
-      "id": "3",
-      "title": "International Market Support",
-      "description": "Enhance data processing to handle different market formats, currencies, and address standards.",
-      "status": "pending",
-      "priority": "medium",
-      "subtasks": []
-    },
-    {
-      "id": "4",
-      "title": "Sentiment Analysis",
-      "description": "Add sentiment analysis module using specialized LLM fine-tuning for property descriptions.",
-      "status": "pending",
-      "priority": "low",
-      "subtasks": []
-    },
-    {
-      "id": "5",
-      "title": "Automated Test Suite",
-      "description": "Develop comprehensive automated test suite and perform user testing to address limited testing constraint.",
-      "status": "in-progress",
-      "priority": "high",
-      "subtasks": [
-        {
-          "id": "5.1",
-          "title": "Add API provider integration tests",
-          "status": "completed"
-        }
-      ]
-    },
-    {
-      "id": "6",
-      "title": "NDP MVP Launch",
-      "description": "Finalize and ship the public free-tier MVP per PRD for maximum attraction.",
-      "status": "in-progress",
-      "priority": "high",
-      "subtasks": [
-        { "id": "6.1", "title": "Finalize MVP scope per PRD", "status": "pending" },
-        { "id": "6.2", "title": "Implement chat, search, settings pages (frontend)", "status": "pending" },
-        { "id": "6.3", "title": "Verify backend endpoints (chat, search, tools, settings, admin)", "status": "completed" },
-        { "id": "6.4", "title": "Apply rate limiting and request IDs", "status": "pending" },
-        { "id": "6.5", "title": "Ensure CORS pinned in production", "status": "pending" }
-      ]
-    },
-    {
-      "id": "7",
-      "title": "Free-tier Deployment",
-      "description": "Deploy frontend (Vercel) and backend (Render/Railway) with Neon/Supabase Postgres.",
-      "status": "pending",
-      "priority": "high",
-      "subtasks": [
-        { "id": "7.1", "title": "Deploy frontend to Vercel", "status": "pending" },
-        { "id": "7.2", "title": "Deploy backend to Render/Railway", "status": "pending" },
-        { "id": "7.3", "title": "Configure environment vars and CORS", "status": "pending" },
-        { "id": "7.4", "title": "Provision Neon/Supabase Postgres", "status": "pending" },
-        { "id": "7.5", "title": "Run health checks and smoke tests", "status": "pending" }
-      ]
-    },
-    {
-      "id": "8",
-      "title": "Testing & Monitoring",
-      "description": "Establish robust tests (unit/integration/e2e) and observability for NDP.",
-      "status": "pending",
-      "priority": "high",
-      "subtasks": [
-        { "id": "8.1", "title": "Run unit/integration/e2e suites", "status": "pending" },
-        { "id": "8.2", "title": "Set up structured logs & metrics", "status": "pending" },
-        { "id": "8.3", "title": "Add uptime monitoring & alerts", "status": "pending" }
-      ]
-    },
-    {
-      "id": "9",
-      "title": "Community Building",
-      "description": "Create channels and capture interest to build early user community.",
-      "status": "pending",
-      "priority": "medium",
-      "subtasks": [
-        { "id": "9.1", "title": "Add landing page CTA for email capture", "status": "pending" },
-        { "id": "9.2", "title": "Create Discord/Telegram channels", "status": "pending" },
-        { "id": "9.3", "title": "Implement feedback form", "status": "pending" }
-      ]
-    },
-    {
-      "id": "10",
-      "title": "Paid Version Foundation",
-      "description": "Lay groundwork for closed paid offering with auth, subscriptions, and pgvector.",
-      "status": "pending",
-      "priority": "medium",
-      "subtasks": [
-        { "id": "10.1", "title": "Implement email/OAuth auth skeleton", "status": "pending" },
-        { "id": "10.2", "title": "Move notification settings to server DB", "status": "pending" },
-        { "id": "10.3", "title": "Prepare pgvector migration plan", "status": "pending" },
-        { "id": "10.4", "title": "Add subscription plan stubs", "status": "pending" }
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Integration with Real Estate APIs",
+        "description": "Develop adapters for real estate APIs to fetch property data dynamically.",
+        "status": "completed",
+        "priority": "high",
+        "subtasks": [],
+        "dependencies": []
+      },
+      {
+        "id": 2,
+        "title": "Geographical Mapping",
+        "description": "Integrate with mapping services (e.g., Mapbox, Folium) to visualize property locations in the UI.",
+        "status": "pending",
+        "priority": "medium",
+        "subtasks": [],
+        "dependencies": []
+      },
+      {
+        "id": 3,
+        "title": "International Market Support",
+        "description": "Enhance data processing to handle different market formats, currencies, and address standards.",
+        "status": "pending",
+        "priority": "medium",
+        "subtasks": [],
+        "dependencies": []
+      },
+      {
+        "id": 4,
+        "title": "Sentiment Analysis",
+        "description": "Add sentiment analysis module using specialized LLM fine-tuning for property descriptions.",
+        "status": "pending",
+        "priority": "low",
+        "subtasks": [],
+        "dependencies": []
+      },
+      {
+        "id": 5,
+        "title": "Automated Test Suite",
+        "description": "Develop comprehensive automated test suite and perform user testing to address limited testing constraint.",
+        "status": "in-progress",
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 5,
+            "title": "Add API provider integration tests",
+            "status": "completed",
+            "parentId": "undefined"
+          }
+        ],
+        "dependencies": []
+      },
+      {
+        "id": 6,
+        "title": "NDP MVP Launch",
+        "description": "Finalize and ship the public free-tier MVP per PRD for maximum attraction.",
+        "status": "in-progress",
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 6,
+            "title": "Finalize MVP scope per PRD",
+            "status": "pending",
+            "parentId": "undefined"
+          },
+          {
+            "id": 6,
+            "title": "Implement chat, search, settings pages (frontend)",
+            "status": "pending",
+            "parentId": "undefined"
+          },
+          {
+            "id": 6,
+            "title": "Verify backend endpoints (chat, search, tools, settings, admin)",
+            "status": "completed",
+            "parentId": "undefined"
+          },
+          {
+            "id": 6,
+            "title": "Apply rate limiting and request IDs",
+            "status": "pending",
+            "parentId": "undefined"
+          },
+          {
+            "id": 6,
+            "title": "Ensure CORS pinned in production",
+            "status": "pending",
+            "parentId": "undefined"
+          }
+        ],
+        "dependencies": []
+      },
+      {
+        "id": 7,
+        "title": "Free-tier Deployment",
+        "description": "Deploy frontend (Vercel) and backend (Render/Railway) with Neon/Supabase Postgres.",
+        "status": "pending",
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 7,
+            "title": "Deploy frontend to Vercel",
+            "status": "pending",
+            "parentId": "undefined"
+          },
+          {
+            "id": 7,
+            "title": "Deploy backend to Render/Railway",
+            "status": "pending",
+            "parentId": "undefined"
+          },
+          {
+            "id": 7,
+            "title": "Configure environment vars and CORS",
+            "status": "pending",
+            "parentId": "undefined"
+          },
+          {
+            "id": 7,
+            "title": "Provision Neon/Supabase Postgres",
+            "status": "pending",
+            "parentId": "undefined"
+          },
+          {
+            "id": 7,
+            "title": "Run health checks and smoke tests",
+            "status": "pending",
+            "parentId": "undefined"
+          }
+        ],
+        "dependencies": []
+      },
+      {
+        "id": 8,
+        "title": "Testing & Monitoring",
+        "description": "Establish robust tests (unit/integration/e2e) and observability for NDP.",
+        "status": "in-progress",
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 8,
+            "title": "Run unit/integration/e2e suites",
+            "status": "pending",
+            "parentId": "undefined"
+          },
+          {
+            "id": 8,
+            "title": "Set up structured logs & metrics",
+            "status": "pending",
+            "parentId": "undefined"
+          },
+          {
+            "id": 8,
+            "title": "Add uptime monitoring & alerts",
+            "status": "pending",
+            "parentId": "undefined"
+          }
+        ],
+        "updatedAt": "2026-01-18T21:28:01.994Z",
+        "dependencies": []
+      },
+      {
+        "id": 9,
+        "title": "Community Building",
+        "description": "Create channels and capture interest to build early user community.",
+        "status": "pending",
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 9,
+            "title": "Add landing page CTA for email capture",
+            "status": "pending",
+            "parentId": "undefined"
+          },
+          {
+            "id": 9,
+            "title": "Create Discord/Telegram channels",
+            "status": "pending",
+            "parentId": "undefined"
+          },
+          {
+            "id": 9,
+            "title": "Implement feedback form",
+            "status": "pending",
+            "parentId": "undefined"
+          }
+        ],
+        "dependencies": []
+      },
+      {
+        "id": 10,
+        "title": "Paid Version Foundation",
+        "description": "Lay groundwork for closed paid offering with auth, subscriptions, and pgvector.",
+        "status": "pending",
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 10,
+            "title": "Implement email/OAuth auth skeleton",
+            "status": "pending",
+            "parentId": "undefined"
+          },
+          {
+            "id": 10,
+            "title": "Move notification settings to server DB",
+            "status": "pending",
+            "parentId": "undefined"
+          },
+          {
+            "id": 10,
+            "title": "Prepare pgvector migration plan",
+            "status": "pending",
+            "parentId": "undefined"
+          },
+          {
+            "id": 10,
+            "title": "Add subscription plan stubs",
+            "status": "pending",
+            "parentId": "undefined"
+          }
+        ],
+        "dependencies": []
+      }
+    ],
+    "metadata": {
+      "version": "1.0.0",
+      "lastModified": "2026-01-18T21:28:01.996Z",
+      "taskCount": 10,
+      "completedCount": 0,
+      "tags": [
+        "master"
       ]
     }
-  ]
+  }
 }
