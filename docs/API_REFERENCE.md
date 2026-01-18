@@ -20,6 +20,8 @@ You can optionally provide your own `X-Request-ID` (letters/numbers plus `._-`, 
 
 The API enforces per-client request rate limits on `/api/v1/*` endpoints.
 
+When enabled, all responses include `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset`.
+
 If you exceed the limit, you will receive:
 - **Status**: `429 Too Many Requests`
 - **Headers**: `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`

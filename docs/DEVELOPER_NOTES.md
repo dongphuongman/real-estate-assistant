@@ -133,7 +133,7 @@ metrics = FinancialCalculator.analyze_investment(
 
 ### General
 - All API responses include an `X-Request-ID` header for log correlation.
-- Rate limiting is enforced per client (API key) with defaults: 100 requests per 60 seconds.
+- Rate limiting is enforced per client (API key) and controlled by `API_RATE_LIMIT_ENABLED` and `API_RATE_LIMIT_RPM`.
 - Rate limit headers returned: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`.
 
 ### Search
