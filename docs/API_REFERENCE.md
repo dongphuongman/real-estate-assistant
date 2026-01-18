@@ -380,3 +380,28 @@ Represents a nearby location of interest.
     *   `latitude` (float): Geo-coordinate.
     *   `longitude` (float): Geo-coordinate.
     *   `tags` (Dict[str, str]): Additional OSM tags.
+
+---
+
+## Python API: Data Providers
+
+### `APIProvider` — External REST API ingestion
+
+**Module**: `data.providers.api_provider`
+
+Fetch property listings from external REST APIs and normalize into project schemas.
+
+#### Usage
+
+```python
+from data.providers.api_provider import APIProvider
+
+provider = APIProvider(api_url="https://api.example.com", api_key="secret")
+properties = provider.get_properties()
+```
+
+#### Notes
+
+- Authentication via Bearer token when `api_key` is provided.
+- Validates API reachability, loads JSON payload, and returns `Property` objects.
+- See integration tests for end-to-end flow: `tests/integration/data/test_api_provider_integration.py`.

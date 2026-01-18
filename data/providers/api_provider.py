@@ -5,8 +5,7 @@ This module provides a generic API provider and a Mock implementation
 for fetching property data from external services.
 """
 import logging
-import asyncio
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
 import pandas as pd
 import requests
 from data.providers.base import BaseDataProvider
@@ -38,7 +37,7 @@ class APIProvider(BaseDataProvider):
             bool: True if reachable, False otherwise.
         """
         try:
-            response = requests.get(self.source, headers=self.headers, timeout=self.timeout)
+            response = requests.get(str(self.source), headers=self.headers, timeout=self.timeout)
             return response.status_code in [200, 401, 403]  # 401/403 means reachable but auth failed
         except requests.RequestException:
             logger.error(f"Failed to connect to API: {self.source}")
@@ -52,7 +51,7 @@ class APIProvider(BaseDataProvider):
             pd.DataFrame: DataFrame containing raw property data.
         """
         try:
-            response = requests.get(f"{self.source}/properties", headers=self.headers, timeout=self.timeout)
+            response = requests.get(f"{str(self.source)}/properties", headers=self.headers, timeout=self.timeout)
             response.raise_for_status()
             data = response.json()
             # specific mapping logic should be handled by subclasses or a mapping config
@@ -73,16 +72,8 @@ class APIProvider(BaseDataProvider):
         properties = []
         for _, row in df.iterrows():
             try:
-                # Basic mapping - in a real scenario, we'd have a robust mapper
-                prop = Property(
-                    city=row.get("city", "Unknown"),
-                    price=row.get("price"),
-                    title=row.get("title"),
-                    description=row.get("description"),
-                    property_type=row.get("property_type", PropertyType.APARTMENT),
-                    listing_type=row.get("listing_type", ListingType.RENT),
-                    # Add other fields as needed
-                )
+                data = row.to_dict()
+                prop = Property(**data)
                 properties.append(prop)
             except Exception as e:
                 logger.warning(f"Skipping invalid property row: {e}")
@@ -95,7 +86,7 @@ class MockRealEstateAPIProvider(APIProvider):
     Useful for testing and development without a real API key.
     """
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(api_url="https://mock.api.realestate.com", api_key="mock-key")
 
     def validate_source(self) -> bool:
@@ -141,17 +132,6 @@ class MockRealEstateAPIProvider(APIProvider):
         df = self.load_data()
         properties = []
         for _, row in df.iterrows():
-            prop = Property(
-                id=row["id"],
-                title=row["title"],
-                description=row["description"],
-                city=row["city"],
-                price=row["price"],
-                currency=row["currency"],
-                property_type=row["property_type"],
-                listing_type=row["listing_type"],
-                rooms=row["rooms"],
-                area_sqm=row["area_sqm"]
-            )
-            properties.append(prop)
+            data = row.to_dict()
+            properties.append(Property(**data))
         return properties

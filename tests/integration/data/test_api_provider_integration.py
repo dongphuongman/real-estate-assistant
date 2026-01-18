@@ -3,9 +3,8 @@ Integration tests for the API Data Provider.
 """
 import pytest
 from unittest.mock import patch, MagicMock
-import pandas as pd
 from data.providers.api_provider import APIProvider
-from data.schemas import Property, PropertyType, ListingType
+from data.schemas import PropertyType, ListingType
 
 @pytest.fixture
 def api_provider():

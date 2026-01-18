@@ -36,9 +36,15 @@
       "id": "5",
       "title": "Automated Test Suite",
       "description": "Develop comprehensive automated test suite and perform user testing to address limited testing constraint.",
-      "status": "pending",
+      "status": "in-progress",
       "priority": "high",
-      "subtasks": []
+      "subtasks": [
+        {
+          "id": "5.1",
+          "title": "Add API provider integration tests",
+          "status": "completed"
+        }
+      ]
     }
   ]
 }
