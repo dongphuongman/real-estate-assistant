@@ -1,0 +1,44 @@
+{
+  "tasks": [
+    {
+      "id": "1",
+      "title": "Integration with Real Estate APIs",
+      "description": "Develop adapters for real estate APIs to fetch property data dynamically.",
+      "status": "pending",
+      "priority": "high",
+      "subtasks": []
+    },
+    {
+      "id": "2",
+      "title": "Geographical Mapping",
+      "description": "Integrate with mapping services (e.g., Mapbox, Folium) to visualize property locations in the UI.",
+      "status": "pending",
+      "priority": "medium",
+      "subtasks": []
+    },
+    {
+      "id": "3",
+      "title": "International Market Support",
+      "description": "Enhance data processing to handle different market formats, currencies, and address standards.",
+      "status": "pending",
+      "priority": "medium",
+      "subtasks": []
+    },
+    {
+      "id": "4",
+      "title": "Sentiment Analysis",
+      "description": "Add sentiment analysis module using specialized LLM fine-tuning for property descriptions.",
+      "status": "pending",
+      "priority": "low",
+      "subtasks": []
+    },
+    {
+      "id": "5",
+      "title": "Automated Test Suite",
+      "description": "Develop comprehensive automated test suite and perform user testing to address limited testing constraint.",
+      "status": "pending",
+      "priority": "high",
+      "subtasks": []
+    }
+  ]
+}
