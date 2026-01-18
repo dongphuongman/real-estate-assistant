@@ -9,7 +9,7 @@ from typing import List, Optional
 import pandas as pd
 import requests
 from data.providers.base import BaseDataProvider
-from data.schemas import Property, PropertyType, ListingType
+from data.schemas import Property
 
 logger = logging.getLogger(__name__)
 

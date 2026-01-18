@@ -261,11 +261,13 @@ def create_city_overview_map(
         Folium Map object
     """
     # Calculate statistics by city
-    df = pd.DataFrame([{
+    rows = [{
         'city': p.city,
         'price': p.price,
         'rooms': p.rooms
-    } for p in properties.properties])
+    } for p in properties.properties]
+    # Ensure columns exist even when empty
+    df = pd.DataFrame(rows, columns=['city', 'price', 'rooms'])
 
     city_stats = df.groupby('city').agg({
         'price': ['mean', 'median', 'count'],

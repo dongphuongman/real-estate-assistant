@@ -132,6 +132,8 @@
 - Sprint 3 (3–4 weeks)
   - [DONE] Hedonic fair‑price model and strategic reranker
   - [DONE] Historical map layers
+  - [DONE] Price heatmap mode (map view)
+  - [DONE] City overview map with aggregate statistics
   - [DONE] Points of interest, report export
   - [DONE] Performance/cache/parallel ingestion
 - Sprint 4 (2 weeks)

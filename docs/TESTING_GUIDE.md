@@ -592,6 +592,20 @@ Should use agent: False
 
 ---
 
+### Geographic Visualizations
+
+- Price Heatmap
+  - Unit tests: tests/unit/test_geo_viz_heatmap.py
+  - Validates Folium map creation for empty and populated collections
+  - Run: python -m pytest tests/unit/test_geo_viz_heatmap.py -q
+
+- City Overview
+  - Unit tests: tests/unit/test_geo_viz_city_overview.py
+  - Validates Folium map creation aggregating city statistics
+  - Run: python -m pytest tests/unit/test_geo_viz_city_overview.py -q
+
+---
+
 ## 6️⃣ Error Handling Tests
 
 ### Test 6.1: Invalid API Key

@@ -64,7 +64,13 @@ from notifications import (
 )
 from streaming import StreamHandler
 from ui.dev_dashboard import render_dev_dashboard
-from ui.geo_viz import _get_city_coordinates, create_historical_trends_map
+from ui.geo_viz import (
+    _get_city_coordinates,
+    create_historical_trends_map,
+    create_property_map,
+    create_price_heatmap,
+    create_city_overview_map,
+)
 from utils import (
     ExportFormat,
     InsightsExporter,
@@ -1610,7 +1616,7 @@ def render_market_insights_tab():
                 )
                 map_mode = st.radio(
                     "Map Mode",
-                    options=["Current Market", "Historical Trends"],
+                    options=["Current Market", "Price Heatmap", "Historical Trends", "City Overview"],
                     horizontal=True,
                     key="map_mode_select",
                 )
@@ -1692,7 +1698,6 @@ def render_market_insights_tab():
                 st.session_state.geo_radius_km = float(radius_km)
 
                 import folium
-                from folium import plugins
 
                 if map_mode == "Historical Trends":
                     if has_coords and len(map_df) == 0:
@@ -1726,9 +1731,65 @@ def render_market_insights_tab():
                     ).add_to(fmap)
                     
                     st_folium(fmap, height=350, use_container_width=True)
+                elif map_mode == "Price Heatmap":
+                    # Convert filtered DataFrame to Property objects
+                    props_list = []
+                    if has_coords and len(map_df) > 0:
+                        for _, row in map_df.head(int(map_max_points)).iterrows():
+                            try:
+                                row_dict = {k: v if pd.notna(v) else None for k, v in row.items()}
+                                if "lat" in row_dict:
+                                    row_dict["latitude"] = row_dict.pop("lat")
+                                if "lon" in row_dict:
+                                    row_dict["longitude"] = row_dict.pop("lon")
+                                props_list.append(Property(**row_dict))
+                            except Exception:
+                                continue
+                    coll = PropertyCollection(properties=props_list, total_count=len(props_list))
+                    fmap = create_price_heatmap(coll, center_city=center_city, zoom_start=11, radius=15, blur=25, jitter=True)
+                    folium.Circle(
+                        location=[lat, lon],
+                        radius=float(radius_km) * 1000.0,
+                        color="#4B5563",
+                        fill=True,
+                        fill_opacity=0.1,
+                    ).add_to(fmap)
+                    st_folium(fmap, height=350, use_container_width=True)
+                elif map_mode == "City Overview":
+                    # Convert filtered DataFrame to Property objects
+                    props_list = []
+                    if has_coords and len(map_df) > 0:
+                        for _, row in map_df.head(int(map_max_points)).iterrows():
+                            try:
+                                row_dict = {k: v if pd.notna(v) else None for k, v in row.items()}
+                                if "lat" in row_dict:
+                                    row_dict["latitude"] = row_dict.pop("lat")
+                                if "lon" in row_dict:
+                                    row_dict["longitude"] = row_dict.pop("lon")
+                                props_list.append(Property(**row_dict))
+                            except Exception:
+                                continue
+                    coll = PropertyCollection(properties=props_list, total_count=len(props_list))
+                    fmap = create_city_overview_map(coll, show_statistics=True)
+                    st_folium(fmap, height=350, use_container_width=True)
                 
                 else:
-                    fmap = folium.Map(location=[lat, lon], zoom_start=11)
+                    props_list = []
+                    if has_coords and len(map_df) > 0:
+                        for _, row in map_df.head(int(map_max_points)).iterrows():
+                            try:
+                                row_dict = {k: v if pd.notna(v) else None for k, v in row.items()}
+                                if "lat" in row_dict:
+                                    row_dict["latitude"] = row_dict.pop("lat")
+                                if "lon" in row_dict:
+                                    row_dict["longitude"] = row_dict.pop("lon")
+                                props_list.append(Property(**row_dict))
+                            except Exception:
+                                continue
+
+                    coll = PropertyCollection(properties=props_list, total_count=len(props_list))
+                    fmap = create_property_map(coll, center_city=center_city, zoom_start=11, add_clusters=True, show_legend=True, jitter=True)
+
                     folium.Circle(
                         location=[lat, lon],
                         radius=float(radius_km) * 1000.0,
@@ -1736,83 +1797,6 @@ def render_market_insights_tab():
                         fill=True,
                         fill_opacity=0.2,
                     ).add_to(fmap)
-                    folium.Marker(location=[lat, lon]).add_to(fmap)
-
-                    if has_coords and len(map_df) > 0:
-                        cluster = plugins.MarkerCluster(name="Properties").add_to(fmap)
-                        for _, row in map_df.head(int(map_max_points)).iterrows():
-                            try:
-                                plat = float(row["lat"])
-                                plon = float(row["lon"])
-                            except Exception:
-                                continue
-
-                            price_val = row.get("price")
-                            rooms_val = row.get("rooms")
-                            ppsqm_val = row.get("price_per_sqm")
-                            ptype_val = row.get("property_type")
-                            city_val = row.get("city")
-                            dist_val = None
-                            try:
-                                import math
-
-                                dist_val = None
-                                lat1 = math.radians(float(lat))
-                                lon1 = math.radians(float(lon))
-                                lat2 = math.radians(float(plat))
-                                lon2 = math.radians(float(plon))
-                                dlat = lat2 - lat1
-                                dlon = lon2 - lon1
-                                a = (
-                                    math.sin(dlat / 2) ** 2
-                                    + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
-                                )
-                                c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-                                dist_val = 6371.0 * c
-                            except Exception:
-                                dist_val = None
-
-                            tooltip = f"{city_val} | {ptype_val}"
-                            if price_val is not None:
-                                try:
-                                    tooltip = f"{tooltip} | ${float(price_val):,.0f}"
-                                except Exception:
-                                    tooltip = f"{tooltip} | {price_val}"
-                            popup_parts = []
-                            if city_val is not None:
-                                popup_parts.append(f"<b>{city_val}</b>")
-                            if ptype_val is not None:
-                                popup_parts.append(f"Type: {ptype_val}")
-                            if rooms_val is not None:
-                                try:
-                                    popup_parts.append(f"Rooms: {float(rooms_val):.0f}")
-                                except Exception:
-                                    popup_parts.append(f"Rooms: {rooms_val}")
-                            if price_val is not None:
-                                try:
-                                    popup_parts.append(f"Price: ${float(price_val):,.0f}")
-                                except Exception:
-                                    popup_parts.append(f"Price: {price_val}")
-                            if ppsqm_val is not None and str(ppsqm_val) != "nan":
-                                try:
-                                    popup_parts.append(f"Price/sqm: ${float(ppsqm_val):,.0f}")
-                                except Exception:
-                                    popup_parts.append(f"Price/sqm: {ppsqm_val}")
-                            if dist_val is not None:
-                                popup_parts.append(f"Distance: {dist_val:.2f} km")
-                            popup_html = "<br/>".join(popup_parts) if popup_parts else ""
-
-                            folium.CircleMarker(
-                                location=[plat, plon],
-                                radius=5,
-                                color="#2563EB",
-                                fill=True,
-                                fillColor="#2563EB",
-                                fillOpacity=0.65,
-                                weight=1,
-                                tooltip=tooltip,
-                                popup=folium.Popup(popup_html, max_width=320),
-                            ).add_to(cluster)
 
                     if has_coords and len(map_df) == 0:
                         st.info("No properties match the current map filters.")
