@@ -59,6 +59,21 @@ class AppSettings(BaseModel):
         )
     )
 
+    # Auth
+    auth_email_enabled: bool = Field(
+        default_factory=lambda: os.getenv("AUTH_EMAIL_ENABLED", "false").strip().lower()
+        in {"1", "true", "yes", "on"}
+    )
+    auth_code_ttl_minutes: int = Field(
+        default_factory=lambda: int(os.getenv("AUTH_CODE_TTL_MINUTES", "10"))
+    )
+    session_ttl_days: int = Field(
+        default_factory=lambda: int(os.getenv("SESSION_TTL_DAYS", "30"))
+    )
+    auth_storage_dir: str = Field(
+        default_factory=lambda: os.getenv("AUTH_STORAGE_DIR", ".auth")
+    )
+
     # Model Defaults
     default_provider: str = Field(default="openai", description="Default LLM provider")
     default_model: Optional[str] = Field(default=None, description="Default model ID (overrides provider default)")

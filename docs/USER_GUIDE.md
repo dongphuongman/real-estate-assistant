@@ -93,6 +93,14 @@ For real-time streaming from the assistant:
 - The response uses `text/event-stream` with lines like `data: {"content":"..."}` and finishes with `data: [DONE]`
 - Ensure you include the `X-API-Key` header; see API Reference for an example
 
+## Login (Email Code)
+
+For accounts-enabled deployments, you can log in using a one-time email code:
+- Request a code: `POST /api/v1/auth/request-code` with your email
+- Enter the 6-digit code to verify: `POST /api/v1/auth/verify-code`
+- The server returns a `session_token`; include it in subsequent requests with `X-Session-Token`
+- In development, the API returns the code inline for testing
+
 ## Financial Tools
 
 ### Mortgage Calculator

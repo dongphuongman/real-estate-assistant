@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from api.auth import get_api_key
 from api.models import HealthCheck
-from api.routers import search, chat, tools, admin, settings as settings_router, exports
+from api.routers import search, chat, tools, admin, settings as settings_router, exports, auth
 from api.dependencies import get_vector_store
 from api.observability import add_observability
 from config.settings import get_settings
@@ -114,6 +114,7 @@ app.include_router(admin.router, prefix="/api/v1", dependencies=[Depends(get_api
 app.include_router(
     exports.router, prefix="/api/v1", dependencies=[Depends(get_api_key)]
 )
+app.include_router(auth.router, prefix="/api/v1")
 
 
 @app.get("/health", response_model=HealthCheck, tags=["System"])

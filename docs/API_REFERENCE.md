@@ -38,6 +38,37 @@ If you exceed the limit, you will receive:
     *   Verify API key validity.
     *   **Headers**: `X-API-Key: your-api-key
     *   **Returns**: `{"message": "Authenticated successfully", "valid": true}`
+*   `POST /api/v1/auth/request-code`
+    *   Request a one-time login code sent to email (dev returns code inline).
+    *   **Body**:
+        ```json
+        { "email": "user@example.com" }
+        ```
+    *   **Returns**:
+        ```json
+        { "status": "code_sent" }
+        ```
+      In development:
+        ```json
+        { "status": "code_sent", "code": "123456" }
+        ```
+*   `POST /api/v1/auth/verify-code`
+    *   Verify the one-time code and create a session.
+    *   **Body**:
+        ```json
+        { "email": "user@example.com", "code": "123456" }
+        ```
+    *   **Returns**:
+        ```json
+        { "session_token": "<token>", "user_email": "user@example.com" }
+        ```
+*   `GET /api/v1/auth/session`
+    *   Fetch current session info.
+    *   **Headers**: `X-Session-Token: <token>`
+    *   **Returns**:
+        ```json
+        { "session_token": "<token>", "user_email": "user@example.com" }
+        ```
 
 #### Search
 

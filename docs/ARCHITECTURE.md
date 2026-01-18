@@ -59,6 +59,7 @@
 - Chat: `/api/v1/chat` (SSE supported)
 - Tools: `/api/v1/tools/*` (mortgage, compare, price analysis, location analysis)
 - Settings: `/api/v1/settings/notifications`, `/api/v1/settings/models`
+- Auth: `/api/v1/auth/*` (email one-time code login, session token)
 - Admin: `/api/v1/admin/*` (ingest/reindex/health)
 
 ## Deployment Target
