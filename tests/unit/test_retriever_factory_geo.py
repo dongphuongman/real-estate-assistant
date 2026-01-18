@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
-from vector_store.hybrid_retriever import create_retriever, AdvancedPropertyRetriever
 from vector_store.chroma_store import ChromaPropertyStore
+from vector_store.hybrid_retriever import AdvancedPropertyRetriever, create_retriever
 
 
 def test_factory_returns_advanced_when_geo_params_present(tmp_path):

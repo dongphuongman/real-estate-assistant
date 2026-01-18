@@ -18,9 +18,7 @@ export default function SearchPage() {
     try {
       const response = await searchProperties({ query });
       setResults(response.results);
-      console.log("Search results:", response);
-    } catch (err) {
-      console.error("Search failed:", err);
+    } catch {
       setError("Failed to perform search. Please try again.");
     } finally {
       setLoading(false);
@@ -28,7 +26,7 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8" aria-live="polite">
       <div className="flex flex-col space-y-8">
         {/* Search Header */}
         <div className="flex flex-col space-y-4">
@@ -39,7 +37,7 @@ export default function SearchPage() {
         </div>
 
         {/* Search Bar */}
-        <form onSubmit={handleSearch} className="flex gap-4">
+        <form onSubmit={handleSearch} className="flex gap-4" role="search" aria-label="Property search">
           <div className="relative flex-1">
             <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <input
@@ -48,12 +46,16 @@ export default function SearchPage() {
               className="w-full rounded-md border border-input bg-background pl-10 pr-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              aria-label="Search query"
+              aria-required="true"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
             className="inline-flex items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+            aria-busy={loading ? "true" : "false"}
+            aria-label={loading ? "Searching" : "Search"}
           >
             {loading ? "Searching..." : "Search"}
           </button>
@@ -77,9 +79,9 @@ export default function SearchPage() {
           {/* Results Grid */}
           <div className="md:col-span-3">
             {results.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-64 text-center border rounded-lg border-dashed">
+              <div className="flex flex-col items-center justify-center h-64 text-center border rounded-lg border-dashed" role="status" aria-live="polite">
                 <div className="p-4 rounded-full bg-muted/50 mb-4">
-                  <MapPin className="h-8 w-8 text-muted-foreground" />
+                  <MapPin className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
                 </div>
                 <h3 className="text-lg font-semibold">{error ? "Error" : "No results found"}</h3>
                 <p className="text-sm text-muted-foreground max-w-sm mt-2">
@@ -94,8 +96,8 @@ export default function SearchPage() {
                     <div key={prop.id || Math.random().toString()} className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
                       <div className="aspect-video w-full bg-muted relative">
                         {/* Placeholder for image */}
-                        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                          Image
+                        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground" aria-label="Property image placeholder">
+                          Property image
                         </div>
                       </div>
                       <div className="p-6 space-y-2">

@@ -1,7 +1,7 @@
 {
   "name": "ai-real-estate-assistant",
   "version": "1.0.0",
-  "description": "> **A modern, intelligent real estate assistant powered by advanced AI**",
+  "description": "AI-powered assistant for real estate agencies with chat, search, and analytics",
   "main": "index.js",
   "directories": {
     "doc": "docs",
@@ -19,7 +19,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "type": "commonjs",
   "bugs": {
     "url": "https://github.com/AleksNeStu/ai-real-estate-assistant/issues"

@@ -1,7 +1,10 @@
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 from langchain_core.documents import Document
+
 from vector_store.chroma_store import ChromaPropertyStore
+
 
 @pytest.fixture
 def mock_store():

@@ -1,12 +1,14 @@
-from fastapi import APIRouter, HTTPException, Header, Query
-from api.models import NotificationSettings, ModelProviderCatalog, ModelCatalogItem, ModelPricing
+import logging
+
+from fastapi import APIRouter, Header, HTTPException, Query
+
+from api.models import ModelCatalogItem, ModelPricing, ModelProviderCatalog, NotificationSettings
+from models.provider_factory import ModelProviderFactory
 from notifications.notification_preferences import (
-    NotificationPreferencesManager,
     AlertFrequency,
     AlertType,
+    NotificationPreferencesManager,
 )
-from models.provider_factory import ModelProviderFactory
-import logging
 
 logger = logging.getLogger(__name__)
 

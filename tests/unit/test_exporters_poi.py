@@ -2,10 +2,13 @@
 Tests for property export functionality with Points of Interest.
 """
 
-import pytest
 import json
+
+import pytest
+
+from data.schemas import PointOfInterest, Property, PropertyCollection, PropertyType
 from utils import PropertyExporter
-from data.schemas import Property, PropertyCollection, PropertyType, PointOfInterest
+
 
 @pytest.fixture
 def property_with_pois():

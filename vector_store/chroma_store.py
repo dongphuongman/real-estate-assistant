@@ -5,21 +5,19 @@ This module provides a persistent vector store for property embeddings
 using ChromaDB with FastEmbed embeddings.
 """
 
-from concurrent.futures import Future, ThreadPoolExecutor
-import platform
-import math
-from datetime import datetime
 import logging
+import math
 import os
-from pathlib import Path
+import platform
 import threading
-from typing import Any, Dict, List, Optional, Set, Sequence, Union, Mapping, cast
+from concurrent.futures import Future, ThreadPoolExecutor
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Union, cast
 
 import pandas as pd
-
-import streamlit as st
-from langchain_chroma import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_chroma import Chroma
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
@@ -115,7 +113,6 @@ class ChromaPropertyStore:
         self._indexing_event = threading.Event()
         self._index_future: Optional[Future[int]] = None
 
-    @st.cache_resource
     def _create_embeddings(_self, model_name: str) -> Optional[Embeddings]:
         try:
             is_windows = platform.system().lower() == "windows"
@@ -125,9 +122,9 @@ class ChromaPropertyStore:
             if _FastEmbedEmbeddings is not None and is_windows and force_fastembed:
                 return cast(Embeddings, _FastEmbedEmbeddings(model_name=model_name))
             if _FastEmbedEmbeddings is not None and is_windows:
-                st.warning("FastEmbed is disabled on Windows for stability. Set CHROMA_FORCE_FASTEMBED=1 to force enable.")
+                logger.warning("FastEmbed is disabled on Windows for stability. Set CHROMA_FORCE_FASTEMBED=1 to force enable.")
         except Exception as e:
-            st.warning(f"FastEmbed initialization failed: {e}")
+            logger.warning(f"FastEmbed initialization failed: {e}")
 
         try:
             from config import settings
@@ -135,14 +132,14 @@ class ChromaPropertyStore:
                 from langchain_openai import OpenAIEmbeddings
                 return cast(Embeddings, OpenAIEmbeddings())
         except Exception as e:
-            st.warning(f"OpenAI embeddings unavailable: {e}")
+            logger.warning(f"OpenAI embeddings unavailable: {e}")
 
         return None
 
     def _initialize_vector_store(self) -> Optional[Chroma]:
         """Initialize or load existing ChromaDB vector store."""
         if self.embeddings is None:
-            st.warning("Embeddings unavailable; vector store features are disabled")
+            logger.warning("Embeddings unavailable; vector store features are disabled")
             return None
 
         try:
@@ -177,7 +174,7 @@ class ChromaPropertyStore:
                     embedding_function=self.embeddings,
                 )
                 logger.info("Using in-memory Chroma vector store (persistence disabled for this platform)")
-                st.warning("Persistent vector store unavailable; using in-memory store")
+                logger.warning("Persistent vector store unavailable; using in-memory store")
                 return vector_store
 
         except BaseException as e:
@@ -190,7 +187,7 @@ class ChromaPropertyStore:
                     embedding_function=self.embeddings,
                 )
                 logger.info("Initialized in-memory Chroma vector store (no persistence)")
-                st.warning("Persistent vector store unavailable; using in-memory store")
+                logger.warning("Persistent vector store unavailable; using in-memory store")
                 return vector_store
             except BaseException as e2:
                 logger.error(f"In-memory Chroma init failed: {e2}")
@@ -394,7 +391,7 @@ class ChromaPropertyStore:
                     # Filter batch
                     new_batch = []
                     new_ids = []
-                    for doc, doc_id in zip(batch, batch_ids):
+                    for doc, doc_id in zip(batch, batch_ids, strict=False):
                         if doc_id not in existing_ids:
                             new_batch.append(doc)
                             new_ids.append(doc_id)
@@ -1123,7 +1120,6 @@ class ChromaPropertyStore:
         )
 
 
-@st.cache_resource
 def get_vector_store(
     persist_directory: Optional[str] = None,
     collection_name: str = "properties",

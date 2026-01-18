@@ -1,10 +1,12 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import MagicMock, patch
-from api.main import app
-from api.dependencies import get_llm, get_vector_store
-from api.auth import get_api_key
 from langchain_core.chat_history import BaseChatMessageHistory
+
+from api.auth import get_api_key
+from api.dependencies import get_llm, get_vector_store
+from api.main import app
 
 client = TestClient(app)
 

@@ -1,7 +1,8 @@
 from unittest.mock import patch
+
+from data.schemas import ListingType, Property, PropertyCollection, PropertyType
 from vector_store.chroma_store import ChromaPropertyStore
 from vector_store.hybrid_retriever import HybridPropertyRetriever
-from data.schemas import Property, PropertyType, ListingType, PropertyCollection
 
 
 def test_hybrid_retriever_filters_rent_vs_sale(tmp_path):

@@ -12,23 +12,23 @@ import threading
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from analytics import MarketInsights
 from data.schemas import PropertyCollection
-from notifications.alert_manager import AlertManager, Alert, AlertType
+from notifications.alert_manager import Alert, AlertManager, AlertType
+from notifications.digest_generator import DigestGenerator
 from notifications.email_service import EmailService
-from notifications.notification_preferences import (
-    NotificationPreferencesManager, 
-    AlertFrequency, 
-    NotificationPreferences
-)
 from notifications.notification_history import (
     NotificationHistory,
     NotificationStatus,
     NotificationType,
 )
-from notifications.digest_generator import DigestGenerator
-from utils.saved_searches import SavedSearchManager
+from notifications.notification_preferences import (
+    AlertFrequency,
+    NotificationPreferences,
+    NotificationPreferencesManager,
+)
 from utils.property_cache import load_collection, load_previous_collection
-from analytics import MarketInsights
+from utils.saved_searches import SavedSearchManager
 from vector_store.chroma_store import ChromaPropertyStore
 
 logger = logging.getLogger(__name__)

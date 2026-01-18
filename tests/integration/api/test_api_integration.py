@@ -1,10 +1,12 @@
+from unittest.mock import patch
+
 from fastapi.testclient import TestClient
+from langchain_core.documents import Document
+
+from api.dependencies import get_vector_store
 from api.main import app
 from config.settings import get_settings
-from api.dependencies import get_vector_store
-from langchain_core.documents import Document
 from notifications.notification_preferences import NotificationPreferencesManager
-from unittest.mock import patch
 
 client = TestClient(app)
 

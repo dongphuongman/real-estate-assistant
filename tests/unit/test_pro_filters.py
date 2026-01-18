@@ -1,10 +1,13 @@
 """Unit tests for PRO filters."""
 
-import pytest
 from datetime import datetime
-from data.schemas import Property, PropertyCollection
-from analytics.market_insights import MarketInsights
+
+import pytest
+
 from agents.query_analyzer import get_query_analyzer
+from analytics.market_insights import MarketInsights
+from data.schemas import Property, PropertyCollection
+
 
 @pytest.fixture
 def sample_properties():

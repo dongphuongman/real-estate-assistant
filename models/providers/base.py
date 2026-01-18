@@ -8,7 +8,8 @@ LLM providers (OpenAI, Anthropic, Google, Ollama, etc.).
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional, Dict, Any, List
+from typing import Any, Dict, List, Optional
+
 from langchain_core.language_models import BaseChatModel
 
 

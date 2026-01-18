@@ -1,15 +1,16 @@
-import pytest
-from fastapi.testclient import TestClient
-from unittest.mock import MagicMock
 from io import BytesIO
 from types import SimpleNamespace
-from fastapi import HTTPException
+from unittest.mock import MagicMock
 
-from api.main import app
-from api.dependencies import get_vector_store
+import pytest
+from fastapi import HTTPException
+from fastapi.testclient import TestClient
 from langchain_core.documents import Document
-from vector_store.chroma_store import ChromaPropertyStore
+
+from api.dependencies import get_vector_store
+from api.main import app
 from api.routers import exports as exports_router
+from vector_store.chroma_store import ChromaPropertyStore
 
 client = TestClient(app)
 

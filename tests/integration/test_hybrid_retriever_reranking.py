@@ -1,11 +1,13 @@
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 from langchain_core.documents import Document
 
-from vector_store.hybrid_retriever import create_retriever
 from vector_store.chroma_store import ChromaPropertyStore
+from vector_store.hybrid_retriever import create_retriever
 from vector_store.reranker import StrategicReranker
+
 
 @pytest.fixture
 def mock_vector_store():

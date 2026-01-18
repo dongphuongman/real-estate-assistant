@@ -5,13 +5,14 @@ Tracks user interactions, queries, and behavior patterns to improve
 the user experience and understand usage patterns.
 """
 
-from typing import List, Dict, Any, Optional
-from datetime import datetime
-from pydantic import BaseModel, Field
-from enum import Enum
 import json
-from pathlib import Path
 from collections import Counter
+from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field
 
 
 class EventType(str, Enum):

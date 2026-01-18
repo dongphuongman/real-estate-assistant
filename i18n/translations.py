@@ -13,7 +13,7 @@ Supported languages:
 - Chinese (zh)
 """
 
-from typing import Dict, Any
+from typing import Any, Dict
 
 # Language display names
 LANGUAGES = {

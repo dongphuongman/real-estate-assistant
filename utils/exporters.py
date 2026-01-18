@@ -8,16 +8,17 @@ Supports exporting properties to multiple formats:
 - Markdown: Human-readable report format
 """
 
-from enum import Enum
-from typing import List, Optional
-from io import BytesIO, StringIO
 import json
 from datetime import datetime
+from enum import Enum
+from io import BytesIO, StringIO
+from typing import List, Optional
+
 import pandas as pd
-from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from analytics import MarketInsights
 

@@ -1,5 +1,11 @@
 import re
-from api.observability import RateLimiter, normalize_request_id, generate_request_id, client_id_from_api_key
+
+from api.observability import (
+    RateLimiter,
+    client_id_from_api_key,
+    generate_request_id,
+    normalize_request_id,
+)
 
 
 def test_rate_limiter_allows_within_limit():

@@ -1,16 +1,17 @@
 """
 Test script to verify the Agent System.
 """
+import logging
 import os
 import sys
-import logging
 
 # Add project root to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from workflows.pipeline import DevPipeline
-from rules.engine import RuleEngine
 from unittest.mock import MagicMock, patch
+
+from rules.engine import RuleEngine
+from workflows.pipeline import DevPipeline
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

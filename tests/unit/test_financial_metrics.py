@@ -1,5 +1,7 @@
 import unittest
-from analytics.financial_metrics import FinancialCalculator, MortgageParams, ExpenseParams
+
+from analytics.financial_metrics import ExpenseParams, FinancialCalculator, MortgageParams
+
 
 class TestFinancialCalculator(unittest.TestCase):
     

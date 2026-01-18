@@ -223,6 +223,60 @@
           }
         ],
         "dependencies": []
+      },
+      {
+        "id": 11,
+        "title": "Remove legacy Streamlit UI",
+        "description": "Delete Streamlit app and UI helpers; refactor Python to drop streamlit dependencies.",
+        "status": "completed",
+        "priority": "high",
+        "subtasks": [],
+        "dependencies": []
+      },
+      {
+        "id": 12,
+        "title": "Next.js accessibility improvements",
+        "description": "Add ARIA roles/labels, error feedback, focus indicators in search page.",
+        "status": "completed",
+        "priority": "high",
+        "subtasks": [],
+        "dependencies": []
+      },
+      {
+        "id": 13,
+        "title": "Frontend API error correlation",
+        "description": "Propagate X-Request-ID from API responses in frontend error handling.",
+        "status": "completed",
+        "priority": "medium",
+        "subtasks": [],
+        "dependencies": []
+      },
+      {
+        "id": 14,
+        "title": "CI/CD pipeline",
+        "description": "Add GitHub Actions for lint, typecheck, unit/integration tests (frontend/backend).",
+        "status": "completed",
+        "priority": "high",
+        "subtasks": [],
+        "dependencies": []
+      },
+      {
+        "id": 15,
+        "title": "Documentation update (PRD & Architecture)",
+        "description": "Revise PRD and Architecture to reflect V4 Next.js/FastAPI migration.",
+        "status": "completed",
+        "priority": "medium",
+        "subtasks": [],
+        "dependencies": []
+      },
+      {
+        "id": 16,
+        "title": "QA verification",
+        "description": "Run backend unit/integration tests and frontend tests; fix failures.",
+        "status": "completed",
+        "priority": "high",
+        "subtasks": [],
+        "dependencies": []
       }
     ],
     "metadata": {

@@ -5,11 +5,12 @@ Allows users to save search criteria, preferences, and favorite properties
 for quick access in future sessions.
 """
 
-from typing import List, Optional, Dict, Any
-from datetime import datetime
-from pydantic import BaseModel, Field
 import json
+from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field
 
 
 class SavedSearch(BaseModel):

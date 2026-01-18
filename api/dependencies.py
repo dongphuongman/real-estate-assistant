@@ -1,11 +1,14 @@
 from functools import lru_cache
-from typing import Optional, Any
+from typing import Any, Optional
+
 from fastapi import Depends
 from langchain_core.language_models import BaseChatModel
-from vector_store.chroma_store import ChromaPropertyStore
+
+from agents.hybrid_agent import create_hybrid_agent
 from config.settings import settings
 from models.provider_factory import ModelProviderFactory
-from agents.hybrid_agent import create_hybrid_agent
+from vector_store.chroma_store import ChromaPropertyStore
+
 
 @lru_cache()
 def get_vector_store() -> Optional[ChromaPropertyStore]:

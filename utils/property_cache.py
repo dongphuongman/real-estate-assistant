@@ -1,6 +1,7 @@
-from pathlib import Path
 import json
+from pathlib import Path
 from typing import Optional
+
 from data.schemas import PropertyCollection
 
 CACHE_DIR = Path(".app_cache")

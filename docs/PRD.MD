@@ -90,5 +90,9 @@ Conversational, data‑driven assistant for real estate search, analysis, and no
 
 ## Acceptance Criteria (MVP)
 - Frontend pages: chat, search, settings, analytics render; tests pass (≥90% frontend unit).
+- Accessibility: WCAG 2.1 AA for interactive controls, focus management, labels, error feedback.
+- Performance: Lighthouse ≥90 on desktop for search and chat pages.
 - Backend endpoints: search/chat/tools/settings/admin respond with rate limits and request IDs.
+- Error handling: client surfaces request correlation via `X-Request-ID`.
+- CI/CD: GitHub Actions run lint, typecheck, unit/integration tests on PR; green required.
 - No secrets in client; CORS pinned in prod; health checks green.

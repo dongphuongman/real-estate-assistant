@@ -8,10 +8,11 @@ This module analyzes user queries to determine:
 - Optimal routing strategy
 """
 
+import re
 from enum import Enum
 from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
-import re
 
 
 class QueryIntent(str, Enum):

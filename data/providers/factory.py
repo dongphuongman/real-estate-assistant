@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Union
+
 from yarl import URL
 
 from .base import BaseDataProvider

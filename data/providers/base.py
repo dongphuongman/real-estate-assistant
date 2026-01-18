@@ -2,10 +2,13 @@
 Base Data Provider Interface.
 """
 from abc import ABC, abstractmethod
-from typing import List, Optional, Union
 from pathlib import Path
+from typing import List, Optional, Union
+
 import pandas as pd
+
 from data.schemas import Property
+
 
 class BaseDataProvider(ABC):
     """

@@ -2,13 +2,15 @@
 Integration tests for DigestGenerator and AlertManager workflow.
 """
 
-import pytest
 from unittest.mock import MagicMock
 
-from notifications.digest_generator import DigestGenerator
-from notifications.alert_manager import AlertManager
-from utils.saved_searches import SavedSearch, UserPreferences
+import pytest
 from langchain_core.documents import Document
+
+from notifications.alert_manager import AlertManager
+from notifications.digest_generator import DigestGenerator
+from utils.saved_searches import SavedSearch, UserPreferences
+
 
 class TestDigestWorkflow:
 

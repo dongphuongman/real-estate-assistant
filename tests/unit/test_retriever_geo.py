@@ -1,8 +1,9 @@
 from unittest.mock import patch
 
-from vector_store.hybrid_retriever import AdvancedPropertyRetriever
-from vector_store.chroma_store import ChromaPropertyStore
 from langchain_core.documents import Document
+
+from vector_store.chroma_store import ChromaPropertyStore
+from vector_store.hybrid_retriever import AdvancedPropertyRetriever
 
 
 def test_retriever_geo_radius_filters_docs(tmp_path):

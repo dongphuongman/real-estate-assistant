@@ -1,7 +1,9 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List, Optional, Any, Callable
+from typing import Any, Callable, List, Optional
+
 import pandas as pd
+
 from data.csv_loader import DataLoaderCsv
 from data.schemas import PropertyCollection
 

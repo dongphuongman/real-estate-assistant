@@ -1,10 +1,13 @@
 """
 Integration tests for the API Data Provider.
 """
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
+
 from data.providers.api_provider import APIProvider
-from data.schemas import PropertyType, ListingType
+from data.schemas import ListingType, PropertyType
+
 
 @pytest.fixture
 def api_provider():

@@ -1,9 +1,10 @@
 import json
+import secrets
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, Optional
-import secrets
- 
+
+
 class AuthStorage:
     def __init__(self, storage_dir: str = ".auth"):
         self.storage_path = Path(storage_dir)

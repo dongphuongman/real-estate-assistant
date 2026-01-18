@@ -1,9 +1,12 @@
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 from langchain_core.documents import Document
+
 from agents.hybrid_agent import HybridPropertyAgent
-from agents.query_analyzer import QueryAnalysis, QueryIntent, Complexity
+from agents.query_analyzer import Complexity, QueryAnalysis, QueryIntent
+
 
 class TestHybridPropertyAgent:
     

@@ -1,8 +1,11 @@
-import pytest
 from unittest.mock import patch
+
 import pandas as pd
+import pytest
+
 from data.providers.csv_provider import CSVDataProvider
 from data.schemas import Property, PropertyType
+
 
 class TestCSVDataProvider:
     

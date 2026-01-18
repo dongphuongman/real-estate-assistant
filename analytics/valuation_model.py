@@ -5,11 +5,11 @@ This module implements a simplified hedonic pricing model that estimates
 fair market value based on property characteristics and local market statistics.
 """
 
-from typing import Dict, List
 from dataclasses import dataclass
+from typing import Dict, List
 
-from data.schemas import Property
 from analytics.market_insights import MarketInsights
+from data.schemas import Property
 
 
 @dataclass

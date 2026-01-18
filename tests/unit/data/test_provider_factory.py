@@ -1,7 +1,9 @@
 from pathlib import Path
-from data.providers.factory import DataProviderFactory
+
 from data.providers.csv_provider import CSVDataProvider
+from data.providers.factory import DataProviderFactory
 from data.providers.json_provider import JSONDataProvider
+
 
 class TestDataProviderFactory:
     def test_create_csv_provider(self):

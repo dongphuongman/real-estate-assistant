@@ -1,8 +1,10 @@
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 from fastapi.testclient import TestClient
-from api.main import app
+
 from api.dependencies import get_llm, get_vector_store
+from api.main import app
 
 client = TestClient(app)
 

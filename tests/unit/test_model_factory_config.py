@@ -1,6 +1,9 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
+
 from models.provider_factory import ModelProviderFactory
+
 
 @pytest.fixture
 def mock_settings():

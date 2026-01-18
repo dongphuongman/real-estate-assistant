@@ -2,7 +2,9 @@
 Testing Agent implementation.
 """
 from typing import Any, Dict, Optional
+
 from .base import DevAgent
+
 
 class TestingAgent(DevAgent):
     def __init__(self, provider: str = "openai", model_config: Optional[Dict[str, Any]] = None) -> None:

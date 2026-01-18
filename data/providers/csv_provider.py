@@ -1,9 +1,12 @@
-from typing import List, Union
 from pathlib import Path
+from typing import List, Union
+
 import pandas as pd
-from data.schemas import Property
-from data.providers.base import BaseDataProvider
+
 from data.csv_loader import DataLoaderCsv
+from data.providers.base import BaseDataProvider
+from data.schemas import Property
+
 
 class CSVDataProvider(BaseDataProvider):
     """Data provider for CSV and Excel files."""

@@ -40,8 +40,15 @@ function buildHeaders(extra?: Record<string, string>): Record<string, string> {
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(error || "API request failed");
+    const errorText = await response.text();
+    const headers = (response as unknown as { headers?: { get?: (name: string) => string | null } }).headers;
+    const requestId =
+      headers && typeof headers.get === "function"
+        ? headers.get("X-Request-ID") || undefined
+        : undefined;
+    const message = errorText || "API request failed";
+    const composed = requestId ? `${message} (request_id=${requestId})` : message;
+    throw new Error(composed);
   }
   return response.json();
 }

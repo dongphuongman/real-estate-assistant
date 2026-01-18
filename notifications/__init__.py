@@ -9,43 +9,35 @@ Provides email notifications for:
 - Daily/weekly digests
 """
 
+from .alert_manager import Alert, AlertManager, AlertType
 from .email_service import (
-    EmailService,
     EmailConfig,
     EmailProvider,
+    EmailSendError,
+    EmailService,
     EmailServiceFactory,
     EmailValidationError,
-    EmailSendError
 )
-
-from .alert_manager import (
-    AlertManager,
-    AlertType,
-    Alert
-)
-
-from .notification_preferences import (
-    NotificationPreferences,
-    NotificationPreferencesManager,
-    AlertFrequency,
-    DigestDay,
-    create_default_preferences
-)
-
 from .email_templates import (
-    EmailTemplate,
-    PriceDropTemplate,
-    NewPropertyTemplate,
     DigestTemplate,
+    EmailTemplate,
+    MarketUpdateTemplate,
+    NewPropertyTemplate,
+    PriceDropTemplate,
     TestEmailTemplate,
-    MarketUpdateTemplate
 )
-
 from .notification_history import (
     NotificationHistory,
     NotificationRecord,
     NotificationStatus,
-    NotificationType
+    NotificationType,
+)
+from .notification_preferences import (
+    AlertFrequency,
+    DigestDay,
+    NotificationPreferences,
+    NotificationPreferencesManager,
+    create_default_preferences,
 )
 
 __all__ = [

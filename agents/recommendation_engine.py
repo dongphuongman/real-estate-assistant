@@ -8,7 +8,8 @@ This module provides intelligent recommendations based on:
 - Market insights
 """
 
-from typing import List, Dict, Any, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
+
 from langchain_core.documents import Document
 
 from data.schemas import UserPreferences

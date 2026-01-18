@@ -7,15 +7,18 @@ and their models.
 
 import logging
 from typing import Any, Dict, List, Optional, Type
+
 from langchain_core.language_models import BaseChatModel
-from .providers.base import ModelProvider, ModelInfo
-from .providers.openai import OpenAIProvider
-from .providers.anthropic import AnthropicProvider
-from .providers.google import GoogleProvider
-from .providers.ollama import OllamaProvider
-from .providers.grok import GrokProvider
-from .providers.deepseek import DeepSeekProvider
+
 from config.settings import settings
+
+from .providers.anthropic import AnthropicProvider
+from .providers.base import ModelInfo, ModelProvider
+from .providers.deepseek import DeepSeekProvider
+from .providers.google import GoogleProvider
+from .providers.grok import GrokProvider
+from .providers.ollama import OllamaProvider
+from .providers.openai import OpenAIProvider
 
 logger = logging.getLogger(__name__)
 

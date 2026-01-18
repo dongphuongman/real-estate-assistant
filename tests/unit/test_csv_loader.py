@@ -1,7 +1,9 @@
+import tempfile
+from pathlib import Path
+
 import pandas as pd
 import pytest
-from pathlib import Path
-import tempfile
+
 from data.csv_loader import DataLoaderCsv
 
 

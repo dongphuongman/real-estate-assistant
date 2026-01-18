@@ -55,7 +55,7 @@ export default function ChatPage() {
       }]);
 
     } catch (error) {
-      console.error("Chat error:", error);
+      console.warn("Chat error:", error);
       setMessages(prev => [...prev, { 
         role: "assistant", 
         content: "I apologize, but I encountered an error connecting to the server. Please try again later." 

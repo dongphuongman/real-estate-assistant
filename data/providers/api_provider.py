@@ -6,8 +6,10 @@ for fetching property data from external services.
 """
 import logging
 from typing import List, Optional
+
 import pandas as pd
 import requests
+
 from data.providers.base import BaseDataProvider
 from data.schemas import Property
 

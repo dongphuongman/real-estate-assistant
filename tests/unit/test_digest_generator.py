@@ -5,9 +5,11 @@ Unit tests for DigestGenerator.
 import unittest
 from unittest.mock import MagicMock
 
+from langchain_core.documents import Document
+
 from notifications.digest_generator import DigestGenerator
 from utils.saved_searches import SavedSearch, UserPreferences
-from langchain_core.documents import Document
+
 
 class TestDigestGenerator(unittest.TestCase):
 

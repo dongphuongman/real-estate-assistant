@@ -1,6 +1,7 @@
 from unittest.mock import patch
+
+from data.schemas import ListingType, Property, PropertyType
 from vector_store.chroma_store import ChromaPropertyStore
-from data.schemas import Property, PropertyType, ListingType
 
 
 def test_property_to_document_includes_listing_type(tmp_path):

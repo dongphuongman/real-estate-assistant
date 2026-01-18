@@ -1,6 +1,5 @@
-from unittest.mock import patch
 import threading
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from langchain_core.documents import Document
 

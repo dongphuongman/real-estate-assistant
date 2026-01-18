@@ -1,13 +1,13 @@
-from urllib.parse import urlparse
-from pathlib import Path
-from yarl import URL
 import logging
-import streamlit as st
+import re
+from pathlib import Path
+from urllib.parse import urlparse
+
 import numpy as np
 import pandas as pd
-import re
 import requests
 from faker import Faker
+from yarl import URL
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -32,12 +32,12 @@ class DataLoaderCsv:
         if isinstance(csv_path, Path) and not csv_path.is_file():
             err_msg = f"The Path {csv_path} does not exists."
             # raise FileNotFoundError(err_msg)
-            st.warning(err_msg, icon='⚠')
+            logger.warning(err_msg)
             csv_path = None
         elif isinstance(csv_path, URL) and not self.url_exists(csv_path):
             err_msg = f"The URL at {csv_path} does not exist."
             # raise FileNotFoundError(err_msg)
-            st.warning(err_msg, icon='⚠')
+            logger.warning(err_msg)
             csv_path = None
 
         self.csv_path = csv_path

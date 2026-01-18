@@ -1,11 +1,13 @@
-from typing import List, Any
-from pathlib import Path
 import json
-import requests
-import pandas as pd
-from data.schemas import Property
-from data.providers.base import BaseDataProvider
 import logging
+from pathlib import Path
+from typing import Any, List
+
+import pandas as pd
+import requests
+
+from data.providers.base import BaseDataProvider
+from data.schemas import Property
 
 logger = logging.getLogger(__name__)
 

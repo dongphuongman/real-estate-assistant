@@ -891,7 +891,7 @@ def test_app_modern_get_text_keys_exist_in_translations():
 
 
 def test_i18n_get_text_fallbacks_and_helpers():
-    from i18n.translations import get_text, get_language_name, get_available_languages
+    from i18n.translations import get_available_languages, get_language_name, get_text
 
     assert get_text("app_title", "en") != "app_title"
     assert get_text("does_not_exist", "en") == "does_not_exist"

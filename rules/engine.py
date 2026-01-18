@@ -2,8 +2,10 @@
 Engine to execute rules.
 """
 from typing import List
+
 from .base import BaseRule, RuleViolation
 from .definitions import LineLengthRule, NoSecretsRule, PerformanceLoopRule
+
 
 class RuleEngine:
     def __init__(self):

@@ -1,7 +1,9 @@
-import pytest
 import uuid
-from langchain_core.messages import HumanMessage, AIMessage
+
+import pytest
 from langchain.memory import ConversationBufferMemory
+from langchain_core.messages import AIMessage, HumanMessage
+
 from ai.memory import get_session_history
 
 # Use a file-based DB for this test to ensure persistence works on disk, 

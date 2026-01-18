@@ -6,6 +6,7 @@ from langchain.agents.agent_types import AgentType
 from langchain_experimental.agents import create_pandas_dataframe_agent
 from langchain_openai import ChatOpenAI
 
+
 class RealEstateGPT:
     """
     A specialized AI agent for real estate assistance that uses LangChain's

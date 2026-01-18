@@ -193,6 +193,7 @@ temp/
 node_modules/
 package-lock.json
 yarn.lock
+frontend/.next/
 
 # Build artifacts
 *.min.css

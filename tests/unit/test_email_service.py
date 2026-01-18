@@ -1,10 +1,11 @@
-import pytest
 from unittest.mock import patch
 
+import pytest
+
 from notifications.email_service import (
-    EmailService,
     EmailConfig,
     EmailProvider,
+    EmailService,
     EmailServiceFactory,
     EmailValidationError,
 )

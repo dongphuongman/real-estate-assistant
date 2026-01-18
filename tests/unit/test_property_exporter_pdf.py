@@ -1,8 +1,11 @@
 
-import pytest
 from io import BytesIO
-from utils.exporters import PropertyExporter, ExportFormat
+
+import pytest
+
 from data.schemas import Property, PropertyCollection, PropertyType
+from utils.exporters import ExportFormat, PropertyExporter
+
 
 @pytest.fixture
 def export_properties():

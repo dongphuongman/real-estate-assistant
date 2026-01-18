@@ -1,9 +1,11 @@
-from fastapi.testclient import TestClient
-from unittest.mock import MagicMock, patch
-from api.main import app
-from api.dependencies import get_llm, get_vector_store
-from config.settings import get_settings
 import asyncio
+from unittest.mock import MagicMock, patch
+
+from fastapi.testclient import TestClient
+
+from api.dependencies import get_llm, get_vector_store
+from api.main import app
+from config.settings import get_settings
 
 client = TestClient(app)
 

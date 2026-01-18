@@ -7,6 +7,7 @@ This module provides centralized configuration management for the application.
 import os
 from pathlib import Path
 from typing import Optional
+
 from pydantic import BaseModel, Field
 
 

@@ -2,135 +2,59 @@ name: CI
 
 on:
   push:
-    branches: [ver3]
+    branches: [ main, ver4, '**' ]
   pull_request:
-    branches: [ver3]
+    branches: [ main, ver4 ]
 
 jobs:
-  python-tests:
+  backend:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-cov pytest-asyncio pytest-mock
-          pip install yarl Faker
+          python -m pip install -e .[dev]
 
-      - name: Run unit tests (smoke subset)
-        run: pytest -q tests/unit/test_ui_helpers.py tests/unit/test_email_service.py tests/unit/test_email_templates.py tests/unit/test_alert_manager.py tests/unit/test_chroma_store.py
+      - name: Lint (ruff)
+        run: |
+          python -m ruff check .
 
-  pdf-export:
+      - name: Type check (mypy)
+        run: |
+          python -m mypy
+        continue-on-error: true
+
+      - name: Run tests (pytest)
+        run: |
+          python -m pytest -q
+
+  frontend:
     runs-on: ubuntu-latest
-    needs: python-tests
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install md-to-pdf
-        run: npm i -g md-to-pdf
-
-      - name: Generate PDF report if present
-        if: ${{ hashFiles('artifacts/**/test_report.md') != '' }}
-        run: |
-          REPORT_MD=$(ls artifacts/**/test_report.md | head -n 1)
-          md-to-pdf "$REPORT_MD"
-
-      - name: Upload PDF artifact if generated
-        if: ${{ hashFiles('artifacts/**/test_report.pdf') != '' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-report-pdf
-          path: artifacts/**/test_report.pdf
-  unit-extended:
-    runs-on: ubuntu-latest
-    needs: python-tests
-    continue-on-error: true
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-asyncio pytest-mock pytest-cov Faker yarl
+        run: npm ci
 
-      - name: Run extended unit tests with coverage
-        run: |
-          pytest -q \
-            --cov=vector_store \
-            --cov=data \
-            --cov=notifications \
-            --cov=utils \
-            --cov-fail-under=30 \
-            --cov-report=xml:coverage.xml \
-            --cov-report=html:coverage_html \
-            tests/unit/test_chroma_store.py \
-            tests/unit/test_csv_loader.py \
-            tests/unit/test_property_collection.py \
-            tests/unit/test_vector_retriever.py
+      - name: Lint
+        run: npm run lint
 
-      - name: Upload coverage XML
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-extended-xml
-          path: coverage.xml
-
-      - name: Upload coverage HTML
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-extended-html
-          path: coverage_html
-  cloud-validate:
-    runs-on: ubuntu-latest
-    needs: [python-tests, unit-extended]
-    continue-on-error: true
-    steps:
-      - name: Validate Streamlit Cloud deployment endpoint
-        run: |
-          URL="https://ai-real-estate-assistant.streamlit.app/"
-          echo "Checking $URL"
-          for i in {1..20}; do
-            CODE=$(curl -sS -o resp.html -w "%{http_code}" "$URL" || true)
-            echo "Attempt $i: HTTP $CODE"
-            if [ "$CODE" = "200" ]; then
-              if grep -q "Error: Received no response from server" resp.html || grep -q "ModuleNotFoundError" resp.html || grep -q "Traceback" resp.html; then
-                echo "Deployment error content detected"
-                cat resp.html
-                exit 1
-              else
-                echo "Deployment OK"
-                exit 0
-              fi
-            fi
-            sleep 15
-          done
-          echo "Streamlit app not responding with 200 within timeout"
-          [ -f resp.html ] && tail -n +1 resp.html || true
-          exit 1
-
-      - name: Upload response snapshot on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cloud-response
-          path: resp.html
+      - name: Run tests
+        run: npm run test -- --ci

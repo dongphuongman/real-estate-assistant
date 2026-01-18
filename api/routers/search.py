@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+import logging
 from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, status
+
 from api.dependencies import get_vector_store
 from api.models import SearchRequest, SearchResponse, SearchResultItem
-from vector_store.chroma_store import ChromaPropertyStore
 from data.schemas import Property
-import logging
+from vector_store.chroma_store import ChromaPropertyStore
 
 # Configure logger
 logger = logging.getLogger(__name__)

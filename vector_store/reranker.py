@@ -6,9 +6,10 @@ of retrieved documents by considering additional factors beyond
 just vector similarity.
 """
 
-from typing import Any, Dict, List, Tuple, Optional, Set, Union
-from langchain_core.documents import Document
 import logging
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
+
+from langchain_core.documents import Document
 
 from data.schemas import Property
 
@@ -83,7 +84,7 @@ class PropertyReranker:
         # Calculate reranked scores
         reranked = []
 
-        for doc, base_score in zip(documents, initial_scores):
+        for doc, base_score in zip(documents, initial_scores, strict=False):
             # Start with base score
             score = base_score
 
@@ -380,7 +381,7 @@ class SimpleReranker:
         query_lower = query.lower()
         reranked = []
 
-        for doc, score in zip(documents, initial_scores):
+        for doc, score in zip(documents, initial_scores, strict=False):
             # Check for exact word matches
             content_lower = doc.page_content.lower()
             boost = 0.0

@@ -1,7 +1,10 @@
-import pytest
 from datetime import datetime
+
+import pytest
+
 from analytics.market_insights import MarketInsights
 from data.schemas import Property, PropertyCollection
+
 
 @pytest.fixture
 def multi_region_data():

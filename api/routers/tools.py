@@ -1,17 +1,19 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+import statistics
 from typing import List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
 from api.dependencies import get_vector_store
 from api.models import (
+    ComparedProperty,
     ComparePropertiesRequest,
     ComparePropertiesResponse,
-    ComparedProperty,
     CompareSummary,
-    PriceAnalysisRequest,
-    PriceAnalysisResponse,
     LocationAnalysisRequest,
     LocationAnalysisResponse,
+    PriceAnalysisRequest,
+    PriceAnalysisResponse,
 )
 from tools.property_tools import (
     MortgageCalculatorTool,
@@ -20,7 +22,6 @@ from tools.property_tools import (
     create_property_tools,
 )
 from vector_store.chroma_store import ChromaPropertyStore
-import statistics
 
 router = APIRouter()
 

@@ -1,19 +1,22 @@
-from fastapi import FastAPI, Depends
+import logging
+
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from api.auth import get_api_key
-from api.models import HealthCheck
-from api.routers import search, chat, tools, admin, settings as settings_router, exports, auth
 from api.dependencies import get_vector_store
+from api.models import HealthCheck
 from api.observability import add_observability
+from api.routers import admin, auth, chat, exports, search, tools
+from api.routers import settings as settings_router
 from config.settings import get_settings
-from notifications.scheduler import NotificationScheduler
 from notifications.email_service import (
-    EmailServiceFactory,
     EmailConfig,
     EmailProvider,
     EmailService,
+    EmailServiceFactory,
 )
-import logging
+from notifications.scheduler import NotificationScheduler
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

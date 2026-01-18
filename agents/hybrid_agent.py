@@ -7,19 +7,20 @@ This module provides intelligent orchestration between:
 - Hybrid approach combining both
 """
 
-import logging
 import json
-from typing import Dict, Any, List, Optional, AsyncIterator, cast
+import logging
+from typing import Any, AsyncIterator, Dict, List, Optional, cast
+
 from langchain.agents import AgentExecutor, create_openai_tools_agent
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.tools import BaseTool
-from langchain_core.language_models import BaseChatModel
-from langchain_core.retrievers import BaseRetriever
-from langchain_core.documents import Document
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.tools import BaseTool
+from langchain_core.documents import Document
+from langchain_core.language_models import BaseChatModel
+from langchain_core.retrievers import BaseRetriever
 
-from agents.query_analyzer import QueryAnalyzer, QueryAnalysis, QueryIntent, Complexity
+from agents.query_analyzer import Complexity, QueryAnalysis, QueryAnalyzer, QueryIntent
 from tools.property_tools import create_property_tools
 
 logger = logging.getLogger(__name__)

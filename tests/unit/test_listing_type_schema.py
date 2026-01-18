@@ -1,4 +1,4 @@
-from data.schemas import Property, ListingType
+from data.schemas import ListingType, Property
 
 
 def test_property_listing_type_default_rent():

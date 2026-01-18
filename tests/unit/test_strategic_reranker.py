@@ -1,8 +1,11 @@
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 from langchain_core.documents import Document
-from vector_store.reranker import StrategicReranker
+
 from analytics.valuation_model import HedonicValuationModel, ValuationResult
+from vector_store.reranker import StrategicReranker
+
 
 @pytest.fixture
 def strategic_reranker():

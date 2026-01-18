@@ -2,11 +2,18 @@
 Tests for market insights and analytics module.
 """
 
-import pandas as pd
-import pytest
 from datetime import datetime, timedelta
 
-from analytics import MarketInsights, MarketStatistics, PriceTrend, TrendDirection, HistoricalPricePoint
+import pandas as pd
+import pytest
+
+from analytics import (
+    HistoricalPricePoint,
+    MarketInsights,
+    MarketStatistics,
+    PriceTrend,
+    TrendDirection,
+)
 from data.schemas import ListingType, Property, PropertyCollection, PropertyType
 
 

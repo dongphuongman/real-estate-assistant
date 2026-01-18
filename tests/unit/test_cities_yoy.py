@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+
 from analytics.market_insights import MarketInsights
 from data.schemas import Property, PropertyCollection, PropertyType
 

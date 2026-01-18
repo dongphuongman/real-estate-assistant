@@ -1,7 +1,10 @@
-import pytest
 from datetime import datetime, timedelta
+
+import pytest
+
 from analytics import MarketInsights, TrendDirection
 from data.schemas import Property, PropertyCollection, PropertyType
+
 
 @pytest.fixture
 def regional_properties():

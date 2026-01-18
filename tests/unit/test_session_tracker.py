@@ -2,13 +2,15 @@
 Tests for session analytics and tracking module.
 """
 
-import pytest
 import json
-import tempfile
 import shutil
-from pathlib import Path
+import tempfile
 from datetime import datetime
-from analytics import SessionTracker, SessionStats, EventType
+from pathlib import Path
+
+import pytest
+
+from analytics import EventType, SessionStats, SessionTracker
 
 
 @pytest.fixture

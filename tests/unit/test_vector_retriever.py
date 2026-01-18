@@ -1,6 +1,7 @@
-from vector_store.chroma_store import ChromaPropertyStore
-from data.schemas import Property, PropertyType, PropertyCollection
 from unittest.mock import patch
+
+from data.schemas import Property, PropertyCollection, PropertyType
+from vector_store.chroma_store import ChromaPropertyStore
 
 
 def make_prop(pid, city, price, rooms, desc="garden balcony"):

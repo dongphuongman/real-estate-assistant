@@ -9,10 +9,11 @@ This module provides advanced retrieval capabilities by combining:
 """
 
 import logging
-from typing import List, Optional, Dict, Any, Callable, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
+
+from langchain_core.callbacks import CallbackManagerForRetrieverRun
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
-from langchain_core.callbacks import CallbackManagerForRetrieverRun
 
 from .chroma_store import ChromaPropertyStore
 from .reranker import StrategicReranker
@@ -162,7 +163,7 @@ class HybridPropertyRetriever(BaseRetriever):
             simple = {k: v for k, v in raw_filters.items() if not isinstance(v, dict)}
             if not simple:
                 return docs, scores
-            score_map = {id(d): s for d, s in zip(docs, scores)}
+            score_map = {id(d): s for d, s in zip(docs, scores, strict=False)}
             filtered_docs = self._apply_filters(docs, simple)
             filtered_scores = [score_map.get(id(d), 0.0) for d in filtered_docs]
             return filtered_docs, filtered_scores
@@ -338,7 +339,7 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
                 return [], []
             
             # Map doc ID to score
-            score_map = {id(d): s for d, s in zip(docs, scores)}
+            score_map = {id(d): s for d, s in zip(docs, scores, strict=False)}
             
             # Apply filter
             filtered_docs = filter_func(docs)

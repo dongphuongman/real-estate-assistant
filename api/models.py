@@ -1,9 +1,9 @@
-from typing import List, Optional, Dict, Any
 from enum import Enum
-from pydantic import BaseModel, Field
-from data.schemas import Property
-from pydantic import model_validator
+from typing import Any, Dict, List, Optional
 
+from pydantic import BaseModel, Field, model_validator
+
+from data.schemas import Property
 from utils.exporters import ExportFormat
 
 

@@ -1,12 +1,14 @@
 
-import pytest
-from unittest.mock import MagicMock, patch
 from datetime import datetime
+from unittest.mock import MagicMock, patch
 
-from notifications.scheduler import NotificationScheduler
-from notifications.alert_manager import AlertType
-from notifications.notification_preferences import NotificationPreferences, AlertFrequency
+import pytest
+
 from data.schemas import Property, PropertyCollection
+from notifications.alert_manager import AlertType
+from notifications.notification_preferences import AlertFrequency, NotificationPreferences
+from notifications.scheduler import NotificationScheduler
+
 
 @pytest.fixture
 def mock_email_service():

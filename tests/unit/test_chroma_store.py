@@ -1,9 +1,10 @@
 import threading
 from unittest.mock import MagicMock, patch
 
-from vector_store.chroma_store import ChromaPropertyStore
-from data.schemas import Property, PropertyCollection, PropertyType
 from langchain_core.documents import Document
+
+from data.schemas import Property, PropertyCollection, PropertyType
+from vector_store.chroma_store import ChromaPropertyStore
 
 
 def make_property(pid: str, city: str, price: float, rooms: float, desc: str = "") -> Property:

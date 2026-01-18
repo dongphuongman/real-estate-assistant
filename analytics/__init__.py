@@ -3,15 +3,15 @@ Analytics package for market insights and trend analysis.
 """
 
 from .market_insights import (
-    MarketInsights,
-    PriceTrend,
-    MarketStatistics,
-    TrendDirection,
+    HistoricalPricePoint,
     LocationInsights,
+    MarketInsights,
+    MarketStatistics,
+    PriceTrend,
     PropertyTypeInsights,
-    HistoricalPricePoint
+    TrendDirection,
 )
-from .session_tracker import SessionTracker, SessionStats, EventType
+from .session_tracker import EventType, SessionStats, SessionTracker
 
 __all__ = [
     'MarketInsights',

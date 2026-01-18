@@ -1,11 +1,13 @@
-from fastapi import APIRouter, HTTPException, Header
-from pydantic import BaseModel
-from typing import Optional
-import re
 import random
+import re
+from typing import Optional
+
+from fastapi import APIRouter, Header, HTTPException
+from pydantic import BaseModel
+
 from config.settings import get_settings
 from utils.auth_storage import AuthStorage
- 
+
 router = APIRouter(tags=["Auth"])
  
 class RequestCodeBody(BaseModel):

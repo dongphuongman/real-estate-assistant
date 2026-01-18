@@ -1,6 +1,9 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
+
 from models.provider_factory import ModelProviderFactory
+
 
 @pytest.fixture
 def mock_settings_env():

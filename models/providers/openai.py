@@ -6,15 +6,16 @@ Supports GPT-4o, GPT-4o-mini, GPT-3.5-turbo and other OpenAI models.
 
 import os
 from typing import Any, List, Optional
-from langchain_openai import ChatOpenAI
+
 from langchain_core.language_models import BaseChatModel
+from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
 
 from .base import (
-    RemoteModelProvider,
-    ModelInfo,
     ModelCapability,
+    ModelInfo,
     PricingInfo,
+    RemoteModelProvider,
 )
 
 

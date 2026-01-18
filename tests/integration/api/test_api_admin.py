@@ -1,10 +1,12 @@
+from unittest.mock import MagicMock, patch
+
+import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import MagicMock, patch
-from api.main import app
+
 from api.dependencies import get_vector_store
+from api.main import app
 from data.schemas import Property, PropertyCollection
-import pandas as pd
 
 client = TestClient(app)
 

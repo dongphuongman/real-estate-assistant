@@ -2,8 +2,10 @@
 Rule definitions for Code Quality, Security, and Performance.
 """
 import re
-from typing import Any, List, Dict
+from typing import Any, Dict, List
+
 from .base import BaseRule, RuleViolation
+
 
 class LineLengthRule(BaseRule):
     def __init__(self, max_length: int = 100):

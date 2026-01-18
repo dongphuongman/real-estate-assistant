@@ -7,9 +7,10 @@ and calculations.
 
 import math
 import statistics
-from typing import List, Dict, Any
-from pydantic import BaseModel, Field, PrivateAttr
+from typing import Any, Dict, List
+
 from langchain.tools import BaseTool
+from pydantic import BaseModel, Field, PrivateAttr
 
 # We use Any for vector_store to avoid circular imports/tight coupling
 # expected type: vector_store.chroma_store.ChromaPropertyStore

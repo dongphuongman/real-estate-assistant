@@ -5,16 +5,16 @@ Supports multiple email providers (Gmail, Outlook, SendGrid)
 with HTML templates, retry logic, and rate limiting.
 """
 
+import os
+import re
 import smtplib
 import time
-import os
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.utils import formataddr
-from typing import Optional, List
 from dataclasses import dataclass
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.utils import formataddr
 from enum import Enum
-import re
+from typing import List, Optional
 
 
 class EmailProvider(str, Enum):

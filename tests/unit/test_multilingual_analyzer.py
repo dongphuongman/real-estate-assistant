@@ -1,6 +1,7 @@
 """Unit tests for Multilingual Query Analyzer."""
 
-from agents.query_analyzer import get_query_analyzer, QueryIntent
+from agents.query_analyzer import QueryIntent, get_query_analyzer
+
 
 def test_multilingual_query_analyzer():
     analyzer = get_query_analyzer()

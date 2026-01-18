@@ -2,14 +2,15 @@
 """
 CLI Script to run Rule Engine checks on a file or directory.
 """
-import sys
-import os
 import argparse
+import os
+import sys
 
 # Add project root to path
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 from rules.engine import RuleEngine
+
 
 def scan_file(file_path: str, engine: RuleEngine) -> int:
     """Returns number of violations."""

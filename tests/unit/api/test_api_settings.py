@@ -1,11 +1,13 @@
+from unittest.mock import MagicMock, patch
+
 from fastapi.testclient import TestClient
+
 from api.main import app
 from notifications.notification_preferences import (
-    NotificationPreferences,
-    AlertType,
     AlertFrequency,
+    AlertType,
+    NotificationPreferences,
 )
-from unittest.mock import MagicMock, patch
 
 client = TestClient(app)
 

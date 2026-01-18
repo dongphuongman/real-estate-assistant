@@ -10,9 +10,10 @@ Provides functionality to:
 
 import platform
 import subprocess
-import requests
-from typing import Optional, List, Dict
 from dataclasses import dataclass
+from typing import Dict, List, Optional
+
+import requests
 
 
 @dataclass

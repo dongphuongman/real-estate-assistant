@@ -2,7 +2,9 @@
 Documentation Agent implementation.
 """
 from typing import Any, Dict, Optional
+
 from .base import DevAgent
+
 
 class DocumentationAgent(DevAgent):
     def __init__(self, provider: str = "openai", model_config: Optional[Dict[str, Any]] = None) -> None:

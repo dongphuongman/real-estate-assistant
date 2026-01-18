@@ -8,18 +8,18 @@ Handles:
 - Alert prioritization
 """
 
-import logging
-from typing import List, Dict, Any, Optional, Set
-from datetime import datetime
-from dataclasses import asdict, dataclass
-from enum import Enum
 import json
+import logging
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from enum import Enum
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Set
 
 from data.schemas import Property, PropertyCollection
-from utils import SavedSearch, UserPreferences
 from notifications.email_service import EmailService
 from notifications.email_templates import DigestTemplate
+from utils import SavedSearch, UserPreferences
 
 if False:  # TYPE_CHECKING
     from notifications.digest_generator import DigestGenerator

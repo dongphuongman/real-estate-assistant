@@ -1,14 +1,16 @@
+from unittest.mock import patch
+
 import pytest
 from fastapi import HTTPException
+
 from api.auth import get_api_key
 from api.observability import (
+    RateLimiter,
     client_id_from_api_key,
     generate_request_id,
     normalize_request_id,
-    RateLimiter,
 )
 from config.settings import AppSettings
-from unittest.mock import patch
 
 
 @pytest.mark.asyncio

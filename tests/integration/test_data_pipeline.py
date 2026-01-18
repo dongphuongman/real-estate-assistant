@@ -1,9 +1,12 @@
-import pytest
 import json
+from unittest.mock import MagicMock, patch
+
+import pytest
+
 from data.providers.json_provider import JSONDataProvider
 from data.schemas import PropertyCollection
 from vector_store.chroma_store import ChromaPropertyStore
-from unittest.mock import MagicMock, patch
+
 
 class TestDataPipelineIntegration:
     @pytest.fixture

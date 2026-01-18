@@ -6,12 +6,8 @@ and tool selection.
 """
 
 import pytest
-from agents.query_analyzer import (
-    QueryIntent,
-    Complexity,
-    Tool,
-    analyze_query
-)
+
+from agents.query_analyzer import Complexity, QueryIntent, Tool, analyze_query
 
 
 class TestQueryAnalyzer:
