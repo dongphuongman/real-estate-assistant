@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -16,7 +16,7 @@ router = APIRouter()
 @router.post("/search", response_model=SearchResponse, tags=["Search"])
 async def search_properties(
     request: SearchRequest,
-    store: Optional[ChromaPropertyStore] = Depends(get_vector_store)
+    store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
 ):
     """
     Search for properties using semantic search and metadata filters.
@@ -75,5 +75,5 @@ async def search_properties(
         logger.error(f"Search failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Search operation failed: {str(e)}"
-        )
+            detail=f"Search operation failed: {str(e)}",
+        ) from e

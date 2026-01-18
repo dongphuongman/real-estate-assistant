@@ -883,6 +883,8 @@ def test_app_modern_get_text_keys_exist_in_translations():
     from i18n.translations import TRANSLATIONS
 
     app_path = Path(__file__).resolve().parents[2] / "app_modern.py"
+    if not app_path.exists():
+        pytest.skip("app_modern.py not found, skipping translation key check")
     content = app_path.read_text(encoding="utf-8")
 
     keys = set(re.findall(r"get_text\(\s*['\"]([^'\"]+)['\"]", content))

@@ -137,7 +137,9 @@ class EmailService:
             except Exception as e:
                 if attempt == self.max_retries - 1:
                     self._failed_count += 1
-                    raise EmailSendError(f"Failed to send email after {self.max_retries} attempts: {str(e)}")
+                    raise EmailSendError(
+                        f"Failed to send email after {self.max_retries} attempts: {str(e)}"
+                    ) from e
 
                 # Wait before retry (exponential backoff)
                 wait_time = 2 ** attempt

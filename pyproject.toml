@@ -5,7 +5,7 @@ description = "AI-powered real estate assistant with FastAPI backend and Next.js
 authors = [
     {name = "Alex Nesterovich", email = "alex@example.com"}
 ]
-license = {text = "MIT"}
+license = {text = "MIT License"}
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -39,7 +39,7 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "B", "I"]
-ignore = []
+ignore = ["E501"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"

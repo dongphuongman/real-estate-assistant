@@ -320,7 +320,7 @@ class ChromaPropertyStore:
             
             documents = []
             if results and results["ids"]:
-                for i, doc_id in enumerate(results["ids"]):
+                for i, _doc_id in enumerate(results["ids"]):
                     # Handle potential missing data
                     content = results["documents"][i] if results["documents"] else ""
                     metadata = results["metadatas"][i] if results["metadatas"] else {}
@@ -429,8 +429,8 @@ class ChromaPropertyStore:
 
                         MetadataValue = Union[str, int, float, bool, None]
 
-                        def _sanitize_metadata(md: Dict[str, Any]) -> Dict[str, MetadataValue]:
-                            sanitized: Dict[str, MetadataValue] = {}
+                        def _sanitize_metadata(md: Dict[str, Any]) -> Dict[str, Any]:
+                            sanitized: Dict[str, Any] = {}
                             for key, value in md.items():
                                 if isinstance(value, (str, int, float, bool)) or value is None:
                                     sanitized[str(key)] = value

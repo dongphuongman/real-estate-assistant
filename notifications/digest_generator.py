@@ -84,7 +84,7 @@ class DigestGenerator:
                     "new_matches": match_count
                 })
                 
-                for doc, score in results:
+                for doc, _score in results:
                     prop_data = doc.metadata
                     prop_id = prop_data.get("id") or prop_data.get("url") # Fallback ID
                     

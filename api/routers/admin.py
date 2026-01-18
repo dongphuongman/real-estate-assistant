@@ -1,4 +1,5 @@
 import logging
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
@@ -68,12 +69,12 @@ async def ingest_data(request: IngestRequest):
         raise
     except Exception as e:
         logger.error(f"Ingestion failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 @router.post("/admin/reindex", response_model=ReindexResponse)
 async def reindex_data(
-    request: ReindexRequest, 
-    store: ChromaPropertyStore = Depends(get_vector_store)
+    request: ReindexRequest,
+    store: Annotated[ChromaPropertyStore, Depends(get_vector_store)],
 ):
     """
     Reindex data from cache to vector store.
@@ -103,10 +104,12 @@ async def reindex_data(
         )
     except Exception as e:
         logger.error(f"Reindexing failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 @router.get("/admin/health", response_model=HealthCheck)
-async def admin_health_check(store: ChromaPropertyStore = Depends(get_vector_store)):
+async def admin_health_check(
+    store: Annotated[ChromaPropertyStore, Depends(get_vector_store)],
+):
     """
     Detailed health check for admin.
     """
@@ -132,4 +135,4 @@ async def admin_metrics(request: Request):
         return dict(metrics)
     except Exception as e:
         logger.error(f"Metrics retrieval failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

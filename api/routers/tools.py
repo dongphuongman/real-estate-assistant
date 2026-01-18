@@ -1,5 +1,5 @@
 import statistics
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
@@ -55,12 +55,12 @@ async def calculate_mortgage(input_data: MortgageInput):
             loan_years=input_data.loan_years,
         )
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Calculation failed: {str(e)}",
-        )
+        ) from e
 
 
 @router.post(
@@ -70,7 +70,7 @@ async def calculate_mortgage(input_data: MortgageInput):
 )
 async def compare_properties(
     request: ComparePropertiesRequest,
-    store: Optional[ChromaPropertyStore] = Depends(get_vector_store),
+    store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
 ):
     if not store:
         raise HTTPException(
@@ -126,7 +126,7 @@ async def compare_properties(
 )
 async def price_analysis(
     request: PriceAnalysisRequest,
-    store: Optional[ChromaPropertyStore] = Depends(get_vector_store),
+    store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
 ):
     if not store:
         raise HTTPException(
@@ -183,7 +183,7 @@ async def price_analysis(
 )
 async def location_analysis(
     request: LocationAnalysisRequest,
-    store: Optional[ChromaPropertyStore] = Depends(get_vector_store),
+    store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
 ):
     if not store:
         raise HTTPException(

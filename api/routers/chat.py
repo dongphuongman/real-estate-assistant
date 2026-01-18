@@ -1,6 +1,6 @@
 import logging
 import uuid
-from typing import Optional
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
@@ -21,8 +21,8 @@ router = APIRouter()
 @router.post("/chat", response_model=ChatResponse, tags=["Chat"])
 async def chat_endpoint(
     request: ChatRequest,
-    llm: BaseChatModel = Depends(get_llm),
-    store: Optional[ChromaPropertyStore] = Depends(get_vector_store)
+    llm: Annotated[BaseChatModel, Depends(get_llm)],
+    store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
 ):
     """
     Process a chat message using the hybrid agent with session persistence.
@@ -89,5 +89,5 @@ async def chat_endpoint(
         logger.error(f"Chat processing failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Chat processing failed: {str(e)}"
-        )
+            detail=f"Chat processing failed: {str(e)}",
+        ) from e

@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Any, Optional
+from typing import Annotated, Any, Optional
 
 from fastapi import Depends
 from langchain_core.language_models import BaseChatModel
@@ -55,11 +55,11 @@ def get_llm() -> BaseChatModel:
         )
     except Exception as e:
         # Fallback for tests or when no keys configured
-        raise RuntimeError(f"Could not initialize LLM with provider '{provider_name}': {e}")
+        raise RuntimeError(f"Could not initialize LLM with provider '{provider_name}': {e}") from e
 
 def get_agent(
-    store: Optional[ChromaPropertyStore] = Depends(get_vector_store),
-    llm: BaseChatModel = Depends(get_llm)
+    store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
+    llm: Annotated[BaseChatModel, Depends(get_llm)]
 ) -> Any:
     """
     Get initialized Hybrid Agent.

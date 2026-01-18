@@ -54,7 +54,7 @@ async def get_notification_settings(
         raise
     except Exception as e:
         logger.error(f"Error fetching settings: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.put("/settings/notifications", response_model=NotificationSettings)
@@ -90,7 +90,7 @@ async def update_notification_settings(
         raise
     except Exception as e:
         logger.error(f"Error updating settings: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/settings/models", response_model=list[ModelProviderCatalog])
@@ -149,4 +149,4 @@ async def list_model_catalog():
         return providers
     except Exception as e:
         logger.error(f"Error listing model catalog: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.responses import StreamingResponse
@@ -30,7 +30,7 @@ def _documents_to_export_rows(documents: List[Document]) -> List[dict]:
 @router.post("/export/properties", tags=["Export"])
 async def export_properties(
     request: ExportPropertiesRequest,
-    store: Optional[ChromaPropertyStore] = Depends(get_vector_store),
+    store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
 ):
     if not store:
         raise HTTPException(

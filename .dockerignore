@@ -67,7 +67,6 @@ Thumbs.db
 run_tests.sh
 test_*.sh
 *.ps1
-!run_modern.ps1
 
 # CI/CD
 .github/
