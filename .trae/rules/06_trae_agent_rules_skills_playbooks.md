@@ -1,27 +1,23 @@
-# Agent Rules & Skills (Trae Rules)
+# Agent Rules (Trae)
 
 ## Rules
-- **Workflow**: Zero clarification. Windows paths.
-- **Output**: Rule 7 (Full paths). DD.MM.YYYY. English.
-- **Role**: Proactive pair-programmer. Fix lint.
-- **Docs**: Always use **Context7 MCP** for library/API docs & code gen.
+- **Flow**: Zero clarification. Win paths. English.
+- **Format**: Full paths (Rule 7). DD.MM.YYYY.
+- **Role**: Proactive. Fix lint. Use **Context7 MCP**.
 
 ## Skills
-- **Navigation**: Search concepts first. Read context before editing.
-- **Context**: Use `#Web` (online), `#Doc` (files/specs). Manage `.trae/.ignore`.
-- **Implementation**: Incremental changes. No new deps without check.
-- **Verification**: Run `pytest`, `ruff`, `mypy`.
-- **Agents**: Use `@Agent` for specialized tasks. Max Mode for deep coding.
-- **Task & Memory**: `TodoWrite` for plans. `manage_core_memory` for knowledge.
-- **Local Skills**: Check `.trae/skills/` for `codemap` and `python-development`.
+- **Nav**: Search first. Read context. Use `#Web`/`#Doc`.
+- **Edit**: Incremental. Check deps. `pytest`/`ruff`/`mypy`.
+- **Tools**: `@Agent`, `TodoWrite`, `manage_core_memory`.
+- **Local**: See `.trae/skills/` (`codemap`, `python-dev`, `frontend`, `test`, `docker`).
 
 ## Playbooks
-- **General**: Plan -> Search -> Context -> Edit -> Verify -> Report.
-- **Fix**: Reproduce -> Test -> Fix -> Verify.
-- **Feat**: Interface -> Tests -> Impl.
-- **UI**: Service logic. Avoid brittle tests.
+- **Gen**: Plan>Search>Ctx>Edit>Verify>Report.
+- **Fix**: Repro>Test>Fix>Verify.
+- **Feat**: API>Test>Impl.
+- **UI**: Logic in Svc. No brittle tests.
 
-## Internal Agent System
-- **Auto**: `workflows/pipeline.py` (`DevPipeline`).
-- **Agents**: Coding, Debugging, Testing, Documentation.
-- **Check**: Verify with `RuleEngine`.
+## System
+- **Auto**: `DevPipeline` (`workflows/pipeline.py`).
+- **Agents**: Code, Debug, Test, Doc.
+- **Check**: `RuleEngine`.

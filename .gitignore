@@ -1,3 +1,8 @@
+# Trae Agent configuration
+trae_config.yaml
+trae_config.yml
+
+# Streamlit secrets
 .streamlit/secrets.toml
 
 # Application data directories
