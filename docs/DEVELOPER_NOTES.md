@@ -32,6 +32,11 @@
     - Mock `ResizeObserver` or other browser APIs if needed (setup in `jest.setup.ts`).
 - **Coverage**: Ensure ≥90% coverage. Check with `npm run test:coverage`.
 
+### Backend SSE Testing
+- Use FastAPI `TestClient.stream` to validate `text/event-stream` responses
+- Patch `create_hybrid_agent` with an object exposing `astream_query` that yields event lines
+- Assert chunks contain `data: ...` and end with `data: [DONE]`
+
 ---
 
 ## Notifications System - Digest Generator

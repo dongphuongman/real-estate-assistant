@@ -55,7 +55,7 @@
       "subtasks": [
         { "id": "6.1", "title": "Finalize MVP scope per PRD", "status": "pending" },
         { "id": "6.2", "title": "Implement chat, search, settings pages (frontend)", "status": "pending" },
-        { "id": "6.3", "title": "Verify backend endpoints (chat, search, tools, settings, admin)", "status": "pending" },
+        { "id": "6.3", "title": "Verify backend endpoints (chat, search, tools, settings, admin)", "status": "completed" },
         { "id": "6.4", "title": "Apply rate limiting and request IDs", "status": "pending" },
         { "id": "6.5", "title": "Ensure CORS pinned in production", "status": "pending" }
       ]

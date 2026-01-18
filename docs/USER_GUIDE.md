@@ -86,6 +86,12 @@ The AI-powered chat interface allows you to search for properties using natural 
 2. Type your request (e.g., "Find me a 2-bedroom apartment in Warsaw under 3000 PLN").
 3. The AI will analyze your request, search the database, and present the best matches.
 4. You can ask follow-up questions or refine your criteria conversationally.
+ 
+### Streaming Responses (SSE)
+For real-time streaming from the assistant:
+- In API mode, set `"stream": true` in `POST /api/v1/chat`
+- The response uses `text/event-stream` with lines like `data: {"content":"..."}` and finishes with `data: [DONE]`
+- Ensure you include the `X-API-Key` header; see API Reference for an example
 
 ## Financial Tools
 

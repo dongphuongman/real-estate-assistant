@@ -91,6 +91,12 @@ If you exceed the limit, you will receive:
         *   Content Type: `text/event-stream`
         *   Events: `data: {"content": "..."}` or `data: {"error": "..."}`
         *   End of stream: `data: [DONE]`
+        *   Example (curl):
+            ```bash
+            curl -N -H "X-API-Key: your-api-key" -H "Content-Type: application/json" \
+              -d "{\"message\": \"Hello\", \"stream\": true}" \
+              http://localhost:8000/api/v1/chat
+            ```
 
 #### Tools
 
