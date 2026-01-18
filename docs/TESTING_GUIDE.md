@@ -617,6 +617,7 @@ Should use agent: False
   - Verify keyboard navigation for radio and checkbox controls
   - Check screen reader labels and help text
   - Ensure visual feedback during transitions (spinner)
+  - Confirm screen reader announces mode changes via live region (“Visualization mode changed…”)
 
 ---
 

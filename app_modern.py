@@ -1734,8 +1734,15 @@ def render_market_insights_tab():
                 elif map_mode in ["Price Heatmap", "City Overview"]:
                     if "viz_mode" not in st.session_state:
                         st.session_state.viz_mode = "Heatmap" if map_mode == "Price Heatmap" else "City Overview"
+                    if "viz_mode_prev" not in st.session_state:
+                        st.session_state.viz_mode_prev = st.session_state.viz_mode
+                    st.markdown(
+                        "<style>.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}</style>",
+                        unsafe_allow_html=True,
+                    )
                     col_controls_1, col_controls_2, col_controls_3 = st.columns([2, 2, 3])
                     with col_controls_1:
+                        st.markdown("<span class='sr-only' id='viz_mode_help'>Select visualization mode: Heatmap or City Overview</span>", unsafe_allow_html=True)
                         st.session_state.viz_mode = st.radio(
                             "Visualization Mode",
                             options=["Heatmap", "City Overview"],
@@ -1743,6 +1750,7 @@ def render_market_insights_tab():
                             horizontal=True,
                             key="viz_mode_select",
                         )
+                        st.caption("Select map representation: Heatmap shows intensity; City Overview aggregates by city.")
                     with col_controls_2:
                         if "viz_jitter" not in st.session_state:
                             st.session_state.viz_jitter = True
@@ -1753,6 +1761,7 @@ def render_market_insights_tab():
                             disabled=st.session_state.viz_mode == "City Overview",
                             key="viz_jitter_toggle",
                         )
+                        st.markdown("<span class='sr-only'>Jitter toggle disabled in City Overview mode</span>", unsafe_allow_html=True)
                     with col_controls_3:
                         if "viz_cluster" not in st.session_state:
                             st.session_state.viz_cluster = True
@@ -1780,6 +1789,7 @@ def render_market_insights_tab():
                             disabled=st.session_state.viz_mode != "Heatmap",
                             key="viz_heatmap_radius",
                         )
+                        st.markdown("<span class='sr-only'>Heatmap radius slider active only in Heatmap mode</span>", unsafe_allow_html=True)
                     with col_extras_2:
                         if "viz_heatmap_blur" not in st.session_state:
                             st.session_state.viz_heatmap_blur = 25
@@ -1792,6 +1802,7 @@ def render_market_insights_tab():
                             disabled=st.session_state.viz_mode != "Heatmap",
                             key="viz_heatmap_blur",
                         )
+                        st.markdown("<span class='sr-only'>Heatmap blur slider active only in Heatmap mode</span>", unsafe_allow_html=True)
                     with col_extras_3:
                         if "viz_city_show_stats" not in st.session_state:
                             st.session_state.viz_city_show_stats = True
@@ -1802,6 +1813,8 @@ def render_market_insights_tab():
                             disabled=st.session_state.viz_mode != "City Overview",
                             key="viz_city_show_stats",
                         )
+                        st.markdown("<span class='sr-only'>Aggregate statistics toggle active only in City Overview mode</span>", unsafe_allow_html=True)
+                    aria_status = st.empty()
                     props_list = []
                     if has_coords and len(map_df) > 0:
                         for _, row in map_df.head(int(map_max_points)).iterrows():
@@ -1833,10 +1846,15 @@ def render_market_insights_tab():
                                 fill_opacity=0.1,
                             ).add_to(fmap)
                             st.caption("Heatmap active")
+                            aria_msg = f"Visualization mode changed to Heatmap. Jitter {'on' if st.session_state.viz_jitter else 'off'}. Radius {int(st.session_state.viz_heatmap_radius)}. Blur {int(st.session_state.viz_heatmap_blur)}."
                         else:
                             fmap = create_city_overview_map(coll, show_statistics=bool(st.session_state.viz_city_show_stats))
                             st.caption("City Overview active")
+                            aria_msg = f"Visualization mode changed to City Overview. Aggregate statistics {'on' if st.session_state.viz_city_show_stats else 'off'}."
                         st_folium(fmap, height=350, use_container_width=True)
+                        if st.session_state.viz_mode != st.session_state.viz_mode_prev:
+                            aria_status.markdown(f"<div role='status' aria-live='polite'>{aria_msg}</div>", unsafe_allow_html=True)
+                            st.session_state.viz_mode_prev = st.session_state.viz_mode
                 
                 else:
                     props_list = []
