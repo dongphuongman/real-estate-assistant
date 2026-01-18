@@ -1,165 +1,94 @@
-# **Product Requirements Document: AI Real Estate Assistant**
+# Product Requirements Document (PRD): AI Real Estate Assistant — V4
 
 ## Overview
-The AI Real Estate Assistant is a conversational AI application designed to help real estate agencies assist potential buyers and renters in finding their ideal properties. The application uses natural language processing and machine learning to understand user preferences and recommend suitable properties from a database.
+Conversational, data‑driven assistant for real estate search, analysis, and notifications. V4 is a web rewrite with Next.js (frontend) and FastAPI (backend). MVP will run on free tiers, later upgraded to a paid version with subscriptions and advanced analytics.
 
-## Problem Statement
-Real estate agents often spend significant time manually matching clients with properties. This process can be inefficient and may not always consider all available options. Additionally, clients may not always be able to articulate all their preferences at once, requiring multiple interactions.
+## Personas
+- Consumer: renters/buyers searching by budget, location, rooms, amenities.
+- Agent: curates listings, compares properties, sends digests to leads.
+- Manager: tracks portfolio KPIs, market trends, and team performance.
 
-## Functional Requirements
+## MVP Scope (Public Free)
+- Chat assistant: intent detection, quick answers, tool invocations.
+- Property search: hybrid retrieval (semantic + keyword), filters, geo radius.
+- Tools: mortgage calculator, property comparison, price analysis, location analysis.
+- Saved settings: notification preferences per user email (client‑side identifier).
+- Exports: CSV/JSON/Markdown for search results and comparisons.
+- Basic analytics: mortgage widget, simple dashboards.
 
-| Requirement ID | Description | User Story | Expected Behavior/Outcome |
-|----------------|-------------|------------|---------------------------|
-| FR001 | Conversational Interface | As a user, I want to engage in a natural language conversation about my property preferences. | The system should engage users in a natural language conversation, understand and respond to queries about properties, with persistent conversation allowing users to refine their search. |
-| FR002 | Property Search & Filtering | As a user, I want to search for properties based on various criteria such as location, budget, and features. | The system should search properties based on location, budget range, property type, number of rooms, desired amenities, and proximity to points of interest. |
-| FR003 | Data Integration | As a developer, I want the system to support multiple data sources. | The system should support local CSV files, external CSV sources via URLs, with potential for future API integrations. |
-| FR004 | Property Recommendations | As a user, I want to receive personalized property recommendations. | The system should provide personalized recommendations with key property details in a structured format and explain why properties match user criteria. |
-| FR005 | AI Capabilities | As a developer, I want the system to leverage advanced AI capabilities. | The system should use natural language understanding to extract preferences, reasoning capabilities to match preferences with properties, and learn from interactions to improve recommendations. |
+## Future Paid Scope
+- Accounts & auth: email/OAuth login, server‑side sessions, quotas.
+- Advanced analytics: indices, YoY trends, anomaly detection, alerts.
+- Digests: scheduled per user with templates and delivery tracking.
+- Voice & multimodal: TTS for summaries, map overlays, attachments.
+- Data connectors: portals/APIs, database sources, ingestion pipeline with validation.
 
-## Target Audience
-- Real estate agencies and agents
-- Property buyers and renters
-- Property managers and landlords
+## Non‑Functional Requirements
+- Security: no client‑exposed secrets; rate limiting; audit logs; CORS pinned in prod.
+- Reliability: graceful degradation for providers/vector store; retries.
+- Performance: p95 < 2s retrieval; p95 < 8s complex answers.
+- Scalability: stateless API; horizontal scaling; versioned endpoints.
+- Observability: structured logs, request IDs, metrics; per‑client rate limits.
+- Testability: unit/integration/e2e with deterministic stubs; CI gates.
 
 ## User Stories
+- As a consumer I describe needs and get matching listings with explanations.
+- As an agent I compare shortlisted properties and export a shareable report.
+- As a manager I review weekly market indices and receive change alerts.
+- As a user I configure notification preferences and schedules by my email.
 
-### As a property buyer/renter
-- I want to describe my ideal property in natural language
-- I want to specify my preferences for location, budget, property type, and amenities
-- I want to receive property recommendations that match my criteria
-- I want to refine my search based on additional preferences
-- I want to compare properties based on various attributes
+## Features
+- Chat: `/api/v1/chat` SSE; provider routing; session correlation via request IDs.
+- Search: filters (price, rooms, amenities, listing type), sort (price, price/m²), geo (radius/bounding box).
+- Tools: mortgage, compare, price analysis, location analysis.
+- Settings: notification preferences, model settings by user email.
+- Admin: ingest/reindex/health endpoints.
 
-### As a real estate agent
-- I want to quickly find properties that match client requirements
-- I want to provide clients with comprehensive property information
-- I want to identify negotiation opportunities based on market data
-- I want to streamline the property matching process
+## Data & Schemas
+- Properties: normalized schema (country/region/district/currency, lat/lon).
+- Vector store: embeddings persisted (local dev: Chroma; prod: pgvector optional).
+- Preferences: simple key‑value per user email; digests generated from saved searches.
 
-## Features and Requirements
+## Tech Stack
+- Frontend: Next.js 16 (App Router), TypeScript, Tailwind CSS v4, Testing Library/Jest.
+- Backend: FastAPI (Python 3.12), Pydantic models, SSE streaming, rate limiting.
+- Vector: ChromaDB (dev) with hybrid search; optional pgvector (Neon) for prod.
+- Providers: OpenAI, Anthropic, Google, Grok, DeepSeek, Ollama via provider factory.
+- Storage (free): Neon (Postgres) or Supabase free tier; object storage optional.
 
-### Core Features
+## API Contracts (V4)
+- Search: `POST /api/v1/search`
+- Chat: `POST /api/v1/chat` (SSE)
+- Tools: `POST /api/v1/tools/*`
+- Settings: `GET/POST /api/v1/settings/*`
+- Admin: `POST /api/v1/admin/*`
+- Auth check: `GET /api/v1/verify-auth` with `X-API-Key`
 
-#### 1. Conversational Interface
-- The assistant should engage users in a natural language conversation
-- The system should understand and respond to user queries about properties
-- The conversation should be persistent, allowing users to refine their search
+## Deployment (Free)
+- Frontend: Vercel free.
+- Backend: Render/Railway free container.
+- Database: Neon free Postgres (optional pgvector).
+- Alternatives: Supabase free (Postgres+Auth+Storage) to unify.
 
-#### 2. Property Search and Filtering
-- The system should search properties based on:
-  - Location (city, neighborhood)
-  - Budget range
-  - Property type (apartment, house, condo)
-  - Number of bedrooms and bathrooms
-  - Desired amenities (parking, garden, pool)
-  - Proximity to points of interest (schools, public transportation)
-  
-#### 3. Data Integration
-- The system should support multiple data sources:
-  - Local CSV files
-  - External CSV sources via URLs
-  - Potential future API integrations
-
-#### 4. Property Recommendations
-- The system should provide personalized property recommendations
-- Recommendations should include key property details in a structured format
-- The system should explain why properties match user criteria
-
-#### 5. AI Capabilities
-- Natural language understanding to extract user preferences
-- Reasoning capabilities to match preferences with property attributes
-- Learning from user interactions to improve recommendations
-
-## Technical Requirements
-
-| Requirement ID | Description | Details |
-|----------------|-------------|---------|
-| TR001 | Programming Language | Python 3.11+ |
-| TR002 | Backend Framework | LangChain with support for multiple LLM models (OpenAI GPT, Llama) |
-| TR003 | Data Processing | Pandas for data manipulation, FastEmbed for embeddings |
-| TR004 | Frontend | Streamlit-based responsive web interface |
-| TR005 | Data Storage | Persistent vector store (ChromaDB) |
-| TR006 | Data Format | Support for various CSV data formats with standardized schema |
-| TR007 | Deployment | Streamlit Cloud, Docker containerization |
-| TR008 | Package Management | pip with requirements.txt |
-| TR009 | Environment | Support for local development and cloud environments |
-| TR010 | Conversation Memory | Multi-turn conversation with history retention |
-
-## Architecture
-
-| Component | Description | Implementation |
-|-----------|-------------|----------------|
-| User Interface Layer | Provides the interface for user interaction | Streamlit-based web interface with chat components |
-| AI Agent Layer | Handles conversation and reasoning | LLM-powered conversational agent (OpenAI GPT or Llama models) |
-| Data Processing Layer | Manages data loading and transformation | CSV loaders and data formatters using Pandas |
-| Data Storage Layer | Stores property data and embeddings | In-memory database and vector stores (DocArrayInMemorySearch) |
-
-### Data Flow
-
-| Step | Description | Details |
-|------|-------------|---------|
-| 1 | User Input | User enters preferences through the conversation interface |
-| 2 | Natural Language Processing | The system processes the input using the AI agent |
-| 3 | Data Retrieval | The AI agent queries the property database based on extracted preferences |
-| 4 | Result Processing | Results are processed and formatted for presentation |
-| 5 | Recommendation Display | Recommendations are presented to the user in structured format |
-| 6 | Conversation Refinement | The conversation continues with additional queries and refinement |
-
-## Technical Stack
-- **Frontend**: Streamlit
-- **Backend**: Python
-- **AI/ML**: LangChain, OpenAI GPT models, Llama models
-- **Data Processing**: Pandas, FastEmbed
-- **Vector Storage**: ChromaDB
-- **Deployment**: Streamlit Cloud, Docker
-- **Package Management**: pip (requirements.txt)
-
-## Version History & Roadmap
-
-| Version | Features | Status | Implementation Details |
-|---------|----------|--------|------------------------|
-| V1 | Basic property search with single-turn conversations | Completed | Used `langchain_experimental.agents.agent_toolkits.pandas.base.create_pandas_dataframe_agent` for direct data querying |
-| V2 | Multi-turn conversations with enhanced search capabilities | Completed | Implements RAG with `ConversationalRetrievalChain`, supports multiple LLM models (OpenAI GPT, Llama) |
-| V3.1 | Asynchronous data processing to prevent UI freezing | Completed | Implemented async handling for database queries |
-| V3.2 | Visual property comparisons | Completed | Added Radar charts, price trends, and amenity matrix in Streamlit UI |
-
-## Planned Enhancements (Remaining Tasks)
-
-| Feature ID | Description | Priority | Technical Approach |
-|------------|-------------|----------|-------------------|
-| PE001 | Integration with additional data sources (APIs) | High | Develop adapters for real estate APIs (CSV adapter already implemented) |
-| PE003 | Geographical mapping of properties | Medium | Integrate with mapping services (e.g., Mapbox, Folium) to visualize property locations |
-| PE004 | Sentiment analysis for property descriptions | Low | Add sentiment analysis module using specialized LLM fine-tuning |
-| PE005 | Support for international property markets | Medium | Enhance data processing to handle different market formats and currencies |
+## Risks & Mitigations
+- Secrets exposure: never use `NEXT_PUBLIC_API_KEY` in prod; server‑side auth only.
+- Resource limits: small vector index; cache and model routing to cheaper providers.
+- CORS misconfig: restrict to frontend origin in prod via env.
+- Rate abuse: per‑client RPM limiting; budgets per provider.
 
 ## Success Metrics
+- Engagement: avg session > 3 min; 30% return users.
+- Relevance: ≥80% user‑rated match accuracy.
+- Conversion: ≥15% chat→viewing inquiry.
+- Performance: p95 latency targets met for search and chat.
 
-| Metric ID | Description | Measurement Method | Target |
-|-----------|-------------|-------------------|--------|
-| SM001 | User Engagement | Conversation length, return rate | >3 minutes average session, >30% return rate |
-| SM002 | Recommendation Accuracy | Match between user preferences and suggestions | >80% relevance rating in user feedback |
-| SM003 | Conversion Rate | Inquiries to property viewings | >15% conversion from chat to viewing request |
-| SM004 | User Satisfaction | User ratings and feedback | >4/5 average rating |
-| SM005 | System Performance | Response time, error rate | <3 second average response, <1% error rate |
+## Roadmap
+- MVP launch on free tiers.
+- Add accounts/subscriptions; move preferences to server DB.
+- Expand analytics and digests; introduce voice.
+- Harden compliance; private fork for paid version.
 
-## Project Timeline
-
-| Phase | Description | Status | Deliverables |
-|-------|-------------|--------|-------------|
-| Phase 1 | Initial prototype development | Completed | V1 with basic functionality |
-| Phase 2 | Integration of multiple data sources and LLM models | Completed | V2 with enhanced conversational capabilities |
-| Phase 3 | Enhanced user experience and additional features | In Progress | Visual comparisons (Done), mapping, sentiment analysis |
-| Phase 4 | Production deployment and optimization | Future | Performance optimizations, scalability improvements |
-
-## Constraints and Limitations
-
-| Constraint ID | Description | Impact | Mitigation |
-|---------------|-------------|--------|------------|
-| CL001 | Data Quality Dependency | System performance limited by data structure and completeness | Implement robust data preprocessing and validation |
-| CL002 | Text-Based Interaction | Limited to text conversations in current version | Future versions to include visual and voice interfaces |
-| CL003 | API Key Requirements | OpenAI API key needed for optimal performance | Support for open-source LLM alternatives (Llama) |
-| CL004 | Computational Resources | Performance dependent on available resources | Optimize models and implement caching strategies |
-| CL005 | Limited Testing | Current version needs more comprehensive testing | Develop automated test suite and perform user testing |
-
-## Appendix
-For detailed technical implementation, refer to the project repository documentation and the README.md file.
+## Acceptance Criteria (MVP)
+- Frontend pages: chat, search, settings, analytics render; tests pass (≥90% frontend unit).
+- Backend endpoints: search/chat/tools/settings/admin respond with rate limits and request IDs.
+- No secrets in client; CORS pinned in prod; health checks green.

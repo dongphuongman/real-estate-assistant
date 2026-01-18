@@ -26,6 +26,11 @@ async def get_api_key(api_key_header: str = Security(api_key_header)):
         )
         
     if api_key_header == settings.api_access_key:
+        if settings.environment.strip().lower() == "production" and settings.api_access_key == "dev-secret-key":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Invalid configuration"
+            )
         return api_key_header
         
     raise HTTPException(

@@ -1,6 +1,51 @@
-# Deploying to Streamlit Cloud
+# Deployment — V4 (Next.js + FastAPI) and V3 (Streamlit)
 
-This guide will walk you through deploying the AI Real Estate Assistant to Streamlit Cloud.
+## V4: Free‑Tier Deployment
+
+### Overview
+- Frontend: Next.js on Vercel (free).
+- Backend: FastAPI on Render/Railway (free).
+- Database (optional): Neon Postgres or Supabase free tier.
+
+### Prerequisites
+- GitHub repository access.
+- Provider API keys via environment variables on each platform.
+- Backend env:
+  - `ENVIRONMENT=production`
+  - `API_ACCESS_KEY=<secure>` (do not use dev default)
+  - `CORS_ALLOW_ORIGINS=https://your-vercel-domain.vercel.app,https://your-domain`
+  - Provider keys: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`, etc.
+
+### Frontend (Vercel)
+1. Import `frontend/` project into Vercel.
+2. Set env:
+   - `NEXT_PUBLIC_API_URL=https://your-api-host/api/v1`
+   - Do not set `NEXT_PUBLIC_API_KEY` in production.
+3. Deploy. Verify pages render and API calls succeed.
+
+### Backend (Render/Railway)
+1. Create a new service from the repo root or `/api` subfolder.
+2. Build command: `pip install -r requirements.txt`
+3. Start command: `uvicorn api.main:app --host 0.0.0.0 --port 8000`
+4. Set env as above; add health check `/health`.
+5. Expose public URL and confirm rate limit headers.
+
+### Database (Neon/Supabase)
+- Create a Postgres database; store URL/credentials in env.
+- Optional pgvector extension if moving off Chroma.
+- Migrate preferences to server DB in paid version.
+
+### DNS/SSL
+- Use provider default SSL; optional Cloudflare for DNS.
+
+### Post‑Deploy Checklist
+- Frontend reachable; no secrets in client bundle.
+- Backend responds and returns `X-Request-ID` and rate limit headers.
+- CORS allows only configured origins; `/health` is green.
+
+---
+
+## V3: Streamlit Cloud
 
 ## Prerequisites
 

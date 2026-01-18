@@ -17,6 +17,7 @@ class AppSettings(BaseModel):
     app_title: str = "AI Real Estate Assistant - Modern"
     app_icon: str = "🏠"
     version: str = "3.0.0"
+    environment: str = Field(default_factory=lambda: os.getenv("ENVIRONMENT", "development"))
 
     # Paths
     data_dir: Path = Field(default_factory=lambda: Path("./data"))
@@ -39,7 +40,6 @@ class AppSettings(BaseModel):
     deepseek_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("DEEPSEEK_API_KEY")
     )
-    
     # API Access Control
     api_access_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("API_ACCESS_KEY", "dev-secret-key")
@@ -50,6 +50,13 @@ class AppSettings(BaseModel):
     )
     api_rate_limit_rpm: int = Field(
         default_factory=lambda: int(os.getenv("API_RATE_LIMIT_RPM", "600"))
+    )
+    cors_allow_origins: list[str] = Field(
+        default_factory=lambda: (
+            [o.strip() for o in os.getenv("CORS_ALLOW_ORIGINS", "").split(",") if o.strip()]
+            if os.getenv("ENVIRONMENT", "development").strip().lower() == "production"
+            else ["*"]
+        )
     )
 
     # Model Defaults

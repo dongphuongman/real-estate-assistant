@@ -27,7 +27,7 @@ This is the Next.js frontend for the AI Real Estate Assistant (V4).
 
     The frontend calls the Python backend directly. Configure:
     - `NEXT_PUBLIC_API_URL` (default `http://localhost:8000/api/v1`)
-    - `NEXT_PUBLIC_API_KEY` (sent as `X-API-Key` when set)
+    - `NEXT_PUBLIC_API_KEY` (dev only; never set in production)
 
     The login/register pages store the submitted email in `localStorage` (`userEmail`), which is sent as `X-User-Email` for settings endpoints.
 
@@ -44,3 +44,7 @@ This is the Next.js frontend for the AI Real Estate Assistant (V4).
 - **Search**: Property search interface.
 - **Chat**: AI Assistant interaction.
 - **Analytics**: Market insights and dashboards.
+ 
+## Security Notes
+- Do not expose secrets in the client. `NEXT_PUBLIC_API_KEY` is for local development only.
+- In production, authenticate requests server‑side; let the backend enforce rate limits and CORS.
