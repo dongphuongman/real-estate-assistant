@@ -1731,8 +1731,38 @@ def render_market_insights_tab():
                     ).add_to(fmap)
                     
                     st_folium(fmap, height=350, use_container_width=True)
-                elif map_mode == "Price Heatmap":
-                    # Convert filtered DataFrame to Property objects
+                elif map_mode in ["Price Heatmap", "City Overview"]:
+                    if "viz_mode" not in st.session_state:
+                        st.session_state.viz_mode = "Heatmap" if map_mode == "Price Heatmap" else "City Overview"
+                    col_controls_1, col_controls_2, col_controls_3 = st.columns([2, 2, 3])
+                    with col_controls_1:
+                        st.session_state.viz_mode = st.radio(
+                            "Visualization Mode",
+                            options=["Heatmap", "City Overview"],
+                            index=0 if st.session_state.viz_mode == "Heatmap" else 1,
+                            horizontal=True,
+                            key="viz_mode_select",
+                        )
+                    with col_controls_2:
+                        if "viz_jitter" not in st.session_state:
+                            st.session_state.viz_jitter = True
+                        st.session_state.viz_jitter = st.checkbox(
+                            "Jitter",
+                            value=bool(st.session_state.viz_jitter),
+                            help="Slightly offsets markers to reduce overlap",
+                            disabled=st.session_state.viz_mode == "City Overview",
+                            key="viz_jitter_toggle",
+                        )
+                    with col_controls_3:
+                        if "viz_cluster" not in st.session_state:
+                            st.session_state.viz_cluster = True
+                        st.session_state.viz_cluster = st.checkbox(
+                            "Clustering",
+                            value=bool(st.session_state.viz_cluster),
+                            help="Groups nearby markers (not applicable in these modes)",
+                            disabled=True,
+                            key="viz_cluster_toggle",
+                        )
                     props_list = []
                     if has_coords and len(map_df) > 0:
                         for _, row in map_df.head(int(map_max_points)).iterrows():
@@ -1746,32 +1776,28 @@ def render_market_insights_tab():
                             except Exception:
                                 continue
                     coll = PropertyCollection(properties=props_list, total_count=len(props_list))
-                    fmap = create_price_heatmap(coll, center_city=center_city, zoom_start=11, radius=15, blur=25, jitter=True)
-                    folium.Circle(
-                        location=[lat, lon],
-                        radius=float(radius_km) * 1000.0,
-                        color="#4B5563",
-                        fill=True,
-                        fill_opacity=0.1,
-                    ).add_to(fmap)
-                    st_folium(fmap, height=350, use_container_width=True)
-                elif map_mode == "City Overview":
-                    # Convert filtered DataFrame to Property objects
-                    props_list = []
-                    if has_coords and len(map_df) > 0:
-                        for _, row in map_df.head(int(map_max_points)).iterrows():
-                            try:
-                                row_dict = {k: v if pd.notna(v) else None for k, v in row.items()}
-                                if "lat" in row_dict:
-                                    row_dict["latitude"] = row_dict.pop("lat")
-                                if "lon" in row_dict:
-                                    row_dict["longitude"] = row_dict.pop("lon")
-                                props_list.append(Property(**row_dict))
-                            except Exception:
-                                continue
-                    coll = PropertyCollection(properties=props_list, total_count=len(props_list))
-                    fmap = create_city_overview_map(coll, show_statistics=True)
-                    st_folium(fmap, height=350, use_container_width=True)
+                    with st.spinner("Rendering visualization..."):
+                        if st.session_state.viz_mode == "Heatmap":
+                            fmap = create_price_heatmap(
+                                coll,
+                                center_city=center_city,
+                                zoom_start=11,
+                                radius=15,
+                                blur=25,
+                                jitter=bool(st.session_state.viz_jitter),
+                            )
+                            folium.Circle(
+                                location=[lat, lon],
+                                radius=float(radius_km) * 1000.0,
+                                color="#4B5563",
+                                fill=True,
+                                fill_opacity=0.1,
+                            ).add_to(fmap)
+                            st.caption("Heatmap active")
+                        else:
+                            fmap = create_city_overview_map(coll, show_statistics=True)
+                            st.caption("City Overview active")
+                        st_folium(fmap, height=350, use_container_width=True)
                 
                 else:
                     props_list = []

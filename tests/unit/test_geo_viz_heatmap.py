@@ -18,3 +18,15 @@ def test_create_price_heatmap_with_properties_returns_map():
     coll = PropertyCollection(properties=props, total_count=len(props))
     m = create_price_heatmap(coll, center_city="Warsaw", jitter=False)
     assert isinstance(m, folium.Map)
+
+
+def test_create_price_heatmap_large_dataset_performance():
+    props = []
+    for i in range(5000):
+        lat = 49.0 + (i % 300) * 0.01
+        lon = 14.0 + (i % 300) * 0.01
+        price = 2000 + (i % 1000)
+        props.append(Property(city="Warsaw", latitude=lat, longitude=lon, price=price))
+    coll = PropertyCollection(properties=props, total_count=len(props))
+    m = create_price_heatmap(coll, center_city="Warsaw", jitter=False)
+    assert isinstance(m, folium.Map)

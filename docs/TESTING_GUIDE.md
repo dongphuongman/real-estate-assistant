@@ -598,11 +598,23 @@ Should use agent: False
   - Unit tests: tests/unit/test_geo_viz_heatmap.py
   - Validates Folium map creation for empty and populated collections
   - Run: python -m pytest tests/unit/test_geo_viz_heatmap.py -q
+  - Performance: includes large dataset test with 5k points
 
 - City Overview
   - Unit tests: tests/unit/test_geo_viz_city_overview.py
   - Validates Folium map creation aggregating city statistics
   - Run: python -m pytest tests/unit/test_geo_viz_city_overview.py -q
+  - Performance: includes large dataset test with 5k properties
+
+#### UI Controls & Accessibility
+- Mode switching within unified visualization section (Heatmap vs City Overview)
+- Toggle states:
+  - Jitter: enabled for Heatmap, disabled for City Overview
+  - Clustering: disabled (not applicable in these modes)
+- Accessibility:
+  - Verify keyboard navigation for radio and checkbox controls
+  - Check screen reader labels and help text
+  - Ensure visual feedback during transitions (spinner)
 
 ---
 

@@ -26,3 +26,16 @@ def test_create_city_overview_map_with_properties_returns_map():
     coll = PropertyCollection(properties=props, total_count=len(props))
     m = create_city_overview_map(coll)
     assert isinstance(m, folium.Map)
+
+
+def test_create_city_overview_large_dataset_performance():
+    props = []
+    cities = ["Warsaw", "Krakow", "Wroclaw", "Poznan", "Gdansk", "Szczecin", "Lublin"]
+    for i in range(5000):
+        city = cities[i % len(cities)]
+        price = 2000 + (i % 1000)
+        rooms = 1 + (i % 4)
+        props.append(Property(city=city, price=price, rooms=rooms))
+    coll = PropertyCollection(properties=props, total_count=len(props))
+    m = create_city_overview_map(coll)
+    assert isinstance(m, folium.Map)
