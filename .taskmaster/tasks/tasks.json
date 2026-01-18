@@ -4,7 +4,7 @@
       "id": "1",
       "title": "Integration with Real Estate APIs",
       "description": "Develop adapters for real estate APIs to fetch property data dynamically.",
-      "status": "pending",
+      "status": "completed",
       "priority": "high",
       "subtasks": []
     },

@@ -37,6 +37,13 @@ To ensure your digest contains relevant properties:
 3. These searches will automatically feed into your digest.
 4. For map-based searches, you can narrow results by geo radius or a bounding box area.
 
+## Data Sources
+
+The platform aggregates data from multiple sources:
+- **Direct Listings**: Properties uploaded directly to the platform.
+- **External APIs**: Real-time integrations with major real estate data providers (new in v1.1).
+- **Market Indices**: Aggregated regional data for market analysis.
+
 ## Market Analytics
 
 The platform now supports comprehensive market analysis across multiple regions, including indices and comparables for CIS, Russia, Turkey, USA, and Africa.

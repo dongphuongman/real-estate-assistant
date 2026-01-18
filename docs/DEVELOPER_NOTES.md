@@ -83,6 +83,29 @@ The Streamlit Notifications tab uses `i18n.get_text(...)` for all user-facing la
 
 ---
 
+## Data Providers
+
+### Overview
+The system uses a provider pattern to fetch property data from various sources. The base class `BaseDataProvider` defines the interface.
+
+### API Provider (`data/providers/api_provider.py`)
+*   **Purpose**: Fetch property data from external REST APIs.
+*   **Configuration**:
+    *   `api_url`: Base URL of the provider.
+    *   `api_key`: Authentication key (Bearer token).
+*   **Usage**:
+    ```python
+    from data.providers.api_provider import APIProvider
+    
+    provider = APIProvider(api_url="https://api.example.com", api_key="secret")
+    properties = provider.get_properties()
+    ```
+*   **Testing**:
+    *   Use `MockRealEstateAPIProvider` for testing without keys.
+    *   For integration tests, mock `requests.get` to return expected JSON structures.
+
+---
+
 ## Analytics - Financial Metrics
 
 ### Overview
