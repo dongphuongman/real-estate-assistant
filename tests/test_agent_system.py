@@ -4,8 +4,10 @@ Test script to verify the Agent System.
 import logging
 import os
 import sys
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
+
 from rules.engine import RuleEngine
 
 # Add project root to path

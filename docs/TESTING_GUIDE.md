@@ -45,6 +45,27 @@ export OPENAI_API_KEY="your-key"
 streamlit run app_modern.py
 ```
 
+### Backend Testing
+Use these commands to validate the backend quickly:
+```bash
+# Run unit/integration tests
+python -m pytest
+
+# Lint (imports, style) and auto-fix suggestions
+python -m ruff check .
+
+# Type checks
+python -m mypy
+```
+
+#### CORS Verification
+- Development: set ENVIRONMENT=development and ensure CORS_ALLOW_ORIGINS is unset. Expected: Allow-Origin: *
+- Production: set ENVIRONMENT=production and set CORS_ALLOW_ORIGINS to a comma-separated list (e.g., https://example.com, https://app.local). Expected: only listed origins allowed.
+
+#### Coverage Expectations
+- Unit tests target ≥85% coverage across core modules.
+- Critical modules (dependencies, lifecycle, auth) aim for ≥90% coverage.
+
 ### Initial Configuration
 1. Open app in browser (usually http://localhost:8501)
 2. Load sample data from sidebar

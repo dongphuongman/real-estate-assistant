@@ -1,6 +1,5 @@
-from fastapi.testclient import TestClient
 from api.main import app
-
+from fastapi.testclient import TestClient
 
 def test_cors_dev_environment_allows_all_origin_header():
     client = TestClient(app)
