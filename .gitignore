@@ -1,3 +1,16 @@
+# Azurite (Azure Storage Emulator)
+__azurite_*
+*.json.lock
+
+# Systemd / Legacy Service Files
+*.service
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
 # Trae Agent configuration
 trae_config.yaml
 trae_config.yml

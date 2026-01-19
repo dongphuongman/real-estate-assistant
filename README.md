@@ -98,7 +98,7 @@ python -m pip install --upgrade pip
 python -m pip install -e .[dev]
 
 cp .env.example .env
-# Edit .env and set provider API keys
+# Edit .env and set provider API keys and ENVIRONMENT
 # Set ENVIRONMENT="local"
 
 python -m uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
@@ -113,6 +113,28 @@ npm run dev
 ```
 
 Open `http://localhost:3000` (frontend). The backend runs at `http://localhost:8000`.
+
+## 🧪 Testing
+
+We use `pytest` for backend testing and `jest` for frontend testing.
+
+```bash
+# Backend Tests
+python -m pytest tests/unit          # Unit tests
+python -m pytest tests/integration   # Integration tests
+
+# Frontend Tests
+cd frontend
+npm test
+```
+
+## 🧹 Maintenance
+
+The project uses `ruff` for linting and formatting.
+
+```bash
+python -m ruff check .
+```
 
 ---
 
