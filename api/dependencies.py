@@ -8,6 +8,10 @@ from agents.hybrid_agent import create_hybrid_agent
 from config.settings import settings
 from models.provider_factory import ModelProviderFactory
 from vector_store.chroma_store import ChromaPropertyStore
+from agents.services.valuation import SimpleValuationProvider, ValuationProvider
+from agents.services.crm_connector import WebhookCRMConnector, CRMConnector
+from agents.services.data_enrichment import BasicDataEnrichmentService, DataEnrichmentService
+from agents.services.legal_check import BasicLegalCheckService, LegalCheckService
 
 
 @lru_cache()
@@ -56,6 +60,23 @@ def get_llm() -> BaseChatModel:
     except Exception as e:
         # Fallback for tests or when no keys configured
         raise RuntimeError(f"Could not initialize LLM with provider '{provider_name}': {e}") from e
+
+def get_valuation_provider() -> ValuationProvider:
+    return SimpleValuationProvider()
+
+def get_crm_connector() -> Optional[CRMConnector]:
+    url = settings.crm_webhook_url
+    if not url:
+        return None
+    return WebhookCRMConnector(url)
+
+def get_data_enrichment_service() -> Optional[DataEnrichmentService]:
+    if not settings.data_enrichment_enabled:
+        return None
+    return BasicDataEnrichmentService()
+
+def get_legal_check_service() -> LegalCheckService:
+    return BasicLegalCheckService()
 
 def get_agent(
     store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],

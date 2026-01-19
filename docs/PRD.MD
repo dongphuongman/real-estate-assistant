@@ -1,27 +1,31 @@
 # Product Requirements Document (PRD): AI Real Estate Assistant — V4
 
 ## Overview
-Conversational, data‑driven assistant for real estate search, analysis, and notifications. V4 is a web rewrite with Next.js (frontend) and FastAPI (backend). MVP will run on free tiers, later upgraded to a paid version with subscriptions and advanced analytics.
+Open Core & Walled Garden strategy. Conversational, data‑driven assistant for real estate search, analysis, and notifications. V4 uses Next.js (frontend) and FastAPI (backend). The public Community Edition (CE) focuses on developer utility and local deployment; advanced Hosted Pro features are operated privately and are not part of this repository.
 
 ## Personas
 - Consumer: renters/buyers searching by budget, location, rooms, amenities.
 - Agent: curates listings, compares properties, sends digests to leads.
 - Manager: tracks portfolio KPIs, market trends, and team performance.
 
-## MVP Scope (Public Free)
+## Community Edition (Open Source)
+- License: AGPLv3
 - Chat assistant: intent detection, quick answers, tool invocations.
 - Property search: hybrid retrieval (semantic + keyword), filters, geo radius.
 - Tools: mortgage calculator, property comparison, price analysis, location analysis.
 - Saved settings: notification preferences per user email (client‑side identifier).
 - Exports: CSV/JSON/Markdown for search results and comparisons.
 - Basic analytics: mortgage widget, simple dashboards.
+- Local RAG: upload PDFs/Docs and query them for property‑related answers.
+- Prompt templates: realtor copywriting (listing description, emails).
+- Local deployment: Docker Compose, BYOK for LLM (OpenAI key or local Ollama/Llama 3).
 
-## Future Paid Scope
-- Accounts & auth: email/OAuth login, server‑side sessions, quotas.
-- Advanced analytics: indices, YoY trends, anomaly detection, alerts.
-- Digests: scheduled per user with templates and delivery tracking.
-- Voice & multimodal: TTS for summaries, map overlays, attachments.
-- Data connectors: portals/APIs, database sources, ingestion pipeline with validation.
+## Hosted Pro (Private, Operated by Us)
+- Not part of public repository; features implemented in private modules/services.
+- Multi‑agent orchestration (lead qualification, legal analysis).
+- Data enrichment via configured APIs; deep CRM sync; voice mode with telephony.
+- Analytics dashboard for dialog efficiency and conversion.
+- Fine‑tuned models and higher‑tier providers (operational only on our infrastructure).
 
 ## Non‑Functional Requirements
 - Security: no client‑exposed secrets; rate limiting; audit logs; CORS pinned in prod.
@@ -82,11 +86,11 @@ Conversational, data‑driven assistant for real estate search, analysis, and no
 - Conversion: ≥15% chat→viewing inquiry.
 - Performance: p95 latency targets met for search and chat.
 
-## Roadmap
+## Roadmap (Public CE)
 - MVP launch on free tiers.
-- Add accounts/subscriptions; move preferences to server DB.
-- Expand analytics and digests; introduce voice.
-- Harden compliance; private fork for paid version.
+- Improve local RAG, prompt templates, docs for 5‑min setup.
+- Community issues (e.g., Telegram connector) and contributions.
+- Compliance hardening for CE; clear extension points for private plugins.
 
 ## Acceptance Criteria (MVP)
 - Frontend pages: chat, search, settings, analytics render; tests pass (≥90% frontend unit).

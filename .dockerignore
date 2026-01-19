@@ -77,3 +77,6 @@ test_*.sh
 *.sqlite
 *.db
 node_modules/
+ 
+# Private non-committed materials (exclude from images)
+private/

@@ -210,6 +210,35 @@ class LocationAnalysisResponse(BaseModel):
     lat: Optional[float] = None
     lon: Optional[float] = None
 
+class ValuationRequest(BaseModel):
+    property_id: str
+
+class ValuationResponse(BaseModel):
+    property_id: str
+    estimated_value: float
+
+class LegalCheckRequest(BaseModel):
+    text: str
+
+class LegalCheckResponse(BaseModel):
+    risks: List[Dict[str, Any]] = []
+    score: float = 0.0
+
+class DataEnrichmentRequest(BaseModel):
+    address: str
+
+class DataEnrichmentResponse(BaseModel):
+    address: str
+    data: Dict[str, Any] = {}
+
+class CRMContactRequest(BaseModel):
+    name: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
+
+class CRMContactResponse(BaseModel):
+    id: str
+
 
 class ExportPropertiesRequest(BaseModel):
     format: ExportFormat

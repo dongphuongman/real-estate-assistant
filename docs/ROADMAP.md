@@ -115,6 +115,12 @@
 - [DONE] Notifications: digests, schedules, templates, preference management
 - DevOps: CI gates, environments, secrets, deploy pipelines, monitoring
 
+### Community Edition Roadmap (Open Core)
+- Publish repository with AGPLv3 and clear contribution guidelines.
+- Documentation: “Run your AI realtor in 5 minutes” (local Docker Compose, BYOK).
+- Community Issues: create “Telegram connector” issue for community contribution.
+- Metrics: ≥100 GitHub stars, first external PRs merged, doc site visits growth.
+
 ## Sprints
 - Sprint 1 (1–2 weeks)
   - [DONE] Schema extension (country/region/district/currency, lat/lon)

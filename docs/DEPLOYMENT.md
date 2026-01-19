@@ -5,7 +5,8 @@ This guide covers deploying the AI Real Estate Assistant (V4) using Docker or on
 ## Overview
 - **Frontend**: Next.js 14+ (Port 3000)
 - **Backend**: FastAPI (Port 8000)
-- **Database**: ChromaDB (Vector Store, local or server-based)
+- **Vector Store**: ChromaDB (local dev) or pgvector (optional)
+- **Database**: PostgreSQL (Neon/Supabase) for server‑side preferences and future features
 
 ---
 
@@ -16,12 +17,13 @@ The easiest way to run the full stack (Backend + Frontend + Services).
 ### Prerequisites
 - Docker & Docker Compose installed.
 - Valid `.env` file (copy from `.env.example`).
+- BYOK for LLM: either `OPENAI_API_KEY` (user‑provided) or local Ollama/Llama 3.
 
 ### Steps
 1. **Prepare Environment**
    ```bash
    cp .env.example .env
-   # Edit .env and set OPENAI_API_KEY, etc.
+   # Edit .env and set OPENAI_API_KEY (or configure OLLAMA base URL), DB settings
    ```
 
 2. **Run with Docker Compose**
@@ -32,6 +34,7 @@ The easiest way to run the full stack (Backend + Frontend + Services).
 3. **Access Services**
    - Frontend: `http://localhost:3000`
    - Backend API: `http://localhost:8000/docs`
+   - Postgres (optional): provision Neon/Supabase and set env variables
 
 4. **Logs & Maintenance**
    ```bash
@@ -129,3 +132,8 @@ To serve on a domain (e.g., `realestate.ai`) with SSL.
 3. Build Command: `pip install -r requirements.txt`.
 4. Start Command: `uvicorn api.main:app --host 0.0.0.0 --port $PORT`.
 5. Set Environment Variables from `.env`.
+
+### BYOK Notes
+- Never expose secrets in frontend. All keys are server‑side env variables.
+- For local models, configure Ollama (`OLLAMA_BASE_URL`) and select model (e.g., `llama3`).
+- Feature flags choose providers; Community Edition publishes only safe toggles.

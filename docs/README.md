@@ -10,6 +10,7 @@ Welcome to the documentation for the AI Real Estate Assistant (V4).
 ## Guides
 - **[User Guide](USER_GUIDE.md)**: How to use the application.
 - **[Deployment](DEPLOYMENT.md)**: Docker and VPS deployment instructions.
+- **[Quickstart](QUICKSTART.md)**: Run your AI realtor in 5 minutes.
 - **[Testing](TESTING_GUIDE.md)**: Testing strategy and commands.
 - **[Contributing](CONTRIBUTING.md)**: Development setup and guidelines.
 - **[Roadmap](ROADMAP.md)**: Future plans and vision.

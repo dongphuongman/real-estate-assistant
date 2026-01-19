@@ -92,6 +92,12 @@ class AppSettings(BaseModel):
     batch_size: int = 100
     autoload_default_datasets: bool = False
     vector_persist_enabled: bool = False
+    crm_webhook_url: Optional[str] = Field(default_factory=lambda: os.getenv("CRM_WEBHOOK_URL"))
+    valuation_mode: str = Field(default_factory=lambda: os.getenv("VALUATION_MODE", "simple"))
+    legal_check_mode: str = Field(default_factory=lambda: os.getenv("LEGAL_CHECK_MODE", "basic"))
+    data_enrichment_enabled: bool = Field(
+        default_factory=lambda: os.getenv("DATA_ENRICHMENT_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
+    )
 
     # UI Settings
     page_layout: str = "wide"

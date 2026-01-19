@@ -197,6 +197,9 @@ cython_debug/
 
 # Temporary files
 tmp/
+ 
+# Private non-committed materials
+private/
 temp/
 *.tmp
 *.bak

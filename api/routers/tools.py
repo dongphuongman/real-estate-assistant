@@ -4,7 +4,13 @@ from typing import Annotated, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
-from api.dependencies import get_vector_store
+from api.dependencies import (
+    get_vector_store,
+    get_valuation_provider,
+    get_legal_check_service,
+    get_data_enrichment_service,
+    get_crm_connector,
+)
 from api.models import (
     ComparedProperty,
     ComparePropertiesRequest,
@@ -14,6 +20,14 @@ from api.models import (
     LocationAnalysisResponse,
     PriceAnalysisRequest,
     PriceAnalysisResponse,
+    ValuationRequest,
+    ValuationResponse,
+    LegalCheckRequest,
+    LegalCheckResponse,
+    DataEnrichmentRequest,
+    DataEnrichmentResponse,
+    CRMContactRequest,
+    CRMContactResponse,
 )
 from tools.property_tools import (
     MortgageCalculatorTool,
@@ -214,6 +228,94 @@ async def location_analysis(
         lon=_to_float(md.get("lon")),
     )
 
+@router.post(
+    "/tools/valuation", response_model=ValuationResponse, tags=["Tools"]
+)
+async def valuation(
+    request: ValuationRequest,
+    store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
+    provider=Depends(get_valuation_provider),
+):
+    if not store:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Vector store unavailable",
+        )
+    pid = request.property_id.strip()
+    if not pid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="property_id is required",
+        )
+    docs = store.get_properties_by_ids([pid])
+    if not docs:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Property not found",
+        )
+    md = docs[0].metadata or {}
+    area = md.get("area_sqm")
+    price_per_sqm = md.get("price_per_sqm")
+    value = provider.estimate_value({"area": area, "price_per_sqm": price_per_sqm})
+    return ValuationResponse(property_id=pid, estimated_value=value)
+
+@router.post(
+    "/tools/legal-check", response_model=LegalCheckResponse, tags=["Tools"]
+)
+async def legal_check(
+    request: LegalCheckRequest,
+    service=Depends(get_legal_check_service),
+):
+    text = request.text.strip()
+    if not text:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="text is required",
+        )
+    result = service.analyze_contract(text)
+    return LegalCheckResponse(risks=result.get("risks", []), score=float(result.get("score", 0.0)))
+
+@router.post(
+    "/tools/enrich-address", response_model=DataEnrichmentResponse, tags=["Tools"]
+)
+async def enrich_address(
+    request: DataEnrichmentRequest,
+    service=Depends(get_data_enrichment_service),
+):
+    if service is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Data enrichment disabled",
+        )
+    address = request.address.strip()
+    if not address:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="address is required",
+        )
+    data = service.enrich(address)
+    return DataEnrichmentResponse(address=address, data=data)
+
+@router.post(
+    "/tools/crm-sync-contact", response_model=CRMContactResponse, tags=["Tools"]
+)
+async def crm_sync_contact(
+    request: CRMContactRequest,
+    connector=Depends(get_crm_connector),
+):
+    if connector is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="CRM connector not configured",
+        )
+    payload = {"name": request.name, "phone": request.phone, "email": request.email}
+    cid = connector.sync_contact(payload)
+    if not cid:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="CRM sync failed",
+        )
+    return CRMContactResponse(id=cid)
 
 def _to_float(value: object) -> Optional[float]:
     if value is None:
