@@ -16,7 +16,7 @@
 
 The AI Real Estate Assistant is a modern, conversational AI platform helping users find properties through natural language. Built with a **FastAPI** backend and **Next.js** frontend, it features semantic search, hybrid agent routing, and real-time analytics.
 
-**[Docs](docs/)** | **[Backend API](docs/API_REFERENCE.md)** | **[Testing](docs/TESTING_GUIDE.md)** | **[Contributing](CONTRIBUTING.md)**
+**[Docs](docs/)** | **[Backend API](docs/API_REFERENCE.md)** | **[Testing](docs/TESTING_GUIDE.md)** | **[Contributing](docs/CONTRIBUTING.md)**
 
 ---
 
