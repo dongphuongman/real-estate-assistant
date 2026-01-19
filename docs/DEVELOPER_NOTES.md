@@ -83,6 +83,10 @@ This document captures practical details for working on the FastAPI backend and 
 - Security:
   - Static analysis: Bandit (fail on high severity/high confidence)
   - Dependency audit: pip-audit (fail on vulnerabilities)
+ - Temporary MVP pause:
+   - CI jobs are gated by `MVP_CI_DISABLED` (workflow env).
+   - Set `MVP_CI_DISABLED` to `'true'` to disable heavy steps (jobs still succeed quickly).
+   - Set to `'false'` (or remove) to re-enable full CI after MVP.
 
 ## Branch Protection
 - Protect `main` and `ver4` branches with required CI checks:

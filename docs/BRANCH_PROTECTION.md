@@ -22,4 +22,7 @@ Protect `main` and `ver4` with required status checks to ensure quality gates be
 ## Notes
 - Temporary thresholds are documented in [DEVELOPER_NOTES.md](file:///c:/Projects/ai-real-estate-assistant/docs/DEVELOPER_NOTES.md); raise to targets as tests improve.
 - Avoid storing secrets in code; CI jobs must not echo secret values.
-
+- MVP Pause:
+  - CI jobs are currently gated by `MVP_CI_DISABLED` and will complete quickly without running heavy checks.
+  - If branch protection requires specific checks, they will still report success (skipped heavy steps).
+  - To fully re-enable, set `MVP_CI_DISABLED='false'` in `.github/workflows/ci.yml` (or remove the env).

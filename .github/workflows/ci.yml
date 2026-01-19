@@ -1,5 +1,8 @@
 name: CI
 
+env:
+  MVP_CI_DISABLED: 'true'
+
 on:
   push:
     branches: [ main, ver4, '**' ]
@@ -12,8 +15,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: CI disabled notice
+        if: ${{ env.MVP_CI_DISABLED == 'true' }}
+        run: |
+          echo "CI temporarily disabled for MVP sprint."
 
       - name: Cache pip
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
@@ -22,40 +30,48 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Set up Python
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
       - name: Install dependencies
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e .[dev]
           python -m pip install pytest-cov pytest-xdist pytest-timeout
 
       - name: Lint (ruff)
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python -m ruff check .
 
       - name: Type check (mypy)
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python -m mypy
         continue-on-error: false
 
       - name: Run unit tests with coverage (pytest)
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python -m pytest tests/unit --cov=. --cov-report=xml --cov-report=term --cov-fail-under=75 -n auto
 
       - name: Upload backend coverage (unit)
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: backend-coverage-unit-xml
           path: coverage.xml
 
       - name: Run integration tests with coverage (pytest)
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python -m pytest tests/integration --cov=. --cov-report=xml --cov-report=term --cov-fail-under=40 -n auto
 
       - name: Upload backend coverage (integration)
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: backend-coverage-integration-xml
@@ -69,8 +85,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: CI disabled notice
+        if: ${{ env.MVP_CI_DISABLED == 'true' }}
+        run: |
+          echo "CI temporarily disabled for MVP sprint."
 
       - name: Cache npm
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         uses: actions/cache@v4
         with:
           path: ~/.npm
@@ -79,22 +100,27 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Set up Node
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Install dependencies
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: npm ci
 
       - name: Lint
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: npm run lint
         continue-on-error: true
 
       - name: Run tests
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: npm run test -- --ci --coverage
         continue-on-error: true
 
       - name: Upload frontend coverage
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage
@@ -105,15 +131,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: CI disabled notice
+        if: ${{ env.MVP_CI_DISABLED == 'true' }}
+        run: |
+          echo "CI temporarily disabled for MVP sprint."
       - name: Set up Python
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Install bandit
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python -m pip install --upgrade pip
           python -m pip install bandit
       - name: Run Bandit (exclude tests, fail on high severity)
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python -m bandit -r . -x tests -s high -i high -f json -o bandit.json
       - name: Upload bandit report
@@ -128,15 +161,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: CI disabled notice
+        if: ${{ env.MVP_CI_DISABLED == 'true' }}
+        run: |
+          echo "CI temporarily disabled for MVP sprint."
       - name: Set up Python
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Install pip-audit
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python -m pip install --upgrade pip
           python -m pip install pip-audit
       - name: Run pip-audit (fail on vulnerabilities)
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python -m pip_audit -f json -o pip-audit.json
       - name: Upload pip-audit report

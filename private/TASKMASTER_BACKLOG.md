@@ -128,6 +128,7 @@ This backlog translates PRD (Community Edition) into executable tasks and subtas
   - Subtasks:
     - Configure checks; fix violations
   - Acceptance: unit ≥90%, integration ≥70%, critical ≥90%; RuleEngine clean
+  - Notes: Temporary MVP pause—CI heavy steps gated via `MVP_CI_DISABLED`. Post-MVP, re-enable gates and raise thresholds to targets.
 
 ### Epic: Docs (CE)
 - TM-DOCS-001 (medium, 2d, pending)
