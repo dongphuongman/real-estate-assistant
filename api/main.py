@@ -18,8 +18,8 @@ from notifications.email_service import (
 )
 from notifications.scheduler import NotificationScheduler
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+from utils.json_logging import configure_json_logging
+configure_json_logging(logging.INFO)
 logger = logging.getLogger(__name__)
 
 settings = get_settings()

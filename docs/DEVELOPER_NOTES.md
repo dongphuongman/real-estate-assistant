@@ -9,6 +9,7 @@ This document captures practical details for working on the FastAPI backend and 
 - Observability: `api/observability.py` adds:
   - `X-Request-ID` header to all responses
   - Per-client rate limiting for `/api/v1/*`
+  - Structured JSON logs (`utils/json_logging.py`) with `event`, `request_id`, `client_id`, `method`, `path`, `status`, `duration_ms`
 - Auth: API key via `X-API-Key` header (`config/settings.py` -> `API_ACCESS_KEY`)
 - CORS:
   - Development: `ENVIRONMENT!=production` → `allow_origins=["*"]`

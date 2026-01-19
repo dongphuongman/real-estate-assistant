@@ -120,13 +120,16 @@ def add_observability(app: FastAPI, logger: logging.Logger) -> None:
                 if not allowed:
                     response_headers["Retry-After"] = str(reset_in)
                     logger.info(
-                        "api_rate_limited request_id=%s client_id=%s method=%s "
-                        "path=%s retry_after=%s",
-                        request_id,
-                        client_id,
-                        request.method,
-                        path,
-                        reset_in,
+                        "api_rate_limited",
+                        extra={
+                            "event": "api_rate_limited",
+                            "request_id": request_id,
+                            "client_id": client_id,
+                            "method": request.method,
+                            "path": path,
+                            "status": 429,
+                            "duration_ms": 0.0,
+                        },
                     )
                     return JSONResponse(
                         status_code=429,
@@ -143,13 +146,16 @@ def add_observability(app: FastAPI, logger: logging.Logger) -> None:
 
         client_id = client_id_from_api_key(request.headers.get("X-API-Key"))
         logger.info(
-            "api_request request_id=%s client_id=%s method=%s path=%s status=%s duration_ms=%.2f",
-            request_id,
-            client_id or "-",
-            request.method,
-            request.url.path,
-            getattr(response, "status_code", "-"),
-            elapsed_ms,
+            "api_request",
+            extra={
+                "event": "api_request",
+                "request_id": request_id,
+                "client_id": (client_id or "-"),
+                "method": request.method,
+                "path": request.url.path,
+                "status": getattr(response, "status_code", "-"),
+                "duration_ms": float(elapsed_ms),
+            },
         )
 
         key = f"{request.method} {request.url.path}"
