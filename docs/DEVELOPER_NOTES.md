@@ -89,6 +89,15 @@ This document captures practical details for working on the FastAPI backend and 
 - Do not commit secrets; use environment variables.
 - In development, `auth/request-code` returns the code inline for easier testing.
 
+## Monitoring
+- Health endpoints:
+  - `/health` (system)
+  - `/api/v1/admin/health` (admin with cache/store indicators)
+- Uptime monitor:
+  - Module: `notifications/uptime_monitor.py`
+  - Periodically runs a checker and sends alert emails on consecutive failures
+  - Configurable interval, fail threshold, and alert cooldown
+
 ## Search Filters (End-to-End)
 - UI (Next.js): `frontend/src/app/search/page.tsx` collects `min_price`, `max_price`, `rooms`, `property_type`
 - Client API: `frontend/src/lib/api.ts` sends `filters` in `POST /api/v1/search` payload
