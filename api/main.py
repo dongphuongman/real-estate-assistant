@@ -18,9 +18,13 @@ from notifications.email_service import (
     EmailServiceFactory,
 )
 from notifications.scheduler import NotificationScheduler
-
+from notifications.uptime_monitor import (
+    UptimeMonitor,
+    UptimeMonitorConfig,
+    make_http_checker,
+)
 from utils.json_logging import configure_json_logging
-from notifications.uptime_monitor import UptimeMonitor, UptimeMonitorConfig, make_http_checker
+
 configure_json_logging(logging.INFO)
 logger = logging.getLogger(__name__)
 

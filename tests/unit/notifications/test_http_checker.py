@@ -1,4 +1,3 @@
-from types import SimpleNamespace
 from notifications.uptime_monitor import make_http_checker
 
 
