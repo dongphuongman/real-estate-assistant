@@ -96,7 +96,10 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
           "limit": 10,
           "filters": {
             "city": "Krakow",
-            "min_price": 2000
+            "min_price": 200000,
+            "max_price": 800000,
+            "rooms": 2,
+            "property_type": "apartment"
           },
           "alpha": 0.7,
           "lat": 50.0647,
@@ -116,6 +119,11 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
         *   `min_lat/max_lat/min_lon/max_lon` (optional): Geo bounding box filter.
         *   `sort_by` (optional): `relevance`, `price`, `price_per_sqm`, `area_sqm`, `year_built`.
         *   `sort_order` (optional): `asc` or `desc`.
+        *   `filters` (object, optional): Metadata filters. Supported keys include:
+            *   `city` (string)
+            *   `min_price` / `max_price` (number)
+            *   `rooms` (number; treated as minimum rooms)
+            *   `property_type` (string; one of: `apartment`, `house`, `studio`, `loft`, `townhouse`, `other`)
     *   **Returns**: `SearchResponse` object containing list of properties with hybrid scores.
 
 #### Chat

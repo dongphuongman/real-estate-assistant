@@ -100,6 +100,7 @@
   - [DONE] Create Auth Pages (Login/Register)
   - [DONE] Create Chat Page (UI + Integration)
   - [DONE] Create Search Page (UI + Integration)
+  - [DONE] Implement Search Filters (price range, rooms, property type)
   - [DONE] Setup API Client & Type Definitions
   - [DONE] Create Analytics Page (Mortgage Calculator Integration)
   - [DONE] Create Settings Page (Notification Preferences)

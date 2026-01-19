@@ -35,6 +35,7 @@ The AI Real Estate Assistant is a modern, conversational AI platform helping use
 #### Key Data Flows
 - **Ingestion**: CSV/API -> Pandas -> Cleaning -> Embeddings -> ChromaDB.
 - **Search**: Query -> Analyzer -> Hybrid Retrieval (Semantic + Keyword) -> Reranking -> Response.
+- **Filters**: Frontend collects min/max price, rooms, property type -> API forwards `filters` -> Vector Store converts to Chroma query via `_build_chroma_filter`
 - **Chat**: User Message -> Hybrid Agent -> Tool Selection (Calculator, Search, etc.) -> LLM Response.
 
 ### 3. Notification System

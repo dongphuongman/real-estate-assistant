@@ -93,6 +93,17 @@ For real-time streaming from the assistant:
 - The response uses `text/event-stream` with lines like `data: {"content":"..."}` and finishes with `data: [DONE]`
 - Ensure you include the `X-API-Key` header; see API Reference for an example
 
+## Search Filters
+
+Use the filters sidebar on the Search page to narrow results:
+- Min/Max Price: Enter numbers to constrain price range
+- Minimum Rooms: Specify the minimum number of rooms
+- Property Type: Choose from Apartment, House, Studio, Loft, Townhouse, Other
+
+Tips:
+- Filters combine with your text query for hybrid ranking
+- Click “Clear Filters” to reset and broaden results
+
 ## Login (Email Code)
 
 For accounts-enabled deployments, you can log in using a one-time email code:

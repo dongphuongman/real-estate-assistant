@@ -10,13 +10,26 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResultItem[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [minPrice, setMinPrice] = useState<string>("");
+  const [maxPrice, setMaxPrice] = useState<string>("");
+  const [rooms, setRooms] = useState<string>("");
+  const [propertyType, setPropertyType] = useState<string>("");
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      const response = await searchProperties({ query });
+      const filters: Record<string, unknown> = {};
+      if (minPrice.trim()) filters["min_price"] = Number(minPrice);
+      if (maxPrice.trim()) filters["max_price"] = Number(maxPrice);
+      if (rooms.trim()) filters["rooms"] = Number(rooms);
+      if (propertyType.trim()) filters["property_type"] = propertyType;
+
+      const response = await searchProperties({
+        query,
+        filters: Object.keys(filters).length ? filters : undefined,
+      });
       setResults(response.results);
     } catch {
       setError("Failed to perform search. Please try again.");
@@ -70,8 +83,86 @@ export default function SearchPage() {
                 <Filter className="h-4 w-4" /> Filters
               </div>
               <div className="space-y-4">
-                 {/* TODO: Add Price Range, Room Count, Property Type filters */}
-                 <div className="text-sm text-muted-foreground">Filters coming soon...</div>
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <label htmlFor="min-price" className="block text-sm font-medium mb-1">
+                      Min Price
+                    </label>
+                    <input
+                      id="min-price"
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      value={minPrice}
+                      onChange={(e) => setMinPrice(e.target.value)}
+                      aria-label="Minimum price"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="max-price" className="block text-sm font-medium mb-1">
+                      Max Price
+                    </label>
+                    <input
+                      id="max-price"
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(e.target.value)}
+                      aria-label="Maximum price"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="rooms" className="block text-sm font-medium mb-1">
+                      Minimum Rooms
+                    </label>
+                    <input
+                      id="rooms"
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      value={rooms}
+                      onChange={(e) => setRooms(e.target.value)}
+                      aria-label="Minimum rooms"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="property-type" className="block text-sm font-medium mb-1">
+                      Property Type
+                    </label>
+                    <select
+                      id="property-type"
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      value={propertyType}
+                      onChange={(e) => setPropertyType(e.target.value)}
+                      aria-label="Property type"
+                    >
+                      <option value="">Any</option>
+                      <option value="apartment">Apartment</option>
+                      <option value="house">House</option>
+                      <option value="studio">Studio</option>
+                      <option value="loft">Loft</option>
+                      <option value="townhouse">Townhouse</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMinPrice("");
+                      setMaxPrice("");
+                      setRooms("");
+                      setPropertyType("");
+                    }}
+                    className="inline-flex items-center justify-center rounded-md border px-3 py-2 text-sm hover:bg-muted"
+                    aria-label="Clear filters"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
               </div>
             </div>
           </div>

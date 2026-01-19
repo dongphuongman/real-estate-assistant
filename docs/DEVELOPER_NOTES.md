@@ -64,3 +64,14 @@ This document captures practical details for working on the FastAPI backend and 
 - Do not commit secrets; use environment variables.
 - In development, `auth/request-code` returns the code inline for easier testing.
 
+## Search Filters (End-to-End)
+- UI (Next.js): `frontend/src/app/search/page.tsx` collects `min_price`, `max_price`, `rooms`, `property_type`
+- Client API: `frontend/src/lib/api.ts` sends `filters` in `POST /api/v1/search` payload
+- Backend Router: `api/routers/search.py` forwards `request.filters` to `store.hybrid_search`
+- Vector Store: `vector_store/chroma_store.py` converts filters to Chroma format via `_build_chroma_filter`
+
+Testing:
+- Unit: `tests/unit/api/test_api_search_filters.py` (router forwards filters)
+- Unit: `tests/unit/test_chroma_filters.py` (filter conversion)
+- Integration: `tests/integration/api/test_api_search_filters_integration.py` (endpoint accepts filters)
+
