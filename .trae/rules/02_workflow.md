@@ -1,12 +1,13 @@
 # Workflow (Trae Rules)
 
 ## Branches & Commits
-- **Branches**: Work directly in `ver4`. Do NOT create feature branches unless critically unsafe.
+- **Active Branch**: `ver4` (MEP Stage). Work directly here. No feature branches required.
+- **Future**: Pull Requests, CI/CD, and merging to `main` (Post-MEP).
 - **Commits**: `type(scope): summary [IP-XXX]`.
   - Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`.
   - Example: `feat(agents): add hybrid reranker [IP-241]`
 
-## Review & Merge
-- **PRs**: Require 1 approval. Check tests, linting, secrets, docs.
-- **Merge**: Squash merge to `main`. All checks must pass.
+## Review & Merge (Future)
+- **PRs**: Will require approval, tests, linting.
+- **Merge**: Squash merge to `main`.
 - **Breaking**: Add migration notes.
