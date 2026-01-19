@@ -74,6 +74,13 @@ This document captures practical details for working on the FastAPI backend and 
   - Tests + coverage: `npm run test -- --ci --coverage` (thresholds enforced in `jest.config.ts`)
 - Artifacts: coverage reports uploaded per job
 
+## Branch Protection
+- Protect `main` and `ver4` branches with required CI checks:
+  - Backend job (ruff, mypy, unit/integration coverage gates)
+  - Frontend job (eslint, jest)
+  - Security job (Bandit: high severity/high confidence)
+- Enable “Require branches to be up to date” and “Include administrators”.
+
 ## Notes
 - Do not commit secrets; use environment variables.
 - In development, `auth/request-code` returns the code inline for easier testing.
