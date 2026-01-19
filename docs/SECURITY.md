@@ -23,5 +23,5 @@
 - Secrets: use platform secrets; never commit `.env`; rotate keys quarterly.
 
 ## Ongoing
-- Add CI jobs: ruff, mypy, pytest, npm lint/test, audits.
+- Add CI jobs: ruff, mypy, pytest, npm lint/test, bandit (static analysis), audits.
 - Evaluate move to pgvector on Neon/Supabase for managed persistence.
