@@ -94,6 +94,98 @@ export async function calculateMortgage(input: MortgageInput): Promise<MortgageR
   return handleResponse<MortgageResult>(response);
 }
 
+export async function comparePropertiesApi(propertyIds: string[]) {
+  const response = await fetch(`${getApiUrl()}/tools/compare-properties`, {
+    method: "POST",
+    headers: buildHeaders(),
+    body: JSON.stringify({ property_ids: propertyIds }),
+  });
+  return handleResponse<{
+    properties: Array<{
+      id?: string;
+      price?: number;
+      price_per_sqm?: number;
+      city?: string;
+      rooms?: number;
+      bathrooms?: number;
+      area_sqm?: number;
+      year_built?: number;
+      property_type?: string;
+    }>;
+    summary: { count: number; min_price?: number; max_price?: number; price_difference?: number };
+  }>(response);
+}
+
+export async function priceAnalysisApi(query: string) {
+  const response = await fetch(`${getApiUrl()}/tools/price-analysis`, {
+    method: "POST",
+    headers: buildHeaders(),
+    body: JSON.stringify({ query }),
+  });
+  return handleResponse<{
+    query: string;
+    count: number;
+    average_price?: number;
+    median_price?: number;
+    min_price?: number;
+    max_price?: number;
+    average_price_per_sqm?: number;
+    median_price_per_sqm?: number;
+    distribution_by_type: Record<string, number>;
+  }>(response);
+}
+
+export async function locationAnalysisApi(propertyId: string) {
+  const response = await fetch(`${getApiUrl()}/tools/location-analysis`, {
+    method: "POST",
+    headers: buildHeaders(),
+    body: JSON.stringify({ property_id: propertyId }),
+  });
+  return handleResponse<{
+    property_id: string;
+    city?: string;
+    neighborhood?: string;
+    lat?: number;
+    lon?: number;
+  }>(response);
+}
+
+export async function valuationApi(propertyId: string) {
+  const response = await fetch(`${getApiUrl()}/tools/valuation`, {
+    method: "POST",
+    headers: buildHeaders(),
+    body: JSON.stringify({ property_id: propertyId }),
+  });
+  return handleResponse<{ property_id: string; estimated_value: number }>(response);
+}
+
+export async function legalCheckApi(text: string) {
+  const response = await fetch(`${getApiUrl()}/tools/legal-check`, {
+    method: "POST",
+    headers: buildHeaders(),
+    body: JSON.stringify({ text }),
+  });
+  return handleResponse<{ risks: Array<Record<string, unknown>>; score: number }>(response);
+}
+
+export async function enrichAddressApi(address: string) {
+  const response = await fetch(`${getApiUrl()}/tools/enrich-address`, {
+    method: "POST",
+    headers: buildHeaders(),
+    body: JSON.stringify({ address }),
+  });
+  return handleResponse<{ address: string; data: Record<string, unknown> }>(response);
+}
+
+export async function crmSyncContactApi(name: string, phone?: string, email?: string) {
+  const response = await fetch(`${getApiUrl()}/tools/crm-sync-contact`, {
+    method: "POST",
+    headers: buildHeaders(),
+    body: JSON.stringify({ name, phone, email }),
+  });
+  return handleResponse<{ id: string }>(response);
+}
+
 export async function searchProperties(request: SearchRequest): Promise<SearchResponse> {
   const response = await fetch(`${getApiUrl()}/search`, {
     method: "POST",

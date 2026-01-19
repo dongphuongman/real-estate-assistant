@@ -1,4 +1,4 @@
-from typing import Protocol, runtime_checkable, Dict, Any
+from typing import Any, Dict, Protocol, runtime_checkable
 import requests
 
 
@@ -35,4 +35,3 @@ class WebhookCRMConnector:
         r.raise_for_status()
         data = r.json()
         return str(data.get("id", ""))
-

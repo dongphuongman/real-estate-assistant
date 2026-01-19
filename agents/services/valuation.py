@@ -1,4 +1,4 @@
-from typing import Protocol, runtime_checkable, Dict, Any
+from typing import Any, Dict, Protocol, runtime_checkable
 
 
 @runtime_checkable
@@ -13,4 +13,3 @@ class SimpleValuationProvider:
         price_per_sqm = float(property_data.get("price_per_sqm", 0) or 0)
         value = area * price_per_sqm
         return float(value)
-

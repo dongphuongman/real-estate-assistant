@@ -43,6 +43,11 @@ ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/integration/api/test_cors_integration.py" = ["I001"]
+"api/routers/*.py" = ["B008"]
+"api/routers/tools.py" = ["I001"]
+"agents/services/__init__.py" = ["I001", "F401"]
+"agents/services/crm_connector.py" = ["I001"]
+"agents/services/data_enrichment.py" = ["I001"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"

@@ -5,13 +5,13 @@ from fastapi import Depends
 from langchain_core.language_models import BaseChatModel
 
 from agents.hybrid_agent import create_hybrid_agent
+from agents.services.crm_connector import CRMConnector, WebhookCRMConnector
+from agents.services.data_enrichment import BasicDataEnrichmentService, DataEnrichmentService
+from agents.services.legal_check import BasicLegalCheckService, LegalCheckService
+from agents.services.valuation import SimpleValuationProvider, ValuationProvider
 from config.settings import settings
 from models.provider_factory import ModelProviderFactory
 from vector_store.chroma_store import ChromaPropertyStore
-from agents.services.valuation import SimpleValuationProvider, ValuationProvider
-from agents.services.crm_connector import WebhookCRMConnector, CRMConnector
-from agents.services.data_enrichment import BasicDataEnrichmentService, DataEnrichmentService
-from agents.services.legal_check import BasicLegalCheckService, LegalCheckService
 
 
 @lru_cache()

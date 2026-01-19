@@ -22,6 +22,8 @@ This document captures practical details for working on the FastAPI backend and 
   - `API_RATE_LIMIT_ENABLED` (`true`/`false`)
   - `API_RATE_LIMIT_RPM` (requests per minute)
   - `API_ACCESS_KEY` (default `dev-secret-key` for dev)
+  - `CRM_WEBHOOK_URL` (optional; enables CE CRM webhook connector)
+  - `DATA_ENRICHMENT_ENABLED` (`true`/`false`; enables CE enrichment endpoint)
 
 ## Testing
 - Run all tests:

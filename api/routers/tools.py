@@ -1,33 +1,33 @@
-import statistics
 from typing import Annotated, List, Optional
+import statistics
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
 from api.dependencies import (
-    get_vector_store,
-    get_valuation_provider,
-    get_legal_check_service,
-    get_data_enrichment_service,
     get_crm_connector,
+    get_data_enrichment_service,
+    get_legal_check_service,
+    get_valuation_provider,
+    get_vector_store,
 )
 from api.models import (
-    ComparedProperty,
+    CRMContactRequest,
+    CRMContactResponse,
     ComparePropertiesRequest,
     ComparePropertiesResponse,
     CompareSummary,
+    ComparedProperty,
+    DataEnrichmentRequest,
+    DataEnrichmentResponse,
+    LegalCheckRequest,
+    LegalCheckResponse,
     LocationAnalysisRequest,
     LocationAnalysisResponse,
     PriceAnalysisRequest,
     PriceAnalysisResponse,
     ValuationRequest,
     ValuationResponse,
-    LegalCheckRequest,
-    LegalCheckResponse,
-    DataEnrichmentRequest,
-    DataEnrichmentResponse,
-    CRMContactRequest,
-    CRMContactResponse,
 )
 from tools.property_tools import (
     MortgageCalculatorTool,

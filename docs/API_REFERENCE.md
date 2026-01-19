@@ -153,6 +153,87 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
 
 #### Tools
 
+*   `POST /api/v1/tools/mortgage-calculator`
+    *   Calculate mortgage payments.
+    *   **Body**:
+        ```json
+        { "property_price": 300000, "down_payment_percent": 20, "interest_rate": 6.5, "loan_years": 30 }
+        ```
+    *   **Returns**:
+        ```json
+        { "monthly_payment": 1234.56, "total_interest": 0, "total_payment": 0 }
+        ```
+*   `POST /api/v1/tools/compare-properties`
+    *   Compare properties by IDs.
+    *   **Body**:
+        ```json
+        { "property_ids": ["id1", "id2"] }
+        ```
+    *   **Returns**:
+        ```json
+        { "properties": [ { "id": "id1", "price": 100000 } ], "summary": { "count": 1, "min_price": 100000, "max_price": 100000, "price_difference": 0 } }
+        ```
+*   `POST /api/v1/tools/price-analysis`
+    *   Analyze prices for a query.
+    *   **Body**:
+        ```json
+        { "query": "Warsaw apartments" }
+        ```
+    *   **Returns**:
+        ```json
+        { "query": "Warsaw apartments", "count": 10, "average_price": 200000, "median_price": 195000, "distribution_by_type": { "Apartment": 8 } }
+        ```
+*   `POST /api/v1/tools/location-analysis`
+    *   Location info for a property.
+    *   **Body**:
+        ```json
+        { "property_id": "id1" }
+        ```
+    *   **Returns**:
+        ```json
+        { "property_id": "id1", "city": "Warsaw", "lat": 52.2297, "lon": 21.0122 }
+        ```
+*   `POST /api/v1/tools/valuation` (CE stub)
+    *   Estimate value from area and price_per_sqm.
+    *   **Body**:
+        ```json
+        { "property_id": "id1" }
+        ```
+    *   **Returns**:
+        ```json
+        { "property_id": "id1", "estimated_value": 250000 }
+        ```
+*   `POST /api/v1/tools/legal-check` (CE stub)
+    *   Basic legal risk analysis.
+    *   **Body**:
+        ```json
+        { "text": "contract..." }
+        ```
+    *   **Returns**:
+        ```json
+        { "risks": [], "score": 0.0 }
+        ```
+*   `POST /api/v1/tools/enrich-address` (CE stub)
+    *   Address enrichment (enabled via flag).
+    *   **Body**:
+        ```json
+        { "address": "Some St 1" }
+        ```
+    *   **Returns**:
+        ```json
+        { "address": "Some St 1", "data": {} }
+        ```
+*   `POST /api/v1/tools/crm-sync-contact` (CE stub)
+    *   Sync contact via webhook (if configured).
+    *   **Body**:
+        ```json
+        { "name": "John", "phone": "123456", "email": "j@e.com" }
+        ```
+    *   **Returns**:
+        ```json
+        { "id": "contact-123" }
+        ```
+
 *   `GET /api/v1/tools`
     *   List all available property analysis tools.
     *   **Headers**: `X-API-Key: your-api-key
