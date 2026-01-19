@@ -58,8 +58,9 @@ function MortgageSection() {
               loan_years: parseInt(loanYears, 10),
             });
             setResult(res);
-          } catch (e: any) {
-            setError(e?.message || "Calculation failed");
+          } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : String(e);
+            setError(msg || "Calculation failed");
           } finally {
             setLoading(false);
           }
@@ -75,7 +76,7 @@ function MortgageSection() {
 
 function CompareSection() {
   const [ids, setIds] = useState<string>("");
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<Awaited<ReturnType<typeof comparePropertiesApi>> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   return (
@@ -90,8 +91,9 @@ function CompareSection() {
           try {
             const res = await comparePropertiesApi(ids.split(",").map((p) => p.trim()).filter(Boolean));
             setData(res);
-          } catch (e: any) {
-            setError(e?.message || "Compare failed");
+          } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : String(e);
+            setError(msg || "Compare failed");
           } finally {
             setLoading(false);
           }
@@ -114,7 +116,7 @@ function CompareSection() {
 
 function PriceAnalysisSection() {
   const [query, setQuery] = useState<string>("");
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<Awaited<ReturnType<typeof priceAnalysisApi>> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   return (
@@ -129,8 +131,9 @@ function PriceAnalysisSection() {
           try {
             const res = await priceAnalysisApi(query);
             setData(res);
-          } catch (e: any) {
-            setError(e?.message || "Analysis failed");
+          } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : String(e);
+            setError(msg || "Analysis failed");
           } finally {
             setLoading(false);
           }
@@ -152,7 +155,7 @@ function PriceAnalysisSection() {
 
 function LocationAnalysisSection() {
   const [pid, setPid] = useState<string>("");
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<Awaited<ReturnType<typeof locationAnalysisApi>> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   return (
@@ -167,8 +170,9 @@ function LocationAnalysisSection() {
           try {
             const res = await locationAnalysisApi(pid);
             setData(res);
-          } catch (e: any) {
-            setError(e?.message || "Location analysis failed");
+          } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : String(e);
+            setError(msg || "Location analysis failed");
           } finally {
             setLoading(false);
           }
@@ -205,8 +209,9 @@ function ValuationSection() {
           try {
             const res = await valuationApi(pid);
             setValue(res.estimated_value);
-          } catch (e: any) {
-            setError(e?.message || "Valuation failed");
+          } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : String(e);
+            setError(msg || "Valuation failed");
           } finally {
             setLoading(false);
           }
@@ -222,7 +227,7 @@ function ValuationSection() {
 
 function LegalCheckSection() {
   const [text, setText] = useState<string>("");
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<Awaited<ReturnType<typeof legalCheckApi>> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   return (
@@ -237,8 +242,9 @@ function LegalCheckSection() {
           try {
             const res = await legalCheckApi(text);
             setData(res);
-          } catch (e: any) {
-            setError(e?.message || "Legal check failed");
+          } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : String(e);
+            setError(msg || "Legal check failed");
           } finally {
             setLoading(false);
           }
@@ -259,7 +265,7 @@ function LegalCheckSection() {
 
 function EnrichAddressSection() {
   const [address, setAddress] = useState<string>("");
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<Awaited<ReturnType<typeof enrichAddressApi>> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   return (
@@ -274,8 +280,9 @@ function EnrichAddressSection() {
           try {
             const res = await enrichAddressApi(address);
             setData(res);
-          } catch (e: any) {
-            setError(e?.message || "Enrichment failed");
+          } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : String(e);
+            setError(msg || "Enrichment failed");
           } finally {
             setLoading(false);
           }
@@ -317,8 +324,9 @@ function CrmSyncSection() {
           try {
             const res = await crmSyncContactApi(name, phone || undefined, email || undefined);
             setId(res.id);
-          } catch (e: any) {
-            setError(e?.message || "CRM sync failed");
+          } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : String(e);
+            setError(msg || "CRM sync failed");
           } finally {
             setLoading(false);
           }
@@ -331,4 +339,3 @@ function CrmSyncSection() {
     </section>
   );
 }
-

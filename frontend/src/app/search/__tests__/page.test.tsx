@@ -14,10 +14,11 @@ const mockExport = exportPropertiesBySearch as jest.Mock
 describe("SearchPage", () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(global as any).URL = {
+    const mockURL = {
       createObjectURL: jest.fn(() => "blob:test"),
       revokeObjectURL: jest.fn(),
-    }
+    } as Pick<typeof URL, "createObjectURL" | "revokeObjectURL">;
+    Object.defineProperty(globalThis, "URL", { value: mockURL, configurable: true })
     const anchor = document.createElement("a")
     anchor.click = jest.fn()
     document.body.appendChild(anchor)
