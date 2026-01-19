@@ -157,6 +157,12 @@
             "title": "Add uptime monitoring & alerts",
             "status": "pending",
             "parentId": "undefined"
+          },
+          {
+            "id": 8,
+            "title": "Enforce coverage gates in CI (backend 90/70, frontend 85)",
+            "status": "done",
+            "parentId": "undefined"
           }
         ],
         "updatedAt": "2026-01-18T21:28:01.994Z",

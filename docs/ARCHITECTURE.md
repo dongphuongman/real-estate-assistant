@@ -78,6 +78,7 @@ The digest system bridges raw property data and user notifications.
 - **Embeddings**: FastEmbed (BGE) or OpenAI embeddings
 - **Testing**: Pytest (Backend), Jest (Frontend)
 - **Deployment**: Docker, Vercel (Frontend), Render/Railway (Backend)
+- **CI/CD**: GitHub Actions (ruff, mypy, unit/integration coverage gates; artifacts upload)
 
 ## Security & Licensing
 - **Licensing**: Community Edition under AGPLv3. Hosted Pro is proprietary and operated privately.

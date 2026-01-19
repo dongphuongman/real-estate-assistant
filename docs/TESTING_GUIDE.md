@@ -21,8 +21,9 @@ npm run test:watch       # Run tests in watch mode
 ```
 
 #### Test Coverage Requirements
-- **Global Threshold**: ≥90% for statements, branches, functions, and lines.
-- **Critical Components**: UI components and main pages must have 100% coverage where possible.
+- **Backend Unit**: ≥90% lines/functions (enforced via `--cov-fail-under=90`)
+- **Backend Integration**: ≥70% lines/functions (enforced via `--cov-fail-under=70`)
+- **Frontend Global**: ≥85% lines/functions; branches ≥70% (enforced in `jest.config.ts`)
 
 #### Key Testing Practices
 - **Mocking**: Next.js hooks (`useRouter`, `usePathname`) and `fetch` are mocked globally or per test.

@@ -62,6 +62,18 @@ This document captures practical details for working on the FastAPI backend and 
   npm test
   ```
 
+## CI/CD
+- GitHub Actions workflow: `.github/workflows/ci.yml`
+- Backend:
+  - Lint: `ruff`
+  - Type check: `mypy` (strict fail on errors)
+  - Unit coverage gate: `pytest -m unit --cov --cov-fail-under=90`
+  - Integration coverage gate: `pytest -m integration --cov --cov-fail-under=70`
+- Frontend:
+  - Lint: `npm run lint`
+  - Tests + coverage: `npm run test -- --ci --coverage` (thresholds enforced in `jest.config.ts`)
+- Artifacts: coverage reports uploaded per job
+
 ## Notes
 - Do not commit secrets; use environment variables.
 - In development, `auth/request-code` returns the code inline for easier testing.
