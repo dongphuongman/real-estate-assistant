@@ -30,6 +30,7 @@ The AI Real Estate Assistant is a modern, conversational AI platform helping use
 - **API Router**: Modular routers in `api/routers/` (chat, search, admin, settings).
 - **Dependencies**: Dependency injection for LLMs, Vector Store, and Services via `api/dependencies.py`.
 - **Observability**: Request ID tracking, structured logging, rate limiting.
+- **CORS**: In production, allowed origins are pinned via `CORS_ALLOW_ORIGINS`; development allows `*`.
 
 #### Key Data Flows
 - **Ingestion**: CSV/API -> Pandas -> Cleaning -> Embeddings -> ChromaDB.
