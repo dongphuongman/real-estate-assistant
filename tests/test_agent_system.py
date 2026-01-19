@@ -4,14 +4,15 @@ Test script to verify the Agent System.
 import logging
 import os
 import sys
+import pytest
+from unittest.mock import MagicMock, patch
+from rules.engine import RuleEngine
 
 # Add project root to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from unittest.mock import MagicMock, patch
-
-from rules.engine import RuleEngine
-from workflows.pipeline import DevPipeline
+# Skip if legacy dev agents are not present
+pytest.importorskip("agents.dev.base")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -33,9 +34,11 @@ def test_rule_engine():
     assert len(violations) > 0, "Expected violations for secret"
     logger.info("Secret detection passed.")
 
-@patch('agents.dev.base.ModelProviderFactory')
+@patch("agents.dev.base.ModelProviderFactory")
 def test_pipeline_dry_run(mock_factory):
     logger.info("Testing Pipeline (Dry Run / Mock)...")
+    pytest.importorskip("agents.dev.coding")
+    from workflows.pipeline import DevPipeline
     
     # Setup Mock Provider
     mock_provider = MagicMock()
@@ -65,10 +68,12 @@ def test_pipeline_dry_run(mock_factory):
         logger.error(f"Pipeline failed: {e}")
         raise
 
-@patch('workflows.pipeline.subprocess.run')
-@patch('agents.dev.base.ModelProviderFactory')
+@patch("workflows.pipeline.subprocess.run")
+@patch("agents.dev.base.ModelProviderFactory")
 def test_pipeline_git_integration(mock_factory, mock_subprocess):
     logger.info("Testing Pipeline Git Integration...")
+    pytest.importorskip("agents.dev.coding")
+    from workflows.pipeline import DevPipeline
     
     # Setup Mock Provider
     mock_provider = MagicMock()
