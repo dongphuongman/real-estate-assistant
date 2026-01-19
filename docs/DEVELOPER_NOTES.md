@@ -73,6 +73,9 @@ This document captures practical details for working on the FastAPI backend and 
   - Lint: `npm run lint`
   - Tests + coverage: `npm run test -- --ci --coverage` (thresholds enforced in `jest.config.ts`)
 - Artifacts: coverage reports uploaded per job
+- Security:
+  - Static analysis: Bandit (fail on high severity/high confidence)
+  - Dependency audit: pip-audit (fail on vulnerabilities)
 
 ## Branch Protection
 - Protect `main` and `ver4` branches with required CI checks:

@@ -17,11 +17,11 @@
 
 ## Recommendations
 - Frontend: add `overrides` to enforce `diff >= 8.0.3` if compatible; monitor jest chain.
-- Backend: schedule `pip-audit` in CI; pin critical dependencies; enable Trivy/Docker Scout for images.
+- Backend: CI includes `pip-audit` job; pin critical dependencies; enable Trivy/Docker Scout for images.
 - Logging: keep redaction policy; avoid sensitive payloads in logs.
 - Input validation: continue using Pydantic; sanitize free‑text if used for search.
 - Secrets: use platform secrets; never commit `.env`; rotate keys quarterly.
 
 ## Ongoing
-- Add CI jobs: ruff, mypy, pytest, npm lint/test, bandit (static analysis), audits.
+- Add CI jobs: ruff, mypy, pytest, npm lint/test, bandit (static analysis), pip-audit.
 - Evaluate move to pgvector on Neon/Supabase for managed persistence.
