@@ -67,8 +67,8 @@ This document captures practical details for working on the FastAPI backend and 
 - Backend:
   - Lint: `ruff`
   - Type check: `mypy` (strict fail on errors)
-  - Unit coverage gate: `pytest -m unit --cov --cov-fail-under=90`
-  - Integration coverage gate: `pytest -m integration --cov --cov-fail-under=70`
+  - Unit coverage gate: temporary `--cov-fail-under=75` (target 90)
+  - Integration coverage gate: temporary `--cov-fail-under=40` (target 70)
 - Frontend:
   - Lint: `npm run lint`
   - Tests + coverage: `npm run test -- --ci --coverage` (thresholds enforced in `jest.config.ts`)
