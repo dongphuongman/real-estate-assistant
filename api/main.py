@@ -1,4 +1,5 @@
 import logging
+import os
 
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,6 +20,7 @@ from notifications.email_service import (
 from notifications.scheduler import NotificationScheduler
 
 from utils.json_logging import configure_json_logging
+from notifications.uptime_monitor import UptimeMonitor, UptimeMonitorConfig, make_http_checker
 configure_json_logging(logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -87,6 +89,30 @@ async def startup_event():
     except Exception as e:
         logger.error(f"Failed to start Notification Scheduler: {e}")
 
+    # 4. Initialize Uptime Monitor (optional via env)
+    try:
+        enabled_raw = os.getenv("UPTIME_MONITOR_ENABLED", "false").strip().lower()
+        enabled = enabled_raw in {"1", "true", "yes", "y", "on"}
+        if enabled and email_service:
+            health_url = os.getenv("UPTIME_MONITOR_HEALTH_URL", "http://localhost:8000/health").strip()
+            to_email = os.getenv("UPTIME_MONITOR_EMAIL_TO", "ops@example.com").strip() or "ops@example.com"
+            interval = float(os.getenv("UPTIME_MONITOR_INTERVAL", "60").strip() or "60")
+            threshold = int(os.getenv("UPTIME_MONITOR_FAIL_THRESHOLD", "3").strip() or "3")
+            cooldown = float(os.getenv("UPTIME_MONITOR_COOLDOWN_SECONDS", "1800").strip() or "1800")
+            checker = make_http_checker(health_url, timeout=3.0)
+            mon_cfg = UptimeMonitorConfig(
+                interval_seconds=interval,
+                fail_threshold=threshold,
+                alert_cooldown_seconds=cooldown,
+                to_email=to_email,
+            )
+            uptime_monitor = UptimeMonitor(checker=checker, email_service=email_service, config=mon_cfg, logger=logger)
+            uptime_monitor.start()
+            app.state.uptime_monitor = uptime_monitor
+            logger.info("Uptime Monitor started url=%s to=%s interval=%s", health_url, to_email, interval)
+    except Exception as e:
+        logger.error(f"Failed to start Uptime Monitor: {e}")
+
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -95,6 +121,11 @@ async def shutdown_event():
         logger.info("Stopping Notification Scheduler...")
         scheduler.stop()
         logger.info("Notification Scheduler stopped.")
+    mon = getattr(app.state, "uptime_monitor", None)
+    if mon:
+        logger.info("Stopping Uptime Monitor...")
+        mon.stop()
+        logger.info("Uptime Monitor stopped.")
 
 
 # CORS configuration

@@ -25,6 +25,12 @@ This document captures practical details for working on the FastAPI backend and 
   - `API_ACCESS_KEY` (default `dev-secret-key` for dev)
   - `CRM_WEBHOOK_URL` (optional; enables CE CRM webhook connector)
   - `DATA_ENRICHMENT_ENABLED` (`true`/`false`; enables CE enrichment endpoint)
+  - `UPTIME_MONITOR_ENABLED` (`true`/`false`)
+  - `UPTIME_MONITOR_HEALTH_URL` (default `http://localhost:8000/health`)
+  - `UPTIME_MONITOR_EMAIL_TO` (ops email recipient)
+  - `UPTIME_MONITOR_INTERVAL` (seconds, default `60`)
+  - `UPTIME_MONITOR_FAIL_THRESHOLD` (default `3`)
+  - `UPTIME_MONITOR_COOLDOWN_SECONDS` (default `1800`)
 
 ## Testing
 - Run all tests:

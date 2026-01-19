@@ -169,6 +169,12 @@
             "title": "Add security audits (Bandit + pip-audit) to CI",
             "status": "done",
             "parentId": "undefined"
+          },
+          {
+            "id": 8,
+            "title": "Wire uptime monitor via env config",
+            "status": "done",
+            "parentId": "undefined"
           }
         ],
         "updatedAt": "2026-01-18T21:28:01.994Z",

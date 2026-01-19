@@ -101,3 +101,17 @@ class UptimeMonitor:
                 self._last_alert_ts = now
             except Exception as e:
                 self.logger.error("uptime_monitor_alert_failed: %s", e)
+
+def make_http_checker(url: str, timeout: float = 3.0) -> Callable[[], bool]:
+    """
+    Create a checker that performs a HTTP GET to the given URL and
+    returns True when status_code == 200, False otherwise.
+    """
+    import requests
+    def _check() -> bool:
+        try:
+            resp = requests.get(url, timeout=timeout)
+            return int(getattr(resp, "status_code", 0)) == 200
+        except Exception:
+            return False
+    return _check
