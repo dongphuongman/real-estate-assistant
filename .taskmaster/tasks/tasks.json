@@ -63,31 +63,31 @@
           {
             "id": 6,
             "title": "Finalize MVP scope per PRD",
-            "status": "pending",
+            "status": "done",
             "parentId": "undefined"
           },
           {
             "id": 6,
             "title": "Implement chat, search, settings pages (frontend)",
-            "status": "pending",
+            "status": "done",
             "parentId": "undefined"
           },
           {
             "id": 6,
             "title": "Verify backend endpoints (chat, search, tools, settings, admin)",
-            "status": "completed",
+            "status": "done",
             "parentId": "undefined"
           },
           {
             "id": 6,
             "title": "Apply rate limiting and request IDs",
-            "status": "pending",
+            "status": "done",
             "parentId": "undefined"
           },
           {
             "id": 6,
             "title": "Ensure CORS pinned in production",
-            "status": "pending",
+            "status": "done",
             "parentId": "undefined"
           }
         ],
@@ -143,7 +143,7 @@
           {
             "id": 8,
             "title": "Run unit/integration/e2e suites",
-            "status": "pending",
+            "status": "done",
             "parentId": "undefined"
           },
           {

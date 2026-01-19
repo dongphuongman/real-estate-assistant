@@ -26,6 +26,18 @@ If you exceed the limit, you will receive:
 - **Status**: `429 Too Many Requests`
 - **Headers**: `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
 
+### CORS
+
+Cross-Origin Resource Sharing (CORS) is controlled via environment:
+- `ENVIRONMENT=production` pins allowed origins from `CORS_ALLOW_ORIGINS` (comma‑separated).
+- `ENVIRONMENT` not `production` allows all origins (`*`) for local development.
+
+Example:
+```
+ENVIRONMENT=production
+CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
+```
+
 ### Endpoints
 
 #### System

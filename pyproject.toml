@@ -41,6 +41,9 @@ target-version = "py311"
 select = ["E", "F", "B", "I"]
 ignore = ["E501"]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/integration/api/test_cors_integration.py" = ["I001"]
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q"

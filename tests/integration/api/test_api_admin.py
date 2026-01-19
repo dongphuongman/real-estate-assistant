@@ -1,3 +1,4 @@
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
@@ -91,3 +92,22 @@ def test_admin_endpoints_unauthorized():
     
     response = client.post("/api/v1/admin/reindex", json={})
     assert response.status_code == 401
+
+
+def test_admin_reindex_no_cache_returns_404(valid_headers, mock_vector_store):
+    app.dependency_overrides[get_vector_store] = lambda: mock_vector_store
+    with patch("api.routers.admin.load_collection") as mock_load:
+        mock_load.return_value = None
+        response = client.post("/api/v1/admin/reindex", json={}, headers=valid_headers)
+        assert response.status_code == 404
+        assert "Run ingestion first" in response.json()["detail"]
+    app.dependency_overrides = {}
+
+
+def test_admin_ingest_no_urls_returns_400(valid_headers, monkeypatch):
+    import api.routers.admin as admin_router
+    # Ensure no defaults configured
+    monkeypatch.setattr(admin_router, "settings", SimpleNamespace(default_datasets=[]))
+    response = client.post("/api/v1/admin/ingest", json={"file_urls": []}, headers=valid_headers)
+    assert response.status_code == 400
+    assert "No URLs provided" in response.json()["detail"]

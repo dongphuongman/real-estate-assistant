@@ -101,6 +101,16 @@ For accounts-enabled deployments, you can log in using a one-time email code:
 - The server returns a `session_token`; include it in subsequent requests with `X-Session-Token`
 - In development, the API returns the code inline for testing
 
+## CORS
+
+For local development, all origins are allowed.
+For production, set:
+```
+ENVIRONMENT=production
+CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
+```
+The backend will only allow these origins.
+
 ## Financial Tools
 
 ### Mortgage Calculator
