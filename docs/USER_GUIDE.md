@@ -160,4 +160,18 @@ For local providers (e.g., Ollama), the response includes `runtime_available` an
 
 ### API Export (V4)
 To export search results or specific property IDs via the V4 API:
-103| - `POST /api/v1/export/properties` supports `format`: `csv`, `xlsx`, `json`, `md`, `pdf`
+- `POST /api/v1/export/properties` supports `format`: `csv`, `xlsx`, `json`, `md`, `pdf`
+- Example (export by search with sorting):
+  ```json
+  {
+    "format": "xlsx",
+    "search": {
+      "query": "2 bedroom apartment in Krakow",
+      "limit": 25,
+      "filters": { "city": "Krakow" },
+      "alpha": 0.7,
+      "sort_by": "price",
+      "sort_order": "asc"
+    }
+  }
+  ```

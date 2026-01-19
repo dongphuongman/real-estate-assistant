@@ -7,6 +7,7 @@ import {
   NotificationSettings,
   SearchRequest,
   SearchResponse,
+  ExportFormat,
 } from "./types";
 
 function getApiUrl(): string {
@@ -147,4 +148,27 @@ export async function streamChatMessage(
       }
     }
   }
+}
+
+export async function exportPropertiesBySearch(
+  search: SearchRequest,
+  format: ExportFormat
+): Promise<{ filename: string; blob: Blob }> {
+  const response = await fetch(`${getApiUrl()}/export/properties`, {
+    method: "POST",
+    headers: buildHeaders(),
+    body: JSON.stringify({ format, search }),
+  });
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || "Export request failed");
+  }
+  const cd = response.headers.get("Content-Disposition") || "";
+  let filename = `properties.${format}`;
+  const match = cd.match(/filename="([^"]+)"/i);
+  if (match && match[1]) {
+    filename = match[1];
+  }
+  const blob = await response.blob();
+  return { filename, blob };
 }

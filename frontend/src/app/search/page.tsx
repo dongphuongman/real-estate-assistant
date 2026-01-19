@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Search as SearchIcon, MapPin, Filter } from "lucide-react";
-import { searchProperties } from "@/lib/api";
+import { Search as SearchIcon, MapPin, Filter, Download } from "lucide-react";
+import { searchProperties, exportPropertiesBySearch } from "@/lib/api";
 import { SearchResultItem } from "@/lib/types";
 
 export default function SearchPage() {
@@ -16,6 +16,9 @@ export default function SearchPage() {
   const [propertyType, setPropertyType] = useState<string>("");
   const [sortBy, setSortBy] = useState<string>("relevance");
   const [sortOrder, setSortOrder] = useState<string>("desc");
+  const [exportFormat, setExportFormat] = useState<string>("csv");
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +42,42 @@ export default function SearchPage() {
       setError("Failed to perform search. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExport = async () => {
+    setExporting(true);
+    setExportError(null);
+    try {
+      const filters: Record<string, unknown> = {};
+      if (minPrice.trim()) filters["min_price"] = Number(minPrice);
+      if (maxPrice.trim()) filters["max_price"] = Number(maxPrice);
+      if (rooms.trim()) filters["rooms"] = Number(rooms);
+      if (propertyType.trim()) filters["property_type"] = propertyType;
+
+      const searchPayload = {
+        query,
+        limit: Math.max(results.length, 10) || 10,
+        sort_by: sortBy as "relevance" | "price" | "price_per_sqm" | "area_sqm" | "year_built",
+        sort_order: sortOrder as "asc" | "desc",
+        filters: Object.keys(filters).length ? filters : undefined,
+      };
+      const { filename, blob } = await exportPropertiesBySearch(
+        searchPayload,
+        exportFormat as "csv" | "xlsx" | "json" | "md" | "pdf"
+      );
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      setExportError("Failed to export. Please try again.");
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -203,6 +242,40 @@ export default function SearchPage() {
                   >
                     Clear Filters
                   </button>
+                  <div className="grid grid-cols-2 gap-4 mt-2">
+                    <div>
+                      <label htmlFor="export-format" className="block text-sm font-medium mb-1">
+                        Export Format
+                      </label>
+                      <select
+                        id="export-format"
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        value={exportFormat}
+                        onChange={(e) => setExportFormat(e.target.value)}
+                        aria-label="Export format"
+                      >
+                        <option value="csv">CSV</option>
+                        <option value="xlsx">Excel</option>
+                        <option value="json">JSON</option>
+                        <option value="md">Markdown</option>
+                        <option value="pdf">PDF</option>
+                      </select>
+                    </div>
+                    <div className="flex items-end">
+                      <button
+                        type="button"
+                        onClick={handleExport}
+                        disabled={exporting || !query}
+                        className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 disabled:opacity-50"
+                        aria-label={exporting ? "Exporting" : "Export"}
+                      >
+                        <Download className="h-4 w-4 mr-2" /> {exporting ? "Exporting..." : "Export"}
+                      </button>
+                    </div>
+                  </div>
+                  {exportError ? (
+                    <div className="text-red-500 text-sm" role="alert">{exportError}</div>
+                  ) : null}
                 </div>
               </div>
             </div>

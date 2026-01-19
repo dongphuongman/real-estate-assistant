@@ -118,7 +118,7 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
         *   `lat/lon/radius_km` (optional): Geo radius filter (in kilometers).
         *   `min_lat/max_lat/min_lon/max_lon` (optional): Geo bounding box filter.
         *   `sort_by` (optional): `relevance`, `price`, `price_per_sqm`, `area_sqm`, `year_built`.
-        *   `sort_order` (optional): `asc` or `desc`.
+        *   `sort_order` (optional): `asc` or `desc`. Defaults: `sort_by=relevance`, `sort_order=desc`.
         *   `filters` (object, optional): Metadata filters. Supported keys include:
             *   `city` (string)
             *   `min_price` / `max_price` (number)
@@ -225,11 +225,30 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
             "query": "2 bedroom apartment in Krakow",
             "limit": 25,
             "filters": { "city": "Krakow" },
-            "alpha": 0.7
+            "alpha": 0.7,
+            "sort_by": "price",
+            "sort_order": "asc"
           }
         }
         ```
+    *   **Search parameters**: Same as `POST /api/v1/search`, including:
+        *   `filters` (object, optional)
+        *   `alpha` (float, optional)
+        *   `lat/lon/radius_km` or `min_lat/max_lat/min_lon/max_lon` (optional)
+        *   `sort_by` (optional): `relevance`, `price`, `price_per_sqm`, `area_sqm`, `year_built`
+        *   `sort_order` (optional): `asc` or `desc`
     *   **Returns**: File download with `Content-Disposition: attachment`.
+    *   **Parameters**:
+        *   `format` (string, required): One of `csv`, `xlsx`, `json`, `md`, `pdf`.
+        *   `property_ids` (array, optional): Explicit property IDs to export.
+        *   `search` (object, optional): Same as `SearchRequest` (supports filters, geo, `sort_by`, `sort_order`).
+        *   `columns` (array, optional): Limit CSV columns to include.
+        *   `include_header` (bool, CSV): Include header row (default: `true`).
+        *   `include_summary` (bool, Excel/Markdown): Include summary section/sheet (default: `true`).
+        *   `include_statistics` (bool, Excel): Include statistics sheet (default: `true`).
+        *   `include_metadata` (bool, JSON): Include metadata block (default: `true`).
+        *   `pretty` (bool, JSON): Pretty-print JSON (default: `true`).
+        *   `max_properties` (int, Markdown): Limit number of properties shown (default: all).
 
 #### Settings
 
@@ -418,9 +437,9 @@ def get_filename(self, format: ExportFormat, prefix: str = "properties") -> str:
 
 Supported export formats:
 - `CSV` ("csv")
-- `EXCEL` ("excel")
+- `EXCEL` ("xlsx")
 - `JSON` ("json")
-- `MARKDOWN` ("markdown")
+- `MARKDOWN` ("md")
 - `PDF` ("pdf")
 
 ---

@@ -120,3 +120,10 @@ export interface ModelProviderCatalog {
   runtime_available?: boolean | null;
   available_models?: string[] | null;
 }
+
+export type ExportFormat = "csv" | "xlsx" | "json" | "md" | "pdf";
+
+export interface ExportSearchRequest {
+  format: ExportFormat;
+  search: SearchRequest;
+}

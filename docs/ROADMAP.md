@@ -107,6 +107,7 @@
   - [DONE] Create Settings Page (Notification Preferences)
   - [DONE] Show local runtime availability and setup guidance in settings
   - [DONE] Implement Frontend Unit & Integration Tests (Coverage ≥ 90%)
+  - [DONE] Implement Export UI (CSV/Excel/JSON/Markdown/PDF)
 - [DONE] API (Python): endpoints, streaming, session persistence, tool execution
 - Retrieval: vector store service + indexing + geo filters + reranking
   - [DONE] Add bounding box geo filters to V4 `/api/v1/search`
