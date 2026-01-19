@@ -1,7 +1,7 @@
 # Workflow (Trae Rules)
 
 ## Branches & Commits
-- **Branches**: `type/description` (e.g., `feature/reranker`, `fix/login`).
+- **Branches**: Work directly in `ver4`. Do NOT create feature branches unless critically unsafe.
 - **Commits**: `type(scope): summary [IP-XXX]`.
   - Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`.
   - Example: `feat(agents): add hybrid reranker [IP-241]`
