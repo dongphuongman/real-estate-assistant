@@ -75,3 +75,13 @@ Testing:
 - Unit: `tests/unit/test_chroma_filters.py` (filter conversion)
 - Integration: `tests/integration/api/test_api_search_filters_integration.py` (endpoint accepts filters)
 
+## Search Sorting (End-to-End)
+- UI (Next.js): `frontend/src/app/search/page.tsx` provides `sort_by` and `sort_order` controls
+- Client API: `frontend/src/lib/api.ts` includes `sort_by` and `sort_order` in `POST /api/v1/search`
+- Backend Router: `api/routers/search.py` forwards sort params to `store.hybrid_search`
+- Vector Store: `vector_store/chroma_store.py` sorts by metadata fields (`price`, `price_per_sqm`, `area_sqm`, `year_built`)
+
+Testing:
+- Unit: `tests/unit/api/test_api_search_sorting.py` (router forwards sorting)
+- Integration: `tests/integration/api/test_api_search_sorting_integration.py` (endpoint accepts sorting)
+

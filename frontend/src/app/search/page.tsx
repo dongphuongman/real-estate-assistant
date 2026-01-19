@@ -14,6 +14,8 @@ export default function SearchPage() {
   const [maxPrice, setMaxPrice] = useState<string>("");
   const [rooms, setRooms] = useState<string>("");
   const [propertyType, setPropertyType] = useState<string>("");
+  const [sortBy, setSortBy] = useState<string>("relevance");
+  const [sortOrder, setSortOrder] = useState<string>("desc");
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +30,8 @@ export default function SearchPage() {
 
       const response = await searchProperties({
         query,
+        sort_by: sortBy as "relevance" | "price" | "price_per_sqm" | "area_sqm" | "year_built",
+        sort_order: sortOrder as "asc" | "desc",
         filters: Object.keys(filters).length ? filters : undefined,
       });
       setResults(response.results);
@@ -84,6 +88,41 @@ export default function SearchPage() {
               </div>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="sort-by" className="block text-sm font-medium mb-1">
+                        Sort By
+                      </label>
+                      <select
+                        id="sort-by"
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        aria-label="Sort by"
+                      >
+                        <option value="relevance">Relevance</option>
+                        <option value="price">Price</option>
+                        <option value="price_per_sqm">Price per m²</option>
+                        <option value="area_sqm">Area (m²)</option>
+                        <option value="year_built">Year Built</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="sort-order" className="block text-sm font-medium mb-1">
+                        Order
+                      </label>
+                      <select
+                        id="sort-order"
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        value={sortOrder}
+                        onChange={(e) => setSortOrder(e.target.value)}
+                        aria-label="Sort order"
+                      >
+                        <option value="desc">Descending</option>
+                        <option value="asc">Ascending</option>
+                      </select>
+                    </div>
+                  </div>
                   <div>
                     <label htmlFor="min-price" className="block text-sm font-medium mb-1">
                       Min Price
@@ -156,6 +195,8 @@ export default function SearchPage() {
                       setMaxPrice("");
                       setRooms("");
                       setPropertyType("");
+                      setSortBy("relevance");
+                      setSortOrder("desc");
                     }}
                     className="inline-flex items-center justify-center rounded-md border px-3 py-2 text-sm hover:bg-muted"
                     aria-label="Clear filters"

@@ -104,6 +104,14 @@ Tips:
 - Filters combine with your text query for hybrid ranking
 - Click “Clear Filters” to reset and broaden results
 
+## Sorting
+
+Use Sorting to order results:
+- Sort By: Relevance, Price, Price per m², Area (m²), Year Built
+- Order: Ascending or Descending
+
+Sorting works together with filters and semantic relevance.
+
 ## Login (Email Code)
 
 For accounts-enabled deployments, you can log in using a one-time email code:
