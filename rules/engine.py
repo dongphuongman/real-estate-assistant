@@ -4,13 +4,14 @@ Engine to execute rules.
 from typing import List
 
 from .base import BaseRule, RuleViolation
+from .config import IGNORE_PATTERNS, MAX_LINE_LENGTH
 from .definitions import LineLengthRule, NoSecretsRule, PerformanceLoopRule
 
 
 class RuleEngine:
     def __init__(self):
         self.rules: List[BaseRule] = [
-            LineLengthRule(),
+            LineLengthRule(max_length=MAX_LINE_LENGTH),
             NoSecretsRule(),
             PerformanceLoopRule()
         ]
@@ -27,6 +28,9 @@ class RuleEngine:
 
     def validate_file(self, file_path: str) -> List[RuleViolation]:
         try:
+            for pat in IGNORE_PATTERNS:
+                if pat in file_path.replace("\\", "/"):
+                    return []
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             return self.validate_code(content, file_path)

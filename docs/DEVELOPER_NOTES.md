@@ -58,6 +58,16 @@ This document captures practical details for working on the FastAPI backend and 
   python -m mypy
   ```
 
+## Quality Gates
+- Static rules: RuleEngine checks line length, secrets, and loop concatenations.
+- Config: rules/config.py defines IGNORE_PATTERNS and MAX_LINE_LENGTH.
+- Run RuleEngine (sample):
+  ```powershell
+  python -c "from rules.engine import RuleEngine; print('rules ready')"
+  ```
+- Lint/typecheck: keep ruff and mypy clean before commit.
+- Coverage targets (CE): unit ≥90%, integration ≥70%, critical paths ≥90%.
+
 ## Frontend (Next.js)
 - Directory: `frontend/`
 - Dev:

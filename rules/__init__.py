@@ -1,0 +1,4 @@
+"""
+Rules package initializer.
+"""
+

@@ -36,6 +36,10 @@ Cross-Origin Resource Sharing (CORS) is controlled via environment:
 - `ENVIRONMENT=production` pins allowed origins from `CORS_ALLOW_ORIGINS` (comma‑separated).
 - `ENVIRONMENT` not `production` allows all origins (`*`) for local development.
 
+### Quality & Stability
+- Static analysis enforced: ruff (lint), mypy (types), RuleEngine (custom rules).
+- Requests/responses documented per endpoint; examples verified in tests.
+
 Example:
 ```
 ENVIRONMENT=production

@@ -156,6 +156,10 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
 ```
 The backend will only allow these origins.
 
+## Quality & Stability
+- The app enforces backend quality gates (lint, types, custom rules) to improve reliability.
+- If requests fail due to rate limits or validation, try again after the suggested reset time.
+
 ## Financial Tools
 
 ### Mortgage Calculator

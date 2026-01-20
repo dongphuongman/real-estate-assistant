@@ -84,6 +84,11 @@ The digest system bridges raw property data and user notifications.
 - **Licensing**: Community Edition under AGPLv3. Hosted Pro is proprietary and operated privately.
 - **Secrets**: Never stored client‑side. Env variables on server; redact logs; rate limit per client.
 
+## Quality Gates
+- Static analysis: ruff (lint), mypy (types), custom RuleEngine (rules/).
+- RuleEngine scope: ignores translation/templates; enforces max line length and no secrets.
+- Coverage targets: unit ≥90%, integration ≥70%, critical paths ≥90% (CE).
+
 ## API Surface
 - **Search**: `/api/v1/search`
 - **Chat**: `/api/v1/chat` (SSE supported; responses include `X-Request-ID`)

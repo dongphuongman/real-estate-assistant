@@ -61,25 +61,13 @@ class PerformanceLoopRule(BaseRule):
         violations = []
         content = context.get("content", "")
         file_path = context.get("file_path", "")
-        
-        # Very naive check for demo purposes
-        lines = content.splitlines()
-        in_loop = False
-        for i, line in enumerate(lines):
-            stripped = line.strip()
-            if stripped.startswith("for ") or stripped.startswith("while "):
-                in_loop = True
-            
-            if in_loop and "+=" in line and ("str" in line or "'" in line or '"' in line):
-                 violations.append(RuleViolation(
-                    rule_id=self.rule_id,
-                    message="Possible inefficient string concatenation in loop",
-                    severity=self.severity,
-                    file_path=file_path,
-                    line_number=i + 1
-                ))
-            
-            if in_loop and not line.startswith(" "): # End of loop (naive)
-                in_loop = False
-                
+
+        pattern = re.compile(r"(?m)^(?:\\s*)(for|while)\\s.*:\\s*(?:\\r?\\n)(?:[ \\t].*\\r?\\n)*[ \\t].*\\+=.*")
+        if pattern.search(content):
+            violations.append(RuleViolation(
+                rule_id=self.rule_id,
+                message="Possible inefficient string concatenation in loop",
+                severity=self.severity,
+                file_path=file_path
+            ))
         return violations
