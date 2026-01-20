@@ -208,7 +208,8 @@ export async function chatMessage(request: ChatRequest): Promise<ChatResponse> {
 
 export async function streamChatMessage(
   request: ChatRequest,
-  onChunk: (chunk: string) => void
+  onChunk: (chunk: string) => void,
+  onStart?: (meta: { requestId?: string }) => void
 ): Promise<void> {
   const response = await fetch(`${getApiUrl()}/chat`, {
     method: "POST",
@@ -219,7 +220,18 @@ export async function streamChatMessage(
   });
 
   if (!response.ok || !response.body) {
-    throw new Error("Failed to start stream");
+    const errorText = await response.text().catch(() => "");
+    const headers = (response as unknown as { headers?: { get?: (name: string) => string | null } }).headers;
+    const requestId =
+      headers && typeof headers.get === "function" ? headers.get("X-Request-ID") || undefined : undefined;
+    const message = errorText || "Failed to start stream";
+    const composed = requestId ? `${message} (request_id=${requestId})` : message;
+    throw new Error(composed);
+  }
+
+  const requestId = response.headers.get("X-Request-ID") || undefined;
+  if (onStart) {
+    onStart({ requestId });
   }
 
   const reader = response.body.getReader();
@@ -228,9 +240,8 @@ export async function streamChatMessage(
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
-    
+
     const chunk = decoder.decode(value);
-    // Parse SSE format: "data: ...\n\n"
     const lines = chunk.split("\n\n");
     for (const line of lines) {
       if (line.startsWith("data: ")) {

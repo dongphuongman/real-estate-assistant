@@ -68,6 +68,13 @@ This document captures practical details for working on the FastAPI backend and 
   cd frontend
   npm test
   ```
+ - Client configuration:
+   - `NEXT_PUBLIC_API_URL` points to backend base (default `http://localhost:8000/api/v1`)
+   - `NEXT_PUBLIC_API_KEY` is forwarded as `X-API-Key`
+   - `userEmail` stored in `localStorage` is forwarded as `X-User-Email`
+ - Chat streaming:
+   - `streamChatMessage` emits text deltas parsed from `data: <text>`
+   - `X-Request-ID` is available on the streaming response; the UI surfaces it for correlation
 
 ## CI/CD
 - GitHub Actions workflow: `.github/workflows/ci.yml`

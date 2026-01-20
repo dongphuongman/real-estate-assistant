@@ -142,13 +142,22 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
     *   **Returns**: `ChatResponse` object containing the agent's answer and sources.
     *   **Streaming**: Set `"stream": true` to receive Server-Sent Events (SSE).
         *   Content Type: `text/event-stream`
-        *   Events: `data: {"content": "..."}` or `data: {"error": "..."}`
+        *   Events: `data: <text-delta>`
         *   End of stream: `data: [DONE]`
+        *   Headers: `X-Request-ID` present on the streaming response
         *   Example (curl):
             ```bash
             curl -N -H "X-API-Key: your-api-key" -H "Content-Type: application/json" \
               -d "{\"message\": \"Hello\", \"stream\": true}" \
               http://localhost:8000/api/v1/chat
+            ```
+        *   Example (client):
+            ```ts
+            await streamChatMessage(
+              { message: "Hello", session_id: "your-session-id" },
+              (chunk) => { /* append chunk to UI */ },
+              ({ requestId }) => { /* correlate logs with requestId */ }
+            )
             ```
 
 #### Tools

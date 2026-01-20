@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, User, Bot, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { chatMessage } from "@/lib/api";
+import { streamChatMessage } from "@/lib/api";
 import type { ChatResponse } from "@/lib/types";
 
 interface Message {
@@ -19,6 +19,9 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
+  const [requestId, setRequestId] = useState<string | undefined>(undefined);
+  const [lastUserMessage, setLastUserMessage] = useState<string | undefined>(undefined);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -37,29 +40,41 @@ export default function ChatPage() {
     setInput("");
     setMessages(prev => [...prev, { role: "user", content: userMessage }]);
     setIsLoading(true);
+    setErrorMessage(undefined);
+    setLastUserMessage(userMessage);
 
     try {
-      const response = await chatMessage({ 
-        message: userMessage,
-        session_id: sessionId
-      });
-      
-      if (response.session_id) {
-        setSessionId(response.session_id);
+      const sid = sessionId ?? (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : undefined);
+      if (sid && !sessionId) {
+        setSessionId(sid);
       }
 
-      setMessages(prev => [...prev, { 
-        role: "assistant", 
-        content: response.response,
-        sources: response.sources
-      }]);
+      setMessages(prev => [...prev, { role: "assistant", content: "" }]);
+
+      await streamChatMessage(
+        { message: userMessage, session_id: sid },
+        (chunk) => {
+          setMessages(prev => {
+            const updated = [...prev];
+            const lastIdx = updated.length - 1;
+            if (lastIdx >= 0 && updated[lastIdx].role === "assistant") {
+              updated[lastIdx] = { ...updated[lastIdx], content: updated[lastIdx].content + chunk };
+            }
+            return updated;
+          });
+        },
+        ({ requestId }) => {
+          if (requestId) setRequestId(requestId);
+        }
+      );
 
     } catch (error) {
       console.warn("Chat error:", error);
       setMessages(prev => [...prev, { 
         role: "assistant", 
-        content: "I apologize, but I encountered an error connecting to the server. Please try again later." 
+        content: "I apologize, but I encountered an error. Please try again."
       }]);
+      setErrorMessage(error instanceof Error ? error.message : "Unknown error");
     } finally {
       setIsLoading(false);
     }
@@ -96,6 +111,47 @@ export default function ChatPage() {
             </div>
             <div className="flex items-center h-full">
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          </div>
+        )}
+        {errorMessage && (
+          <div className="flex w-full items-start gap-4 p-4 rounded-lg bg-background border">
+            <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md border shadow bg-primary text-primary-foreground">
+              <Bot className="h-4 w-4" />
+            </div>
+            <div className="flex-1 space-y-2">
+              <div className="text-sm text-red-600">{errorMessage}</div>
+              <div className="text-xs text-muted-foreground">{requestId ? `request_id=${requestId}` : ""}</div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (lastUserMessage) {
+                    setErrorMessage(undefined);
+                    setIsLoading(true);
+                    streamChatMessage(
+                      { message: lastUserMessage, session_id: sessionId },
+                      (chunk) => {
+                        setMessages(prev => {
+                          const updated = [...prev];
+                          const lastIdx = updated.length - 1;
+                          if (lastIdx >= 0 && updated[lastIdx].role === "assistant") {
+                            updated[lastIdx] = { ...updated[lastIdx], content: updated[lastIdx].content + chunk };
+                          }
+                          return updated;
+                        });
+                      },
+                      ({ requestId }) => {
+                        if (requestId) setRequestId(requestId);
+                      }
+                    ).catch(err => {
+                      setErrorMessage(err instanceof Error ? err.message : "Unknown error");
+                    }).finally(() => setIsLoading(false));
+                  }
+                }}
+                className="inline-flex items-center justify-center rounded-md border px-3 py-1 text-xs font-medium hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                Retry
+              </button>
             </div>
           </div>
         )}

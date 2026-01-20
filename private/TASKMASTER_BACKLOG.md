@@ -28,7 +28,7 @@ This backlog translates PRD (Community Edition) into executable tasks and subtas
   - Estimate update: Actual 2d; remaining 1d reallocated to TM-CHAT-002.
   - Follow-ups: Monitor p95 latency in production; add e2e chat flow in frontend (TM-CHAT-002).
 
-- TM-CHAT-002 (high, 2d, pending)
+- TM-CHAT-002 (high, 2d, completed)
   - Task: Frontend streaming chat UI with session correlation
   - Subtasks:
     - SSE client handling with progressive rendering
@@ -36,6 +36,9 @@ This backlog translates PRD (Community Edition) into executable tasks and subtas
     - Error states and retry UX
   - Acceptance: smooth streaming, accessible controls, error recovery
   - Tests: component/unit, integration (mock SSE)
+  - Notes: Implemented streaming via `streamChatMessage` with `onStart` meta and progressive UI updates; request_id surfaced; retry UX added.
+  - Estimate update: Actual 1.5d; 0.5d reallocated to TM-SEARCH-001 documentation polish.
+  - Follow-ups: Add localization for chat UI strings; monitor frontend error rates.
   - Docs: User Guide (chat page)
 
 ### Epic: Property Search (Hybrid)

@@ -3,6 +3,7 @@ import logging
 import time
 from typing import Any
 
+
 class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         base: dict[str, Any] = {

@@ -1,13 +1,13 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import ChatPage from "../page"
-import { chatMessage } from "@/lib/api"
+import { streamChatMessage } from "@/lib/api"
 
 // Mock the API module
 jest.mock("@/lib/api", () => ({
-  chatMessage: jest.fn(),
+  streamChatMessage: jest.fn(),
 }))
 
-const mockChatMessage = chatMessage as jest.Mock
+const mockStream = streamChatMessage as jest.Mock
 
 // Mock scrollIntoView
 window.HTMLElement.prototype.scrollIntoView = jest.fn()
@@ -29,10 +29,8 @@ describe("ChatPage", () => {
   })
 
   it("handles message submission", async () => {
-    mockChatMessage.mockResolvedValueOnce({
-      response: "This is a real API response",
-      sources: [],
-      session_id: "123"
+    mockStream.mockImplementation(async (_req, onChunk) => {
+      onChunk("This is a real API response")
     })
 
     render(<ChatPage />)
@@ -56,12 +54,14 @@ describe("ChatPage", () => {
   })
 
   it("handles loading state", async () => {
-    // Return a promise that doesn't resolve immediately to test loading state
-    mockChatMessage.mockImplementation(() => new Promise(resolve => setTimeout(() => resolve({
-      response: "Delayed response",
-      sources: [],
-      session_id: "123"
-    }), 100)))
+    mockStream.mockImplementation(
+      () =>
+        new Promise<void>(resolve =>
+          setTimeout(() => {
+            resolve()
+          }, 100)
+        )
+    )
 
     render(<ChatPage />)
     
@@ -80,7 +80,7 @@ describe("ChatPage", () => {
   })
 
   it("handles error state", async () => {
-    mockChatMessage.mockRejectedValueOnce(new Error("API Error"))
+    mockStream.mockRejectedValueOnce(new Error("Failed to start stream (request_id=req-xyz)"))
 
     render(<ChatPage />)
     
@@ -91,7 +91,33 @@ describe("ChatPage", () => {
     fireEvent.click(sendButton)
 
     await waitFor(() => {
-      expect(screen.getByText("I apologize, but I encountered an error connecting to the server. Please try again later.")).toBeInTheDocument()
+      expect(screen.getByText("I apologize, but I encountered an error. Please try again.")).toBeInTheDocument()
+    })
+  })
+
+  it("shows retry button and retries stream", async () => {
+    mockStream
+      .mockRejectedValueOnce(new Error("Failed to start stream (request_id=req-123)"))
+      .mockImplementationOnce(async (_req, onChunk) => {
+        onChunk("Recovered response")
+      })
+
+    render(<ChatPage />)
+
+    const input = screen.getByPlaceholderText("Ask about properties, market trends, or investment advice...")
+    const sendButton = screen.getByRole("button", { name: /send message/i })
+
+    fireEvent.change(input, { target: { value: "Retry test" } })
+    fireEvent.click(sendButton)
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /retry/i })).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole("button", { name: /retry/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/Recovered response/)).toBeInTheDocument()
     })
   })
 
@@ -102,6 +128,6 @@ describe("ChatPage", () => {
     
     fireEvent.click(sendButton)
     
-    expect(mockChatMessage).not.toHaveBeenCalled()
+    expect(mockStream).not.toHaveBeenCalled()
   })
 })

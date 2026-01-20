@@ -86,7 +86,7 @@ The digest system bridges raw property data and user notifications.
 
 ## API Surface
 - **Search**: `/api/v1/search`
-- **Chat**: `/api/v1/chat` (SSE supported)
+- **Chat**: `/api/v1/chat` (SSE supported; responses include `X-Request-ID`)
 - **Tools**: `/api/v1/tools/*` (mortgage, compare, price analysis)
 - **Settings**: `/api/v1/settings/notifications`, `/api/v1/settings/models`
 - **Auth**: `/api/v1/auth/*`
