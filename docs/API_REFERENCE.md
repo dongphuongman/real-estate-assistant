@@ -126,6 +126,34 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
             *   `property_type` (string; one of: `apartment`, `house`, `studio`, `loft`, `townhouse`, `other`)
     *   **Returns**: `SearchResponse` object containing list of properties with hybrid scores.
 
+#### RAG (Local Knowledge, CE)
+
+*   `POST /api/v1/rag/upload`
+    *   Upload text/markdown documents and index for local RAG (Community Edition).
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **Form Data**:
+        - `files`: One or more files (`text/plain`, `text/markdown`, `.txt`, `.md`)
+    *   **Returns**:
+        ```json
+        { "message": "Upload processed", "chunks_indexed": 12, "errors": [] }
+        ```
+    *   **Notes**: PDF/DOCX are unsupported in CE and will be reported in `errors`.
+
+*   `POST /api/v1/rag/qa`
+    *   Simple QA over uploaded knowledge with citations.
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **Query Params**:
+        - `question` (string, required)
+        - `top_k` (int, default 5)
+    *   **Returns**:
+        ```json
+        {
+          "answer": "…",
+          "citations": [{ "source": "guide.txt", "chunk_index": 0 }]
+        }
+        ```
+    *   **Notes**: If LLM is unavailable, returns a context snippet as `answer`.
+
 #### Chat
 
 *   `POST /api/v1/chat`

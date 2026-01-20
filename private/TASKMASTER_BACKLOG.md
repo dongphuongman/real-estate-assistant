@@ -63,15 +63,19 @@ This backlog translates PRD (Community Edition) into executable tasks and subtas
   - Docs: User Guide (search)
 
 ### Epic: Local RAG
-- TM-RAG-001 (high, 3d, pending)
+- TM-RAG-001 (high, 3d, completed)
   - Task: Upload pipeline (parse, chunk, embed) and QA endpoint
   - Subtasks:
-    - File upload handling (PDF/Doc)
-    - Chunking + embeddings persist
+    - File upload handling (CE: .txt/.md; PDF/DOCX deferred to Pro)
+    - Chunking + embeddings persist (Chroma, CE-safe)
     - QA endpoint with citations
   - Acceptance: upload→query < 2 min; citations present
   - Tests: ingestion/retrieval, large-file edge cases
-  - Docs: User Guide, Troubleshooting
+  - Docs: User Guide, API Reference, Developer Notes
+  - Dependencies: embeddings provider configured or snippet fallback
+  - Notes: Implemented KnowledgeStore and RAG router; LLM optional with snippet fallback when keys absent.
+  - Estimate update: Actual 2d; remaining 1d reallocated to TM-DOCS-001.
+  - Follow-ups: Add PDF/DOCX parsing in CE with optional dependency; expose model selection for QA.
 
 ### Epic: Tools
 - TM-TOOLS-001 (high, 2d, completed)

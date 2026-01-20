@@ -12,6 +12,7 @@ from agents.services.valuation import SimpleValuationProvider, ValuationProvider
 from config.settings import settings
 from models.provider_factory import ModelProviderFactory
 from vector_store.chroma_store import ChromaPropertyStore
+from vector_store.knowledge_store import KnowledgeStore
 
 
 @lru_cache()
@@ -69,6 +70,21 @@ def get_crm_connector() -> Optional[CRMConnector]:
     if not url:
         return None
     return WebhookCRMConnector(url)
+
+@lru_cache()
+def get_knowledge_store() -> Optional[KnowledgeStore]:
+    """
+    Get cached knowledge store instance for RAG uploads (CE-safe).
+    Returns None if embeddings are not available.
+    """
+    try:
+        store = KnowledgeStore(
+            persist_directory=str(settings.chroma_dir),
+            collection_name="knowledge",
+        )
+        return store
+    except Exception:
+        return None
 
 def get_data_enrichment_service() -> Optional[DataEnrichmentService]:
     if not settings.data_enrichment_enabled:

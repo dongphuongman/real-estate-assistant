@@ -177,3 +177,31 @@ To export search results or specific property IDs via the V4 API:
     }
   }
   ```
+
+## Local RAG (Community Edition)
+
+You can upload your own notes to enable question answering over your content.
+
+- Supported file types in CE: `.txt`, `.md`
+- Unsupported (reported with error): `.pdf`, `.docx`
+
+### Upload Flow
+1. Use a client or cURL to call `POST /api/v1/rag/upload` with form-data `files`.
+2. The server chunks your documents and indexes them locally.
+3. Response includes how many chunks were indexed.
+
+Example (PowerShell):
+```powershell
+Invoke-WebRequest `
+  -Uri http://localhost:8000/api/v1/rag/upload `
+  -Headers @{ "X-API-Key" = "dev-secret-key" } `
+  -Method Post `
+  -InFile .\notes.md `
+  -ContentType "multipart/form-data"
+```
+
+### Ask Questions
+- Call `POST /api/v1/rag/qa?question=...&top_k=5`
+- Response includes an `answer` and `citations` with `source` and `chunk_index`
+
+Tip: If no model is configured, the API returns a snippet from the most relevant chunks.

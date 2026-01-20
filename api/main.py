@@ -9,6 +9,7 @@ from api.dependencies import get_vector_store
 from api.models import HealthCheck
 from api.observability import add_observability
 from api.routers import admin, auth, chat, exports, search, tools
+from api.routers import rag as rag_router
 from api.routers import settings as settings_router
 from config.settings import get_settings
 from notifications.email_service import (
@@ -144,6 +145,7 @@ app.add_middleware(
 # Include Routers
 app.include_router(search.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(chat.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
+app.include_router(rag_router.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(
     settings_router.router, prefix="/api/v1", dependencies=[Depends(get_api_key)]
 )
