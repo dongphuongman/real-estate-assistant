@@ -289,6 +289,8 @@ describe("API Client", () => {
 
           (global.fetch as jest.Mock).mockResolvedValueOnce({
               ok: true,
+              headers: { get: () => "req-xyz" },
+              text: async () => "",
               body: {
                   getReader: () => mockReader
               }
@@ -305,6 +307,8 @@ describe("API Client", () => {
       it("throws if body is missing", async () => {
           (global.fetch as jest.Mock).mockResolvedValueOnce({
               ok: true,
+              headers: { get: () => "req-123" },
+              text: async () => "",
               body: null
           });
 

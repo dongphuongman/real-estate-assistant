@@ -9,7 +9,7 @@ import {
   legalCheckApi,
   enrichAddressApi,
   crmSyncContactApi,
-} from "@/src/lib/api";
+} from "@/lib/api";
 
 export default function ToolsPage() {
   return (

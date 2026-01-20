@@ -55,7 +55,7 @@ This backlog translates PRD (Community Edition) into executable tasks and subtas
   - Estimate update: Actual 2d; remaining 1d reallocated to TM-DOCS-001.
   - Follow-ups: Monitor p95 latency; improve BM25 weighting; extend localization.
 
-- TM-SEARCH-002 (medium, 2d, pending)
+- TM-SEARCH-002 (medium, 2d, completed)
   - Task: Frontend filters UI and neutral states
   - Subtasks:
     - Filter controls (price, rooms, type)
@@ -63,7 +63,9 @@ This backlog translates PRD (Community Edition) into executable tasks and subtas
     - Empty/neutral states
   - Acceptance: accessible UI, correct payloads
   - Tests: component/integration
-  - Docs: User Guide (search)
+  - Notes: Added true neutral state before first search; enforced query and filter validation (including min<=max); improved error handling and stable result keys; updated Search page tests.
+  - Estimate update: Actual 1d; remaining 1d reallocated to TM-DOCS-001.
+  - Docs: User Guide (search), API Reference (search), Developer Notes
 
 ### Epic: Local RAG
 - TM-RAG-001 (high, 3d, completed)

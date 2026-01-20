@@ -10,6 +10,7 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResultItem[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
   const [rooms, setRooms] = useState<string>("");
@@ -20,25 +21,57 @@ export default function SearchPage() {
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
+  const buildFilters = (): { filters?: Record<string, unknown>; error?: string } => {
+    const min = minPrice.trim() ? Number(minPrice) : undefined;
+    const max = maxPrice.trim() ? Number(maxPrice) : undefined;
+    const minRooms = rooms.trim() ? Number(rooms) : undefined;
+
+    if (min !== undefined && Number.isNaN(min)) return { error: "Min price must be a valid number." };
+    if (max !== undefined && Number.isNaN(max)) return { error: "Max price must be a valid number." };
+    if (minRooms !== undefined && Number.isNaN(minRooms)) {
+      return { error: "Minimum rooms must be a valid number." };
+    }
+    if (min !== undefined && max !== undefined && min > max) {
+      return { error: "Min price cannot be greater than max price." };
+    }
+
+    const filters: Record<string, unknown> = {};
+    if (min !== undefined) filters["min_price"] = min;
+    if (max !== undefined) filters["max_price"] = max;
+    if (minRooms !== undefined) filters["rooms"] = minRooms;
+    if (propertyType.trim()) filters["property_type"] = propertyType;
+
+    return { filters: Object.keys(filters).length ? filters : undefined };
+  };
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setHasSearched(true);
     try {
-      const filters: Record<string, unknown> = {};
-      if (minPrice.trim()) filters["min_price"] = Number(minPrice);
-      if (maxPrice.trim()) filters["max_price"] = Number(maxPrice);
-      if (rooms.trim()) filters["rooms"] = Number(rooms);
-      if (propertyType.trim()) filters["property_type"] = propertyType;
+      if (!query.trim()) {
+        setResults([]);
+        setError("Please enter a search query.");
+        return;
+      }
+
+      const { filters, error: filterError } = buildFilters();
+      if (filterError) {
+        setResults([]);
+        setError(filterError);
+        return;
+      }
 
       const response = await searchProperties({
         query,
         sort_by: sortBy as "relevance" | "price" | "price_per_sqm" | "area_sqm" | "year_built",
         sort_order: sortOrder as "asc" | "desc",
-        filters: Object.keys(filters).length ? filters : undefined,
+        filters,
       });
       setResults(response.results);
     } catch {
+      setResults([]);
       setError("Failed to perform search. Please try again.");
     } finally {
       setLoading(false);
@@ -49,18 +82,23 @@ export default function SearchPage() {
     setExporting(true);
     setExportError(null);
     try {
-      const filters: Record<string, unknown> = {};
-      if (minPrice.trim()) filters["min_price"] = Number(minPrice);
-      if (maxPrice.trim()) filters["max_price"] = Number(maxPrice);
-      if (rooms.trim()) filters["rooms"] = Number(rooms);
-      if (propertyType.trim()) filters["property_type"] = propertyType;
+      if (!query.trim()) {
+        setExportError("Please enter a search query.");
+        return;
+      }
+
+      const { filters, error: filterError } = buildFilters();
+      if (filterError) {
+        setExportError(filterError);
+        return;
+      }
 
       const searchPayload = {
         query,
         limit: Math.max(results.length, 10) || 10,
         sort_by: sortBy as "relevance" | "price" | "price_per_sqm" | "area_sqm" | "year_built",
         sort_order: sortOrder as "asc" | "desc",
-        filters: Object.keys(filters).length ? filters : undefined,
+        filters,
       };
       const { filename, blob } = await exportPropertiesBySearch(
         searchPayload,
@@ -103,12 +141,12 @@ export default function SearchPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               aria-label="Search query"
-              aria-required="true"
+                required
             />
           </div>
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !query.trim()}
             className="inline-flex items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
             aria-busy={loading ? "true" : "false"}
             aria-label={loading ? "Searching" : "Search"}
@@ -265,7 +303,7 @@ export default function SearchPage() {
                       <button
                         type="button"
                         onClick={handleExport}
-                        disabled={exporting || !query}
+                    disabled={exporting || !query.trim()}
                         className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 disabled:opacity-50"
                         aria-label={exporting ? "Exporting" : "Export"}
                       >
@@ -284,21 +322,35 @@ export default function SearchPage() {
           {/* Results Grid */}
           <div className="md:col-span-3">
             {results.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-64 text-center border rounded-lg border-dashed" role="status" aria-live="polite">
+              <div
+                className="flex flex-col items-center justify-center h-64 text-center border rounded-lg border-dashed"
+                role="status"
+                aria-live="polite"
+              >
                 <div className="p-4 rounded-full bg-muted/50 mb-4">
                   <MapPin className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
                 </div>
-                <h3 className="text-lg font-semibold">{error ? "Error" : "No results found"}</h3>
+                <h3 className="text-lg font-semibold">
+                  {loading ? "Searching..." : error ? "Error" : hasSearched ? "No results found" : "Start searching"}
+                </h3>
                 <p className="text-sm text-muted-foreground max-w-sm mt-2">
-                  {error || "Try adjusting your search terms or filters to find what you're looking for."}
+                  {error ||
+                    (loading
+                      ? "Searching for matching properties."
+                      : hasSearched
+                        ? "Try adjusting your search terms or filters to find what you're looking for."
+                        : "Enter a query, adjust filters if needed, and run a search to see results here.")}
                 </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {results.map((item) => {
+                {results.map((item, index) => {
                   const prop = item.property;
                   return (
-                    <div key={prop.id || Math.random().toString()} className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+                    <div
+                      key={`${prop.id ?? "unknown"}-${index}`}
+                      className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden"
+                    >
                       <div className="aspect-video w-full bg-muted relative">
                         {/* Placeholder for image */}
                         <div className="absolute inset-0 flex items-center justify-center text-muted-foreground" aria-label="Property image placeholder">

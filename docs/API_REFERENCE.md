@@ -122,6 +122,7 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
         }
         ```
     *   **Parameters**:
+        *   `query` (string, required): Non-empty natural language search query.
         *   `alpha` (float, optional): Weight for vector similarity (0.0 to 1.0). 1.0 = Pure Vector, 0.0 = Pure Keyword. Default: 0.7.
         *   `lat/lon/radius_km` (optional): Geo radius filter (in kilometers).
         *   `min_lat/max_lat/min_lon/max_lon` (optional): Geo bounding box filter.
@@ -132,6 +133,7 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
             *   `min_price` / `max_price` (number)
             *   `rooms` (number; treated as minimum rooms)
             *   `property_type` (string; one of: `apartment`, `house`, `studio`, `loft`, `townhouse`, `other`)
+        *   Client-side validation (recommended): Ensure `min_price <= max_price` before submitting.
     *   **Returns**: `SearchResponse` object containing list of properties with hybrid scores.
 
 #### RAG (Local Knowledge, CE)

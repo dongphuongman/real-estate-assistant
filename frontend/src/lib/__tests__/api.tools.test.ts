@@ -9,11 +9,13 @@ import {
 } from "../api";
 
 global.fetch = jest.fn(async () => {
-  const response = new Response(JSON.stringify({}), {
-    status: 200,
-    headers: new Headers(),
-  });
-  return response;
+  return {
+    ok: true,
+    statusText: "OK",
+    headers: { get: () => null },
+    json: async () => ({}),
+    text: async () => "",
+  } as unknown as Response;
 }) as jest.Mock;
 
 describe("api tools", () => {

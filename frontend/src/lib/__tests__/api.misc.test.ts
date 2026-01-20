@@ -8,16 +8,23 @@ import {
 global.fetch = jest.fn(async (input: RequestInfo | URL) => {
   const url = typeof input === "string" ? input : String(input);
   if (url.includes("/export/properties")) {
-    const headers = new Headers({ "Content-Disposition": 'attachment; filename="properties.csv"' });
     const blob = new Blob(["id,price\n1,100"], { type: "text/csv" });
-    const response = new Response(blob, { status: 200, headers });
-    return response;
+    return {
+      ok: true,
+      statusText: "OK",
+      headers: { get: (name: string) => (name === "Content-Disposition" ? 'attachment; filename="properties.csv"' : null) },
+      blob: async () => blob,
+      text: async () => "",
+      json: async () => ({}),
+    } as unknown as Response;
   }
-  const response = new Response(JSON.stringify({}), {
-    status: 200,
-    headers: new Headers(),
-  });
-  return response;
+  return {
+    ok: true,
+    statusText: "OK",
+    headers: { get: () => null },
+    json: async () => ({}),
+    text: async () => "",
+  } as unknown as Response;
 }) as jest.Mock;
 
 describe("api misc", () => {

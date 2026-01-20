@@ -1,9 +1,9 @@
 import "@testing-library/jest-dom";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import ToolsPage from "../tools/page";
 
 // Mock API functions
-jest.mock("@/src/lib/api", () => ({
+jest.mock("@/lib/api", () => ({
   calculateMortgage: jest.fn(async () => ({ monthly_payment: 1234.56 })),
   comparePropertiesApi: jest.fn(async () => ({ summary: { count: 2, min_price: 100000, max_price: 150000, price_difference: 50000 } })),
   priceAnalysisApi: jest.fn(async () => ({ count: 10, average_price: 200000, median_price: 195000 })),
@@ -35,14 +35,18 @@ describe("ToolsPage", () => {
   it("runs price analysis", async () => {
     render(<ToolsPage />);
     fireEvent.change(screen.getByPlaceholderText("Query (e.g., city or type)"), { target: { value: "Warsaw" } });
-    fireEvent.click(screen.getByText("Analyze"));
+    const section = screen.getByText("Price Analysis").closest("section");
+    if (!section) throw new Error("Missing Price Analysis section");
+    fireEvent.click(within(section).getByRole("button", { name: "Analyze" }));
     await waitFor(() => expect(screen.getByText(/Average price:/)).toBeInTheDocument());
   });
 
   it("runs location analysis", async () => {
     render(<ToolsPage />);
-    fireEvent.change(screen.getByPlaceholderText("Property ID"), { target: { value: "p1" } });
-    fireEvent.click(screen.getByText("Analyze"));
+    const section = screen.getByText("Location Analysis").closest("section");
+    if (!section) throw new Error("Missing Location Analysis section");
+    fireEvent.change(within(section).getByPlaceholderText("Property ID"), { target: { value: "p1" } });
+    fireEvent.click(within(section).getByRole("button", { name: "Analyze" }));
     await waitFor(() => expect(screen.getByText(/City:/)).toBeInTheDocument());
   });
 
@@ -57,7 +61,9 @@ describe("ToolsPage", () => {
   it("runs legal check", async () => {
     render(<ToolsPage />);
     fireEvent.change(screen.getByPlaceholderText("Contract text"), { target: { value: "contract" } });
-    fireEvent.click(screen.getByText("Analyze"));
+    const section = screen.getByText("Legal Check (CE Stub)").closest("section");
+    if (!section) throw new Error("Missing Legal Check section");
+    fireEvent.click(within(section).getByRole("button", { name: "Analyze" }));
     await waitFor(() => expect(screen.getByText(/Score:/)).toBeInTheDocument());
   });
 
@@ -75,4 +81,3 @@ describe("ToolsPage", () => {
     await waitFor(() => expect(screen.getByText(/Contact ID:/)).toBeInTheDocument());
   });
 });
-

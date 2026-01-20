@@ -109,8 +109,14 @@ Use the filters sidebar on the Search page to narrow results:
 - Property Type: Choose from Apartment, House, Studio, Loft, Townhouse, Other
 
 Tips:
+- Enter a query first (the Search button is disabled until you do).
 - Filters combine with your text query for hybrid ranking
+- Min Price must be less than or equal to Max Price
 - Click “Clear Filters” to reset and broaden results
+ 
+Neutral/empty states:
+- Before the first search, the page shows a neutral prompt to enter a query
+- After a search with zero matches, the page shows “No results found”
 
 ## Geo Search
 

@@ -2,7 +2,6 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import SearchPage from "../page"
 import { searchProperties, exportPropertiesBySearch } from "@/lib/api"
 
-// Mock the API module
 jest.mock("@/lib/api", () => ({
   searchProperties: jest.fn(),
   exportPropertiesBySearch: jest.fn(),
@@ -14,14 +13,19 @@ const mockExport = exportPropertiesBySearch as jest.Mock
 describe("SearchPage", () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    const mockURL = {
-      createObjectURL: jest.fn(() => "blob:test"),
-      revokeObjectURL: jest.fn(),
-    } as Pick<typeof URL, "createObjectURL" | "revokeObjectURL">;
-    Object.defineProperty(globalThis, "URL", { value: mockURL, configurable: true })
-    const anchor = document.createElement("a")
-    anchor.click = jest.fn()
-    document.body.appendChild(anchor)
+    Object.defineProperty(globalThis.URL, "createObjectURL", {
+      value: jest.fn(() => "blob:test"),
+      configurable: true,
+    })
+    Object.defineProperty(globalThis.URL, "revokeObjectURL", {
+      value: jest.fn(),
+      configurable: true,
+    })
+    jest.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
   })
 
   it("renders search interface", () => {
@@ -29,6 +33,16 @@ describe("SearchPage", () => {
     expect(screen.getByText("Find Your Property")).toBeInTheDocument()
     expect(screen.getByPlaceholderText("Describe what you are looking for (e.g., 'Modern apartment in downtown with 2 bedrooms under $500k')...")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /search/i })).toBeInTheDocument()
+  })
+
+  it("shows neutral state before the first search", () => {
+    render(<SearchPage />)
+    expect(screen.getByText("Start searching")).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        "Enter a query, adjust filters if needed, and run a search to see results here."
+      )
+    ).toBeInTheDocument()
   })
 
   it("handles search submission", async () => {
@@ -65,6 +79,73 @@ describe("SearchPage", () => {
       expect(screen.getByText("$500,000")).toBeInTheDocument()
       expect(screen.getByText("Downtown, US")).toBeInTheDocument()
     })
+  })
+
+  it("sends filters and sorting in the search payload", async () => {
+    mockSearchProperties.mockResolvedValueOnce({ results: [], count: 0 })
+
+    render(<SearchPage />)
+
+    fireEvent.change(
+      screen.getByPlaceholderText(
+        "Describe what you are looking for (e.g., 'Modern apartment in downtown with 2 bedrooms under $500k')..."
+      ),
+      { target: { value: "Test" } }
+    )
+    fireEvent.change(screen.getByLabelText("Min Price"), { target: { value: "100" } })
+    fireEvent.change(screen.getByLabelText("Max Price"), { target: { value: "200" } })
+    fireEvent.change(screen.getByLabelText("Minimum Rooms"), { target: { value: "2" } })
+    fireEvent.change(screen.getByLabelText("Property Type"), { target: { value: "apartment" } })
+    fireEvent.change(screen.getByLabelText("Sort By"), { target: { value: "price" } })
+    fireEvent.change(screen.getByLabelText("Order"), { target: { value: "asc" } })
+
+    fireEvent.click(screen.getByRole("button", { name: /search/i }))
+
+    await waitFor(() => {
+      expect(mockSearchProperties).toHaveBeenCalledWith({
+        query: "Test",
+        sort_by: "price",
+        sort_order: "asc",
+        filters: {
+          min_price: 100,
+          max_price: 200,
+          rooms: 2,
+          property_type: "apartment",
+        },
+      })
+    })
+  })
+
+  it("validates min and max price before searching", async () => {
+    render(<SearchPage />)
+
+    fireEvent.change(
+      screen.getByPlaceholderText(
+        "Describe what you are looking for (e.g., 'Modern apartment in downtown with 2 bedrooms under $500k')..."
+      ),
+      { target: { value: "Test" } }
+    )
+    fireEvent.change(screen.getByLabelText("Min Price"), { target: { value: "300" } })
+    fireEvent.change(screen.getByLabelText("Max Price"), { target: { value: "200" } })
+    fireEvent.click(screen.getByRole("button", { name: /search/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText("Error")).toBeInTheDocument()
+      expect(screen.getByText("Min price cannot be greater than max price.")).toBeInTheDocument()
+    })
+    expect(mockSearchProperties).not.toHaveBeenCalled()
+  })
+
+  it("shows query validation when submitting with an empty query", async () => {
+    render(<SearchPage />)
+
+    fireEvent.submit(screen.getByRole("search"))
+
+    await waitFor(() => {
+      expect(screen.getByText("Error")).toBeInTheDocument()
+      expect(screen.getByText("Please enter a search query.")).toBeInTheDocument()
+    })
+    expect(mockSearchProperties).not.toHaveBeenCalled()
   })
 
   it("displays no results message", async () => {
