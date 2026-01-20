@@ -362,16 +362,28 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
         # So we must still apply them.
         
         if self.min_price is not None or self.max_price is not None:
-            results, initial_scores = apply_filtering(results, initial_scores, self._filter_by_price)
+            results, initial_scores = apply_filtering(
+                results, initial_scores, self._filter_by_price
+            )
 
-        if self.center_lat is not None and self.center_lon is not None and self.radius_km is not None:
-            results, initial_scores = apply_filtering(results, initial_scores, self._filter_by_geo)
+        if (
+            self.center_lat is not None
+            and self.center_lon is not None
+            and self.radius_km is not None
+        ):
+            results, initial_scores = apply_filtering(
+                results, initial_scores, self._filter_by_geo
+            )
 
         if self.year_built_min is not None or self.year_built_max is not None:
-            results, initial_scores = apply_filtering(results, initial_scores, self._filter_by_year_built)
+            results, initial_scores = apply_filtering(
+                results, initial_scores, self._filter_by_year_built
+            )
 
         if self.energy_certs:
-            results, initial_scores = apply_filtering(results, initial_scores, self._filter_by_energy_certs)
+            results, initial_scores = apply_filtering(
+                results, initial_scores, self._filter_by_energy_certs
+            )
 
         # Rerank BEFORE sorting?
         # Usually reranking provides a better sort.
@@ -490,8 +502,16 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
         lat1 = math.radians(self.center_lat)
         lon1 = math.radians(self.center_lon)
         for doc in documents:
-            lat = doc.metadata.get("lat") if "lat" in doc.metadata else doc.metadata.get("latitude")
-            lon = doc.metadata.get("lon") if "lon" in doc.metadata else doc.metadata.get("longitude")
+            lat = (
+                doc.metadata.get("lat")
+                if "lat" in doc.metadata
+                else doc.metadata.get("latitude")
+            )
+            lon = (
+                doc.metadata.get("lon")
+                if "lon" in doc.metadata
+                else doc.metadata.get("longitude")
+            )
             if lat is None or lon is None:
                 continue
             lat2 = math.radians(float(lat))

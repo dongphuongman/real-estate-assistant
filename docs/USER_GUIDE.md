@@ -106,6 +106,24 @@ Tips:
 - Filters combine with your text query for hybrid ranking
 - Click “Clear Filters” to reset and broaden results
 
+## Geo Search
+
+Use geo filters to target a specific area:
+- Radius: provide latitude, longitude, and radius (km)
+- Bounding Box: provide min/max lat and min/max lon
+
+Example (client payload):
+```json
+{
+  "query": "apartments with balcony",
+  "lat": 50.0647,
+  "lon": 19.9450,
+  "radius_km": 3.0,
+  "sort_by": "price",
+  "sort_order": "asc"
+}
+```
+
 ## Sorting
 
 Use Sorting to order results:

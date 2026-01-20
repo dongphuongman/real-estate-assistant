@@ -30,6 +30,9 @@ This document captures practical details for working on the FastAPI backend and 
   - `UPTIME_MONITOR_EMAIL_TO` (ops email recipient)
   - `UPTIME_MONITOR_INTERVAL` (seconds, default `60`)
   - `UPTIME_MONITOR_FAIL_THRESHOLD` (default `3`)
+  - `vector_persist_enabled` (`true`/`false`; enable Chroma persistence)
+  - `CHROMA_FORCE_FASTEMBED` (`1` to force FastEmbed on Windows)
+  - `FORCE_FASTEMBED` (`1` to force FastEmbed on Windows; alias)
   - `UPTIME_MONITOR_COOLDOWN_SECONDS` (default `1800`)
 
 ## Testing

@@ -116,13 +116,19 @@ class ChromaPropertyStore:
     def _create_embeddings(_self, model_name: str) -> Optional[Embeddings]:
         try:
             is_windows = platform.system().lower() == "windows"
-            force_fastembed = os.getenv("CHROMA_FORCE_FASTEMBED") == "1" or os.getenv("FORCE_FASTEMBED") == "1"
+            force_fastembed = (
+                os.getenv("CHROMA_FORCE_FASTEMBED") == "1"
+                or os.getenv("FORCE_FASTEMBED") == "1"
+            )
             if _FastEmbedEmbeddings is not None and not is_windows:
                 return cast(Embeddings, _FastEmbedEmbeddings(model_name=model_name))
             if _FastEmbedEmbeddings is not None and is_windows and force_fastembed:
                 return cast(Embeddings, _FastEmbedEmbeddings(model_name=model_name))
             if _FastEmbedEmbeddings is not None and is_windows:
-                logger.warning("FastEmbed is disabled on Windows for stability. Set CHROMA_FORCE_FASTEMBED=1 to force enable.")
+                logger.warning(
+                    "FastEmbed is disabled on Windows for stability. "
+                    "Set CHROMA_FORCE_FASTEMBED=1 to force enable."
+                )
         except Exception as e:
             logger.warning(f"FastEmbed initialization failed: {e}")
 
@@ -161,7 +167,9 @@ class ChromaPropertyStore:
                 # Check if collection has any documents
                 try:
                     collection_stats = vector_store._collection.count()
-                    logger.info(f"Loaded existing ChromaDB collection with {collection_stats} documents")
+                    logger.info(
+                        f"Loaded existing ChromaDB collection with {collection_stats} documents"
+                    )
                 except Exception as e:
                     logger.warning(f"Could not get collection stats: {e}")
                 
@@ -173,7 +181,10 @@ class ChromaPropertyStore:
                     collection_name=self.collection_name,
                     embedding_function=self.embeddings,
                 )
-                logger.info("Using in-memory Chroma vector store (persistence disabled for this platform)")
+                logger.info(
+                    "Using in-memory Chroma vector store "
+                    "(persistence disabled for this platform)"
+                )
                 logger.warning("Persistent vector store unavailable; using in-memory store")
                 return vector_store
 
@@ -239,8 +250,16 @@ class ChromaPropertyStore:
             "has_pool": prop.has_pool,
             "has_garage": prop.has_garage,
             "has_elevator": prop.has_elevator,
-            "property_type": prop.property_type.value if hasattr(prop.property_type, "value") else str(prop.property_type),
-            "listing_type": prop.listing_type.value if hasattr(prop.listing_type, "value") else str(prop.listing_type),
+            "property_type": (
+                prop.property_type.value
+                if hasattr(prop.property_type, "value")
+                else str(prop.property_type)
+            ),
+            "listing_type": (
+                prop.listing_type.value
+                if hasattr(prop.listing_type, "value")
+                else str(prop.listing_type)
+            ),
             "source_url": prop.source_url or "",
             "lat": _nf(getattr(prop, "latitude", None)),
             "lon": _nf(getattr(prop, "longitude", None)),
@@ -259,7 +278,11 @@ class ChromaPropertyStore:
             metadata["price_per_sqm"] = float(prop.price_per_sqm)
 
         if prop.negotiation_rate:
-            metadata["negotiation_rate"] = prop.negotiation_rate.value if hasattr(prop.negotiation_rate, "value") else str(prop.negotiation_rate)
+            metadata["negotiation_rate"] = (
+                prop.negotiation_rate.value
+                if hasattr(prop.negotiation_rate, "value")
+                else str(prop.negotiation_rate)
+            )
 
         # Sanitize metadata: only primitives (str, int, float, bool, None); convert datetimes
         def _sanitize_val(v: Any) -> Any:
@@ -616,9 +639,11 @@ class ChromaPropertyStore:
                 chroma_filter = filter
                 if filter and not any(k.startswith("$") for k in filter.keys()):
                     # Check if it needs conversion (heuristic)
-                    # If keys are simple fields but values are just values, it might be simple chroma filter
-                    # But if we want to support range queries passed as "min_price", we need conversion
-                    if any(k in ["min_price", "max_price", "year_built_min"] for k in filter.keys()):
+                    # Keys may be simple fields with simple values; range keys require conversion
+                    if any(
+                        k in ["min_price", "max_price", "year_built_min"]
+                        for k in filter.keys()
+                    ):
                         chroma_filter = self._build_chroma_filter(filter)
                 
                 with self._vector_lock:
@@ -650,7 +675,11 @@ class ChromaPropertyStore:
                 if filter:
                      # Basic manual filtering (simplified)
                     if "city" in filter:
-                        filtered_docs = [d for d in filtered_docs if d.metadata.get("city") == filter["city"]]
+                        filtered_docs = [
+                            d
+                            for d in filtered_docs
+                            if d.metadata.get("city") == filter["city"]
+                        ]
                     # ... add more manual filters if needed, but this is fallback
 
                 for d in filtered_docs:
@@ -858,10 +887,7 @@ class ChromaPropertyStore:
                 val = doc.metadata.get(sort_by)
                 # Handle None/Missing: put at end
                 if val is None:
-                    # If desc, we want None at end -> -inf? No, if desc (High to Low), None should be Low?
-                    # Usually None is last.
-                    # If Asc (Low to High), None should be Last (High)?
-                    # Let's say None is always last.
+                    # None values are always placed last
                     return float('-inf') if reverse else float('inf') 
                 try:
                     return float(val)

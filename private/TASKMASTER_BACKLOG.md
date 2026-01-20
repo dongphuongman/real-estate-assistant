@@ -42,7 +42,7 @@ This backlog translates PRD (Community Edition) into executable tasks and subtas
   - Docs: User Guide (chat page)
 
 ### Epic: Property Search (Hybrid)
-- TM-SEARCH-001 (high, 3d, pending)
+- TM-SEARCH-001 (high, 3d, completed)
   - Task: Filters, sorting, and geo (radius/box) endpoints
   - Subtasks:
     - Implement filters + sort in `/api/v1/search`
@@ -51,6 +51,9 @@ This backlog translates PRD (Community Edition) into executable tasks and subtas
   - Acceptance: p95 < 2s, correct counts and sort
   - Tests: integration scenarios, geo filter correctness
   - Docs: API Reference (search), Developer Notes
+  - Notes: Implemented hybrid search with filters, sorting, geo radius and bbox; RuleEngine clean.
+  - Estimate update: Actual 2d; remaining 1d reallocated to TM-DOCS-001.
+  - Follow-ups: Monitor p95 latency; improve BM25 weighting; extend localization.
 
 - TM-SEARCH-002 (medium, 2d, pending)
   - Task: Frontend filters UI and neutral states
