@@ -8,7 +8,7 @@ ai-real-estate-assistant/
 │   ├── INSTALLATION.md     # Platform-specific setup
 │   ├── TROUBLESHOOTING.md  # Common fixes
 │   ├── DEPLOYMENT.md       # Production deployment
-│   ├── DOCKER.md           # Docker guide
+│   ├── QUICKSTART.md       # Docker Compose quickstart
 │   ├── TESTING_GUIDE.md    # Testing
 │   ├── USER_GUIDE.md       # User instructions
 │   ├── DEVELOPER_NOTES.md  # Dev architecture notes

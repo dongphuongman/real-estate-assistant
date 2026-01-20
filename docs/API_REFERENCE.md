@@ -6,6 +6,10 @@ This document provides a reference for the core Python APIs of the AI Real Estat
 
 The V4 API is built with FastAPI and provides a RESTful interface for the AI Real Estate Assistant.
 
+### Base URLs (Docker Compose)
+- Backend: `http://localhost:8000`
+- Frontend: `http://localhost:3000`
+
 ### Authentication
 
 The API uses API Key authentication via the `X-API-Key` header.

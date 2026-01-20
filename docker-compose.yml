@@ -1,27 +1,37 @@
 version: '3.8'
 
 services:
-  ai-real-estate-assistant:
+  backend:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: ai-real-estate-assistant
+      dockerfile: Dockerfile.backend
+    container_name: ai-backend
     ports:
-      - "8501:8501"
+      - "8000:8000"
     environment:
-      # LLM Provider API Keys (set these in .env file or here)
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - API_ACCESS_KEY=${API_ACCESS_KEY:-dev-secret-key}
+      - API_RATE_LIMIT_ENABLED=${API_RATE_LIMIT_ENABLED:-true}
+      - API_RATE_LIMIT_RPM=${API_RATE_LIMIT_RPM:-600}
+      - CORS_ALLOW_ORIGINS=${CORS_ALLOW_ORIGINS}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-      # Optional: Ollama API base URL
-      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
-      - OLLAMA_API_BASE=${OLLAMA_API_BASE:-http://host.docker.internal:11434}
-      # Optional: Email configuration
+      - CONTEXT7_API_KEY=${CONTEXT7_API_KEY}
+      - OLLAMA_API_BASE=${OLLAMA_API_BASE}
       - SMTP_USERNAME=${SMTP_USERNAME}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - SMTP_PROVIDER=${SMTP_PROVIDER}
+      - UPTIME_MONITOR_ENABLED=${UPTIME_MONITOR_ENABLED:-false}
+      - UPTIME_MONITOR_HEALTH_URL=${UPTIME_MONITOR_HEALTH_URL:-http://localhost:8000/health}
+      - UPTIME_MONITOR_EMAIL_TO=${UPTIME_MONITOR_EMAIL_TO}
+      - UPTIME_MONITOR_INTERVAL=${UPTIME_MONITOR_INTERVAL:-60}
+      - UPTIME_MONITOR_FAIL_THRESHOLD=${UPTIME_MONITOR_FAIL_THRESHOLD:-3}
+      - UPTIME_MONITOR_COOLDOWN_SECONDS=${UPTIME_MONITOR_COOLDOWN_SECONDS:-1800}
+      - vector_persist_enabled=${vector_persist_enabled:-false}
+      - CHROMA_FORCE_FASTEMBED=${CHROMA_FORCE_FASTEMBED}
+      - FORCE_FASTEMBED=${FORCE_FASTEMBED}
     volumes:
-      # Persist data across container restarts
       - ./chroma_db:/app/chroma_db
       - ./data:/app/data
       - ./.preferences:/app/.preferences
@@ -29,13 +39,32 @@ services:
       - ./.sessions:/app/.sessions
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
 
-  # Optional: Local Ollama service (uncomment to use)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    container_name: ai-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000/api/v1}
+      - NEXT_PUBLIC_API_KEY=${API_ACCESS_KEY:-dev-secret-key}
+    depends_on:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   # ollama:
   #   image: ollama/ollama:latest
   #   container_name: ollama

@@ -21,14 +21,14 @@ The easiest way to run the full stack (Backend + Frontend + Services).
 
 ### Steps
 1. **Prepare Environment**
-   ```bash
-   cp .env.example .env
+   ```powershell
+   Copy-Item .env.example .env
    # Edit .env and set OPENAI_API_KEY (or configure OLLAMA base URL), DB settings
    ```
 
 2. **Run with Docker Compose**
-   ```bash
-   docker-compose up -d --build
+   ```powershell
+   docker compose up -d --build
    ```
 
 3. **Access Services**
@@ -37,12 +37,12 @@ The easiest way to run the full stack (Backend + Frontend + Services).
    - Postgres (optional): provision Neon/Supabase and set env variables
 
 4. **Logs & Maintenance**
-   ```bash
+   ```powershell
    # View logs
-   docker-compose logs -f
+   docker compose logs -f
 
    # Stop services
-   docker-compose down
+   docker compose down
    ```
 
 ---

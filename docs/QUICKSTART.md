@@ -7,13 +7,13 @@
 
 ## Steps
 1. Copy environment:
-   ```
-   cp .env.example .env
+   ```powershell
+   Copy-Item .env.example .env
    ```
 2. Set keys and DB options in `.env`.
 3. Start services:
-   ```
-   docker-compose up -d --build
+   ```powershell
+   docker compose up -d --build
    ```
 4. Open:
    - Frontend: http://localhost:3000
@@ -24,5 +24,7 @@
 
 ## Troubleshooting
 - Ensure backend CORS allows the frontend origin.
-- Check logs: `docker-compose logs -f`.
-
+- Check logs:
+  ```powershell
+  docker compose logs -f
+  ```

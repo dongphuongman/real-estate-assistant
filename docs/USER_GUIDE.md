@@ -81,6 +81,12 @@ You can export property listings and search results for offline analysis or shar
 
 The AI-powered chat interface allows you to search for properties using natural language.
 
+### Local Run (Docker)
+- Ensure Docker Desktop is installed
+- Copy environment: `Copy-Item .env.example .env`
+- Start: `docker compose up -d --build`
+- Open UI: `http://localhost:3000` and API docs: `http://localhost:8000/docs`
+
 ### How to Use
 1. Navigate to the **Chat** tab.
 2. Type your request (e.g., "Find me a 2-bedroom apartment in Warsaw under 3000 PLN").

@@ -125,12 +125,18 @@ This backlog translates PRD (Community Edition) into executable tasks and subtas
   - Tests: rendering/validation
 
 ### Epic: Deployment (BYOK)
-- TM-DEPLOY-001 (high, 1d, pending)
+- TM-DEPLOY-001 (high, 1d, completed)
   - Task: Docker Compose and env flags verification
   - Subtasks:
     - Verify Quickstart; BYOK via OpenAI or Ollama
+    - Add backend/frontend services to Compose
+    - Create backend/frontend Dockerfiles
+    - Align Windows PowerShell commands in docs
   - Acceptance: local run in 5 min; endpoints reachable
-  - Docs: Quickstart, Deployment
+  - Docs: Quickstart, Deployment, API Reference, User Guide, Developer Notes
+  - Notes: Replaced legacy Streamlit compose with FastAPI (8000) and Next.js (3000); added Dockerfile.backend and frontend/Dockerfile.frontend; updated .env example with CORS and Uptime flags; Quickstart/Deployment use PowerShell; healthchecks added.
+  - Estimate update: Actual 1d; no remaining.
+  - Follow-ups: Optional Ollama service enablement docs; add CI compose smoke test.
 
 ### Epic: QA & Security
 - TM-QA-001 (high, ongoing, pending)
