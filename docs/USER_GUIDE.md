@@ -89,6 +89,7 @@ The AI-powered chat interface allows you to search for properties using natural 
 - Open UI: `http://localhost:3000`
 - API docs: `http://localhost:8000/docs`
 - OpenAPI schema: `http://localhost:8000/openapi.json` (repo snapshot: `docs/openapi.json`)
+- Generated endpoint index (repo): `docs/API_REFERENCE.generated.md`
 
 ### How to Use
 1. Navigate to the **Chat** tab.

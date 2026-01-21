@@ -10,6 +10,7 @@ in V4.
 - OpenAPI:
   - Runtime schema: `http://localhost:8000/openapi.json`
   - Repo snapshot: `docs/openapi.json` (regenerate: `python scripts\export_openapi.py`)
+  - Generated endpoint index: `docs/API_REFERENCE.generated.md` (regenerate: `python scripts\generate_api_reference.py`)
   - CI drift check (when enabled): fails if snapshot differs from the runtime schema generated from `api/main.py`
 - Observability: `api/observability.py` adds:
   - `X-Request-ID` header to all responses

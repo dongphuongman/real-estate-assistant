@@ -235,6 +235,7 @@ desktop.ini
 
 # Generated files
 *.generated.*
+!docs/API_REFERENCE.generated.md
 
 # Large data files (optional - uncomment if needed)
 # *.csv

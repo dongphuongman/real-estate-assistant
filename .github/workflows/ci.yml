@@ -65,6 +65,11 @@ jobs:
         run: |
           python scripts/export_openapi.py --check
 
+      - name: API reference (generated) drift check
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
+        run: |
+          python scripts/generate_api_reference.py --check
+
       - name: Run unit tests with coverage (pytest)
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |

@@ -15,6 +15,7 @@ The V4 API is built with FastAPI and provides a RESTful interface for the AI Rea
 - ReDoc: `http://localhost:8000/redoc`
 - OpenAPI JSON (runtime): `http://localhost:8000/openapi.json`
 - OpenAPI JSON (repo snapshot): `docs/openapi.json` (regenerate with `python scripts\export_openapi.py`)
+- Generated endpoint index (repo): `docs/API_REFERENCE.generated.md` (regenerate with `python scripts\generate_api_reference.py`)
 
 ### Authentication
 

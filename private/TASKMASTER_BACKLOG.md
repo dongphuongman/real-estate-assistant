@@ -289,6 +289,19 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
   - Estimate update: Actual 0.5d; no remaining.
   - Follow-ups: Extend docs generation (rendered markdown) from OpenAPI if needed post-MVP.
 
+- TM-DOCS-003 (high, 0.5d, completed)
+  - Task: Generate API endpoint index from OpenAPI and enforce drift check
+  - Subtasks:
+    - Add OpenAPI-to-Markdown generator and CLI (`scripts\\generate_api_reference.py`)
+    - Commit generated endpoint index (`docs/API_REFERENCE.generated.md`)
+    - Enforce drift check in CI for the generated Markdown
+  - Acceptance: generated endpoint index is deterministic; CI fails on drift; docs and tests updated
+  - Tests: unit (rendering + drift), integration (schema includes core routes in generated Markdown)
+  - Dependencies: TM-DOCS-002
+  - Notes: Added deterministic OpenAPI→Markdown generation to keep endpoint index in sync with the committed schema snapshot.
+  - Estimate update: Actual 0.25d; no remaining.
+  - Follow-ups: Consider generating the full `docs/API_REFERENCE.md` from OpenAPI post-MVP to reduce manual drift further.
+
 ## Cross-Cutting Requirements
 - Tests: unit ≥90% coverage per module; integration ≥70%; critical paths ≥90%
 - Code Quality: ruff check ., mypy strict for `api` and `agents/services`
