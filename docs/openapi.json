@@ -2748,7 +2748,7 @@
     },
     "/api/v1/rag/upload": {
       "post": {
-        "description": "Upload text/markdown documents and index for local RAG (CE-safe).\nUnsupported types (pdf/docx) return a 422 in CE.",
+        "description": "Upload documents and index for local RAG (CE-safe).\nPDF/DOCX require optional dependencies; unsupported types return a 422 when nothing is indexed.",
         "operationId": "upload_documents_api_v1_rag_upload_post",
         "requestBody": {
           "content": {

@@ -87,6 +87,19 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
   - Estimate update: Actual 2d; remaining 1d reallocated to TM-DOCS-001.
   - Follow-ups: Add PDF/DOCX parsing in CE with optional dependency; expose model selection for QA.
 
+- TM-RAG-002 (high, 1d, completed)
+  - Task: Support PDF/DOCX uploads for local RAG (optional dependencies)
+  - Subtasks:
+    - Parse `.pdf` and `.docx` to text via optional deps
+    - Return structured 422 when nothing is indexed
+    - Keep partial success behavior for mixed uploads
+  - Acceptance: PDF/DOCX ingest works when deps installed; missing deps produce clear errors; tests + docs updated
+  - Tests: unit (extractor), integration (mixed upload), existing RAG suite remains green
+  - Docs: API Reference (RAG), User Guide (RAG), Developer Notes (RAG)
+  - Notes: Added document text extractor with optional `pypdf`/`python-docx` support and improved upload error semantics.
+  - Estimate update: Actual 0.5d; no remaining.
+  - Follow-ups: Consider adding `.pdf`/`.docx` size limits and per-page chunk metadata.
+
 ### Epic: Tools
 - TM-TOOLS-001 (high, 2d, completed)
   - Task: UI wiring for existing tools (mortgage, compare, price, location)

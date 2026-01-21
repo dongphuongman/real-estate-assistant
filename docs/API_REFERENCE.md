@@ -47,7 +47,7 @@ Cross-Origin Resource Sharing (CORS) is controlled via environment:
 ### Quality & Stability
 - Static analysis enforced: ruff (lint), mypy (types), RuleEngine (custom rules).
 - CI coverage enforcement uses `python scripts\\coverage_gate.py`:
-  - Diff coverage: enforces minimum coverage on changed Python lines in a PR.
+  - Diff coverage: enforces minimum coverage on changed Python lines in a PR (excluding tests/scripts).
   - Critical coverage: enforces ≥90% line coverage on core backend modules.
 - Requests/responses documented per endpoint; examples verified in tests.
 
@@ -154,12 +154,23 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
     *   Upload text/markdown documents and index for local RAG (Community Edition).
     *   **Headers**: `X-API-Key: your-api-key
     *   **Form Data**:
-        - `files`: One or more files (`text/plain`, `text/markdown`, `.txt`, `.md`)
+        - `files`: One or more files (`text/plain`, `text/markdown`, `.txt`, `.md`, `.pdf`, `.docx`)
     *   **Returns**:
         ```json
         { "message": "Upload processed", "chunks_indexed": 12, "errors": [] }
         ```
-    *   **Notes**: PDF/DOCX are unsupported in CE and will be reported in `errors`.
+    *   **Notes**:
+        - PDF parsing requires optional dependency: `pip install pypdf`
+        - DOCX parsing requires optional dependency: `pip install python-docx`
+        - If nothing is indexed (e.g., only unsupported files), the API returns `422`:
+          ```json
+          {
+            "detail": {
+              "message": "No documents were indexed",
+              "errors": ["..."]
+            }
+          }
+          ```
 
 *   `POST /api/v1/rag/qa`
     *   Simple QA over uploaded knowledge with citations.

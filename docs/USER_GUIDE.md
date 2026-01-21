@@ -255,7 +255,8 @@ To export search results or specific property IDs via the V4 API (and from the w
 You can upload your own notes to enable question answering over your content.
 
 - Supported file types in CE: `.txt`, `.md`
-- Unsupported (reported with error): `.pdf`, `.docx`
+- Supported with optional install: `.pdf` (`pip install pypdf`), `.docx` (`pip install python-docx`)
+- If nothing is indexed (e.g., only PDFs without optional deps), the API returns `422` with details.
 
 ### Upload Flow
 1. Use a client or cURL to call `POST /api/v1/rag/upload` with form-data `files`.

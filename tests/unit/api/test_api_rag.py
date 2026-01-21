@@ -2,6 +2,10 @@ from fastapi.testclient import TestClient
 
 from api.dependencies import get_knowledge_store, get_optional_llm
 from api.main import app
+from utils.document_text_extractor import (
+    DocumentTextExtractionError,
+    OptionalDependencyMissingError,
+)
 from vector_store.knowledge_store import KnowledgeStore
 
 client = TestClient(app)
@@ -34,12 +38,83 @@ def test_rag_upload_unsupported_type(monkeypatch, tmp_path):
     _override_store(store)
 
     try:
+        monkeypatch.setattr(
+            "utils.document_text_extractor._extract_pdf_text",
+            lambda _data: (_ for _ in ()).throw(
+                OptionalDependencyMissingError(
+                    "PDF parsing requires optional dependency 'pypdf'. Install with: pip install pypdf",
+                    dependency="pypdf",
+                )
+            ),
+        )
         files = {"files": ("doc.pdf", b"%PDF-", "application/pdf")}
+        resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
+        assert resp.status_code == 422
+        detail = resp.json()["detail"]
+        assert detail["message"] == "No documents were indexed"
+        assert any("PDF parsing requires optional dependency" in e for e in detail["errors"])
+    finally:
+        app.dependency_overrides.pop(get_knowledge_store, None)
+
+
+def test_rag_upload_mixed_text_and_pdf_returns_partial_success(monkeypatch, tmp_path):
+    store = _make_store(monkeypatch, tmp_path)
+    _override_store(store)
+
+    try:
+        monkeypatch.setattr(
+            "utils.document_text_extractor._extract_pdf_text",
+            lambda _data: (_ for _ in ()).throw(
+                OptionalDependencyMissingError(
+                    "PDF parsing requires optional dependency 'pypdf'. Install with: pip install pypdf",
+                    dependency="pypdf",
+                )
+            ),
+        )
+        files = [
+            ("files", ("note.md", b"# Title\n\nHello world", "text/markdown")),
+            ("files", ("doc.pdf", b"%PDF-", "application/pdf")),
+        ]
         resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
         assert resp.status_code == 200
         data = resp.json()
-        assert data["chunks_indexed"] == 0
-        assert any("Unsupported file type" in e for e in data["errors"])
+        assert data["chunks_indexed"] > 0
+        assert any("PDF parsing requires optional dependency" in e for e in data["errors"])
+    finally:
+        app.dependency_overrides.pop(get_knowledge_store, None)
+
+
+def test_rag_upload_empty_extracted_text_returns_422(monkeypatch, tmp_path):
+    store = _make_store(monkeypatch, tmp_path)
+    _override_store(store)
+
+    try:
+        monkeypatch.setattr("api.routers.rag.extract_text_from_upload", lambda **_kwargs: "   ")
+        files = {"files": ("note.md", b"# Title\n\nHello world", "text/markdown")}
+        resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
+        assert resp.status_code == 422
+        detail = resp.json()["detail"]
+        assert detail["message"] == "No documents were indexed"
+        assert any("No extractable text found" in e for e in detail["errors"])
+    finally:
+        app.dependency_overrides.pop(get_knowledge_store, None)
+
+
+def test_rag_upload_document_extraction_error_is_reported(monkeypatch, tmp_path):
+    store = _make_store(monkeypatch, tmp_path)
+    _override_store(store)
+
+    try:
+        monkeypatch.setattr(
+            "api.routers.rag.extract_text_from_upload",
+            lambda **_kwargs: (_ for _ in ()).throw(DocumentTextExtractionError("bad parse")),
+        )
+        files = {"files": ("note.md", b"Hello", "text/markdown")}
+        resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
+        assert resp.status_code == 422
+        detail = resp.json()["detail"]
+        assert detail["message"] == "No documents were indexed"
+        assert any("bad parse" in e for e in detail["errors"])
     finally:
         app.dependency_overrides.pop(get_knowledge_store, None)
 
@@ -126,10 +201,10 @@ def test_rag_upload_ingest_exception_is_reported(monkeypatch, tmp_path):
     try:
         files = {"files": ("note.md", b"Hello", "text/markdown")}
         resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["chunks_indexed"] == 0
-        assert any("boom" in e for e in data["errors"])
+        assert resp.status_code == 422
+        detail = resp.json()["detail"]
+        assert detail["message"] == "No documents were indexed"
+        assert any("boom" in e for e in detail["errors"])
     finally:
         app.dependency_overrides.pop(get_knowledge_store, None)
 

@@ -135,7 +135,7 @@ in V4.
   - Lint: `ruff`
   - Type check: `mypy` (strict fail on errors)
   - Coverage gates:
-    - Diff coverage (unit): `python scripts\\coverage_gate.py diff --min-coverage 90`
+    - Diff coverage (unit): `python scripts\\coverage_gate.py diff --min-coverage 90 --exclude tests/* --exclude scripts/*`
     - Diff coverage (integration): `python scripts\\coverage_gate.py diff --min-coverage 70 --exclude tests/* --exclude scripts/*`
     - Critical coverage (unit): `python scripts\\coverage_gate.py critical --min-coverage 90`
 - Frontend:
@@ -225,7 +225,8 @@ Testing:
 - Knowledge store module: `vector_store/knowledge_store.py`
 - Routers: `api/routers/rag.py` (`/api/v1/rag/upload`, `/api/v1/rag/qa`)
 - Supported ingestion types (CE): `.txt`, `.md`
-- Unsupported types return error: `.pdf`, `.docx`
+- Supported with optional install: `.pdf` (`pip install pypdf`), `.docx` (`pip install python-docx`)
+- If nothing is indexed (only errors), the upload endpoint returns `422` with a structured error list.
 
 Environment flags:
 - `EMBEDDING_MODEL` via `settings.embedding_model` (FastEmbed/OpenAI)

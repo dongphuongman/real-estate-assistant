@@ -5,6 +5,12 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from langchain_core.language_models import BaseChatModel
 
 from api.dependencies import get_knowledge_store, get_optional_llm
+from utils.document_text_extractor import (
+    DocumentTextExtractionError,
+    OptionalDependencyMissingError,
+    UnsupportedDocumentTypeError,
+    extract_text_from_upload,
+)
 from vector_store.knowledge_store import KnowledgeStore
 
 logger = logging.getLogger(__name__)
@@ -17,8 +23,8 @@ async def upload_documents(
     store: Annotated[Optional[KnowledgeStore], Depends(get_knowledge_store)],
 ):
     """
-    Upload text/markdown documents and index for local RAG (CE-safe).
-    Unsupported types (pdf/docx) return a 422 in CE.
+    Upload documents and index for local RAG (CE-safe).
+    PDF/DOCX require optional dependencies; unsupported types return a 422 when nothing is indexed.
     """
     if not store:
         raise HTTPException(
@@ -35,19 +41,39 @@ async def upload_documents(
         try:
             content_type = (f.content_type or "").lower()
             name = f.filename or "unknown"
-            if content_type in {"text/plain", "text/markdown"} or name.endswith(
-                (".txt", ".md")
-            ):
-                text = (await f.read()).decode("utf-8", errors="ignore")
+            data = await f.read()
+            try:
+                text = extract_text_from_upload(
+                    filename=name,
+                    content_type=content_type,
+                    data=data,
+                )
+            except (UnsupportedDocumentTypeError, OptionalDependencyMissingError) as e:
+                errors.append(str(e))
+                continue
+            except DocumentTextExtractionError as e:
+                errors.append(f"{name}: {e}")
+                continue
+
+            if not text.strip():
+                errors.append(f"{name}: No extractable text found")
+                continue
+
+            try:
                 added = store.ingest_text(text=text, source=name)
                 total_chunks += added
-            else:
-                errors.append(
-                    f"Unsupported file type in CE: {name} ({content_type}). Allowed: .txt, .md"
-                )
+            except Exception as e:
+                logger.warning("Failed to ingest %s: %s", f.filename, e)
+                errors.append(f"{f.filename}: {e}")
         except Exception as e:
             logger.warning("Failed to ingest %s: %s", f.filename, e)
             errors.append(f"{f.filename}: {e}")
+
+    if total_chunks == 0 and errors:
+        raise HTTPException(
+            status_code=422,
+            detail={"message": "No documents were indexed", "errors": errors},
+        )
 
     return {"message": "Upload processed", "chunks_indexed": total_chunks, "errors": errors}
 
