@@ -114,6 +114,20 @@ class TestCSVExport:
         assert 'price' in csv_data
         assert 'rooms' in csv_data
 
+    def test_export_to_csv_invalid_columns_raises(self, exporter):
+        with pytest.raises(ValueError):
+            exporter.export_to_csv(columns=["not_a_column"])
+
+    def test_export_to_csv_custom_delimiter(self, exporter):
+        csv_data = exporter.export_to_csv(columns=["city", "price"], delimiter=";")
+        assert csv_data.splitlines()[0] == "city;price"
+
+    def test_export_to_csv_decimal_separator(self):
+        df = pd.DataFrame([{"price": 1234.5}])
+        exporter = PropertyExporter(df)
+        csv_data = exporter.export_to_csv(decimal=",")
+        assert "1234,5" in csv_data
+
     def test_csv_parseable(self, exporter):
         """Test CSV output is valid and parseable."""
         csv_data = exporter.export_to_csv()
@@ -179,6 +193,11 @@ class TestJSONExport:
         parsed = json.loads(json_data)
         assert 'properties' in parsed
         assert len(parsed['properties']) == 3
+
+    def test_export_to_json_columns_filtering(self, exporter):
+        json_data = exporter.export_to_json(columns=["city"])
+        parsed = json.loads(json_data)
+        assert all(set(p.keys()) == {"city"} for p in parsed["properties"])
 
     def test_export_to_json_with_metadata(self, exporter):
         """Test JSON export with metadata."""

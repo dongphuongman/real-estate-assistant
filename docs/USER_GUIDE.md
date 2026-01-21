@@ -214,8 +214,11 @@ For local providers (e.g., Ollama), the response includes `runtime_available` an
 `available_models`, and the UI shows setup steps when the local runtime is not detected.
 
 ### API Export (V4)
-To export search results or specific property IDs via the V4 API:
+To export search results or specific property IDs via the V4 API (and from the web app UI):
 - `POST /api/v1/export/properties` supports `format`: `csv`, `xlsx`, `json`, `md`, `pdf`
+- Web app:
+  - **Search**: pick export format, optionally provide a comma-separated column list, then click **Export**
+  - **Tools > Compare**: enter IDs, then click **Export** (uses the same endpoint)
 - Example (export by search with sorting):
   ```json
   {
@@ -228,6 +231,17 @@ To export search results or specific property IDs via the V4 API:
       "sort_by": "price",
       "sort_order": "asc"
     }
+  }
+  ```
+ - Example (export by IDs with column selection + locale-friendly CSV):
+  ```json
+  {
+    "format": "csv",
+    "property_ids": ["prop1", "prop2"],
+    "columns": ["id", "city", "price"],
+    "include_header": true,
+    "csv_delimiter": ";",
+    "csv_decimal": ","
   }
   ```
 

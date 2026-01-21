@@ -50,6 +50,27 @@ class PropertyExporter:
         self.properties = properties
         self.df = self._to_dataframe()
 
+    def _normalize_columns(self, columns: Optional[List[str]]) -> Optional[List[str]]:
+        if columns is None:
+            return None
+        if not columns:
+            raise ValueError("columns must not be empty when provided")
+        seen: set[str] = set()
+        normalized: List[str] = []
+        for col in columns:
+            if col in seen:
+                raise ValueError(f"Duplicate column: {col}")
+            seen.add(col)
+            normalized.append(col)
+        missing = [c for c in normalized if c not in self.df.columns]
+        if missing and not self.df.empty:
+            raise ValueError(f"Unknown columns: {', '.join(missing)}")
+        return normalized
+
+    def _filtered_df(self, columns: Optional[List[str]]) -> pd.DataFrame:
+        normalized = self._normalize_columns(columns)
+        return self.df.reindex(columns=normalized) if normalized else self.df
+
     def _to_dataframe(self) -> pd.DataFrame:
         """Convert properties to pandas DataFrame."""
         if isinstance(self.properties, pd.DataFrame):
@@ -60,7 +81,8 @@ class PropertyExporter:
 
         # Assume PropertyCollection
         data = []
-        # Handle case where properties might be a list inside PropertyCollection or just the object itself if it's iterable
+        # Handle case where properties might be a list inside PropertyCollection or just the object
+        # itself if it's iterable
         props_list = getattr(self.properties, 'properties', self.properties)
         
         # If it's not iterable (single object), wrap in list
@@ -106,7 +128,9 @@ class PropertyExporter:
     def export_to_csv(
         self,
         columns: Optional[List[str]] = None,
-        include_header: bool = True
+        include_header: bool = True,
+        delimiter: str = ",",
+        decimal: str = ".",
     ) -> str:
         """
         Export properties to CSV format.
@@ -118,14 +142,24 @@ class PropertyExporter:
         Returns:
             CSV string
         """
-        df = self.df[columns] if columns else self.df
-
-        return df.to_csv(index=False, header=include_header)
+        if len(delimiter) != 1 or delimiter in ("\n", "\r"):
+            raise ValueError("delimiter must be a single non-newline character")
+        if len(decimal) != 1 or decimal in ("\n", "\r"):
+            raise ValueError("decimal must be a single non-newline character")
+        df = self._filtered_df(columns)
+        return df.to_csv(
+            index=False,
+            header=include_header,
+            sep=delimiter,
+            decimal=decimal,
+            lineterminator="\n",
+        )
 
     def export_to_excel(
         self,
         include_summary: bool = True,
-        include_statistics: bool = True
+        include_statistics: bool = True,
+        columns: Optional[List[str]] = None,
     ) -> BytesIO:
         """
         Export properties to Excel format with multiple sheets.
@@ -138,13 +172,20 @@ class PropertyExporter:
             BytesIO object containing Excel file
         """
         output = BytesIO()
+        properties_df = self._filtered_df(columns)
+        stats_df = self.df
 
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             # Main properties sheet
-            self.df.to_excel(writer, sheet_name='Properties', index=False)
+            properties_df.to_excel(writer, sheet_name='Properties', index=False)
 
             if include_summary:
                 # Summary sheet
+                has_price = "price" in stats_df.columns
+                has_rooms = "rooms" in stats_df.columns
+                has_parking = "has_parking" in stats_df.columns
+                has_garden = "has_garden" in stats_df.columns
+                has_furnished = "is_furnished" in stats_df.columns
                 summary_data = {
                     'Metric': [
                         'Total Properties',
@@ -158,23 +199,29 @@ class PropertyExporter:
                         'Furnished Properties'
                     ],
                     'Value': [
-                        len(self.df),
-                        f"${self.df['price'].mean():.2f}",
-                        f"${self.df['price'].median():.2f}",
-                        f"${self.df['price'].min():.2f}",
-                        f"${self.df['price'].max():.2f}",
-                        f"{self.df['rooms'].mean():.1f}",
+                        len(stats_df),
+                        f"${stats_df['price'].mean():.2f}" if has_price else "N/A",
+                        f"${stats_df['price'].median():.2f}" if has_price else "N/A",
+                        f"${stats_df['price'].min():.2f}" if has_price else "N/A",
+                        f"${stats_df['price'].max():.2f}" if has_price else "N/A",
+                        f"{stats_df['rooms'].mean():.1f}" if has_rooms else "N/A",
                         (
-                            f"{self.df['has_parking'].sum()} "
-                            f"({self.df['has_parking'].mean()*100:.1f}%)"
+                            f"{stats_df['has_parking'].sum()} "
+                            f"({stats_df['has_parking'].mean()*100:.1f}%)"
+                            if has_parking
+                            else "N/A"
                         ),
                         (
-                            f"{self.df['has_garden'].sum()} "
-                            f"({self.df['has_garden'].mean()*100:.1f}%)"
+                            f"{stats_df['has_garden'].sum()} "
+                            f"({stats_df['has_garden'].mean()*100:.1f}%)"
+                            if has_garden
+                            else "N/A"
                         ),
                         (
-                            f"{self.df['is_furnished'].sum()} "
-                            f"({self.df['is_furnished'].mean()*100:.1f}%)"
+                            f"{stats_df['is_furnished'].sum()} "
+                            f"({stats_df['is_furnished'].mean()*100:.1f}%)"
+                            if has_furnished
+                            else "N/A"
                         )
                     ]
                 }
@@ -182,20 +229,24 @@ class PropertyExporter:
 
             if include_statistics:
                 # Statistics by city
-                city_stats = self.df.groupby('city').agg({
-                    'price': ['count', 'mean', 'median', 'min', 'max'],
-                    'rooms': 'mean',
-                    'has_parking': 'mean'
-                }).round(2)
-                city_stats.to_excel(writer, sheet_name='By City')
+                if {"city", "price"}.issubset(stats_df.columns):
+                    city_aggs = {"price": ["count", "mean", "median", "min", "max"]}
+                    if "rooms" in stats_df.columns:
+                        city_aggs["rooms"] = "mean"
+                    if "has_parking" in stats_df.columns:
+                        city_aggs["has_parking"] = "mean"
+                    city_stats = stats_df.groupby('city').agg(city_aggs).round(2)
+                    city_stats.to_excel(writer, sheet_name='By City')
 
                 # Statistics by property type
-                type_stats = self.df.groupby('property_type').agg({
-                    'price': ['count', 'mean', 'median'],
-                    'rooms': 'mean',
-                    'area_sqm': 'mean'
-                }).round(2)
-                type_stats.to_excel(writer, sheet_name='By Type')
+                if {"property_type", "price"}.issubset(stats_df.columns):
+                    type_aggs = {"price": ["count", "mean", "median"]}
+                    if "rooms" in stats_df.columns:
+                        type_aggs["rooms"] = "mean"
+                    if "area_sqm" in stats_df.columns:
+                        type_aggs["area_sqm"] = "mean"
+                    type_stats = stats_df.groupby('property_type').agg(type_aggs).round(2)
+                    type_stats.to_excel(writer, sheet_name='By Type')
 
         output.seek(0)
         return output
@@ -203,7 +254,8 @@ class PropertyExporter:
     def export_to_json(
         self,
         pretty: bool = True,
-        include_metadata: bool = True
+        include_metadata: bool = True,
+        columns: Optional[List[str]] = None,
     ) -> str:
         """
         Export properties to JSON format.
@@ -215,15 +267,9 @@ class PropertyExporter:
         Returns:
             JSON string
         """
-        if isinstance(self.properties, pd.DataFrame):
-            props_data = self.properties.to_dict(orient='records')
-            total_count = len(self.properties)
-        elif isinstance(self.properties, list):
-            props_data = self.properties
-            total_count = len(self.properties)
-        else:
-            props_data = [prop.dict() for prop in self.properties.properties]
-            total_count = self.properties.total_count
+        df = self._filtered_df(columns)
+        props_data = df.to_dict(orient="records")
+        total_count = len(df)
 
         data = {
             'properties': props_data
@@ -286,13 +332,31 @@ class PropertyExporter:
 
         # Summary statistics
         if include_summary:
+            has_price = "price" in self.df.columns
+            has_rooms = "rooms" in self.df.columns
             lines.append("## Summary Statistics\n")
-            lines.append(f"- **Average Price**: ${self.df['price'].mean():.2f}")
-            lines.append(f"- **Median Price**: ${self.df['price'].median():.2f}")
             lines.append(
-                f"- **Price Range**: ${self.df['price'].min():.2f} - ${self.df['price'].max():.2f}"
+                f"- **Average Price**: ${self.df['price'].mean():.2f}"
+                if has_price
+                else "- **Average Price**: N/A"
             )
-            lines.append(f"- **Average Rooms**: {self.df['rooms'].mean():.1f}")
+            lines.append(
+                f"- **Median Price**: ${self.df['price'].median():.2f}"
+                if has_price
+                else "- **Median Price**: N/A"
+            )
+            lines.append(
+                (
+                    f"- **Price Range**: ${self.df['price'].min():.2f} - ${self.df['price'].max():.2f}"
+                    if has_price
+                    else "- **Price Range**: N/A"
+                )
+            )
+            lines.append(
+                f"- **Average Rooms**: {self.df['rooms'].mean():.1f}"
+                if has_rooms
+                else "- **Average Rooms**: N/A"
+            )
             
             # Check for columns before accessing
             if 'has_parking' in self.df.columns:
@@ -308,7 +372,7 @@ class PropertyExporter:
 
             # By city
             lines.append("### By City\n")
-            if 'city' in self.df.columns:
+            if 'city' in self.df.columns and has_price:
                 city_counts = self.df['city'].value_counts()
                 for city, count in city_counts.items():
                     city_avg = self.df[self.df['city'] == city]['price'].mean()
@@ -373,9 +437,14 @@ class PropertyExporter:
                 lines.append("- **Points of Interest**:")
                 for poi in pois:
                     # Handle POI if it's object or dict
-                    name = getattr(poi, 'name', poi.get('name') if isinstance(poi, dict) else str(poi))
-                    category = getattr(poi, 'category', poi.get('category') if isinstance(poi, dict) else '')
-                    distance = getattr(poi, 'distance_meters', poi.get('distance_meters') if isinstance(poi, dict) else 0)
+                    poi_dict = poi if isinstance(poi, dict) else None
+                    name = getattr(poi, "name", poi_dict.get("name") if poi_dict else str(poi))
+                    category = getattr(poi, "category", poi_dict.get("category") if poi_dict else "")
+                    distance = getattr(
+                        poi,
+                        "distance_meters",
+                        poi_dict.get("distance_meters") if poi_dict else 0,
+                    )
                     lines.append(f"  - {name} ({category}): {int(distance)}m")
 
             desc = getattr(prop, 'description', None)
@@ -414,12 +483,14 @@ class PropertyExporter:
 
         # Summary
         story.append(Paragraph("Summary Statistics", styles['Heading2']))
+        has_price = "price" in self.df.columns
+        has_rooms = "rooms" in self.df.columns
         summary_data = [
             ['Metric', 'Value'],
             ['Total Properties', str(len(self.df))],
-            ['Average Price', f"${self.df['price'].mean():.2f}"],
-            ['Median Price', f"${self.df['price'].median():.2f}"],
-            ['Average Rooms', f"{self.df['rooms'].mean():.1f}"],
+            ['Average Price', f"${self.df['price'].mean():.2f}" if has_price else "N/A"],
+            ['Median Price', f"${self.df['price'].median():.2f}" if has_price else "N/A"],
+            ['Average Rooms', f"{self.df['rooms'].mean():.1f}" if has_rooms else "N/A"],
         ]
         t_summary = Table(summary_data)
         t_summary.setStyle(TableStyle([
@@ -439,13 +510,15 @@ class PropertyExporter:
         table_data = [table_headers]
         
         for _, row in self.df.iterrows():
+            title = str(row.get("title", ""))
+            title_display = title[:30] + "..." if len(title) > 30 else title
             table_data.append([
                 str(row.get('city', '')),
                 str(row.get('property_type', '')),
                 f"${row.get('price', 0)}",
                 str(row.get('rooms', '')),
                 str(row.get('area_sqm', '')),
-                str(row.get('title', ''))[:30] + '...' if len(str(row.get('title', ''))) > 30 else str(row.get('title', ''))
+                title_display,
             ])
 
         t_props = Table(table_data, colWidths=[60, 60, 50, 40, 50, 180])

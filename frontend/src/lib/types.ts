@@ -128,6 +128,21 @@ export interface ModelPreferences {
 
 export type ExportFormat = "csv" | "xlsx" | "json" | "md" | "pdf";
 
+export interface ExportPropertiesRequest {
+  format: ExportFormat;
+  property_ids?: string[];
+  search?: SearchRequest;
+  columns?: string[];
+  include_header?: boolean;
+  csv_delimiter?: string;
+  csv_decimal?: string;
+  include_summary?: boolean;
+  include_statistics?: boolean;
+  include_metadata?: boolean;
+  pretty?: boolean;
+  max_properties?: number | null;
+}
+
 export interface ExportSearchRequest {
   format: ExportFormat;
   search: SearchRequest;

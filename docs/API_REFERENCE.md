@@ -390,13 +390,27 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
         *   `format` (string, required): One of `csv`, `xlsx`, `json`, `md`, `pdf`.
         *   `property_ids` (array, optional): Explicit property IDs to export.
         *   `search` (object, optional): Same as `SearchRequest` (supports filters, geo, `sort_by`, `sort_order`).
-        *   `columns` (array, optional): Limit CSV columns to include.
+        *   `columns` (array, optional): Limit columns included in `csv`, `xlsx`, and `json`.
         *   `include_header` (bool, CSV): Include header row (default: `true`).
+        *   `csv_delimiter` (string, CSV): Single-character delimiter (default: `,`).
+        *   `csv_decimal` (string, CSV): Single-character decimal separator (default: `.`).
         *   `include_summary` (bool, Excel/Markdown): Include summary section/sheet (default: `true`).
         *   `include_statistics` (bool, Excel): Include statistics sheet (default: `true`).
         *   `include_metadata` (bool, JSON): Include metadata block (default: `true`).
         *   `pretty` (bool, JSON): Pretty-print JSON (default: `true`).
         *   `max_properties` (int, Markdown): Limit number of properties shown (default: all).
+
+    *   **Body** (export with column selection + locale-friendly CSV):
+        ```json
+        {
+          "format": "csv",
+          "property_ids": ["prop1", "prop2"],
+          "columns": ["id", "city", "price"],
+          "include_header": true,
+          "csv_delimiter": ";",
+          "csv_decimal": ","
+        }
+        ```
 
 #### Settings
 

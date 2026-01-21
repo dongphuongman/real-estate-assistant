@@ -9,6 +9,7 @@ import {
   SearchRequest,
   SearchResponse,
   ExportFormat,
+  ExportPropertiesRequest,
 } from "./types";
 
 function getApiUrl(): string {
@@ -295,25 +296,40 @@ export async function streamChatMessage(
   }
 }
 
-export async function exportPropertiesBySearch(
-  search: SearchRequest,
-  format: ExportFormat
+async function exportProperties(
+  request: ExportPropertiesRequest
 ): Promise<{ filename: string; blob: Blob }> {
   const response = await fetch(`${getApiUrl()}/export/properties`, {
     method: "POST",
     headers: buildHeaders(),
-    body: JSON.stringify({ format, search }),
+    body: JSON.stringify(request),
   });
   if (!response.ok) {
-    const errorText = await response.text();
+    const errorText = await response.text().catch(() => "");
     throw new Error(errorText || "Export request failed");
   }
   const cd = response.headers.get("Content-Disposition") || "";
-  let filename = `properties.${format}`;
+  let filename = `properties.${request.format}`;
   const match = cd.match(/filename="([^"]+)"/i);
   if (match && match[1]) {
     filename = match[1];
   }
   const blob = await response.blob();
   return { filename, blob };
+}
+
+export async function exportPropertiesBySearch(
+  search: SearchRequest,
+  format: ExportFormat,
+  options?: Pick<ExportPropertiesRequest, "columns" | "include_header" | "csv_delimiter" | "csv_decimal">
+): Promise<{ filename: string; blob: Blob }> {
+  return exportProperties({ format, search, ...(options || {}) });
+}
+
+export async function exportPropertiesByIds(
+  propertyIds: string[],
+  format: ExportFormat,
+  options?: Pick<ExportPropertiesRequest, "columns" | "include_header" | "csv_delimiter" | "csv_decimal">
+): Promise<{ filename: string; blob: Blob }> {
+  return exportProperties({ format, property_ids: propertyIds, ...(options || {}) });
 }

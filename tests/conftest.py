@@ -3,7 +3,6 @@ Pytest configuration and shared fixtures.
 """
 
 import pytest
-from langchain_community.llms.fake import FakeListLLM
 from langchain_core.documents import Document
 
 from agents.query_analyzer import QueryAnalyzer
@@ -104,12 +103,3 @@ def reranker():
     return PropertyReranker()
 
 
-@pytest.fixture
-def fake_llm():
-    """Fixture for fake LLM for testing."""
-    responses = [
-        "Here are some apartments in Krakow that match your criteria.",
-        "The monthly mortgage payment would be approximately $730.",
-        "Comparing Warsaw and Krakow, Warsaw is more expensive.",
-    ]
-    return FakeListLLM(responses=responses)

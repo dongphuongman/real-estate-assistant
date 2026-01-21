@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import {
   calculateMortgage,
   comparePropertiesApi,
+  exportPropertiesByIds,
   priceAnalysisApi,
   locationAnalysisApi,
   valuationApi,
@@ -101,6 +102,13 @@ function CompareSection() {
   const [data, setData] = useState<Awaited<ReturnType<typeof comparePropertiesApi>> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [exportFormat, setExportFormat] = useState<string>("csv");
+  const [exportColumns, setExportColumns] = useState<string>("");
+  const [exportIncludeHeader, setExportIncludeHeader] = useState<boolean>(true);
+  const [csvDelimiter, setCsvDelimiter] = useState<string>(",");
+  const [csvDecimal, setCsvDecimal] = useState<string>(".");
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
   const hint = error ? getToolHint(error) : null;
   return (
     <section>
@@ -111,26 +119,125 @@ function CompareSection() {
         value={ids}
         onChange={(e) => setIds(e.target.value)}
       />
-      <button
-        className="bg-black text-white px-3 py-2 rounded"
-        onClick={async () => {
-          setError(null);
-          setLoading(true);
-          try {
-            const res = await comparePropertiesApi(ids.split(",").map((p) => p.trim()).filter(Boolean));
-            setData(res);
-          } catch (e: unknown) {
-            const msg = e instanceof Error ? e.message : String(e);
-            setError(msg || "Compare failed");
-          } finally {
-            setLoading(false);
-          }
-        }}
-      >
-        {loading ? "Comparing..." : "Compare"}
-      </button>
+      <div className="flex flex-wrap gap-2">
+        <button
+          className="bg-black text-white px-3 py-2 rounded"
+          onClick={async () => {
+            setError(null);
+            setLoading(true);
+            try {
+              const res = await comparePropertiesApi(ids.split(",").map((p) => p.trim()).filter(Boolean));
+              setData(res);
+            } catch (e: unknown) {
+              const msg = e instanceof Error ? e.message : String(e);
+              setError(msg || "Compare failed");
+            } finally {
+              setLoading(false);
+            }
+          }}
+        >
+          {loading ? "Comparing..." : "Compare"}
+        </button>
+        <select
+          className="border p-2 rounded"
+          value={exportFormat}
+          onChange={(e) => setExportFormat(e.target.value)}
+          aria-label="Export format"
+        >
+          <option value="csv">CSV</option>
+          <option value="xlsx">Excel</option>
+          <option value="json">JSON</option>
+          <option value="md">Markdown</option>
+          <option value="pdf">PDF</option>
+        </select>
+        <button
+          className="bg-black text-white px-3 py-2 rounded"
+          disabled={exporting}
+          onClick={async () => {
+            setExportError(null);
+            setExporting(true);
+            try {
+              const propertyIds = ids.split(",").map((p) => p.trim()).filter(Boolean);
+              if (!propertyIds.length) {
+                setExportError("Please provide at least one property ID.");
+                return;
+              }
+              const columns = exportColumns
+                .split(",")
+                .map((c) => c.trim())
+                .filter(Boolean);
+              const { filename, blob } = await exportPropertiesByIds(
+                propertyIds,
+                exportFormat as "csv" | "xlsx" | "json" | "md" | "pdf",
+                {
+                  columns: columns.length ? columns : undefined,
+                  include_header: exportIncludeHeader,
+                  csv_delimiter: exportFormat === "csv" ? csvDelimiter : undefined,
+                  csv_decimal: exportFormat === "csv" ? csvDecimal : undefined,
+                }
+              );
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = filename;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              window.URL.revokeObjectURL(url);
+            } catch (e: unknown) {
+              const msg = e instanceof Error ? e.message : String(e);
+              setExportError(msg || "Export failed");
+            } finally {
+              setExporting(false);
+            }
+          }}
+        >
+          {exporting ? "Exporting..." : "Export"}
+        </button>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 my-2">
+        <input
+          className="border p-2 w-full"
+          placeholder="Columns (optional), e.g., id, city, price"
+          value={exportColumns}
+          onChange={(e) => setExportColumns(e.target.value)}
+          aria-label="Export columns"
+        />
+        {exportFormat === "csv" ? (
+          <div className="grid grid-cols-2 gap-2">
+            <select
+              className="border p-2 rounded"
+              value={csvDelimiter}
+              onChange={(e) => setCsvDelimiter(e.target.value)}
+              aria-label="CSV delimiter"
+            >
+              <option value=",">Comma (,)</option>
+              <option value=";">Semicolon (;)</option>
+            </select>
+            <select
+              className="border p-2 rounded"
+              value={csvDecimal}
+              onChange={(e) => setCsvDecimal(e.target.value)}
+              aria-label="CSV decimal separator"
+            >
+              <option value=".">Dot (.)</option>
+              <option value=",">Comma (,)</option>
+            </select>
+            <label className="flex items-center gap-2 text-sm col-span-2">
+              <input
+                type="checkbox"
+                checked={exportIncludeHeader}
+                onChange={(e) => setExportIncludeHeader(e.target.checked)}
+                aria-label="Include CSV header"
+              />
+              Include header row
+            </label>
+          </div>
+        ) : null}
+      </div>
       {error && <p className="text-red-600 mt-2">{error}</p>}
       {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
+      {exportError && <p className="text-red-600 mt-2">{exportError}</p>}
       {data && (
         <div className="mt-2">
           <p>Count: {data.summary?.count}</p>

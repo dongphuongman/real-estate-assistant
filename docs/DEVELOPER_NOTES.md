@@ -102,7 +102,8 @@ in V4.
   - `GET /api/v1/settings/models` (catalog only)
   - `GET/PUT /api/v1/settings/model-preferences` (requires `X-User-Email` or `?user_email=`)
 - LLM selection:
-  - [get_llm](file:///c:/Projects/ai-real-estate-assistant/api/dependencies.py) loads per-user model preferences via `X-User-Email`
+  - [get_llm](file:///c:/Projects/ai-real-estate-assistant/api/dependencies.py) loads per-user model preferences
+    via `X-User-Email`
   - Falls back to `settings.default_provider`/`settings.default_model` if preferences are missing or invalid
 
 ## CI/CD
@@ -168,15 +169,16 @@ Testing:
 - Integration: `tests/integration/api/test_api_search_sorting_integration.py` (endpoint accepts sorting)
 
 ## Export (End-to-End)
-- UI (Next.js): `frontend/src/app/search/page.tsx` includes export controls (format select + button)
-- Client API: `frontend/src/lib/api.ts` provides `exportProperties(request)` where `request.search`
-  supports `filters`, `alpha`, geo params, `sort_by`, and `sort_order`
+- UI (Next.js):
+  - `frontend/src/app/search/page.tsx` exports search results (format + optional columns + CSV locale options)
+  - `frontend/src/app/tools/page.tsx` exports by IDs from the Compare tool
+- Client API: `frontend/src/lib/api.ts` provides `exportPropertiesBySearch(...)` and `exportPropertiesByIds(...)`
 - Backend Router: `api/routers/exports.py` handles `POST /api/v1/export/properties` for IDs or search
-- Utils: `utils/exporters.py` supports `csv`, `xlsx`, `json`, `md`, `pdf`
+- Utils: `utils/exporters.py` supports `csv`, `xlsx`, `json`, `md`, `pdf` (columns filtering for `csv`/`xlsx`/`json`)
 
 Testing:
 - Unit: `tests/unit/api/test_api_exports.py` (formats, headers, errors)
-- Integration: `tests/integration/api/test_api_exports_integration.py` (auth + validation)
+- Integration: `tests/integration/api/test_api_exports_integration.py` (auth + validation + CSV option acceptance)
 
 ## Local RAG (Community Edition)
 - Knowledge store module: `vector_store/knowledge_store.py`

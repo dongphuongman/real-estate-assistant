@@ -5,9 +5,20 @@ import ToolsPage from "../tools/page";
 // Mock API functions
 jest.mock("@/lib/api", () => ({
   calculateMortgage: jest.fn(async () => ({ monthly_payment: 1234.56 })),
-  comparePropertiesApi: jest.fn(async () => ({ summary: { count: 2, min_price: 100000, max_price: 150000, price_difference: 50000 } })),
+  comparePropertiesApi: jest.fn(async () => ({
+    summary: { count: 2, min_price: 100000, max_price: 150000, price_difference: 50000 },
+  })),
+  exportPropertiesByIds: jest.fn(async () => ({
+    filename: "properties.csv",
+    blob: new Blob(["a"], { type: "text/csv" }),
+  })),
   priceAnalysisApi: jest.fn(async () => ({ count: 10, average_price: 200000, median_price: 195000 })),
-  locationAnalysisApi: jest.fn(async () => ({ city: "Warsaw", neighborhood: "Śródmieście", lat: 52.2297, lon: 21.0122 })),
+  locationAnalysisApi: jest.fn(async () => ({
+    city: "Warsaw",
+    neighborhood: "Śródmieście",
+    lat: 52.2297,
+    lon: 21.0122,
+  })),
   valuationApi: jest.fn(async () => ({ property_id: "p1", estimated_value: 250000 })),
   legalCheckApi: jest.fn(async () => ({ risks: [], score: 0 })),
   enrichAddressApi: jest.fn(async () => ({ address: "Some St 1", data: {} })),

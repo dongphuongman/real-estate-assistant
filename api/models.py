@@ -263,6 +263,8 @@ class ExportPropertiesRequest(BaseModel):
 
     columns: Optional[List[str]] = None
     include_header: bool = True
+    csv_delimiter: str = ","
+    csv_decimal: str = "."
 
     include_summary: bool = True
     include_statistics: bool = True
@@ -274,4 +276,8 @@ class ExportPropertiesRequest(BaseModel):
     def validate_input(self) -> "ExportPropertiesRequest":
         if not self.property_ids and self.search is None:
             raise ValueError("Either property_ids or search must be provided")
+        if len(self.csv_delimiter) != 1 or self.csv_delimiter in ("\n", "\r"):
+            raise ValueError("csv_delimiter must be a single non-newline character")
+        if len(self.csv_decimal) != 1 or self.csv_decimal in ("\n", "\r"):
+            raise ValueError("csv_decimal must be a single non-newline character")
         return self

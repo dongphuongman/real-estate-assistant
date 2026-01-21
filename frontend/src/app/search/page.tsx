@@ -18,6 +18,10 @@ export default function SearchPage() {
   const [sortBy, setSortBy] = useState<string>("relevance");
   const [sortOrder, setSortOrder] = useState<string>("desc");
   const [exportFormat, setExportFormat] = useState<string>("csv");
+  const [exportColumns, setExportColumns] = useState<string>("");
+  const [exportIncludeHeader, setExportIncludeHeader] = useState<boolean>(true);
+  const [csvDelimiter, setCsvDelimiter] = useState<string>(",");
+  const [csvDecimal, setCsvDecimal] = useState<string>(".");
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
@@ -100,9 +104,19 @@ export default function SearchPage() {
         sort_order: sortOrder as "asc" | "desc",
         filters,
       };
+      const columns = exportColumns
+        .split(",")
+        .map((c) => c.trim())
+        .filter(Boolean);
       const { filename, blob } = await exportPropertiesBySearch(
         searchPayload,
-        exportFormat as "csv" | "xlsx" | "json" | "md" | "pdf"
+        exportFormat as "csv" | "xlsx" | "json" | "md" | "pdf",
+        {
+          columns: columns.length ? columns : undefined,
+          include_header: exportIncludeHeader,
+          csv_delimiter: exportFormat === "csv" ? csvDelimiter : undefined,
+          csv_decimal: exportFormat === "csv" ? csvDecimal : undefined,
+        }
       );
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -136,18 +150,29 @@ export default function SearchPage() {
             <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Describe what you are looking for (e.g., 'Modern apartment in downtown with 2 bedrooms under $500k')..."
-              className="w-full rounded-md border border-input bg-background pl-10 pr-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="Describe what you're looking for (e.g., 2-bed apartment under $500k)..."
+              className={[
+                "w-full rounded-md border border-input bg-background",
+                "pl-10 pr-4 py-2 text-sm ring-offset-background",
+                "placeholder:text-muted-foreground focus-visible:outline-none",
+                "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                "disabled:cursor-not-allowed disabled:opacity-50",
+              ].join(" ")}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               aria-label="Search query"
-                required
+              required
             />
           </div>
           <button
             type="submit"
             disabled={loading || !query.trim()}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+            className={[
+              "inline-flex items-center justify-center rounded-md bg-primary px-8",
+              "text-sm font-medium text-primary-foreground shadow transition-colors",
+              "hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+              "disabled:pointer-events-none disabled:opacity-50",
+            ].join(" ")}
             aria-busy={loading ? "true" : "false"}
             aria-label={loading ? "Searching" : "Search"}
           >
@@ -275,7 +300,10 @@ export default function SearchPage() {
                       setSortBy("relevance");
                       setSortOrder("desc");
                     }}
-                    className="inline-flex items-center justify-center rounded-md border px-3 py-2 text-sm hover:bg-muted"
+                    className={[
+                      "inline-flex items-center justify-center rounded-md border",
+                      "px-3 py-2 text-sm hover:bg-muted",
+                    ].join(" ")}
                     aria-label="Clear filters"
                   >
                     Clear Filters
@@ -299,15 +327,76 @@ export default function SearchPage() {
                         <option value="pdf">PDF</option>
                       </select>
                     </div>
+                    <div>
+                      <label htmlFor="export-columns" className="block text-sm font-medium mb-1">
+                        Columns (optional)
+                      </label>
+                      <input
+                        id="export-columns"
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        value={exportColumns}
+                        onChange={(e) => setExportColumns(e.target.value)}
+                        placeholder="e.g., id, city, price"
+                        aria-label="Export columns"
+                      />
+                    </div>
+                    {exportFormat === "csv" ? (
+                      <div className="grid grid-cols-2 gap-4 col-span-2">
+                        <div>
+                          <label htmlFor="csv-delimiter" className="block text-sm font-medium mb-1">
+                            CSV Delimiter
+                          </label>
+                          <select
+                            id="csv-delimiter"
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            value={csvDelimiter}
+                            onChange={(e) => setCsvDelimiter(e.target.value)}
+                            aria-label="CSV delimiter"
+                          >
+                            <option value=",">Comma (,)</option>
+                            <option value=";">Semicolon (;)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label htmlFor="csv-decimal" className="block text-sm font-medium mb-1">
+                            Decimal Separator
+                          </label>
+                          <select
+                            id="csv-decimal"
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            value={csvDecimal}
+                            onChange={(e) => setCsvDecimal(e.target.value)}
+                            aria-label="CSV decimal separator"
+                          >
+                            <option value=".">Dot (.)</option>
+                            <option value=",">Comma (,)</option>
+                          </select>
+                        </div>
+                        <label className="flex items-center gap-2 text-sm col-span-2">
+                          <input
+                            type="checkbox"
+                            checked={exportIncludeHeader}
+                            onChange={(e) => setExportIncludeHeader(e.target.checked)}
+                            aria-label="Include CSV header"
+                          />
+                          Include header row
+                        </label>
+                      </div>
+                    ) : null}
                     <div className="flex items-end">
                       <button
                         type="button"
                         onClick={handleExport}
-                    disabled={exporting || !query.trim()}
-                        className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 disabled:opacity-50"
+                        disabled={exporting || !query.trim()}
+                        className={[
+                          "inline-flex items-center justify-center rounded-md bg-primary px-3 py-2",
+                          "text-sm font-medium text-primary-foreground shadow transition-colors",
+                          "hover:bg-primary/90 disabled:opacity-50",
+                        ].join(" ")}
                         aria-label={exporting ? "Exporting" : "Export"}
                       >
-                        <Download className="h-4 w-4 mr-2" /> {exporting ? "Exporting..." : "Export"}
+                        <Download className="h-4 w-4 mr-2" />
+                        {exporting ? "Exporting..." : "Export"}
                       </button>
                     </div>
                   </div>
@@ -331,7 +420,13 @@ export default function SearchPage() {
                   <MapPin className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
                 </div>
                 <h3 className="text-lg font-semibold">
-                  {loading ? "Searching..." : error ? "Error" : hasSearched ? "No results found" : "Start searching"}
+                  {loading
+                    ? "Searching..."
+                    : error
+                      ? "Error"
+                      : hasSearched
+                        ? "No results found"
+                        : "Start searching"}
                 </h3>
                 <p className="text-sm text-muted-foreground max-w-sm mt-2">
                   {error ||
@@ -353,12 +448,17 @@ export default function SearchPage() {
                     >
                       <div className="aspect-video w-full bg-muted relative">
                         {/* Placeholder for image */}
-                        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground" aria-label="Property image placeholder">
+                        <div
+                          className="absolute inset-0 flex items-center justify-center text-muted-foreground"
+                          aria-label="Property image placeholder"
+                        >
                           Property image
                         </div>
                       </div>
                       <div className="p-6 space-y-2">
-                        <h3 className="text-2xl font-semibold leading-none tracking-tight">{prop.title || "Untitled Property"}</h3>
+                        <h3 className="text-2xl font-semibold leading-none tracking-tight">
+                          {prop.title || "Untitled Property"}
+                        </h3>
                         <p className="text-sm text-muted-foreground">{prop.city}, {prop.country}</p>
                         <div className="font-bold text-lg">
                           {prop.price ? `$${prop.price.toLocaleString()}` : "Price on request"}

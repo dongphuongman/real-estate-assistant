@@ -31,7 +31,7 @@ describe("SearchPage", () => {
   it("renders search interface", () => {
     render(<SearchPage />)
     expect(screen.getByText("Find Your Property")).toBeInTheDocument()
-    expect(screen.getByPlaceholderText("Describe what you are looking for (e.g., 'Modern apartment in downtown with 2 bedrooms under $500k')...")).toBeInTheDocument()
+    expect(screen.getByLabelText("Search query")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /search/i })).toBeInTheDocument()
   })
 
@@ -66,7 +66,7 @@ describe("SearchPage", () => {
 
     render(<SearchPage />)
     
-    const input = screen.getByPlaceholderText("Describe what you are looking for (e.g., 'Modern apartment in downtown with 2 bedrooms under $500k')...")
+    const input = screen.getByLabelText("Search query")
     const searchButton = screen.getByRole("button", { name: /search/i })
 
     fireEvent.change(input, { target: { value: "Downtown" } })
@@ -87,9 +87,7 @@ describe("SearchPage", () => {
     render(<SearchPage />)
 
     fireEvent.change(
-      screen.getByPlaceholderText(
-        "Describe what you are looking for (e.g., 'Modern apartment in downtown with 2 bedrooms under $500k')..."
-      ),
+      screen.getByLabelText("Search query"),
       { target: { value: "Test" } }
     )
     fireEvent.change(screen.getByLabelText("Min Price"), { target: { value: "100" } })
@@ -120,9 +118,7 @@ describe("SearchPage", () => {
     render(<SearchPage />)
 
     fireEvent.change(
-      screen.getByPlaceholderText(
-        "Describe what you are looking for (e.g., 'Modern apartment in downtown with 2 bedrooms under $500k')..."
-      ),
+      screen.getByLabelText("Search query"),
       { target: { value: "Test" } }
     )
     fireEvent.change(screen.getByLabelText("Min Price"), { target: { value: "300" } })
@@ -156,7 +152,7 @@ describe("SearchPage", () => {
 
     render(<SearchPage />)
     
-    const input = screen.getByPlaceholderText("Describe what you are looking for (e.g., 'Modern apartment in downtown with 2 bedrooms under $500k')...")
+    const input = screen.getByLabelText("Search query")
     const searchButton = screen.getByRole("button", { name: /search/i })
 
     fireEvent.change(input, { target: { value: "Nowhere" } })
@@ -172,7 +168,7 @@ describe("SearchPage", () => {
 
     render(<SearchPage />)
     
-    const input = screen.getByPlaceholderText("Describe what you are looking for (e.g., 'Modern apartment in downtown with 2 bedrooms under $500k')...")
+    const input = screen.getByLabelText("Search query")
     const searchButton = screen.getByRole("button", { name: /search/i })
 
     fireEvent.change(input, { target: { value: "Error" } })
@@ -201,7 +197,7 @@ describe("SearchPage", () => {
 
     render(<SearchPage />)
     
-    const input = screen.getByPlaceholderText("Describe what you are looking for (e.g., 'Modern apartment in downtown with 2 bedrooms under $500k')...")
+    const input = screen.getByLabelText("Search query")
     const searchButton = screen.getByRole("button", { name: /search/i })
 
     fireEvent.change(input, { target: { value: "Cheap" } })
@@ -230,7 +226,7 @@ describe("SearchPage", () => {
 
     render(<SearchPage />)
     
-    const input = screen.getByPlaceholderText("Describe what you are looking for (e.g., 'Modern apartment in downtown with 2 bedrooms under $500k')...")
+    const input = screen.getByLabelText("Search query")
     const searchButton = screen.getByRole("button", { name: /search/i })
 
     fireEvent.change(input, { target: { value: "Area" } })
@@ -252,7 +248,7 @@ describe("SearchPage", () => {
     mockExport.mockResolvedValueOnce({ filename: "properties_test.csv", blob });
 
     render(<SearchPage />);
-    const input = screen.getByPlaceholderText("Describe what you are looking for (e.g., 'Modern apartment in downtown with 2 bedrooms under $500k')...");
+    const input = screen.getByLabelText("Search query");
     fireEvent.change(input, { target: { value: "Test" } });
     fireEvent.click(screen.getByRole("button", { name: /search/i }));
 
@@ -272,7 +268,7 @@ describe("SearchPage", () => {
   it("shows export error on failure", async () => {
     mockExport.mockRejectedValueOnce(new Error("Export failed"));
     render(<SearchPage />);
-    fireEvent.change(screen.getByPlaceholderText("Describe what you are looking for (e.g., 'Modern apartment in downtown with 2 bedrooms under $500k')..."), { target: { value: "Test" } });
+    fireEvent.change(screen.getByLabelText("Search query"), { target: { value: "Test" } });
     fireEvent.click(screen.getByRole("button", { name: /export/i }));
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent("Failed to export");

@@ -66,55 +66,67 @@ async def export_properties(
     exporter = PropertyExporter(rows)
     filename = _filename_for_format(request.format)
 
-    if request.format == ExportFormat.CSV:
-        content = exporter.export_to_csv(
-            columns=request.columns, include_header=request.include_header
-        )
-        return Response(
-            content=content,
-            media_type="text/csv",
-            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-        )
+    try:
+        if request.format == ExportFormat.CSV:
+            content = exporter.export_to_csv(
+                columns=request.columns,
+                include_header=request.include_header,
+                delimiter=request.csv_delimiter,
+                decimal=request.csv_decimal,
+            )
+            return Response(
+                content=content,
+                media_type="text/csv",
+                headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+            )
 
-    if request.format == ExportFormat.JSON:
-        content = exporter.export_to_json(
-            pretty=request.pretty, include_metadata=request.include_metadata
-        )
-        return Response(
-            content=content,
-            media_type="application/json",
-            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-        )
+        if request.format == ExportFormat.JSON:
+            content = exporter.export_to_json(
+                pretty=request.pretty,
+                include_metadata=request.include_metadata,
+                columns=request.columns,
+            )
+            return Response(
+                content=content,
+                media_type="application/json",
+                headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+            )
 
-    if request.format == ExportFormat.MARKDOWN:
-        content = exporter.export_to_markdown(
-            include_summary=request.include_summary,
-            max_properties=request.max_properties,
-        )
-        return Response(
-            content=content,
-            media_type="text/markdown",
-            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-        )
+        if request.format == ExportFormat.MARKDOWN:
+            content = exporter.export_to_markdown(
+                include_summary=request.include_summary,
+                max_properties=request.max_properties,
+            )
+            return Response(
+                content=content,
+                media_type="text/markdown",
+                headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+            )
 
-    if request.format == ExportFormat.EXCEL:
-        buf = exporter.export_to_excel(
-            include_summary=request.include_summary,
-            include_statistics=request.include_statistics,
-        )
-        return StreamingResponse(
-            buf,
-            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-        )
+        if request.format == ExportFormat.EXCEL:
+            buf = exporter.export_to_excel(
+                include_summary=request.include_summary,
+                include_statistics=request.include_statistics,
+                columns=request.columns,
+            )
+            return StreamingResponse(
+                buf,
+                media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+            )
 
-    if request.format == ExportFormat.PDF:
-        buf = exporter.export_to_pdf()
-        return StreamingResponse(
-            buf,
-            media_type="application/pdf",
-            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-        )
+        if request.format == ExportFormat.PDF:
+            buf = exporter.export_to_pdf()
+            return StreamingResponse(
+                buf,
+                media_type="application/pdf",
+                headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+            )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from e
 
     raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported export format"

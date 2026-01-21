@@ -124,13 +124,17 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
   - Follow-ups: Consider exposing model selection in RAG UI; add provider/model capability badges.
 
 ### Epic: Exports
-- TM-EXPORTS-001 (medium, 2d, pending)
+- TM-EXPORTS-001 (medium, 2d, completed)
   - Task: CSV/JSON/Markdown endpoints + UI actions
   - Subtasks:
     - Export from search/compare
     - Download UX, columns selection
   - Acceptance: reproducible outputs; selected columns honored
   - Tests: content validation, delimiter/locale checks
+  - Notes: Implemented export endpoint (`POST /api/v1/export/properties`) with column filtering, CSV
+    delimiter/decimal options, and frontend download actions from Search and Tools > Compare.
+  - Estimate update: Actual 1d; remaining 1d reallocated to TM-DOCS-001.
+  - Follow-ups: Consider a dedicated Compare summary export (beyond property rows) if needed.
 
 ### Epic: Prompt Templates
 - TM-PROMPT-001 (medium, 2d, pending)
@@ -169,7 +173,7 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
   - Estimate update: Actual 1d; follow-up to raise unit coverage gates from 75→90 in CI post-MVP.
 
 ### Epic: Docs (CE)
-- TM-DOCS-001 (medium, 1.5d, pending)
+- TM-DOCS-001 (medium, 1d, pending)
   - Task: API Reference, User Guide, Troubleshooting updates
   - Acceptance: complete docs; navigable from README
   - Notes: Settings docs partially updated (API + User + Developer Notes) during TM-SETTINGS-001.

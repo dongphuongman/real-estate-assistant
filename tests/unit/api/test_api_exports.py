@@ -73,6 +73,50 @@ def test_export_properties_by_search_json_success(mock_store, valid_headers):
     app.dependency_overrides = {}
 
 
+def test_export_properties_invalid_columns_returns_400(mock_store, valid_headers):
+    mock_store.get_properties_by_ids.return_value = [
+        Document(page_content="x", metadata={"id": "p1", "city": "Krakow", "price": 1000})
+    ]
+    app.dependency_overrides[get_vector_store] = lambda: mock_store
+
+    response = client.post(
+        "/api/v1/export/properties",
+        json={
+            "format": "csv",
+            "property_ids": ["p1"],
+            "columns": ["not_a_column"],
+        },
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 400
+    assert "Unknown columns" in response.text
+    app.dependency_overrides = {}
+
+
+def test_export_properties_csv_delimiter_is_applied(mock_store, valid_headers):
+    mock_store.get_properties_by_ids.return_value = [
+        Document(page_content="x", metadata={"id": "p1", "city": "Krakow", "price": 1000})
+    ]
+    app.dependency_overrides[get_vector_store] = lambda: mock_store
+
+    response = client.post(
+        "/api/v1/export/properties",
+        json={
+            "format": "csv",
+            "property_ids": ["p1"],
+            "columns": ["id", "city", "price"],
+            "csv_delimiter": ";",
+        },
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 200
+    header_line = response.text.splitlines()[0]
+    assert header_line == "id;city;price"
+    app.dependency_overrides = {}
+
+
 def test_export_properties_requires_property_ids_or_search(mock_store, valid_headers):
     app.dependency_overrides[get_vector_store] = lambda: mock_store
 
@@ -141,7 +185,7 @@ def test_export_properties_by_ids_markdown_success(
 
 
 def test_export_properties_by_ids_excel_success(mock_store, valid_headers, monkeypatch):
-    def fake_export_to_excel(self, include_summary, include_statistics):
+    def fake_export_to_excel(self, include_summary, include_statistics, columns=None):
         buf = BytesIO(b"fake-xlsx")
         buf.seek(0)
         return buf
