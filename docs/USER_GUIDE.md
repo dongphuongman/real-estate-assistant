@@ -167,6 +167,10 @@ The backend will only allow these origins.
 ## Quality & Stability
 - The app enforces backend quality gates (lint, types, custom rules) to improve reliability.
 - If requests fail due to rate limits or validation, try again after the suggested reset time.
+- For contributors, run backend checks locally:
+  - `python -m pytest`
+  - `python -m ruff check .`
+  - `python -m mypy`
 
 ## Financial Tools
 

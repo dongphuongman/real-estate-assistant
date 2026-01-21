@@ -365,3 +365,165 @@ def test_get_model_preferences_missing_user_email_returns_400(mock_get_settings,
     assert response.status_code == 400
     assert response.json()["detail"] == "Missing user email"
     assert not mock_model_prefs_manager.get_preferences.called
+
+
+@patch("api.routers.settings.user_model_preferences.MODEL_PREFS_MANAGER")
+@patch("api.auth.get_settings")
+def test_get_model_preferences_returns_400_on_value_error(mock_get_settings, mock_model_prefs_manager):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+
+    mock_model_prefs_manager.get_preferences.side_effect = ValueError("bad email")
+    response = client.get("/api/v1/settings/model-preferences", headers=HEADERS)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "bad email"
+
+
+@patch("api.routers.settings.user_model_preferences.MODEL_PREFS_MANAGER")
+@patch("api.routers.settings.ModelProviderFactory")
+@patch("api.auth.get_settings")
+def test_update_model_preferences_rejects_unknown_provider(
+    mock_get_settings, mock_factory, mock_model_prefs_manager
+):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+
+    mock_factory.list_providers.return_value = ["openai"]
+    existing = MagicMock()
+    existing.preferred_provider = None
+    existing.preferred_model = None
+    mock_model_prefs_manager.get_preferences.return_value = existing
+
+    response = client.put(
+        "/api/v1/settings/model-preferences",
+        json={"preferred_provider": "anthropic"},
+        headers=HEADERS,
+    )
+    assert response.status_code == 400
+    assert "Unknown provider" in response.json()["detail"]
+
+
+@patch("api.routers.settings.user_model_preferences.MODEL_PREFS_MANAGER")
+@patch("api.routers.settings.ModelProviderFactory")
+@patch("api.auth.get_settings")
+def test_update_model_preferences_rejects_unknown_model_for_provider(
+    mock_get_settings, mock_factory, mock_model_prefs_manager
+):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+
+    mock_factory.list_providers.return_value = ["openai"]
+    provider = MagicMock()
+    model = MagicMock()
+    model.id = "gpt-4o"
+    provider.list_models.return_value = [model]
+    mock_factory.get_provider.return_value = provider
+
+    existing = MagicMock()
+    existing.preferred_provider = None
+    existing.preferred_model = None
+    mock_model_prefs_manager.get_preferences.return_value = existing
+
+    response = client.put(
+        "/api/v1/settings/model-preferences",
+        json={"preferred_provider": "openai", "preferred_model": "not-a-model"},
+        headers=HEADERS,
+    )
+    assert response.status_code == 400
+    assert "Unknown model" in response.json()["detail"]
+
+
+@patch("api.routers.settings.user_model_preferences.MODEL_PREFS_MANAGER")
+@patch("api.routers.settings.ModelProviderFactory")
+@patch("api.auth.get_settings")
+def test_update_model_preferences_preserves_existing_model_when_provider_set_and_model_omitted(
+    mock_get_settings, mock_factory, mock_model_prefs_manager
+):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+
+    mock_factory.list_providers.return_value = ["openai"]
+    provider = MagicMock()
+    model = MagicMock()
+    model.id = "gpt-4o"
+    provider.list_models.return_value = [model]
+    mock_factory.get_provider.return_value = provider
+
+    existing = MagicMock()
+    existing.preferred_provider = "openai"
+    existing.preferred_model = "gpt-4o"
+    mock_model_prefs_manager.get_preferences.return_value = existing
+
+    updated = MagicMock()
+    updated.preferred_provider = "openai"
+    updated.preferred_model = "gpt-4o"
+    mock_model_prefs_manager.update_preferences.return_value = updated
+
+    response = client.put(
+        "/api/v1/settings/model-preferences",
+        json={"preferred_provider": "openai"},
+        headers=HEADERS,
+    )
+    assert response.status_code == 200
+    assert response.json()["preferred_model"] == "gpt-4o"
+
+
+@patch("api.routers.settings.user_model_preferences.MODEL_PREFS_MANAGER")
+@patch("api.routers.settings.ModelProviderFactory")
+@patch("api.auth.get_settings")
+def test_update_model_preferences_clears_provider_and_model_on_empty_provider(
+    mock_get_settings, mock_factory, mock_model_prefs_manager
+):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+
+    mock_factory.list_providers.return_value = ["openai"]
+
+    existing = MagicMock()
+    existing.preferred_provider = "openai"
+    existing.preferred_model = "gpt-4o"
+    mock_model_prefs_manager.get_preferences.return_value = existing
+
+    updated = MagicMock()
+    updated.preferred_provider = None
+    updated.preferred_model = None
+    mock_model_prefs_manager.update_preferences.return_value = updated
+
+    response = client.put(
+        "/api/v1/settings/model-preferences",
+        json={"preferred_provider": ""},
+        headers=HEADERS,
+    )
+    assert response.status_code == 200
+    assert response.json()["preferred_provider"] is None
+    assert response.json()["preferred_model"] is None
+
+
+@patch("api.routers.settings.ModelProviderFactory")
+@patch("api.auth.get_settings")
+def test_list_model_catalog_local_provider_runtime_unavailable_sets_flags(mock_get_settings, mock_factory):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+
+    mock_factory.list_providers.return_value = ["ollama"]
+
+    ollama_provider = MagicMock()
+    ollama_provider.name = "ollama"
+    ollama_provider.display_name = "Ollama"
+    ollama_provider.is_local = True
+    ollama_provider.requires_api_key = False
+    ollama_provider.list_models.return_value = []
+    ollama_provider.list_available_models.return_value = None
+    mock_factory.get_provider.return_value = ollama_provider
+
+    response = client.get("/api/v1/settings/models", headers=HEADERS_NO_USER)
+    assert response.status_code == 200
+    data = response.json()
+    assert data[0]["runtime_available"] is False
+    assert data[0]["available_models"] == []

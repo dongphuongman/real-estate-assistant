@@ -134,8 +134,10 @@ in V4.
 - Backend:
   - Lint: `ruff`
   - Type check: `mypy` (strict fail on errors)
-  - Unit coverage gate: temporary `--cov-fail-under=75` (target 90)
-  - Integration coverage gate: temporary `--cov-fail-under=40` (target 70)
+  - Coverage gates:
+    - Diff coverage (unit): `python scripts\\coverage_gate.py diff --min-coverage 90`
+    - Diff coverage (integration): `python scripts\\coverage_gate.py diff --min-coverage 70 --exclude tests/* --exclude scripts/*`
+    - Critical coverage (unit): `python scripts\\coverage_gate.py critical --min-coverage 90`
 - Frontend:
   - Lint: `npm run lint`
   - Tests + coverage: `npm run test -- --ci --coverage` (thresholds enforced in `jest.config.ts`)
@@ -146,7 +148,7 @@ in V4.
 - Temporary MVP pause:
   - CI jobs are gated by `MVP_CI_DISABLED` (workflow env).
   - Set `MVP_CI_DISABLED` to `'true'` to disable heavy steps (jobs still succeed quickly).
-  - Set to `'false'` (or remove) to re-enable full CI after MVP.
+  - Default is `'false'` so full CI runs on pushes and PRs.
 
 ## Branch Protection
 - Protect `main` and `ver4` branches with required CI checks:

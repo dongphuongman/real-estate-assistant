@@ -46,6 +46,9 @@ Cross-Origin Resource Sharing (CORS) is controlled via environment:
 
 ### Quality & Stability
 - Static analysis enforced: ruff (lint), mypy (types), RuleEngine (custom rules).
+- CI coverage enforcement uses `python scripts\\coverage_gate.py`:
+  - Diff coverage: enforces minimum coverage on changed Python lines in a PR.
+  - Critical coverage: enforces ≥90% line coverage on core backend modules.
 - Requests/responses documented per endpoint; examples verified in tests.
 
 Example:

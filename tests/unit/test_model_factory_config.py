@@ -2,7 +2,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from models.provider_factory import ModelProviderFactory
+from models.provider_factory import ModelProviderFactory, get_model_display_info
+from models.providers.base import ModelCapability, ModelInfo, ModelProvider, PricingInfo
 
 
 @pytest.fixture
@@ -67,3 +68,203 @@ def test_create_model_manual_overrides_defaults(mock_settings):
         
         assert call_kwargs["temperature"] == 0.2
         assert call_kwargs["max_tokens"] == 500
+
+
+class _StubProvider(ModelProvider):
+    def __init__(self, config=None, *, name: str = "stub", is_local: bool = False):
+        super().__init__(config=config)
+        self._name = name
+        self._is_local = is_local
+        self._models: list[ModelInfo] = []
+        self._validate_result: tuple[bool, str | None] = (True, None)
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def display_name(self) -> str:
+        return self._name.upper()
+
+    @property
+    def requires_api_key(self) -> bool:
+        return False
+
+    @property
+    def is_local(self) -> bool:
+        return self._is_local
+
+    def list_models(self) -> list[ModelInfo]:
+        return list(self._models)
+
+    def create_model(self, model_id: str, temperature: float = 0.0, max_tokens=None, streaming: bool = True, **kwargs):
+        return MagicMock(name=f"model:{model_id}")
+
+    def validate_connection(self) -> tuple[bool, str | None]:
+        return self._validate_result
+
+
+def test_get_provider_unknown_provider_raises_value_error(mock_settings):
+    ModelProviderFactory.clear_cache()
+    with pytest.raises(ValueError) as excinfo:
+        ModelProviderFactory.get_provider("unknown-provider", use_cache=False)
+    assert "Unknown provider" in str(excinfo.value)
+
+
+def test_get_provider_uses_cache_when_config_none(mock_settings):
+    ModelProviderFactory.clear_cache()
+    stub_ctor = MagicMock(return_value=_StubProvider(config={"api_key": "k"}, name="p1"))
+    with patch.dict(ModelProviderFactory._PROVIDERS, {"p1": stub_ctor}, clear=True):
+        p_first = ModelProviderFactory.get_provider("p1", use_cache=True)
+        p_second = ModelProviderFactory.get_provider("p1", use_cache=True)
+        assert p_first is p_second
+        assert stub_ctor.call_count == 1
+
+
+def test_get_provider_bypasses_cache_when_config_provided(mock_settings):
+    ModelProviderFactory.clear_cache()
+    stub_ctor = MagicMock(side_effect=lambda config=None: _StubProvider(config=config, name="p1"))
+    with patch.dict(ModelProviderFactory._PROVIDERS, {"p1": stub_ctor}, clear=True):
+        p_cached = ModelProviderFactory.get_provider("p1", use_cache=True)
+        p_new = ModelProviderFactory.get_provider("p1", config={"api_key": "other"}, use_cache=True)
+        assert p_new is not p_cached
+        assert stub_ctor.call_count == 2
+
+
+def test_list_all_models_skips_unavailable_when_requested(mock_settings):
+    ModelProviderFactory.clear_cache()
+    provider_ok = _StubProvider(name="ok")
+    provider_ok._models = [
+        ModelInfo(
+            id="m1",
+            display_name="Model 1",
+            provider_name="ok",
+            context_window=1000,
+            capabilities=[ModelCapability.STREAMING],
+        )
+    ]
+    provider_ok._validate_result = (True, None)
+
+    provider_bad = _StubProvider(name="bad")
+    provider_bad._models = [
+        ModelInfo(id="m2", display_name="Model 2", provider_name="bad", context_window=1000)
+    ]
+    provider_bad._validate_result = (False, "nope")
+
+    def _get_provider(name: str, *args, **kwargs):
+        return provider_ok if name == "ok" else provider_bad
+
+    with patch.object(ModelProviderFactory, "list_providers", return_value=["ok", "bad"]):
+        with patch.object(ModelProviderFactory, "get_provider", side_effect=_get_provider):
+            models = ModelProviderFactory.list_all_models(include_unavailable=False)
+    assert [m.id for m in models] == ["m1"]
+
+
+def test_get_model_by_id_returns_provider_and_info(mock_settings):
+    ModelProviderFactory.clear_cache()
+    provider = _StubProvider(name="p1")
+    provider._models = [ModelInfo(id="m1", display_name="M1", provider_name="p1", context_window=1)]
+
+    with patch.object(ModelProviderFactory, "list_providers", return_value=["p1"]):
+        with patch.object(ModelProviderFactory, "get_provider", return_value=provider):
+            result = ModelProviderFactory.get_model_by_id("m1")
+    assert result is not None
+    resolved_provider, model_info = result
+    assert resolved_provider is provider
+    assert model_info.id == "m1"
+
+
+def test_create_model_auto_detect_raises_when_not_found(mock_settings):
+    ModelProviderFactory.clear_cache()
+    with patch.object(ModelProviderFactory, "get_model_by_id", return_value=None):
+        with pytest.raises(ValueError) as excinfo:
+            ModelProviderFactory.create_model("missing-model", provider_name=None)
+    assert "not found" in str(excinfo.value).lower()
+
+
+def test_create_model_auto_detect_uses_detected_provider(mock_settings):
+    ModelProviderFactory.clear_cache()
+    provider = MagicMock()
+    provider.create_model.return_value = MagicMock()
+    model_info = ModelInfo(id="m1", display_name="M1", provider_name="p1", context_window=1)
+    with patch.object(ModelProviderFactory, "get_model_by_id", return_value=(provider, model_info)):
+        ModelProviderFactory.create_model("m1", provider_name=None, temperature=0.3, max_tokens=50, streaming=False)
+    provider.create_model.assert_called_once()
+    call_kwargs = provider.create_model.call_args.kwargs
+    assert call_kwargs["model_id"] == "m1"
+    assert call_kwargs["temperature"] == 0.3
+    assert call_kwargs["max_tokens"] == 50
+    assert call_kwargs["streaming"] is False
+
+
+def test_get_available_providers_returns_status_and_errors(mock_settings):
+    ModelProviderFactory.clear_cache()
+    ok = _StubProvider(name="ok")
+    ok._validate_result = (True, None)
+
+    def _get_provider(name: str, *args, **kwargs):
+        if name == "ok":
+            return ok
+        raise RuntimeError("boom")
+
+    with patch.object(ModelProviderFactory, "list_providers", return_value=["ok", "bad"]):
+        with patch.object(ModelProviderFactory, "get_provider", side_effect=_get_provider):
+            results = ModelProviderFactory.get_available_providers()
+
+    assert ("ok", True, None) in results
+    bad_entry = [r for r in results if r[0] == "bad"][0]
+    assert bad_entry[1] is False
+    assert "boom" in (bad_entry[2] or "")
+
+
+def test_register_provider_requires_modelprovider_subclass(mock_settings):
+    ModelProviderFactory.clear_cache()
+    with pytest.raises(TypeError):
+        ModelProviderFactory.register_provider("x", object)  # type: ignore[arg-type]
+
+
+def test_register_provider_adds_provider_and_clears_instance_cache(mock_settings):
+    ModelProviderFactory.clear_cache()
+    stub_ctor = MagicMock(return_value=_StubProvider(name="custom"))
+    with patch.dict(ModelProviderFactory._PROVIDERS, {"custom": stub_ctor}, clear=True):
+        cached = ModelProviderFactory.get_provider("custom", use_cache=True)
+        assert cached is ModelProviderFactory._instances["custom"]
+
+        class _CustomProvider(_StubProvider):
+            pass
+
+        ModelProviderFactory.register_provider("custom", _CustomProvider)
+        assert "custom" in ModelProviderFactory._PROVIDERS
+        assert "custom" not in ModelProviderFactory._instances
+
+
+def test_clear_cache_removes_cached_instances(mock_settings):
+    ModelProviderFactory.clear_cache()
+    stub_ctor = MagicMock(return_value=_StubProvider(name="p1"))
+    with patch.dict(ModelProviderFactory._PROVIDERS, {"p1": stub_ctor}, clear=True):
+        ModelProviderFactory.get_provider("p1", use_cache=True)
+        assert "p1" in ModelProviderFactory._instances
+        ModelProviderFactory.clear_cache()
+        assert ModelProviderFactory._instances == {}
+
+
+def test_get_model_display_info_formats_pricing_and_capabilities():
+    model_info = ModelInfo(
+        id="m1",
+        display_name="M1",
+        provider_name="p1",
+        context_window=100000,
+        pricing=PricingInfo(input_price_per_1m=1.0, output_price_per_1m=2.0, currency="USD"),
+        capabilities=[ModelCapability.STREAMING, ModelCapability.VISION],
+        description="desc",
+        recommended_for=["general"],
+    )
+    info = get_model_display_info(model_info)
+    assert info["id"] == "m1"
+    assert info["provider"] == "p1"
+    assert info["context"] == "100,000 tokens"
+    assert "streaming" in info["capabilities"]
+    assert "vision" in info["capabilities"]
+    assert "$" in info["cost"]
+    assert info["description"] == "desc"
+    assert info["recommended_for"] == ["general"]

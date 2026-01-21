@@ -191,6 +191,20 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
     request correlation visible in browser-like environments.
   - Estimate update: Actual 0.5d; remaining 0.5d kept as buffer (no pending tasks).
 
+- TM-QA-003 (high, 0.5d, completed)
+  - Task: Re-enable CI and enforce coverage gates for PRs and critical paths
+  - Subtasks:
+    - Enable full CI by default (keep an env kill-switch)
+    - Add coverage gating script for changed lines (diff coverage)
+    - Add critical path coverage gate (core backend modules)
+    - Make frontend lint/tests blocking in CI
+  - Acceptance: CI runs by default; unit diff ≥90%, integration diff ≥70%, unit critical ≥90%; RuleEngine clean via integration suite
+  - Tests: unit (coverage gate script), existing unit/integration suites remain green
+  - Docs: API Reference, User Guide, Developer Notes
+  - Notes: Added `scripts/coverage_gate.py` and wired it into CI; removed frontend `continue-on-error`; set CI default enabled with `MVP_CI_DISABLED=false`.
+  - Estimate update: Actual 0.5d; no remaining.
+  - Follow-ups: Consider expanding the critical module set as coverage improves; add a dedicated RuleEngine CI step if desired.
+
 ### Epic: Docs (CE)
 - TM-DOCS-001 (medium, 1d, completed)
   - Task: API Reference, User Guide, Troubleshooting updates

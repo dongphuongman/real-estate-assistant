@@ -1,7 +1,7 @@
 name: CI
 
 env:
-  MVP_CI_DISABLED: 'true'
+  MVP_CI_DISABLED: 'false'
 
 on:
   push:
@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: CI disabled notice
         if: ${{ env.MVP_CI_DISABLED == 'true' }}
         run: |
@@ -61,7 +63,27 @@ jobs:
       - name: Run unit tests with coverage (pytest)
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
-          python -m pytest tests/unit --cov=. --cov-report=xml --cov-report=term --cov-fail-under=75 -n auto
+          python -m pytest tests/unit --cov=. --cov-report=xml --cov-report=term -n auto
+
+      - name: Fetch base ref (PR only)
+        if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name == 'pull_request' }}
+        run: |
+          git fetch origin ${{ github.base_ref }} --depth=1
+
+      - name: Coverage gate (unit: diff)
+        if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name == 'pull_request' }}
+        run: |
+          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --base-ref origin/${{ github.base_ref }}
+
+      - name: Coverage gate (unit: diff fallback)
+        if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name != 'pull_request' }}
+        run: |
+          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90
+
+      - name: Coverage gate (unit: critical)
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
+        run: |
+          python scripts/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include api/*.py --include api/routers/*.py --include rules/*.py --include models/provider_factory.py --include models/user_model_preferences.py --include config/*.py
 
       - name: Upload backend coverage (unit)
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
@@ -73,7 +95,17 @@ jobs:
       - name: Run integration tests with coverage (pytest)
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
-          python -m pytest tests/integration --cov=. --cov-report=xml --cov-report=term --cov-fail-under=40 -n auto
+          python -m pytest tests/integration --cov=. --cov-report=xml --cov-report=term -n auto
+
+      - name: Coverage gate (integration: diff)
+        if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name == 'pull_request' }}
+        run: |
+          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --base-ref origin/${{ github.base_ref }} --exclude tests/* --exclude scripts/*
+
+      - name: Coverage gate (integration: diff fallback)
+        if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name != 'pull_request' }}
+        run: |
+          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude tests/* --exclude scripts/*
 
       - name: Upload backend coverage (integration)
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
@@ -90,6 +122,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: CI disabled notice
         if: ${{ env.MVP_CI_DISABLED == 'true' }}
         run: |
@@ -117,12 +151,10 @@ jobs:
       - name: Lint
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: npm run lint
-        continue-on-error: true
 
       - name: Run tests
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: npm run test -- --ci --coverage
-        continue-on-error: true
 
       - name: Upload frontend coverage
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
@@ -136,6 +168,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: CI disabled notice
         if: ${{ env.MVP_CI_DISABLED == 'true' }}
         run: |
@@ -153,7 +187,7 @@ jobs:
       - name: Run Bandit (exclude tests, fail on high severity)
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
-          python -m bandit -r . -x tests -s high -i high -f json -o bandit.json
+          python -m bandit -r . -x tests,venv,node_modules,.history --severity-level high --confidence-level high -f json -o bandit.json
       - name: Upload bandit report
         if: always()
         uses: actions/upload-artifact@v4
@@ -166,6 +200,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: CI disabled notice
         if: ${{ env.MVP_CI_DISABLED == 'true' }}
         run: |
