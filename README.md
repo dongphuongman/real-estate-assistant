@@ -182,6 +182,26 @@ See `docs/TESTING_GUIDE.md` for details.
 
 ---
 
+## 🗄️ Optional Redis (MCP/Caching)
+
+For MCP tooling or future caching/session features, a local Redis service is included in Docker Compose.
+
+```powershell
+# Start only Redis
+docker compose up -d redis
+
+# Or start all services (backend, frontend, redis)
+docker compose up -d --build
+```
+
+Configure clients via:
+
+```bash
+REDIS_URL="redis://localhost:6379"
+```
+
+---
+
 ## 🤝 Contributing
 
 Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow.

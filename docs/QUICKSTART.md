@@ -15,9 +15,14 @@
    ```powershell
    docker compose up -d --build
    ```
+   Optional: start only Redis for MCP/caching
+   ```powershell
+   docker compose up -d redis
+   ```
 4. Open:
    - Frontend: http://localhost:3000
    - Backend: http://localhost:8000/docs
+   - Redis (optional): redis://localhost:6379
 
 ## Local RAG
 - Upload PDFs/Docs in the app and query property details.

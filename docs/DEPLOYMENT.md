@@ -34,6 +34,7 @@ The easiest way to run the full stack (Backend + Frontend + Services).
 3. **Access Services**
    - Frontend: `http://localhost:3000`
    - Backend API: `http://localhost:8000/docs`
+   - Redis (optional): `redis://localhost:6379` (`docker compose up -d redis`)
    - Postgres (optional): provision Neon/Supabase and set env variables
 
 4. **Logs & Maintenance**
