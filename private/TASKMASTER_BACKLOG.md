@@ -98,7 +98,19 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
   - Docs: API Reference (RAG), User Guide (RAG), Developer Notes (RAG)
   - Notes: Added document text extractor with optional `pypdf`/`python-docx` support and improved upload error semantics.
   - Estimate update: Actual 0.5d; no remaining.
-  - Follow-ups: Consider adding `.pdf`/`.docx` size limits and per-page chunk metadata.
+  - Follow-ups: Consider adding per-page chunk metadata for `.pdf` and `.docx` sources.
+
+- TM-RAG-003 (high, 0.5d, completed)
+  - Task: Enforce local RAG upload size limits (CE-safe)
+  - Subtasks:
+    - Add max files, per-file bytes, and total bytes limits via settings/env
+    - Preserve partial success for oversized files; return 413 when total payload exceeds limit
+    - Add unit + integration coverage for limit enforcement
+  - Acceptance: large uploads are bounded; behavior is deterministic; tests + docs updated
+  - Tests: unit (limit enforcement), integration (413 no-ingest path)
+  - Docs: API Reference (RAG), User Guide (RAG), Developer Notes (RAG)
+  - Notes: Added `RAG_MAX_FILES`, `RAG_MAX_FILE_BYTES`, `RAG_MAX_TOTAL_BYTES` and enforced limits in `/api/v1/rag/upload`.
+  - Estimate update: Actual 0.5d; no remaining.
 
 ### Epic: Tools
 - TM-TOOLS-001 (high, 2d, completed)

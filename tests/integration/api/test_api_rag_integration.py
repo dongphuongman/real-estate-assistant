@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 
 from api.dependencies import get_knowledge_store
 from api.main import app
+from config.settings import settings as app_settings
 from utils.document_text_extractor import DocumentTextExtractionError
 from vector_store.knowledge_store import KnowledgeStore
 
@@ -166,5 +167,25 @@ def test_rag_upload_ingest_exception_returns_422(monkeypatch, tmp_path):
         detail = resp.json()["detail"]
         assert detail["message"] == "No documents were indexed"
         assert any("boom" in e for e in detail["errors"])
+    finally:
+        app.dependency_overrides.pop(get_knowledge_store, None)
+
+
+def test_rag_upload_total_payload_too_large_returns_413_and_no_ingest(monkeypatch, tmp_path):
+    monkeypatch.setattr("vector_store.knowledge_store._create_embeddings", lambda: None)
+    store = KnowledgeStore(persist_directory=str(tmp_path), collection_name="knowledge-test")
+    app.dependency_overrides[get_knowledge_store] = lambda: store
+    monkeypatch.setattr(app_settings, "rag_max_files", 10)
+    monkeypatch.setattr(app_settings, "rag_max_file_bytes", 100)
+    monkeypatch.setattr(app_settings, "rag_max_total_bytes", 5)
+
+    try:
+        files = [
+            ("files", ("a.md", b"123", "text/markdown")),
+            ("files", ("b.md", b"456", "text/markdown")),
+        ]
+        resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
+        assert resp.status_code == 413
+        assert getattr(store, "_docs", []) == []
     finally:
         app.dependency_overrides.pop(get_knowledge_store, None)

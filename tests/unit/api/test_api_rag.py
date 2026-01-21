@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 
 from api.dependencies import get_knowledge_store, get_optional_llm
 from api.main import app
+from config.settings import settings as app_settings
 from utils.document_text_extractor import (
     DocumentTextExtractionError,
     OptionalDependencyMissingError,
@@ -13,6 +14,7 @@ client = TestClient(app)
 def _make_store(monkeypatch, tmp_path) -> KnowledgeStore:
     monkeypatch.setattr("vector_store.knowledge_store._create_embeddings", lambda: None)
     return KnowledgeStore(persist_directory=str(tmp_path), collection_name="knowledge-test")
+
 
 def _override_store(store):
     app.dependency_overrides[get_knowledge_store] = lambda: store
@@ -118,6 +120,25 @@ def test_rag_upload_document_extraction_error_is_reported(monkeypatch, tmp_path)
     finally:
         app.dependency_overrides.pop(get_knowledge_store, None)
 
+
+def test_rag_upload_unexpected_extraction_error_is_reported(monkeypatch, tmp_path):
+    store = _make_store(monkeypatch, tmp_path)
+    _override_store(store)
+
+    try:
+        monkeypatch.setattr(
+            "api.routers.rag.extract_text_from_upload",
+            lambda **_kwargs: (_ for _ in ()).throw(RuntimeError("unexpected")),
+        )
+        files = {"files": ("note.md", b"Hello", "text/markdown")}
+        resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
+        assert resp.status_code == 422
+        detail = resp.json()["detail"]
+        assert detail["message"] == "No documents were indexed"
+        assert any("unexpected" in e for e in detail["errors"])
+    finally:
+        app.dependency_overrides.pop(get_knowledge_store, None)
+
 def test_rag_upload_no_files(monkeypatch, tmp_path):
     store = _make_store(monkeypatch, tmp_path)
     _override_store(store)
@@ -134,6 +155,88 @@ def test_rag_upload_store_unavailable(monkeypatch):
         resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
         assert resp.status_code == 503
         assert resp.json()["detail"] == "Knowledge store is not available"
+    finally:
+        app.dependency_overrides.pop(get_knowledge_store, None)
+
+
+def test_rag_upload_file_too_large_returns_422(monkeypatch, tmp_path):
+    store = _make_store(monkeypatch, tmp_path)
+    _override_store(store)
+    monkeypatch.setattr(app_settings, "rag_max_files", 10)
+    monkeypatch.setattr(app_settings, "rag_max_file_bytes", 5)
+    monkeypatch.setattr(app_settings, "rag_max_total_bytes", 100)
+
+    try:
+        files = {"files": ("note.md", b"123456", "text/markdown")}
+        resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
+        assert resp.status_code == 422
+        detail = resp.json()["detail"]
+        assert detail["message"] == "No documents were indexed"
+        assert any("File too large" in e for e in detail["errors"])
+        assert getattr(store, "_docs", []) == []
+    finally:
+        app.dependency_overrides.pop(get_knowledge_store, None)
+
+
+def test_rag_upload_mixed_small_and_oversize_returns_partial_success(monkeypatch, tmp_path):
+    store = _make_store(monkeypatch, tmp_path)
+    _override_store(store)
+    monkeypatch.setattr(app_settings, "rag_max_files", 10)
+    monkeypatch.setattr(app_settings, "rag_max_file_bytes", 5)
+    monkeypatch.setattr(app_settings, "rag_max_total_bytes", 100)
+
+    try:
+        files = [
+            ("files", ("small.md", b"1234", "text/markdown")),
+            ("files", ("big.md", b"123456", "text/markdown")),
+        ]
+        resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["chunks_indexed"] > 0
+        assert any("File too large" in e for e in data["errors"])
+    finally:
+        app.dependency_overrides.pop(get_knowledge_store, None)
+
+
+def test_rag_upload_total_payload_too_large_returns_413(monkeypatch, tmp_path):
+    store = _make_store(monkeypatch, tmp_path)
+    _override_store(store)
+    monkeypatch.setattr(app_settings, "rag_max_files", 10)
+    monkeypatch.setattr(app_settings, "rag_max_file_bytes", 100)
+    monkeypatch.setattr(app_settings, "rag_max_total_bytes", 5)
+
+    try:
+        files = [
+            ("files", ("a.md", b"123", "text/markdown")),
+            ("files", ("b.md", b"456", "text/markdown")),
+        ]
+        resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
+        assert resp.status_code == 413
+        detail = resp.json()["detail"]
+        assert detail["message"] == "Upload payload too large"
+        assert detail["max_total_bytes"] == 5
+        assert detail["total_bytes"] == 6
+        assert getattr(store, "_docs", []) == []
+    finally:
+        app.dependency_overrides.pop(get_knowledge_store, None)
+
+
+def test_rag_upload_too_many_files_returns_400(monkeypatch, tmp_path):
+    store = _make_store(monkeypatch, tmp_path)
+    _override_store(store)
+    monkeypatch.setattr(app_settings, "rag_max_files", 1)
+    monkeypatch.setattr(app_settings, "rag_max_file_bytes", 100)
+    monkeypatch.setattr(app_settings, "rag_max_total_bytes", 100)
+
+    try:
+        files = [
+            ("files", ("a.md", b"123", "text/markdown")),
+            ("files", ("b.md", b"456", "text/markdown")),
+        ]
+        resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
+        assert resp.status_code == 400
+        assert "Too many files" in resp.json()["detail"]
     finally:
         app.dependency_overrides.pop(get_knowledge_store, None)
 
@@ -187,6 +290,31 @@ def test_rag_qa_llm_unavailable(monkeypatch, tmp_path):
         assert resp.status_code == 200
         data = resp.json()
         assert isinstance(data["answer"], str)
+        assert data["citations"] != []
+    finally:
+        app.dependency_overrides.pop(get_knowledge_store, None)
+        app.dependency_overrides.pop(get_optional_llm, None)
+
+
+def test_rag_qa_llm_failure_falls_back_to_snippet(monkeypatch, tmp_path):
+    store = _make_store(monkeypatch, tmp_path)
+    _override_store(store)
+
+    class _Llm:
+        def invoke(self, _prompt: str):
+            raise RuntimeError("llm down")
+
+    try:
+        app.dependency_overrides[get_optional_llm] = lambda: _Llm()
+        store.ingest_text("The answer is here", source="s.md")
+        resp = client.post(
+            "/api/v1/rag/qa",
+            params={"question": "answer", "top_k": 1},
+            headers={"X-API-Key": "dev-secret-key"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["answer"] != ""
         assert data["citations"] != []
     finally:
         app.dependency_overrides.pop(get_knowledge_store, None)

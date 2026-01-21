@@ -257,6 +257,8 @@ You can upload your own notes to enable question answering over your content.
 - Supported file types in CE: `.txt`, `.md`
 - Supported with optional install: `.pdf` (`pip install pypdf`), `.docx` (`pip install python-docx`)
 - If nothing is indexed (e.g., only PDFs without optional deps), the API returns `422` with details.
+- Upload limits (max files / max bytes) are enforced by the backend; oversized files are reported in `errors`.
+- If total payload exceeds the configured limit, the API returns `413` and indexes nothing.
 
 ### Upload Flow
 1. Use a client or cURL to call `POST /api/v1/rag/upload` with form-data `files`.

@@ -160,6 +160,19 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
         { "message": "Upload processed", "chunks_indexed": 12, "errors": [] }
         ```
     *   **Notes**:
+        - Upload limits are configurable via env (`RAG_MAX_FILES`, `RAG_MAX_FILE_BYTES`, `RAG_MAX_TOTAL_BYTES`)
+        - Files exceeding `RAG_MAX_FILE_BYTES` are skipped and reported in `errors` (partial success supported)
+        - If the total uploaded bytes exceed `RAG_MAX_TOTAL_BYTES`, the API returns `413` and indexes nothing:
+          ```json
+          {
+            "detail": {
+              "message": "Upload payload too large",
+              "max_total_bytes": 26214400,
+              "total_bytes": 30000000,
+              "errors": ["..."]
+            }
+          }
+          ```
         - PDF parsing requires optional dependency: `pip install pypdf`
         - DOCX parsing requires optional dependency: `pip install python-docx`
         - If nothing is indexed (e.g., only unsupported files), the API returns `422`:

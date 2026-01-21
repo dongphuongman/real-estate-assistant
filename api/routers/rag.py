@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from langchain_core.language_models import BaseChatModel
 
 from api.dependencies import get_knowledge_store, get_optional_llm
+from config.settings import get_settings
 from utils.document_text_extractor import (
     DocumentTextExtractionError,
     OptionalDependencyMissingError,
@@ -15,6 +16,19 @@ from vector_store.knowledge_store import KnowledgeStore
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+_READ_CHUNK_BYTES = 1024 * 1024
+
+
+async def _read_upload_file_limited(file: UploadFile, max_bytes: int) -> tuple[bytes, bool]:
+    buf = bytearray()
+    while True:
+        chunk = await file.read(_READ_CHUNK_BYTES)
+        if not chunk:
+            return bytes(buf), False
+        if len(buf) + len(chunk) > max_bytes:
+            return bytes(buf), True
+        buf.extend(chunk)
 
 
 @router.post("/rag/upload", tags=["RAG"])
@@ -35,13 +49,47 @@ async def upload_documents(
     if not files:
         raise HTTPException(status_code=400, detail="No files provided")
 
+    settings = get_settings()
+    max_files = max(1, int(getattr(settings, "rag_max_files", 10)))
+    max_file_bytes = max(1, int(getattr(settings, "rag_max_file_bytes", 10 * 1024 * 1024)))
+    max_total_bytes = max(1, int(getattr(settings, "rag_max_total_bytes", 25 * 1024 * 1024)))
+
+    if len(files) > max_files:
+        raise HTTPException(status_code=400, detail=f"Too many files (max {max_files})")
+
     total_chunks = 0
+    total_bytes = 0
     errors: list[str] = []
+    buffered: list[tuple[str, str, bytes]] = []
+
     for f in files:
         try:
             content_type = (f.content_type or "").lower()
             name = f.filename or "unknown"
-            data = await f.read()
+            data, too_large = await _read_upload_file_limited(f, max_bytes=max_file_bytes)
+            if too_large:
+                errors.append(f"{name}: File too large (max {max_file_bytes} bytes)")
+                continue
+
+            total_bytes += len(data)
+            buffered.append((name, content_type, data))
+        except Exception as e:
+            logger.warning("Failed to read %s: %s", f.filename, e)
+            errors.append(f"{f.filename}: {e}")
+
+    if total_bytes > max_total_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail={
+                "message": "Upload payload too large",
+                "max_total_bytes": max_total_bytes,
+                "total_bytes": total_bytes,
+                "errors": errors,
+            },
+        )
+
+    for name, content_type, data in buffered:
+        try:
             try:
                 text = extract_text_from_upload(
                     filename=name,
@@ -63,11 +111,11 @@ async def upload_documents(
                 added = store.ingest_text(text=text, source=name)
                 total_chunks += added
             except Exception as e:
-                logger.warning("Failed to ingest %s: %s", f.filename, e)
-                errors.append(f"{f.filename}: {e}")
+                logger.warning("Failed to ingest %s: %s", name, e)
+                errors.append(f"{name}: {e}")
         except Exception as e:
-            logger.warning("Failed to ingest %s: %s", f.filename, e)
-            errors.append(f"{f.filename}: {e}")
+            logger.warning("Failed to ingest %s: %s", name, e)
+            errors.append(f"{name}: {e}")
 
     if total_chunks == 0 and errors:
         raise HTTPException(

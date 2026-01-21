@@ -87,6 +87,11 @@ class AppSettings(BaseModel):
     chunk_size: int = 1000
     chunk_overlap: int = 200
 
+    # RAG (Local Knowledge)
+    rag_max_files: int = Field(default_factory=lambda: int(os.getenv("RAG_MAX_FILES", "10")))
+    rag_max_file_bytes: int = Field(default_factory=lambda: int(os.getenv("RAG_MAX_FILE_BYTES", str(10 * 1024 * 1024))))
+    rag_max_total_bytes: int = Field(default_factory=lambda: int(os.getenv("RAG_MAX_TOTAL_BYTES", str(25 * 1024 * 1024))))
+
     # Data Loading
     max_properties: int = 2000
     batch_size: int = 100

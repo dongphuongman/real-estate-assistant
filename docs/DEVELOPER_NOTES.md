@@ -231,6 +231,7 @@ Testing:
 Environment flags:
 - `EMBEDDING_MODEL` via `settings.embedding_model` (FastEmbed/OpenAI)
 - `vector_persist_enabled` controls Chroma persistence (`config/settings.py`)
+- `RAG_MAX_FILES`, `RAG_MAX_FILE_BYTES`, `RAG_MAX_TOTAL_BYTES` control upload limits for `/api/v1/rag/upload`
 
 Testing:
 - Unit: `tests/unit/api/test_api_rag.py`
