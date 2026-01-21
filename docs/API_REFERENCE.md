@@ -10,6 +10,12 @@ The V4 API is built with FastAPI and provides a RESTful interface for the AI Rea
 - Backend: `http://localhost:8000`
 - Frontend: `http://localhost:3000`
 
+### OpenAPI & Interactive Docs
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
+- OpenAPI JSON (runtime): `http://localhost:8000/openapi.json`
+- OpenAPI JSON (repo snapshot): `docs/openapi.json` (regenerate with `python scripts\export_openapi.py`)
+
 ### Authentication
 
 The API uses API Key authentication via the `X-API-Key` header.

@@ -7,6 +7,10 @@ in V4.
 ## Backend (FastAPI)
 - Entry point: `api/main.py`
 - Routers: `api/routers/*` (chat, search, tools, settings, admin, auth)
+- OpenAPI:
+  - Runtime schema: `http://localhost:8000/openapi.json`
+  - Repo snapshot: `docs/openapi.json` (regenerate: `python scripts\export_openapi.py`)
+  - CI drift check (when enabled): fails if snapshot differs from the runtime schema generated from `api/main.py`
 - Observability: `api/observability.py` adds:
   - `X-Request-ID` header to all responses
   - Per-client rate limiting for `/api/v1/*`

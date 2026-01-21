@@ -85,7 +85,9 @@ The AI-powered chat interface allows you to search for properties using natural 
 - Ensure Docker Desktop is installed
 - Copy environment: `Copy-Item .env.example .env`
 - Start: `docker compose up -d --build`
-- Open UI: `http://localhost:3000` and API docs: `http://localhost:8000/docs`
+- Open UI: `http://localhost:3000`
+- API docs: `http://localhost:8000/docs`
+- OpenAPI schema: `http://localhost:8000/openapi.json` (repo snapshot: `docs/openapi.json`)
 
 ### How to Use
 1. Navigate to the **Chat** tab.

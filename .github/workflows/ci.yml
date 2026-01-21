@@ -53,6 +53,11 @@ jobs:
           python -m mypy
         continue-on-error: false
 
+      - name: OpenAPI schema drift check
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
+        run: |
+          python scripts/export_openapi.py --check
+
       - name: Run unit tests with coverage (pytest)
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |

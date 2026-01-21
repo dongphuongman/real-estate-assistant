@@ -86,6 +86,16 @@ def get_llm(
                 pass
         raise RuntimeError(f"Could not initialize LLM with provider '{primary_provider}': {e}") from e
 
+
+def get_optional_llm(
+    x_user_email: Annotated[str | None, Header(alias="X-User-Email")] = None,
+) -> Optional[BaseChatModel]:
+    try:
+        return get_llm(x_user_email=x_user_email)
+    except Exception as e:
+        logger.warning("LLM unavailable: %s", e)
+        return None
+
 def get_valuation_provider() -> Optional[ValuationProvider]:
     if settings.valuation_mode != "simple":
         return None

@@ -111,3 +111,14 @@ def test_get_llm_falls_back_when_preferred_model_fails(monkeypatch):
     llm = deps.get_llm(x_user_email="u1@example.com")
     assert getattr(llm, "model_id", None) == "model-a"
     assert created and created[0]["model_id"] == "model-a"
+
+
+def test_get_optional_llm_returns_none_on_error(monkeypatch):
+    monkeypatch.setattr(deps, "get_llm", lambda x_user_email=None: (_ for _ in ()).throw(RuntimeError("no llm")))
+    assert deps.get_optional_llm() is None
+
+
+def test_get_optional_llm_returns_llm_when_available(monkeypatch):
+    monkeypatch.setattr(deps, "get_llm", lambda x_user_email=None: types.SimpleNamespace(model_id="m1"))
+    llm = deps.get_optional_llm()
+    assert getattr(llm, "model_id", None) == "m1"

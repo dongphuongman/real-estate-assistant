@@ -4,7 +4,7 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from langchain_core.language_models import BaseChatModel
 
-from api.dependencies import get_knowledge_store, get_llm
+from api.dependencies import get_knowledge_store, get_optional_llm
 from vector_store.knowledge_store import KnowledgeStore
 
 logger = logging.getLogger(__name__)
@@ -56,7 +56,7 @@ async def upload_documents(
 async def rag_qa(
     question: str,
     store: Annotated[Optional[KnowledgeStore], Depends(get_knowledge_store)],
-    llm: Optional[BaseChatModel] = None,
+    llm: Annotated[Optional[BaseChatModel], Depends(get_optional_llm)],
     top_k: int = 5,
 ):
     """
@@ -81,14 +81,6 @@ async def rag_qa(
         {"source": doc.metadata.get("source"), "chunk_index": doc.metadata.get("chunk_index")}
         for doc in docs
     ]
-
-    if llm is None:
-        try:
-            # Try to resolve LLM lazily; ignore errors in CE
-            llm = get_llm()  # type: ignore
-        except Exception as e:
-            logger.warning("LLM unavailable: %s", e)
-            llm = None
 
     if llm:
         try:

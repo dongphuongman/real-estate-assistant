@@ -201,6 +201,17 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
   - Estimate update: Actual 1d; no remaining.
   - Follow-ups: Consider generating API docs from OpenAPI schema in CI to reduce drift.
 
+- TM-DOCS-002 (high, 0.5d, completed)
+  - Task: Export OpenAPI schema snapshot and enforce drift check
+  - Subtasks:
+    - Add `scripts/export_openapi.py` to generate `docs/openapi.json` from FastAPI app
+    - Add CI drift check step to ensure schema snapshot stays in sync
+  - Acceptance: schema snapshot committed; drift check fails on changes until regenerated
+  - Tests: unit (export/check modes), integration (schema includes core routes)
+  - Notes: Added OpenAPI export utilities, committed schema snapshot, and added CI drift check (behind MVP gate).
+  - Estimate update: Actual 0.5d; no remaining.
+  - Follow-ups: Extend docs generation (rendered markdown) from OpenAPI if needed post-MVP.
+
 ## Cross-Cutting Requirements
 - Tests: unit ≥90% coverage per module; integration ≥70%; critical paths ≥90%
 - Code Quality: ruff check ., mypy strict for `api` and `agents/services`

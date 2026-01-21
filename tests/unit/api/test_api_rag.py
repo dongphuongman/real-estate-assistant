@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from api.dependencies import get_knowledge_store
+from api.dependencies import get_knowledge_store, get_optional_llm
 from api.main import app
 from vector_store.knowledge_store import KnowledgeStore
 
@@ -101,9 +101,8 @@ def test_rag_qa_no_docs(monkeypatch, tmp_path):
 def test_rag_qa_llm_unavailable(monkeypatch, tmp_path):
     store = _make_store(monkeypatch, tmp_path)
     _override_store(store)
-    # Force get_llm to fail
-    monkeypatch.setattr("api.routers.rag.get_llm", lambda: (_ for _ in ()).throw(RuntimeError("no llm")))
     try:
+        app.dependency_overrides[get_optional_llm] = lambda: None
         store.ingest_text("The answer is here", source="s.md")
         resp = client.post(
             "/api/v1/rag/qa",
@@ -116,6 +115,7 @@ def test_rag_qa_llm_unavailable(monkeypatch, tmp_path):
         assert data["citations"] != []
     finally:
         app.dependency_overrides.pop(get_knowledge_store, None)
+        app.dependency_overrides.pop(get_optional_llm, None)
 
 
 def test_rag_upload_ingest_exception_is_reported(monkeypatch, tmp_path):
@@ -161,8 +161,8 @@ def test_rag_qa_lazy_llm_success(monkeypatch, tmp_path):
             assert "context" in prompt.lower()
             return _Msg("ok")
 
-    monkeypatch.setattr("api.routers.rag.get_llm", lambda: _Llm())
     try:
+        app.dependency_overrides[get_optional_llm] = lambda: _Llm()
         store.ingest_text("The capital of Poland is Warsaw.", source="facts.md")
         resp = client.post(
             "/api/v1/rag/qa",
@@ -175,6 +175,7 @@ def test_rag_qa_lazy_llm_success(monkeypatch, tmp_path):
         assert data["citations"] != []
     finally:
         app.dependency_overrides.pop(get_knowledge_store, None)
+        app.dependency_overrides.pop(get_optional_llm, None)
 
 def test_rag_qa_empty_question(monkeypatch, tmp_path):
     store = _make_store(monkeypatch, tmp_path)
