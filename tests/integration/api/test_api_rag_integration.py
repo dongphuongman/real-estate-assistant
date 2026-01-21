@@ -2,7 +2,7 @@ import builtins
 
 from fastapi.testclient import TestClient
 
-from api.dependencies import get_knowledge_store
+from api.dependencies import get_knowledge_store, get_rag_qa_llm_details
 from api.main import app
 from config.settings import settings as app_settings
 from utils.document_text_extractor import DocumentTextExtractionError
@@ -25,14 +25,68 @@ def test_rag_end_to_end_text_upload_and_qa(monkeypatch, tmp_path):
 
         q = client.post(
             "/api/v1/rag/qa",
-            params={"question": "What is Krakow known for?"},
+            json={"question": "What is Krakow known for?"},
             headers={"X-API-Key": "dev-secret-key"},
         )
         assert q.status_code == 200
         payload = q.json()
         assert isinstance(payload["answer"], str)
         assert len(payload["citations"]) >= 1
+        assert isinstance(payload["llm_used"], bool)
     finally:
+        app.dependency_overrides.pop(get_knowledge_store, None)
+
+
+def test_rag_qa_no_docs_returns_empty_answer(monkeypatch, tmp_path):
+    monkeypatch.setattr("vector_store.knowledge_store._create_embeddings", lambda: None)
+    store = KnowledgeStore(persist_directory=str(tmp_path), collection_name="knowledge-test")
+    app.dependency_overrides[get_knowledge_store] = lambda: store
+
+    try:
+        q = client.post(
+            "/api/v1/rag/qa",
+            json={"question": "anything"},
+            headers={"X-API-Key": "dev-secret-key"},
+        )
+        assert q.status_code == 200
+        payload = q.json()
+        assert payload["answer"] == ""
+        assert payload["citations"] == []
+        assert payload["llm_used"] is False
+    finally:
+        app.dependency_overrides.pop(get_knowledge_store, None)
+
+
+def test_rag_qa_llm_success_returns_llm_answer(monkeypatch, tmp_path):
+    monkeypatch.setattr("vector_store.knowledge_store._create_embeddings", lambda: None)
+    store = KnowledgeStore(persist_directory=str(tmp_path), collection_name="knowledge-test")
+    app.dependency_overrides[get_knowledge_store] = lambda: store
+
+    class _Msg:
+        def __init__(self, content: str):
+            self.content = content
+
+    class _Llm:
+        def invoke(self, _prompt: str):
+            return _Msg("ok")
+
+    app.dependency_overrides[get_rag_qa_llm_details] = lambda: (_Llm(), "openai", "m1")
+
+    try:
+        store.ingest_text("Some fact", source="facts.md")
+        q = client.post(
+            "/api/v1/rag/qa",
+            json={"question": "fact"},
+            headers={"X-API-Key": "dev-secret-key"},
+        )
+        assert q.status_code == 200
+        payload = q.json()
+        assert payload["answer"] == "ok"
+        assert payload["llm_used"] is True
+        assert payload["provider"] == "openai"
+        assert payload["model"] == "m1"
+    finally:
+        app.dependency_overrides.pop(get_rag_qa_llm_details, None)
         app.dependency_overrides.pop(get_knowledge_store, None)
 
 

@@ -1,6 +1,7 @@
 import types
 
 import pytest
+from fastapi import HTTPException
 
 import api.dependencies as deps
 from config.settings import settings
@@ -122,3 +123,153 @@ def test_get_optional_llm_returns_llm_when_available(monkeypatch):
     monkeypatch.setattr(deps, "get_llm", lambda x_user_email=None: types.SimpleNamespace(model_id="m1"))
     llm = deps.get_optional_llm()
     assert getattr(llm, "model_id", None) == "m1"
+
+
+def test_parse_rag_qa_request_uses_body_payload():
+    payload = deps.RagQaRequest(question="q1", top_k=3, provider="openai", model="m1")
+    out = deps.parse_rag_qa_request(payload=payload)
+    assert out.question == "q1"
+    assert out.top_k == 3
+    assert out.provider == "openai"
+    assert out.model == "m1"
+
+
+def test_parse_rag_qa_request_rejects_empty_question():
+    with pytest.raises(HTTPException) as exc:
+        _ = deps.parse_rag_qa_request(payload=None, question="   ")
+    assert exc.value.status_code == 400
+
+
+def test_parse_rag_qa_request_builds_from_query_params():
+    out = deps.parse_rag_qa_request(
+        payload=None,
+        question="q2",
+        top_k=2,
+        provider="ollama",
+        model=None,
+    )
+    assert out.question == "q2"
+    assert out.top_k == 2
+    assert out.provider == "ollama"
+    assert out.model is None
+
+
+def test_get_optional_llm_with_details_uses_explicit_overrides(monkeypatch):
+    settings.default_provider = "openai"
+    settings.default_model = None
+    fake = FakeProvider()
+    monkeypatch.setattr(ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: fake)
+    llm, provider, model = deps.get_optional_llm_with_details(
+        x_user_email=None,
+        provider_override="openai",
+        model_override="model-b",
+    )
+    assert getattr(llm, "model_id", None) == "model-b"
+    assert provider == "openai"
+    assert model == "model-b"
+
+
+def test_get_optional_llm_with_details_ignores_preferences_on_exception(monkeypatch):
+    settings.default_provider = "openai"
+    settings.default_model = None
+    fake = FakeProvider()
+    monkeypatch.setattr(ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: fake)
+
+    class _Mgr:
+        def get_preferences(self, user_email: str):
+            raise RuntimeError("prefs down")
+
+    monkeypatch.setattr(deps.user_model_preferences, "MODEL_PREFS_MANAGER", _Mgr())
+
+    llm, provider, model = deps.get_optional_llm_with_details(
+        x_user_email="u1@example.com",
+        provider_override=None,
+        model_override=None,
+    )
+    assert getattr(llm, "model_id", None) == "model-a"
+    assert provider == "openai"
+    assert model == "model-a"
+
+
+def test_get_optional_llm_with_details_uses_preferred_provider_when_model_override_only(monkeypatch):
+    settings.default_provider = "openai"
+    settings.default_model = None
+
+    fake = FakeProvider()
+    monkeypatch.setattr(ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: fake)
+
+    class _Prefs:
+        preferred_provider = "ollama"
+        preferred_model = None
+
+    class _Mgr:
+        def get_preferences(self, user_email: str):
+            assert user_email == "u1@example.com"
+            return _Prefs()
+
+    monkeypatch.setattr(deps.user_model_preferences, "MODEL_PREFS_MANAGER", _Mgr())
+
+    llm, provider, model = deps.get_optional_llm_with_details(
+        x_user_email="u1@example.com",
+        provider_override=None,
+        model_override="model-b",
+    )
+    assert getattr(llm, "model_id", None) == "model-b"
+    assert provider == "ollama"
+    assert model == "model-b"
+
+
+def test_get_optional_llm_with_details_returns_none_on_explicit_failure(monkeypatch):
+    class FailingProvider(FakeProvider):
+        def create_model(self, model_id, temperature, max_tokens, **kwargs):
+            raise RuntimeError("bad model")
+
+    settings.default_provider = "openai"
+    settings.default_model = None
+    failing = FailingProvider()
+    monkeypatch.setattr(ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: failing)
+
+    llm, provider, model = deps.get_optional_llm_with_details(
+        x_user_email=None,
+        provider_override="openai",
+        model_override="model-b",
+    )
+    assert llm is None
+    assert provider == "openai"
+    assert model == "model-b"
+
+
+def test_get_optional_llm_with_details_falls_back_when_preferred_model_fails(monkeypatch):
+    settings.default_provider = "ollama"
+    settings.default_model = "model-a"
+
+    class FailingProvider(FakeProvider):
+        def create_model(self, model_id, temperature, max_tokens, **kwargs):
+            raise RuntimeError("bad model")
+
+    failing = FailingProvider()
+    working = FakeProvider()
+
+    def _get_provider(name, config=None, use_cache=True):
+        return failing if name == "openai" else working
+
+    monkeypatch.setattr(ModelProviderFactory, "get_provider", _get_provider)
+
+    class _Prefs:
+        preferred_provider = "openai"
+        preferred_model = "bad"
+
+    class _Mgr:
+        def get_preferences(self, user_email: str):
+            return _Prefs()
+
+    monkeypatch.setattr(deps.user_model_preferences, "MODEL_PREFS_MANAGER", _Mgr())
+
+    llm, provider, model = deps.get_optional_llm_with_details(
+        x_user_email="u1@example.com",
+        provider_override=None,
+        model_override=None,
+    )
+    assert getattr(llm, "model_id", None) == "model-a"
+    assert provider == "ollama"
+    assert model == "model-a"

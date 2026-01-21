@@ -91,6 +91,26 @@ class ChatResponse(BaseModel):
     session_id: Optional[str] = None
 
 
+class RagCitation(BaseModel):
+    source: Optional[str] = None
+    chunk_index: Optional[int] = None
+
+
+class RagQaRequest(BaseModel):
+    question: str = Field(..., min_length=1)
+    top_k: int = Field(5, ge=1, le=50)
+    provider: Optional[str] = None
+    model: Optional[str] = None
+
+
+class RagQaResponse(BaseModel):
+    answer: str
+    citations: List[RagCitation] = Field(default_factory=list)
+    llm_used: bool = False
+    provider: Optional[str] = None
+    model: Optional[str] = None
+
+
 class IngestRequest(BaseModel):
     """Request model for data ingestion."""
 

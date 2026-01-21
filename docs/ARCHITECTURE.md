@@ -114,4 +114,4 @@ The digest system bridges raw property data and user notifications.
 - **Settings**: `/api/v1/settings/notifications`, `/api/v1/settings/models`, `/api/v1/settings/model-preferences`
 - **Auth**: `/api/v1/auth/*`
 - **Admin**: `/api/v1/admin/*` (ingest, reindex)
-- **RAG (CE)**: `/api/v1/rag/upload`, `/api/v1/rag/qa`
+- **RAG (CE)**: `/api/v1/rag/upload`, `/api/v1/rag/qa` (optional per-request `provider`/`model` overrides)

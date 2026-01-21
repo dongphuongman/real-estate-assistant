@@ -188,14 +188,24 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
 *   `POST /api/v1/rag/qa`
     *   Simple QA over uploaded knowledge with citations.
     *   **Headers**: `X-API-Key: your-api-key
-    *   **Query Params**:
-        - `question` (string, required)
-        - `top_k` (int, default 5)
+    *   **Body**:
+        ```json
+        {
+          "question": "What is Krakow known for?",
+          "top_k": 5,
+          "provider": "openai",
+          "model": "gpt-4o-mini"
+        }
+        ```
+        - `provider` / `model` are optional. If omitted, the server uses model preferences (via `X-User-Email`) or defaults.
     *   **Returns**:
         ```json
         {
           "answer": "…",
-          "citations": [{ "source": "guide.txt", "chunk_index": 0 }]
+          "citations": [{ "source": "guide.txt", "chunk_index": 0 }],
+          "llm_used": true,
+          "provider": "openai",
+          "model": "gpt-4o-mini"
         }
         ```
     *   **Notes**: If LLM is unavailable, returns a context snippet as `answer`.

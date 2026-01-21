@@ -4,7 +4,8 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from langchain_core.language_models import BaseChatModel
 
-from api.dependencies import get_knowledge_store, get_optional_llm
+from api.dependencies import get_knowledge_store, get_rag_qa_llm_details, parse_rag_qa_request
+from api.models import RagQaRequest, RagQaResponse
 from config.settings import get_settings
 from utils.document_text_extractor import (
     DocumentTextExtractionError,
@@ -126,12 +127,14 @@ async def upload_documents(
     return {"message": "Upload processed", "chunks_indexed": total_chunks, "errors": errors}
 
 
-@router.post("/rag/qa", tags=["RAG"])
+@router.post("/rag/qa", tags=["RAG"], response_model=RagQaResponse)
 async def rag_qa(
-    question: str,
+    rag_request: Annotated[RagQaRequest, Depends(parse_rag_qa_request)],
     store: Annotated[Optional[KnowledgeStore], Depends(get_knowledge_store)],
-    llm: Annotated[Optional[BaseChatModel], Depends(get_optional_llm)],
-    top_k: int = 5,
+    llm_details: Annotated[
+        tuple[Optional[BaseChatModel], Optional[str], Optional[str]],
+        Depends(get_rag_qa_llm_details),
+    ],
 ):
     """
     Simple QA over uploaded knowledge with citations.
@@ -142,13 +145,19 @@ async def rag_qa(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Knowledge store is not available",
         )
-    if not question.strip():
-        raise HTTPException(status_code=400, detail="Question must not be empty")
 
-    results = store.similarity_search_with_score(question, k=top_k)
+    llm, effective_provider, effective_model = llm_details
+
+    results = store.similarity_search_with_score(rag_request.question, k=rag_request.top_k)
     docs = [d for d, _s in results]
     if not docs:
-        return {"answer": "", "citations": []}
+        return {
+            "answer": "",
+            "citations": [],
+            "llm_used": False,
+            "provider": effective_provider,
+            "model": effective_model,
+        }
 
     context = "\n\n".join([doc.page_content for doc in docs])
     citations = [
@@ -160,15 +169,27 @@ async def rag_qa(
         try:
             prompt = (
                 "Answer the question based only on the following context.\n\n"
-                f"{context}\n\nQuestion: {question}\n\n"
+                f"{context}\n\nQuestion: {rag_request.question}\n\n"
                 "If the answer cannot be found in the context, say you don't know."
             )
             msg = llm.invoke(prompt)
             content = getattr(msg, "content", str(msg))
-            return {"answer": content, "citations": citations}
+            return {
+                "answer": content,
+                "citations": citations,
+                "llm_used": True,
+                "provider": effective_provider,
+                "model": effective_model,
+            }
         except Exception as e:
             logger.warning("LLM invocation failed: %s", e)
 
     # Fallback: return context snippet
     snippet = context[:500]
-    return {"answer": snippet, "citations": citations}
+    return {
+        "answer": snippet,
+        "citations": citations,
+        "llm_used": False,
+        "provider": effective_provider,
+        "model": effective_model,
+    }

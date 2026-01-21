@@ -112,6 +112,19 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
   - Notes: Added `RAG_MAX_FILES`, `RAG_MAX_FILE_BYTES`, `RAG_MAX_TOTAL_BYTES` and enforced limits in `/api/v1/rag/upload`.
   - Estimate update: Actual 0.5d; no remaining.
 
+- TM-RAG-004 (medium, 0.5d, completed)
+  - Task: Expose per-request model selection for local RAG QA (CE-safe)
+  - Subtasks:
+    - Accept JSON body for `/api/v1/rag/qa` with optional `provider`/`model`
+    - Return `llm_used` and effective provider/model selection in response
+    - Preserve legacy query-param support for backwards compatibility
+  - Acceptance: per-request overrides work; missing keys still fall back to snippet; tests + docs updated
+  - Tests: unit (request parsing + LLM override + fallback), integration (upload→qa)
+  - Docs: API Reference (RAG), User Guide (RAG), Developer Notes (RAG), Architecture note
+  - Notes: `/api/v1/rag/qa` now supports request-scoped model selection via `provider`/`model`, while keeping the CE-safe snippet fallback when LLM is unavailable.
+  - Estimate update: Actual 0.25d; no remaining.
+  - Follow-ups: Consider adding a RAG UI page to upload/query knowledge with model picker.
+
 ### Epic: Tools
 - TM-TOOLS-001 (high, 2d, completed)
   - Task: UI wiring for existing tools (mortgage, compare, price, location)

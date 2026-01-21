@@ -279,7 +279,11 @@ Invoke-RestMethod `
 ```
 
 ### Ask Questions
-- Call `POST /api/v1/rag/qa?question=...&top_k=5`
-- Response includes an `answer` and `citations` with `source` and `chunk_index`
+- Call `POST /api/v1/rag/qa` with a JSON body:
+  ```json
+  { "question": "What is Krakow known for?", "top_k": 5 }
+  ```
+- Optional: include `provider` / `model` to override the selection for this request.
+- Response includes `answer`, `citations`, and `llm_used` (plus the effective `provider` / `model`).
 
 Tip: If no model is configured, the API returns a snippet from the most relevant chunks.

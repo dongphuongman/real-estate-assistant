@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from api.dependencies import get_knowledge_store, get_optional_llm
+from api.dependencies import get_knowledge_store, get_rag_qa_llm_details
 from api.main import app
 from config.settings import settings as app_settings
 from utils.document_text_extractor import (
@@ -250,13 +250,14 @@ def test_rag_qa_returns_citations(monkeypatch, tmp_path):
 
         resp = client.post(
             "/api/v1/rag/qa",
-            params={"question": "capital Poland", "top_k": 3},
+            json={"question": "capital Poland", "top_k": 3},
             headers={"X-API-Key": "dev-secret-key"},
         )
         assert resp.status_code == 200
         data = resp.json()
         assert isinstance(data["answer"], str)
         assert data["citations"] != []
+        assert isinstance(data["llm_used"], bool)
     finally:
         app.dependency_overrides.pop(get_knowledge_store, None)
 
@@ -266,13 +267,14 @@ def test_rag_qa_no_docs(monkeypatch, tmp_path):
     try:
         resp = client.post(
             "/api/v1/rag/qa",
-            params={"question": "unknown", "top_k": 2},
+            json={"question": "unknown", "top_k": 2},
             headers={"X-API-Key": "dev-secret-key"},
         )
         assert resp.status_code == 200
         data = resp.json()
         assert data["answer"] == ""
         assert data["citations"] == []
+        assert data["llm_used"] is False
     finally:
         app.dependency_overrides.pop(get_knowledge_store, None)
 
@@ -280,20 +282,21 @@ def test_rag_qa_llm_unavailable(monkeypatch, tmp_path):
     store = _make_store(monkeypatch, tmp_path)
     _override_store(store)
     try:
-        app.dependency_overrides[get_optional_llm] = lambda: None
+        app.dependency_overrides[get_rag_qa_llm_details] = lambda: (None, None, None)
         store.ingest_text("The answer is here", source="s.md")
         resp = client.post(
             "/api/v1/rag/qa",
-            params={"question": "answer", "top_k": 1},
+            json={"question": "answer", "top_k": 1},
             headers={"X-API-Key": "dev-secret-key"},
         )
         assert resp.status_code == 200
         data = resp.json()
         assert isinstance(data["answer"], str)
         assert data["citations"] != []
+        assert data["llm_used"] is False
     finally:
         app.dependency_overrides.pop(get_knowledge_store, None)
-        app.dependency_overrides.pop(get_optional_llm, None)
+        app.dependency_overrides.pop(get_rag_qa_llm_details, None)
 
 
 def test_rag_qa_llm_failure_falls_back_to_snippet(monkeypatch, tmp_path):
@@ -305,20 +308,21 @@ def test_rag_qa_llm_failure_falls_back_to_snippet(monkeypatch, tmp_path):
             raise RuntimeError("llm down")
 
     try:
-        app.dependency_overrides[get_optional_llm] = lambda: _Llm()
+        app.dependency_overrides[get_rag_qa_llm_details] = lambda: (_Llm(), "openai", "m1")
         store.ingest_text("The answer is here", source="s.md")
         resp = client.post(
             "/api/v1/rag/qa",
-            params={"question": "answer", "top_k": 1},
+            json={"question": "answer", "top_k": 1},
             headers={"X-API-Key": "dev-secret-key"},
         )
         assert resp.status_code == 200
         data = resp.json()
         assert data["answer"] != ""
         assert data["citations"] != []
+        assert data["llm_used"] is False
     finally:
         app.dependency_overrides.pop(get_knowledge_store, None)
-        app.dependency_overrides.pop(get_optional_llm, None)
+        app.dependency_overrides.pop(get_rag_qa_llm_details, None)
 
 
 def test_rag_upload_ingest_exception_is_reported(monkeypatch, tmp_path):
@@ -342,7 +346,7 @@ def test_rag_qa_store_unavailable_returns_503(monkeypatch):
     try:
         resp = client.post(
             "/api/v1/rag/qa",
-            params={"question": "hi", "top_k": 1},
+            json={"question": "hi", "top_k": 1},
             headers={"X-API-Key": "dev-secret-key"},
         )
         assert resp.status_code == 503
@@ -365,20 +369,23 @@ def test_rag_qa_lazy_llm_success(monkeypatch, tmp_path):
             return _Msg("ok")
 
     try:
-        app.dependency_overrides[get_optional_llm] = lambda: _Llm()
+        app.dependency_overrides[get_rag_qa_llm_details] = lambda: (_Llm(), "openai", "m1")
         store.ingest_text("The capital of Poland is Warsaw.", source="facts.md")
         resp = client.post(
             "/api/v1/rag/qa",
-            params={"question": "capital poland", "top_k": 1},
+            json={"question": "capital poland", "top_k": 1},
             headers={"X-API-Key": "dev-secret-key"},
         )
         assert resp.status_code == 200
         data = resp.json()
         assert data["answer"] == "ok"
         assert data["citations"] != []
+        assert data["llm_used"] is True
+        assert data["provider"] == "openai"
+        assert data["model"] == "m1"
     finally:
         app.dependency_overrides.pop(get_knowledge_store, None)
-        app.dependency_overrides.pop(get_optional_llm, None)
+        app.dependency_overrides.pop(get_rag_qa_llm_details, None)
 
 def test_rag_qa_empty_question(monkeypatch, tmp_path):
     store = _make_store(monkeypatch, tmp_path)

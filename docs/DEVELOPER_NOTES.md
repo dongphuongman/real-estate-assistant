@@ -227,6 +227,7 @@ Testing:
 - Supported ingestion types (CE): `.txt`, `.md`
 - Supported with optional install: `.pdf` (`pip install pypdf`), `.docx` (`pip install python-docx`)
 - If nothing is indexed (only errors), the upload endpoint returns `422` with a structured error list.
+- `/api/v1/rag/qa` accepts optional `provider` / `model` overrides in the JSON body; otherwise it uses per-user preferences (`X-User-Email`) or defaults.
 
 Environment flags:
 - `EMBEDDING_MODEL` via `settings.embedding_model` (FastEmbed/OpenAI)
