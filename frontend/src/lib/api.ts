@@ -41,14 +41,34 @@ function buildHeaders(extra?: Record<string, string>): Record<string, string> {
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    const errorText = await response.text();
+    const errorText = await response.text().catch(() => "");
     const headers = (response as unknown as { headers?: { get?: (name: string) => string | null } }).headers;
     const requestId =
       headers && typeof headers.get === "function"
         ? headers.get("X-Request-ID") || undefined
         : undefined;
-    const message = errorText || "API request failed";
-    const composed = requestId ? `${message} (request_id=${requestId})` : message;
+    let message = "API request failed";
+    if (errorText) {
+      try {
+        const parsed: unknown = JSON.parse(errorText);
+        if (parsed && typeof parsed === "object") {
+          const detail = (parsed as { detail?: unknown }).detail;
+          if (typeof detail === "string" && detail.trim()) {
+            message = detail.trim();
+          } else if (detail !== undefined) {
+            message = JSON.stringify(detail);
+          } else {
+            message = errorText;
+          }
+        } else {
+          message = errorText;
+        }
+      } catch {
+        message = errorText;
+      }
+    }
+    const statusPart = `status=${response.status}`;
+    const composed = requestId ? `${message} (${statusPart}, request_id=${requestId})` : `${message} (${statusPart})`;
     throw new Error(composed);
   }
   return response.json();

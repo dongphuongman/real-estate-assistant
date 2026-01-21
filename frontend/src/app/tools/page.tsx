@@ -36,14 +36,35 @@ function MortgageSection() {
   const [result, setResult] = useState<null | { monthly_payment: number }>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const hint = error ? getToolHint(error) : null;
   return (
     <section>
       <h2 className="text-xl font-medium">Mortgage Calculator</h2>
       <div className="grid grid-cols-2 gap-2 my-2">
-        <input className="border p-2" placeholder="Property price" value={propertyPrice} onChange={(e) => setPropertyPrice(e.target.value)} />
-        <input className="border p-2" placeholder="Down payment %" value={downPaymentPercent} onChange={(e) => setDownPaymentPercent(e.target.value)} />
-        <input className="border p-2" placeholder="Interest rate %" value={interestRate} onChange={(e) => setInterestRate(e.target.value)} />
-        <input className="border p-2" placeholder="Loan years" value={loanYears} onChange={(e) => setLoanYears(e.target.value)} />
+        <input
+          className="border p-2"
+          placeholder="Property price"
+          value={propertyPrice}
+          onChange={(e) => setPropertyPrice(e.target.value)}
+        />
+        <input
+          className="border p-2"
+          placeholder="Down payment %"
+          value={downPaymentPercent}
+          onChange={(e) => setDownPaymentPercent(e.target.value)}
+        />
+        <input
+          className="border p-2"
+          placeholder="Interest rate %"
+          value={interestRate}
+          onChange={(e) => setInterestRate(e.target.value)}
+        />
+        <input
+          className="border p-2"
+          placeholder="Loan years"
+          value={loanYears}
+          onChange={(e) => setLoanYears(e.target.value)}
+        />
       </div>
       <button
         className="bg-black text-white px-3 py-2 rounded"
@@ -69,6 +90,7 @@ function MortgageSection() {
         {loading ? "Calculating..." : "Calculate"}
       </button>
       {error && <p className="text-red-600 mt-2">{error}</p>}
+      {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
       {result && <p className="mt-2">Monthly payment: {result.monthly_payment.toFixed(2)}</p>}
     </section>
   );
@@ -79,10 +101,16 @@ function CompareSection() {
   const [data, setData] = useState<Awaited<ReturnType<typeof comparePropertiesApi>> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const hint = error ? getToolHint(error) : null;
   return (
     <section>
       <h2 className="text-xl font-medium">Compare Properties</h2>
-      <input className="border p-2 w-full my-2" placeholder="IDs comma-separated" value={ids} onChange={(e) => setIds(e.target.value)} />
+      <input
+        className="border p-2 w-full my-2"
+        placeholder="IDs comma-separated"
+        value={ids}
+        onChange={(e) => setIds(e.target.value)}
+      />
       <button
         className="bg-black text-white px-3 py-2 rounded"
         onClick={async () => {
@@ -102,6 +130,7 @@ function CompareSection() {
         {loading ? "Comparing..." : "Compare"}
       </button>
       {error && <p className="text-red-600 mt-2">{error}</p>}
+      {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
       {data && (
         <div className="mt-2">
           <p>Count: {data.summary?.count}</p>
@@ -119,10 +148,16 @@ function PriceAnalysisSection() {
   const [data, setData] = useState<Awaited<ReturnType<typeof priceAnalysisApi>> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const hint = error ? getToolHint(error) : null;
   return (
     <section>
       <h2 className="text-xl font-medium">Price Analysis</h2>
-      <input className="border p-2 w-full my-2" placeholder="Query (e.g., city or type)" value={query} onChange={(e) => setQuery(e.target.value)} />
+      <input
+        className="border p-2 w-full my-2"
+        placeholder="Query (e.g., city or type)"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
       <button
         className="bg-black text-white px-3 py-2 rounded"
         onClick={async () => {
@@ -142,6 +177,7 @@ function PriceAnalysisSection() {
         {loading ? "Analyzing..." : "Analyze"}
       </button>
       {error && <p className="text-red-600 mt-2">{error}</p>}
+      {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
       {data && (
         <div className="mt-2">
           <p>Count: {data.count}</p>
@@ -158,10 +194,16 @@ function LocationAnalysisSection() {
   const [data, setData] = useState<Awaited<ReturnType<typeof locationAnalysisApi>> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const hint = error ? getToolHint(error) : null;
   return (
     <section>
       <h2 className="text-xl font-medium">Location Analysis</h2>
-      <input className="border p-2 w-full my-2" placeholder="Property ID" value={pid} onChange={(e) => setPid(e.target.value)} />
+      <input
+        className="border p-2 w-full my-2"
+        placeholder="Property ID"
+        value={pid}
+        onChange={(e) => setPid(e.target.value)}
+      />
       <button
         className="bg-black text-white px-3 py-2 rounded"
         onClick={async () => {
@@ -181,6 +223,7 @@ function LocationAnalysisSection() {
         {loading ? "Analyzing..." : "Analyze"}
       </button>
       {error && <p className="text-red-600 mt-2">{error}</p>}
+      {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
       {data && (
         <div className="mt-2">
           <p>City: {data.city ?? "-"}</p>
@@ -197,10 +240,16 @@ function ValuationSection() {
   const [value, setValue] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const hint = error ? getToolHint(error) : null;
   return (
     <section>
       <h2 className="text-xl font-medium">Valuation (CE Stub)</h2>
-      <input className="border p-2 w-full my-2" placeholder="Property ID" value={pid} onChange={(e) => setPid(e.target.value)} />
+      <input
+        className="border p-2 w-full my-2"
+        placeholder="Property ID"
+        value={pid}
+        onChange={(e) => setPid(e.target.value)}
+      />
       <button
         className="bg-black text-white px-3 py-2 rounded"
         onClick={async () => {
@@ -220,6 +269,7 @@ function ValuationSection() {
         {loading ? "Estimating..." : "Estimate"}
       </button>
       {error && <p className="text-red-600 mt-2">{error}</p>}
+      {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
       {value !== null && <p className="mt-2">Estimated value: {value.toFixed(2)}</p>}
     </section>
   );
@@ -230,10 +280,17 @@ function LegalCheckSection() {
   const [data, setData] = useState<Awaited<ReturnType<typeof legalCheckApi>> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const hint = error ? getToolHint(error) : null;
   return (
     <section>
       <h2 className="text-xl font-medium">Legal Check (CE Stub)</h2>
-      <textarea className="border p-2 w-full my-2" placeholder="Contract text" rows={4} value={text} onChange={(e) => setText(e.target.value)} />
+      <textarea
+        className="border p-2 w-full my-2"
+        placeholder="Contract text"
+        rows={4}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+      />
       <button
         className="bg-black text-white px-3 py-2 rounded"
         onClick={async () => {
@@ -253,6 +310,7 @@ function LegalCheckSection() {
         {loading ? "Analyzing..." : "Analyze"}
       </button>
       {error && <p className="text-red-600 mt-2">{error}</p>}
+      {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
       {data && (
         <div className="mt-2">
           <p>Score: {data.score}</p>
@@ -268,10 +326,16 @@ function EnrichAddressSection() {
   const [data, setData] = useState<Awaited<ReturnType<typeof enrichAddressApi>> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const hint = error ? getToolHint(error) : null;
   return (
     <section>
       <h2 className="text-xl font-medium">Data Enrichment (CE Stub)</h2>
-      <input className="border p-2 w-full my-2" placeholder="Address" value={address} onChange={(e) => setAddress(e.target.value)} />
+      <input
+        className="border p-2 w-full my-2"
+        placeholder="Address"
+        value={address}
+        onChange={(e) => setAddress(e.target.value)}
+      />
       <button
         className="bg-black text-white px-3 py-2 rounded"
         onClick={async () => {
@@ -291,6 +355,7 @@ function EnrichAddressSection() {
         {loading ? "Enriching..." : "Enrich"}
       </button>
       {error && <p className="text-red-600 mt-2">{error}</p>}
+      {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
       {data && (
         <div className="mt-2">
           <p>Address: {data.address}</p>
@@ -308,13 +373,29 @@ function CrmSyncSection() {
   const [id, setId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const hint = error ? getToolHint(error) : null;
   return (
     <section>
       <h2 className="text-xl font-medium">CRM Sync Contact (CE Stub)</h2>
       <div className="grid grid-cols-3 gap-2 my-2">
-        <input className="border p-2" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-        <input className="border p-2" placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
-        <input className="border p-2" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input
+          className="border p-2"
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          className="border p-2"
+          placeholder="Phone"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
+        <input
+          className="border p-2"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
       </div>
       <button
         className="bg-black text-white px-3 py-2 rounded"
@@ -335,7 +416,27 @@ function CrmSyncSection() {
         {loading ? "Syncing..." : "Sync"}
       </button>
       {error && <p className="text-red-600 mt-2">{error}</p>}
+      {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
       {id && <p className="mt-2">Contact ID: {id}</p>}
     </section>
   );
+}
+
+function getToolHint(error: string): string | null {
+  if (error.includes("Data enrichment disabled")) {
+    return "Enable on the backend: set DATA_ENRICHMENT_ENABLED=true and restart the API.";
+  }
+  if (error.includes("CRM connector not configured")) {
+    return "Configure on the backend: set CRM_WEBHOOK_URL and restart the API.";
+  }
+  if (error.includes("Valuation disabled")) {
+    return "Configure on the backend: set VALUATION_MODE=simple and restart the API.";
+  }
+  if (error.includes("Legal check disabled")) {
+    return "Configure on the backend: set LEGAL_CHECK_MODE=basic and restart the API.";
+  }
+  if (error.includes("Vector store unavailable")) {
+    return "Load/initialize the vector store (Chroma) before running this tool.";
+  }
+  return null;
 }

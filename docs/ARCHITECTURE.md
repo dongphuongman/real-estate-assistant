@@ -1,7 +1,10 @@
 # Architecture (V4)
 
 ## System Overview
-The AI Real Estate Assistant is a modern, conversational AI platform helping users find properties through natural language. It features a split architecture with a Next.js frontend and a FastAPI backend and follows an Open Core & Walled Garden model: Community Edition (public) and Hosted Pro (private, non‑repo).
+The AI Real Estate Assistant is a modern, conversational AI platform helping users find properties
+through natural language. It features a split architecture with a Next.js frontend and a FastAPI
+backend and follows an Open Core & Walled Garden model: Community Edition (public) and Hosted Pro
+(private, non-repo).
 
 ### Core Components
 - **Frontend**: Next.js 14+ (App Router), TypeScript, Tailwind CSS, Shadcn UI.
@@ -10,8 +13,12 @@ The AI Real Estate Assistant is a modern, conversational AI platform helping use
 - **Data**: ChromaDB (Vector Store), Pandas (Analytics), PostgreSQL/JSON (Persistence).
 
 ### Open Core Split
-- **Community Edition (Open Source, AGPLv3)**: local RAG, chat/tools, prompt templates, local deployment (Docker Compose), BYOK for LLM (OpenAI key or local Ollama/Llama 3), webhooks for integrations.
-- **Hosted Pro (Private)**: multi‑agent orchestration, legal risk checks on proprietary datasets, data enrichment via configured APIs, deep CRM sync, voice/telephony, analytics dashboards. Implemented outside this repository.
+- **Community Edition (Open Source, AGPLv3)**: local RAG, chat/tools, prompt templates, local
+  deployment (Docker Compose), BYOK for LLM (OpenAI key or local Ollama/Llama 3), webhooks for
+  integrations.
+- **Hosted Pro (Private)**: multi-agent orchestration, legal risk checks on proprietary datasets,
+  data enrichment via configured APIs, deep CRM sync, voice/telephony, analytics dashboards.
+  Implemented outside this repository.
 
 ## Detailed Component Design
 
@@ -37,20 +44,28 @@ The AI Real Estate Assistant is a modern, conversational AI platform helping use
 - **CORS**: In production, allowed origins are pinned via `CORS_ALLOW_ORIGINS`; development allows `*`.
 
 #### Extension Points (Interfaces)
-- **LLM Provider (`models/provider_factory.py`)**: abstraction to select local/Ollama or BYOK providers; Pro overrides can plug higher‑tier models privately.
-- **RAG Provider (`vector_store/*`)**: interface for embedding and retrieval; CE uses local stores; Pro can route to managed/paid stores.
-- **Valuation Provider (`agents/services/valuation.py`)**: default stub/simple formula in CE; Pro replaces with paid API adapter.
-- **CRM Connector (`agents/services/crm_connector.py`)**: CE uses webhooks; Pro provides bidirectional connectors (AmoCRM/Bitrix24/kvCORE) privately.
-- **Data Enrichment Service (`agents/services/data_enrichment.py`)**: disabled/minimal in CE; Pro uses configured open data APIs.
-- **Legal Check Service (`agents/services/legal_check.py`)**: CE basic heuristics; Pro uses proprietary legal KB and models.
+- **LLM Provider (`models/provider_factory.py`)**: abstraction to select local/Ollama or BYOK
+  providers. Pro overrides can plug higher-tier models privately.
+- **RAG Provider (`vector_store/*`)**: interface for embedding and retrieval. CE uses local stores;
+  Pro can route to managed/paid stores.
+- **Valuation Provider (`agents/services/valuation.py`)**: default stub/simple formula in CE. Pro
+  replaces with a paid API adapter.
+- **CRM Connector (`agents/services/crm_connector.py`)**: CE uses webhooks. Pro provides
+  bidirectional connectors (AmoCRM/Bitrix24/kvCORE) privately.
+- **Data Enrichment Service (`agents/services/data_enrichment.py`)**: disabled/minimal in CE. Pro
+  uses configured open data APIs.
+- **Legal Check Service (`agents/services/legal_check.py`)**: CE basic heuristics. Pro uses a
+  proprietary legal KB and models.
 
 #### Feature Flags
-- Flags select implementations for interfaces above. CE exposes only safe toggles; Pro flags are private and not published. Flags are read from env and never expose secrets in client code.
+- Flags select implementations for interfaces above. CE exposes only safe toggles; Pro flags are
+  private and not published. Flags are read from env and never expose secrets in client code.
 
 #### Key Data Flows
 - **Ingestion**: CSV/API -> Pandas -> Cleaning -> Embeddings -> ChromaDB.
 - **Search**: Query -> Analyzer -> Hybrid Retrieval (Semantic + Keyword) -> Reranking -> Response.
-- **Filters**: Frontend collects min/max price, rooms, property type -> API forwards `filters` -> Vector Store converts to Chroma query via `_build_chroma_filter`
+- **Filters**: Frontend collects min/max price, rooms, property type -> API forwards `filters` ->
+  Vector Store converts to Chroma query via `_build_chroma_filter`
 - **Chat**: User Message -> Hybrid Agent -> Tool Selection (Calculator, Search, etc.) -> LLM Response.
 
 ### 3. Notification System
@@ -79,6 +94,7 @@ The digest system bridges raw property data and user notifications.
 - **Testing**: Pytest (Backend), Jest (Frontend)
 - **Deployment**: Docker, Vercel (Frontend), Render/Railway (Backend)
 - **CI/CD**: GitHub Actions (ruff, mypy, unit/integration coverage gates; artifacts upload)
+- **CI/CD**: GitHub Actions (ruff, mypy, unit/integration coverage gates; artifacts upload)
 
 ## Security & Licensing
 - **Licensing**: Community Edition under AGPLv3. Hosted Pro is proprietary and operated privately.
@@ -92,7 +108,8 @@ The digest system bridges raw property data and user notifications.
 ## API Surface
 - **Search**: `/api/v1/search`
 - **Chat**: `/api/v1/chat` (SSE supported; responses include `X-Request-ID`)
-- **Tools**: `/api/v1/tools/*` (mortgage, compare, price analysis)
+- **Tools**: `/api/v1/tools/*` (mortgage, compare, price analysis, location analysis; CE stubs:
+  valuation, legal-check, enrich-address, crm-sync-contact)
 - **Settings**: `/api/v1/settings/notifications`, `/api/v1/settings/models`
 - **Auth**: `/api/v1/auth/*`
 - **Admin**: `/api/v1/admin/*` (ingest, reindex)

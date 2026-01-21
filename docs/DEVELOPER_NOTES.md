@@ -1,7 +1,8 @@
 # Developer Notes (V4)
 
 ## Overview
-This document captures practical details for working on the FastAPI backend and Next.js frontend in V4.
+This document captures practical details for working on the FastAPI backend and Next.js frontend
+in V4.
 
 ## Backend (FastAPI)
 - Entry point: `api/main.py`
@@ -9,7 +10,8 @@ This document captures practical details for working on the FastAPI backend and 
 - Observability: `api/observability.py` adds:
   - `X-Request-ID` header to all responses
   - Per-client rate limiting for `/api/v1/*`
-  - Structured JSON logs (`utils/json_logging.py`) with `event`, `request_id`, `client_id`, `method`, `path`, `status`, `duration_ms`
+  - Structured JSON logs (`utils/json_logging.py`) with `event`, `request_id`, `client_id`,
+    `method`, `path`, `status`, `duration_ms`
 - Auth: API key via `X-API-Key` header (`config/settings.py` -> `API_ACCESS_KEY`)
 - CORS:
   - Development: `ENVIRONMENT!=production` → `allow_origins=["*"]`
@@ -25,6 +27,8 @@ This document captures practical details for working on the FastAPI backend and 
   - `API_ACCESS_KEY` (default `dev-secret-key` for dev)
   - `CRM_WEBHOOK_URL` (optional; enables CE CRM webhook connector)
   - `DATA_ENRICHMENT_ENABLED` (`true`/`false`; enables CE enrichment endpoint)
+  - `VALUATION_MODE` (default `simple`; set to non-`simple` to disable CE valuation stub)
+  - `LEGAL_CHECK_MODE` (default `basic`; set to non-`basic` to disable CE legal check stub)
   - `UPTIME_MONITOR_ENABLED` (`true`/`false`)
   - `UPTIME_MONITOR_HEALTH_URL` (default `http://localhost:8000/health`)
   - `UPTIME_MONITOR_EMAIL_TO` (ops email recipient)
@@ -129,7 +133,8 @@ This document captures practical details for working on the FastAPI backend and 
   - Configurable interval, fail threshold, and alert cooldown
 
 ## Search Filters (End-to-End)
-- UI (Next.js): `frontend/src/app/search/page.tsx` collects `min_price`, `max_price`, `rooms`, `property_type` and validates query/price range (neutral state before first search)
+- UI (Next.js): `frontend/src/app/search/page.tsx` collects `min_price`, `max_price`, `rooms`,
+  `property_type` and validates query/price range (neutral state before first search)
 - Client API: `frontend/src/lib/api.ts` sends `filters` in `POST /api/v1/search` payload
 - Backend Router: `api/routers/search.py` forwards `request.filters` to `store.hybrid_search`
 - Vector Store: `vector_store/chroma_store.py` converts filters to Chroma format via `_build_chroma_filter`
@@ -143,7 +148,8 @@ Testing:
 - UI (Next.js): `frontend/src/app/search/page.tsx` provides `sort_by` and `sort_order` controls
 - Client API: `frontend/src/lib/api.ts` includes `sort_by` and `sort_order` in `POST /api/v1/search`
 - Backend Router: `api/routers/search.py` forwards sort params to `store.hybrid_search`
-- Vector Store: `vector_store/chroma_store.py` sorts by metadata fields (`price`, `price_per_sqm`, `area_sqm`, `year_built`)
+- Vector Store: `vector_store/chroma_store.py` sorts by metadata fields (`price`, `price_per_sqm`,
+  `area_sqm`, `year_built`)
 
 Testing:
 - Unit: `tests/unit/api/test_api_search_sorting.py` (router forwards sorting)
@@ -151,7 +157,8 @@ Testing:
 
 ## Export (End-to-End)
 - UI (Next.js): `frontend/src/app/search/page.tsx` includes export controls (format select + button)
-- Client API: `frontend/src/lib/api.ts` provides `exportProperties(request)` where `request.search` supports `filters`, `alpha`, geo params, `sort_by`, and `sort_order`
+- Client API: `frontend/src/lib/api.ts` provides `exportProperties(request)` where `request.search`
+  supports `filters`, `alpha`, geo params, `sort_by`, and `sort_order`
 - Backend Router: `api/routers/exports.py` handles `POST /api/v1/export/properties` for IDs or search
 - Utils: `utils/exporters.py` supports `csv`, `xlsx`, `json`, `md`, `pdf`
 
@@ -172,4 +179,3 @@ Environment flags:
 Testing:
 - Unit: `tests/unit/api/test_api_rag.py`
 - Integration: `tests/integration/api/test_api_rag_integration.py`
-

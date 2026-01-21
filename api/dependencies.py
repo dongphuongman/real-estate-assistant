@@ -62,7 +62,9 @@ def get_llm() -> BaseChatModel:
         # Fallback for tests or when no keys configured
         raise RuntimeError(f"Could not initialize LLM with provider '{provider_name}': {e}") from e
 
-def get_valuation_provider() -> ValuationProvider:
+def get_valuation_provider() -> Optional[ValuationProvider]:
+    if settings.valuation_mode != "simple":
+        return None
     return SimpleValuationProvider()
 
 def get_crm_connector() -> Optional[CRMConnector]:
@@ -91,7 +93,9 @@ def get_data_enrichment_service() -> Optional[DataEnrichmentService]:
         return None
     return BasicDataEnrichmentService()
 
-def get_legal_check_service() -> LegalCheckService:
+def get_legal_check_service() -> Optional[LegalCheckService]:
+    if settings.legal_check_mode != "basic":
+        return None
     return BasicLegalCheckService()
 
 def get_agent(

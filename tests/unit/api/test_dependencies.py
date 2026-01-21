@@ -84,3 +84,82 @@ def test_get_agent_success(monkeypatch):
     monkeypatch.setattr(dep_mod, "create_hybrid_agent", _mk_agent)
     agent = get_agent(_StubStore(), SimpleNamespace())
     assert getattr(agent, "agent", False)
+
+
+def test_get_valuation_provider_is_gated_by_mode():
+    old_mode = dep_mod.settings.valuation_mode
+    try:
+        dep_mod.settings.valuation_mode = "simple"
+        p = dep_mod.get_valuation_provider()
+        assert p is not None
+        assert p.estimate_value({"area": 2, "price_per_sqm": 3}) == 6.0
+
+        dep_mod.settings.valuation_mode = "pro"
+        assert dep_mod.get_valuation_provider() is None
+    finally:
+        dep_mod.settings.valuation_mode = old_mode
+
+
+def test_get_legal_check_service_is_gated_by_mode():
+    old_mode = dep_mod.settings.legal_check_mode
+    try:
+        dep_mod.settings.legal_check_mode = "basic"
+        svc = dep_mod.get_legal_check_service()
+        assert svc is not None
+        assert svc.analyze_contract("x") == {"risks": [], "score": 0.0}
+
+        dep_mod.settings.legal_check_mode = "pro"
+        assert dep_mod.get_legal_check_service() is None
+    finally:
+        dep_mod.settings.legal_check_mode = old_mode
+
+
+def test_get_data_enrichment_service_is_gated_by_flag():
+    old_flag = dep_mod.settings.data_enrichment_enabled
+    try:
+        dep_mod.settings.data_enrichment_enabled = False
+        assert dep_mod.get_data_enrichment_service() is None
+
+        dep_mod.settings.data_enrichment_enabled = True
+        svc = dep_mod.get_data_enrichment_service()
+        assert svc is not None
+        assert svc.enrich("Any") == {}
+    finally:
+        dep_mod.settings.data_enrichment_enabled = old_flag
+
+
+def test_get_crm_connector_requires_webhook_url():
+    old_url = dep_mod.settings.crm_webhook_url
+    try:
+        dep_mod.settings.crm_webhook_url = None
+        assert dep_mod.get_crm_connector() is None
+
+        dep_mod.settings.crm_webhook_url = "http://example.invalid"
+        connector = dep_mod.get_crm_connector()
+        assert connector is not None
+        assert getattr(connector, "webhook_url", None) == "http://example.invalid"
+    finally:
+        dep_mod.settings.crm_webhook_url = old_url
+
+
+def test_get_knowledge_store_returns_none_on_exception(monkeypatch):
+    class _Boom:
+        def __init__(self, *args, **kwargs):
+            raise RuntimeError("boom")
+
+    dep_mod.get_knowledge_store.cache_clear()
+    monkeypatch.setattr(dep_mod, "KnowledgeStore", _Boom)
+    store = dep_mod.get_knowledge_store()
+    assert store is None
+
+
+def test_get_knowledge_store_caches_success(monkeypatch):
+    class _OK:
+        def __init__(self, *args, **kwargs):
+            self.created = True
+
+    dep_mod.get_knowledge_store.cache_clear()
+    monkeypatch.setattr(dep_mod, "KnowledgeStore", _OK)
+    s1 = dep_mod.get_knowledge_store()
+    s2 = dep_mod.get_knowledge_store()
+    assert s1 is s2

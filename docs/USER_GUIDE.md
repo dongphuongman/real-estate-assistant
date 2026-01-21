@@ -2,11 +2,14 @@
 
 ## Appearance
 
-Use the theme button (moon/sun) in the top navigation to switch between Light and Dark mode. Your selection is saved in your browser.
+Use the theme button (moon/sun) in the top navigation to switch between Light and Dark mode. Your
+selection is saved in your browser.
 
 ## Notifications & Digests
 
-The AI Real Estate Assistant helps you stay on top of the market with personalized email digests. Whether you're a homebuyer looking for your dream house or an investor monitoring market trends, our digests provide the insights you need.
+The AI Real Estate Assistant helps you stay on top of the market with personalized email digests.
+Whether you're a homebuyer looking for your dream house or an investor monitoring market trends,
+our digests provide the insights you need.
 
 All notification settings and labels follow your selected app language.
 
@@ -46,7 +49,8 @@ The platform aggregates data from multiple sources:
 
 ## Market Analytics
 
-The platform now supports comprehensive market analysis across multiple regions, including indices and comparables for CIS, Russia, Turkey, USA, and Africa.
+The platform now supports comprehensive market analysis across multiple regions, including indices
+and comparables for CIS, Russia, Turkey, USA, and Africa.
 
 ### Regional Insights
 You can access detailed statistics for specific countries and regions:
@@ -187,12 +191,20 @@ If you are using the V4 API (FastAPI), the same tool capabilities are available 
 - Compare properties by IDs
 - Basic price analysis for a query
 - Basic location lookup for a property ID
+Additional CE stub endpoints (may be disabled depending on server configuration):
+- Valuation estimate: `POST /api/v1/tools/valuation` (requires `VALUATION_MODE=simple` and vector
+  store available)
+- Legal check: `POST /api/v1/tools/legal-check` (requires `LEGAL_CHECK_MODE=basic`)
+- Data enrichment: `POST /api/v1/tools/enrich-address` (requires `DATA_ENRICHMENT_ENABLED=true`)
+- CRM contact sync: `POST /api/v1/tools/crm-sync-contact` (requires `CRM_WEBHOOK_URL` to be set)
 
 ### Models & Costs (V4 API)
 If you are building a client that needs to display available models/providers (and token pricing where applicable):
-- `GET /api/v1/settings/models` returns provider + model metadata, including context windows, capabilities, and pricing (when available).
+- `GET /api/v1/settings/models` returns provider + model metadata, including context windows,
+  capabilities, and pricing (when available).
 In the web app, you can view this under **Settings > Models & Costs**.
-For local providers (e.g., Ollama), the response includes `runtime_available` and `available_models`, and the UI shows setup steps when the local runtime is not detected.
+For local providers (e.g., Ollama), the response includes `runtime_available` and
+`available_models`, and the UI shows setup steps when the local runtime is not detected.
 
 ### API Export (V4)
 To export search results or specific property IDs via the V4 API:

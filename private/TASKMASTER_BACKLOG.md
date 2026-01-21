@@ -1,7 +1,9 @@
 # Taskmaster Backlog (Private) — PRD Split for MVP CE
 
 ## Overview
-This backlog translates PRD (Community Edition) into executable tasks and subtasks. It defines priorities, estimates, dependencies, acceptance criteria, and test/documentation requirements. Pro features remain out of scope for CE and are tracked elsewhere privately.
+This backlog translates PRD (Community Edition) into executable tasks and subtasks. It defines
+priorities, estimates, dependencies, acceptance criteria, and test/documentation requirements.
+Pro features remain out of scope for CE and are tracked elsewhere privately.
 
 ## Conventions
 - IDs: TM-<EPIC>-<SEQ> (e.g., TM-CHAT-001)
@@ -24,7 +26,8 @@ This backlog translates PRD (Community Edition) into executable tasks and subtas
   - Tests: unit (provider init), integration (SSE), e2e (chat flow)
   - Docs: API Reference (chat), User Guide usage, Developer Notes
   - Dependencies: settings defaults, provider keys (BYOK)
-  - Notes: Implemented SSE streaming with X-Request-ID, dependency overrides in tests; provider routing via ModelProviderFactory; rate limiting via middleware.
+  - Notes: Implemented SSE streaming with X-Request-ID, dependency overrides in tests, provider
+    routing via ModelProviderFactory, and rate limiting via middleware.
   - Estimate update: Actual 2d; remaining 1d reallocated to TM-CHAT-002.
   - Follow-ups: Monitor p95 latency in production; add e2e chat flow in frontend (TM-CHAT-002).
 
@@ -36,7 +39,8 @@ This backlog translates PRD (Community Edition) into executable tasks and subtas
     - Error states and retry UX
   - Acceptance: smooth streaming, accessible controls, error recovery
   - Tests: component/unit, integration (mock SSE)
-  - Notes: Implemented streaming via `streamChatMessage` with `onStart` meta and progressive UI updates; request_id surfaced; retry UX added.
+  - Notes: Implemented streaming via `streamChatMessage` with `onStart` meta and progressive UI
+    updates; request_id surfaced; retry UX added.
   - Estimate update: Actual 1.5d; 0.5d reallocated to TM-SEARCH-001 documentation polish.
   - Follow-ups: Add localization for chat UI strings; monitor frontend error rates.
   - Docs: User Guide (chat page)
@@ -63,7 +67,8 @@ This backlog translates PRD (Community Edition) into executable tasks and subtas
     - Empty/neutral states
   - Acceptance: accessible UI, correct payloads
   - Tests: component/integration
-  - Notes: Added true neutral state before first search; enforced query and filter validation (including min<=max); improved error handling and stable result keys; updated Search page tests.
+  - Notes: Added true neutral state before first search; enforced query and filter validation
+    (including min<=max); improved error handling and stable result keys; updated Search page tests.
   - Estimate update: Actual 1d; remaining 1d reallocated to TM-DOCS-001.
   - Docs: User Guide (search), API Reference (search), Developer Notes
 
@@ -92,12 +97,16 @@ This backlog translates PRD (Community Edition) into executable tasks and subtas
   - Tests: unit calculators, integration endpoints
   - Docs: API Reference updates
 
-- TM-TOOLS-002 (medium, 2d, pending)
+- TM-TOOLS-002 (medium, 2d, completed)
   - Task: CE wiring to new endpoints (valuation/legal/enrichment/CRM) — stubs
   - Subtasks:
     - Forms/actions; handle disabled flags gracefully
   - Acceptance: endpoints callable; errors surfaced; no Pro data exposed
   - Tests: integration (success/error), DI flags behavior
+  - Notes: Added mode/flag gating for CE stub endpoints, improved client error messages and UX
+    hints, and added unit + integration coverage for success/disabled/error paths.
+  - Estimate update: Actual 1d; remaining 1d reallocated to TM-DOCS-001.
+  - Follow-ups: Add Pro connectors for valuation/legal/enrichment/CRM behind explicit feature flags.
 
 ### Epic: Saved Settings
 - TM-SETTINGS-001 (medium, 2d, pending)
@@ -136,7 +145,9 @@ This backlog translates PRD (Community Edition) into executable tasks and subtas
     - Align Windows PowerShell commands in docs
   - Acceptance: local run in 5 min; endpoints reachable
   - Docs: Quickstart, Deployment, API Reference, User Guide, Developer Notes
-  - Notes: Replaced legacy Streamlit compose with FastAPI (8000) and Next.js (3000); added Dockerfile.backend and frontend/Dockerfile.frontend; updated .env example with CORS and Uptime flags; Quickstart/Deployment use PowerShell; healthchecks added.
+  - Notes: Replaced legacy Streamlit compose with FastAPI (8000) and Next.js (3000); added
+    Dockerfile.backend and frontend/Dockerfile.frontend; updated .env example with CORS and Uptime
+    flags; Quickstart/Deployment use PowerShell; healthchecks added.
   - Estimate update: Actual 1d; no remaining.
   - Follow-ups: Optional Ollama service enablement docs; add CI compose smoke test.
 
@@ -146,7 +157,9 @@ This backlog translates PRD (Community Edition) into executable tasks and subtas
   - Subtasks:
     - Configure checks; fix violations
   - Acceptance: unit ≥90%, integration ≥70%, critical ≥90%; RuleEngine clean
-  - Notes: Added RuleEngine config with IGNORE_PATTERNS (translations/templates) and MAX_LINE_LENGTH=120; ruff/mypy clean; repo-wide no error-level RuleEngine violations; unit tests for rules (coverage 91%); integration test ensures zero error severity across core.
+  - Notes: Added RuleEngine config with IGNORE_PATTERNS (translations/templates) and
+    MAX_LINE_LENGTH=120; ruff/mypy clean; repo-wide no error-level RuleEngine violations; unit
+    tests for rules (coverage 91%); integration test ensures zero error severity across core.
   - Estimate update: Actual 1d; follow-up to raise unit coverage gates from 75→90 in CI post-MVP.
 
 ### Epic: Docs (CE)

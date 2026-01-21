@@ -18,7 +18,8 @@ To configure the key, set the `API_ACCESS_KEY` environment variable (defaults to
 ### Request IDs
 
 All API responses include an `X-Request-ID` header.
-You can optionally provide your own `X-Request-ID` (letters/numbers plus `._-`, up to 128 chars) to correlate client logs with server logs.
+You can optionally provide your own `X-Request-ID` (letters/numbers plus `._-`, up to 128 chars)
+to correlate client logs with server logs.
 
 ### Rate Limiting
 
@@ -123,7 +124,8 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
         ```
     *   **Parameters**:
         *   `query` (string, required): Non-empty natural language search query.
-        *   `alpha` (float, optional): Weight for vector similarity (0.0 to 1.0). 1.0 = Pure Vector, 0.0 = Pure Keyword. Default: 0.7.
+        *   `alpha` (float, optional): Weight for vector similarity (0.0 to 1.0). 1.0 = Pure Vector,
+            0.0 = Pure Keyword. Default: 0.7.
         *   `lat/lon/radius_km` (optional): Geo radius filter (in kilometers).
         *   `min_lat/max_lat/min_lon/max_lon` (optional): Geo bounding box filter.
         *   `sort_by` (optional): `relevance`, `price`, `price_per_sqm`, `area_sqm`, `year_built`.
@@ -218,7 +220,10 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
         ```
     *   **Returns**:
         ```json
-        { "properties": [ { "id": "id1", "price": 100000 } ], "summary": { "count": 1, "min_price": 100000, "max_price": 100000, "price_difference": 0 } }
+        {
+          "properties": [{ "id": "id1", "price": 100000 }],
+          "summary": { "count": 1, "min_price": 100000, "max_price": 100000, "price_difference": 0 }
+        }
         ```
 *   `POST /api/v1/tools/price-analysis`
     *   Analyze prices for a query.
@@ -228,7 +233,13 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
         ```
     *   **Returns**:
         ```json
-        { "query": "Warsaw apartments", "count": 10, "average_price": 200000, "median_price": 195000, "distribution_by_type": { "Apartment": 8 } }
+        {
+          "query": "Warsaw apartments",
+          "count": 10,
+          "average_price": 200000,
+          "median_price": 195000,
+          "distribution_by_type": { "Apartment": 8 }
+        }
         ```
 *   `POST /api/v1/tools/location-analysis`
     *   Location info for a property.
@@ -250,6 +261,8 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
         ```json
         { "property_id": "id1", "estimated_value": 250000 }
         ```
+    *   **Errors**:
+        *   `503` when disabled (`VALUATION_MODE!=simple`) or vector store is unavailable
 *   `POST /api/v1/tools/legal-check` (CE stub)
     *   Basic legal risk analysis.
     *   **Body**:
@@ -260,6 +273,8 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
         ```json
         { "risks": [], "score": 0.0 }
         ```
+    *   **Errors**:
+        *   `503` when disabled (`LEGAL_CHECK_MODE!=basic`)
 *   `POST /api/v1/tools/enrich-address` (CE stub)
     *   Address enrichment (enabled via flag).
     *   **Body**:
@@ -270,6 +285,8 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
         ```json
         { "address": "Some St 1", "data": {} }
         ```
+    *   **Errors**:
+        *   `503` when disabled (`DATA_ENRICHMENT_ENABLED=false`)
 *   `POST /api/v1/tools/crm-sync-contact` (CE stub)
     *   Sync contact via webhook (if configured).
     *   **Body**:
@@ -280,6 +297,9 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
         ```json
         { "id": "contact-123" }
         ```
+    *   **Errors**:
+        *   `503` when not configured (`CRM_WEBHOOK_URL` unset)
+        *   `502` when webhook call fails
 
 *   `GET /api/v1/tools`
     *   List all available property analysis tools.
@@ -383,13 +403,15 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
 *   `GET /api/v1/settings/notifications`
     *   Get user notification preferences.
     *   **Headers**: `X-API-Key: your-api-key
-    *   **User selection**: Provide `X-User-Email: <user@example.com>` header or `?user_email=<user@example.com>` query param (query param overrides header).
+    *   **User selection**: Provide `X-User-Email: <user@example.com>` header or
+        `?user_email=<user@example.com>` query param (query param overrides header).
     *   **Returns**: `NotificationSettings` object.
 
 *   `PUT /api/v1/settings/notifications`
     *   Update user notification preferences.
     *   **Headers**: `X-API-Key: your-api-key
-    *   **User selection**: Provide `X-User-Email: <user@example.com>` header or `?user_email=<user@example.com>` query param (query param overrides header).
+    *   **User selection**: Provide `X-User-Email: <user@example.com>` header or
+        `?user_email=<user@example.com>` query param (query param overrides header).
     *   **Body**:
         ```json
         {
@@ -405,7 +427,8 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
     *   List available model providers and their models (pricing/capabilities/metadata).
     *   **Headers**: `X-API-Key: your-api-key
     *   **Notes**:
-        *   For local providers (e.g., Ollama), `runtime_available` indicates whether the local runtime is reachable from the API.
+        *   For local providers (e.g., Ollama), `runtime_available` indicates whether the local
+            runtime is reachable from the API.
         *   `available_models` lists models that are already downloaded in the local runtime.
     *   **Returns**: Array of providers:
         ```json

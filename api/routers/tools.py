@@ -51,7 +51,28 @@ class ToolInfo(BaseModel):
 async def list_tools():
     """List available tools."""
     tools = create_property_tools()
-    return [ToolInfo(name=tool.name, description=tool.description) for tool in tools]
+    items = [ToolInfo(name=tool.name, description=tool.description) for tool in tools]
+    items.extend(
+        [
+            ToolInfo(
+                name="valuation",
+                description="Estimate property value from listing metadata (CE stub; may be disabled).",
+            ),
+            ToolInfo(
+                name="legal_check",
+                description="Basic contract text risk check (CE stub; may be disabled).",
+            ),
+            ToolInfo(
+                name="enrich_address",
+                description="Address enrichment (CE stub; gated by DATA_ENRICHMENT_ENABLED).",
+            ),
+            ToolInfo(
+                name="crm_sync_contact",
+                description="CRM contact sync via webhook (CE stub; gated by CRM_WEBHOOK_URL).",
+            ),
+        ]
+    )
+    return items
 
 
 @router.post(
@@ -241,6 +262,11 @@ async def valuation(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Vector store unavailable",
         )
+    if provider is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Valuation disabled",
+        )
     pid = request.property_id.strip()
     if not pid:
         raise HTTPException(
@@ -266,6 +292,11 @@ async def legal_check(
     request: LegalCheckRequest,
     service=Depends(get_legal_check_service),
 ):
+    if service is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Legal check disabled",
+        )
     text = request.text.strip()
     if not text:
         raise HTTPException(
@@ -273,7 +304,10 @@ async def legal_check(
             detail="text is required",
         )
     result = service.analyze_contract(text)
-    return LegalCheckResponse(risks=result.get("risks", []), score=float(result.get("score", 0.0)))
+    return LegalCheckResponse(
+        risks=result.get("risks", []),
+        score=float(result.get("score", 0.0)),
+    )
 
 @router.post(
     "/tools/enrich-address", response_model=DataEnrichmentResponse, tags=["Tools"]
