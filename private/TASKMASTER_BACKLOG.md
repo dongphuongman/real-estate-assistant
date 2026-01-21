@@ -137,13 +137,19 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
   - Follow-ups: Consider a dedicated Compare summary export (beyond property rows) if needed.
 
 ### Epic: Prompt Templates
-- TM-PROMPT-001 (medium, 2d, pending)
+- TM-PROMPT-001 (medium, 2d, completed)
   - Task: Template library + picker UI; apply endpoint
   - Subtasks:
     - Templates (listing descriptions, emails)
     - Variables form and validation
   - Acceptance: usable outputs, no runtime errors
   - Tests: rendering/validation
+  - Notes: Added CE-safe prompt template catalog and render endpoint (`/api/v1/prompt-templates`,
+    `/api/v1/prompt-templates/apply`), plus Tools UI section to pick templates, fill variables, and
+    copy generated output.
+  - Estimate update: Actual 1d; remaining 1d reallocated to TM-DOCS-001.
+  - Follow-ups: Add persistence for user-defined templates (optional); add more template categories
+    and localization.
 
 ### Epic: Deployment (BYOK)
 - TM-DEPLOY-001 (high, 1d, completed)

@@ -23,6 +23,24 @@ jest.mock("@/lib/api", () => ({
   legalCheckApi: jest.fn(async () => ({ risks: [], score: 0 })),
   enrichAddressApi: jest.fn(async () => ({ address: "Some St 1", data: {} })),
   crmSyncContactApi: jest.fn(async () => ({ id: "contact-123" })),
+  listPromptTemplates: jest.fn(async () => [
+    {
+      id: "buyer_followup_email_v1",
+      title: "Buyer follow-up email",
+      category: "email",
+      description: "Follow-up email after an inquiry with next steps and a short question set.",
+      template_text: "Subject: Quick follow-up on {{property_address}}",
+      variables: [
+        { name: "property_address", description: "Address", required: true, example: "Main St 10" },
+        { name: "buyer_name", description: "Name", required: true, example: "Alex" },
+        { name: "agent_name", description: "Agent", required: true, example: "Maria" },
+      ],
+    },
+  ]),
+  applyPromptTemplate: jest.fn(async () => ({
+    template_id: "buyer_followup_email_v1",
+    rendered_text: "Subject: Quick follow-up on Main St 10\n\nHi Alex,\n\nBest,\nMaria",
+  })),
 }));
 
 describe("ToolsPage", () => {
@@ -90,5 +108,21 @@ describe("ToolsPage", () => {
     fireEvent.change(screen.getByPlaceholderText("Name"), { target: { value: "John" } });
     fireEvent.click(screen.getByText("Sync"));
     await waitFor(() => expect(screen.getByText(/Contact ID:/)).toBeInTheDocument());
+  });
+
+  it("renders and applies prompt templates", async () => {
+    render(<ToolsPage />);
+    await waitFor(() => expect(screen.getByText("Prompt Templates")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText("Template picker")).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText("Variable property_address"), {
+      target: { value: "Main St 10" },
+    });
+    fireEvent.change(screen.getByLabelText("Variable buyer_name"), { target: { value: "Alex" } });
+    fireEvent.change(screen.getByLabelText("Variable agent_name"), { target: { value: "Maria" } });
+    fireEvent.click(screen.getByRole("button", { name: "Generate" }));
+    await waitFor(() => expect(screen.getByLabelText("Rendered template output")).toBeInTheDocument());
+    const output = screen.getByLabelText("Rendered template output") as HTMLTextAreaElement;
+    expect(output.value).toContain("Main St 10");
   });
 });

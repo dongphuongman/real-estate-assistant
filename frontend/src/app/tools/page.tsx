@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   calculateMortgage,
   comparePropertiesApi,
@@ -10,7 +10,10 @@ import {
   legalCheckApi,
   enrichAddressApi,
   crmSyncContactApi,
+  applyPromptTemplate,
+  listPromptTemplates,
 } from "@/lib/api";
+import type { PromptTemplateInfo } from "@/lib/types";
 
 export default function ToolsPage() {
   return (
@@ -20,6 +23,7 @@ export default function ToolsPage() {
       <CompareSection />
       <PriceAnalysisSection />
       <LocationAnalysisSection />
+      <PromptTemplatesSection />
       <hr className="my-4" />
       <ValuationSection />
       <LegalCheckSection />
@@ -338,6 +342,157 @@ function LocationAnalysisSection() {
           <p>Lat/Lon: {data.lat ?? "-"}, {data.lon ?? "-"}</p>
         </div>
       )}
+    </section>
+  );
+}
+
+function PromptTemplatesSection() {
+  const [templates, setTemplates] = useState<PromptTemplateInfo[]>([]);
+  const [selectedId, setSelectedId] = useState<string>("");
+  const [variables, setVariables] = useState<Record<string, string>>({});
+  const [result, setResult] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const items = await listPromptTemplates();
+        if (!mounted) return;
+        setTemplates(items);
+        if (items.length) {
+          setSelectedId((prev) => prev || items[0].id);
+        }
+      } catch (e: unknown) {
+        if (!mounted) return;
+        const msg = e instanceof Error ? e.message : String(e);
+        setError(msg || "Failed to load templates");
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const selected = useMemo(
+    () => templates.find((t) => t.id === selectedId) || null,
+    [templates, selectedId]
+  );
+
+  useEffect(() => {
+    if (!selected) return;
+    const next: Record<string, string> = {};
+    for (const v of selected.variables) {
+      next[v.name] = variables[v.name] ?? "";
+    }
+    setVariables(next);
+    setResult("");
+    setError(null);
+  }, [selectedId]);
+
+  return (
+    <section>
+      <h2 className="text-xl font-medium">Prompt Templates</h2>
+      <p className="text-sm text-gray-600 mt-1">
+        Pick a template, fill variables, and generate ready-to-use text.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 my-2">
+        <select
+          className="border p-2 rounded"
+          value={selectedId}
+          onChange={(e) => setSelectedId(e.target.value)}
+          aria-label="Template picker"
+        >
+          {templates.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.title}
+            </option>
+          ))}
+        </select>
+        {selected ? (
+          <div className="text-sm text-gray-600 flex items-center">
+            {selected.description}
+          </div>
+        ) : null}
+      </div>
+
+      {selected ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 my-2">
+          {selected.variables.map((v) => (
+            <div key={v.name} className="flex flex-col gap-1">
+              <label className="text-sm">
+                {v.name}
+                {v.required ? " *" : ""}
+              </label>
+              <input
+                className="border p-2"
+                placeholder={v.example ? String(v.example) : v.description}
+                value={variables[v.name] ?? ""}
+                onChange={(e) =>
+                  setVariables((prev) => ({
+                    ...prev,
+                    [v.name]: e.target.value,
+                  }))
+                }
+                aria-label={`Variable ${v.name}`}
+              />
+              <span className="text-xs text-gray-500">{v.description}</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="flex flex-wrap gap-2 items-center">
+        <button
+          className="bg-black text-white px-3 py-2 rounded"
+          disabled={!selected || loading}
+          onClick={async () => {
+            if (!selected) return;
+            setError(null);
+            setLoading(true);
+            try {
+              const vars: Record<string, string> = {};
+              for (const v of selected.variables) {
+                const raw = variables[v.name] ?? "";
+                if (raw.trim()) vars[v.name] = raw.trim();
+              }
+              const res = await applyPromptTemplate(selected.id, vars);
+              setResult(res.rendered_text);
+            } catch (e: unknown) {
+              const msg = e instanceof Error ? e.message : String(e);
+              setError(msg || "Template render failed");
+              setResult("");
+            } finally {
+              setLoading(false);
+            }
+          }}
+        >
+          {loading ? "Generating..." : "Generate"}
+        </button>
+        <button
+          className="border px-3 py-2 rounded"
+          disabled={!result}
+          onClick={async () => {
+            if (!result) return;
+            try {
+              await navigator.clipboard.writeText(result);
+            } catch {}
+          }}
+        >
+          Copy
+        </button>
+      </div>
+      {error && <p className="text-red-600 mt-2">{error}</p>}
+      {result ? (
+        <textarea
+          className="border p-2 w-full mt-2"
+          rows={10}
+          value={result}
+          onChange={(e) => setResult(e.target.value)}
+          aria-label="Rendered template output"
+        />
+      ) : null}
     </section>
   );
 }

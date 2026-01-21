@@ -147,3 +147,24 @@ export interface ExportSearchRequest {
   format: ExportFormat;
   search: SearchRequest;
 }
+
+export interface PromptTemplateVariableInfo {
+  name: string;
+  description: string;
+  required: boolean;
+  example?: string | null;
+}
+
+export interface PromptTemplateInfo {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  template_text: string;
+  variables: PromptTemplateVariableInfo[];
+}
+
+export interface PromptTemplateApplyResponse {
+  template_id: string;
+  rendered_text: string;
+}

@@ -180,6 +180,19 @@ Testing:
 - Unit: `tests/unit/api/test_api_exports.py` (formats, headers, errors)
 - Integration: `tests/integration/api/test_api_exports_integration.py` (auth + validation + CSV option acceptance)
 
+## Prompt Templates (End-to-End)
+- Templates library: `ai/prompt_templates.py` (CE-safe, static catalog)
+- Router: `api/routers/prompt_templates.py`
+- Endpoints (requires `X-API-Key`):
+  - `GET /api/v1/prompt-templates` (catalog + variable schemas)
+  - `POST /api/v1/prompt-templates/apply` (render by `template_id` + `variables`)
+- Placeholder syntax: `{{variable_name}}` (validated against the declared variable list)
+
+Testing:
+- Unit: `tests/unit/test_prompt_templates.py` (render/validation)
+- Unit (API): `tests/unit/api/test_api_prompt_templates.py`
+- Integration: `tests/integration/api/test_api_prompt_templates_integration.py`
+
 ## Local RAG (Community Edition)
 - Knowledge store module: `vector_store/knowledge_store.py`
 - Routers: `api/routers/rag.py` (`/api/v1/rag/upload`, `/api/v1/rag/qa`)

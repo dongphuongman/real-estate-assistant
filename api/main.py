@@ -8,7 +8,7 @@ from api.auth import get_api_key
 from api.dependencies import get_vector_store
 from api.models import HealthCheck
 from api.observability import add_observability
-from api.routers import admin, auth, chat, exports, search, tools
+from api.routers import admin, auth, chat, exports, prompt_templates, search, tools
 from api.routers import rag as rag_router
 from api.routers import settings as settings_router
 from config.settings import get_settings
@@ -150,6 +150,7 @@ app.include_router(
     settings_router.router, prefix="/api/v1", dependencies=[Depends(get_api_key)]
 )
 app.include_router(tools.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
+app.include_router(prompt_templates.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(admin.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(
     exports.router, prefix="/api/v1", dependencies=[Depends(get_api_key)]

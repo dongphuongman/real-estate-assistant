@@ -281,3 +281,29 @@ class ExportPropertiesRequest(BaseModel):
         if len(self.csv_decimal) != 1 or self.csv_decimal in ("\n", "\r"):
             raise ValueError("csv_decimal must be a single non-newline character")
         return self
+
+
+class PromptTemplateVariableInfo(BaseModel):
+    name: str
+    description: str
+    required: bool = True
+    example: Optional[str] = None
+
+
+class PromptTemplateInfo(BaseModel):
+    id: str
+    title: str
+    category: str
+    description: str
+    template_text: str
+    variables: List[PromptTemplateVariableInfo]
+
+
+class PromptTemplateApplyRequest(BaseModel):
+    template_id: str
+    variables: Dict[str, Any] = Field(default_factory=dict)
+
+
+class PromptTemplateApplyResponse(BaseModel):
+    template_id: str
+    rendered_text: str

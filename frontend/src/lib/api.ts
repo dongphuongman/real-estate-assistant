@@ -10,6 +10,8 @@ import {
   SearchResponse,
   ExportFormat,
   ExportPropertiesRequest,
+  PromptTemplateApplyResponse,
+  PromptTemplateInfo,
 } from "./types";
 
 function getApiUrl(): string {
@@ -218,6 +220,26 @@ export async function enrichAddressApi(address: string) {
     body: JSON.stringify({ address }),
   });
   return handleResponse<{ address: string; data: Record<string, unknown> }>(response);
+}
+
+export async function listPromptTemplates(): Promise<PromptTemplateInfo[]> {
+  const response = await fetch(`${getApiUrl()}/prompt-templates`, {
+    method: "GET",
+    headers: buildHeaders(),
+  });
+  return handleResponse<PromptTemplateInfo[]>(response);
+}
+
+export async function applyPromptTemplate(
+  templateId: string,
+  variables: Record<string, unknown>
+): Promise<PromptTemplateApplyResponse> {
+  const response = await fetch(`${getApiUrl()}/prompt-templates/apply`, {
+    method: "POST",
+    headers: buildHeaders(),
+    body: JSON.stringify({ template_id: templateId, variables }),
+  });
+  return handleResponse<PromptTemplateApplyResponse>(response);
 }
 
 export async function crmSyncContactApi(name: string, phone?: string, email?: string) {

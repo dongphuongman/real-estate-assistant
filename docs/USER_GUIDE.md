@@ -193,6 +193,16 @@ Plan your budget effectively with our integrated Mortgage Calculator.
 3. Enter the **Property Price**, **Down Payment**, **Interest Rate**, and **Loan Term**.
 4. Click **Calculate** to view detailed results.
 
+### Prompt Templates
+Generate ready-to-use text for common real estate workflows (listing descriptions, buyer emails).
+
+**How to Use**:
+1. Navigate to the **Analytics & Tools** tab.
+2. Scroll to **Prompt Templates**.
+3. Pick a template (e.g., “Buyer follow-up email”).
+4. Fill in the required fields (marked with `*`) and click **Generate**.
+5. Copy the output and paste it into your email/client workflow.
+
 ### API Tools (V4)
 If you are using the V4 API (FastAPI), the same tool capabilities are available over HTTP:
 - Compare properties by IDs

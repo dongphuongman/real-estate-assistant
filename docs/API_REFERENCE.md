@@ -353,6 +353,52 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
         ```
     *   **Returns**: `LocationAnalysisResponse`.
 
+#### Prompt Templates
+
+*   `GET /api/v1/prompt-templates`
+    *   List available prompt templates and their variable schemas.
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **Returns**:
+        ```json
+        [
+          {
+            "id": "buyer_followup_email_v1",
+            "title": "Buyer follow-up email",
+            "category": "email",
+            "description": "Follow-up email after an inquiry with next steps and a short question set.",
+            "template_text": "Subject: Quick follow-up on {{property_address}} ...",
+            "variables": [
+              { "name": "property_address", "description": "Property address", "required": true, "example": "Main St 10" }
+            ]
+          }
+        ]
+        ```
+
+*   `POST /api/v1/prompt-templates/apply`
+    *   Apply a template by ID using provided variables and return rendered text.
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **Body**:
+        ```json
+        {
+          "template_id": "buyer_followup_email_v1",
+          "variables": {
+            "property_address": "Main St 10, Warsaw",
+            "buyer_name": "Alex",
+            "agent_name": "Maria Nowak"
+          }
+        }
+        ```
+    *   **Returns**:
+        ```json
+        {
+          "template_id": "buyer_followup_email_v1",
+          "rendered_text": "Subject: Quick follow-up on Main St 10, Warsaw\n\nHi Alex,\n..."
+        }
+        ```
+    *   **Errors**:
+        *   `404` when `template_id` is unknown
+        *   `400` when required variables are missing or unknown variables are provided
+
 #### Export
 
 *   `POST /api/v1/export/properties`
