@@ -55,6 +55,11 @@ jobs:
           python -m mypy
         continue-on-error: false
 
+      - name: RuleEngine (custom rules)
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
+        run: |
+          python -m pytest -q tests/integration/test_rule_engine_clean.py
+
       - name: OpenAPI schema drift check
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |

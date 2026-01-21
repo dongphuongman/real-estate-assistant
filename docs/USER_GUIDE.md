@@ -169,6 +169,7 @@ The backend will only allow these origins.
 - If requests fail due to rate limits or validation, try again after the suggested reset time.
 - For contributors, run backend checks locally:
   - `python -m pytest`
+  - `python -m pytest -q tests\integration\test_rule_engine_clean.py`
   - `python -m ruff check .`
   - `python -m mypy`
 

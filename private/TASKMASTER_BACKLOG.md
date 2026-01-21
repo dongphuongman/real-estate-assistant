@@ -243,6 +243,18 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
   - Estimate update: Actual 0.5d; no remaining.
   - Follow-ups: Consider expanding the critical module set as coverage improves; add a dedicated RuleEngine CI step if desired.
 
+- TM-QA-004 (high, 0.25d, completed)
+  - Task: Add dedicated RuleEngine CI step (fast feedback)
+  - Subtasks:
+    - Add a backend job step that runs the RuleEngine cleanliness integration check
+    - Document the CI-equivalent RuleEngine command for contributors
+  - Acceptance: CI exposes a separate RuleEngine step and fails fast on violations; docs updated
+  - Tests: existing integration test (`tests/integration/test_rule_engine_clean.py`) remains green
+  - Docs: API Reference, User Guide, Developer Notes
+  - Notes: Inserted a dedicated RuleEngine step after mypy in `.github/workflows/ci.yml` to run `tests/integration/test_rule_engine_clean.py` early.
+  - Estimate update: Actual 0.1d; no remaining.
+  - Follow-ups: Consider making the RuleEngine step a required branch protection check.
+
 ### Epic: Docs (CE)
 - TM-DOCS-001 (medium, 1d, completed)
   - Task: API Reference, User Guide, Troubleshooting updates

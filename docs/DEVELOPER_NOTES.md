@@ -77,6 +77,10 @@ in V4.
 ## Quality Gates
 - Static rules: RuleEngine checks line length, secrets, and loop concatenations.
 - Config: rules/config.py defines IGNORE_PATTERNS and MAX_LINE_LENGTH.
+- Run RuleEngine (CI-equivalent):
+  ```powershell
+  python -m pytest -q tests\integration\test_rule_engine_clean.py
+  ```
 - Run RuleEngine (sample):
   ```powershell
   python -c "from rules.engine import RuleEngine; print('rules ready')"
