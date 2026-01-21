@@ -28,6 +28,30 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const applyStreamError = (error: unknown) => {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    setErrorMessage(message);
+    const match = message.match(/request_id=([A-Za-z0-9_-]+)/i);
+    if (match && match[1]) {
+      setRequestId(match[1]);
+    }
+    setMessages(prev => {
+      const updated = [...prev];
+      const lastIdx = updated.length - 1;
+      if (lastIdx >= 0 && updated[lastIdx].role === "assistant" && !updated[lastIdx].content) {
+        updated[lastIdx] = {
+          ...updated[lastIdx],
+          content: "I apologize, but I encountered an error. Please try again.",
+        };
+        return updated;
+      }
+      return [
+        ...updated,
+        { role: "assistant", content: "I apologize, but I encountered an error. Please try again." },
+      ];
+    });
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -70,11 +94,7 @@ export default function ChatPage() {
 
     } catch (error) {
       console.warn("Chat error:", error);
-      setMessages(prev => [...prev, { 
-        role: "assistant", 
-        content: "I apologize, but I encountered an error. Please try again."
-      }]);
-      setErrorMessage(error instanceof Error ? error.message : "Unknown error");
+      applyStreamError(error);
     } finally {
       setIsLoading(false);
     }
@@ -125,28 +145,29 @@ export default function ChatPage() {
               <button
                 type="button"
                 onClick={() => {
-                  if (lastUserMessage) {
-                    setErrorMessage(undefined);
-                    setIsLoading(true);
-                    streamChatMessage(
-                      { message: lastUserMessage, session_id: sessionId },
-                      (chunk) => {
-                        setMessages(prev => {
-                          const updated = [...prev];
-                          const lastIdx = updated.length - 1;
-                          if (lastIdx >= 0 && updated[lastIdx].role === "assistant") {
-                            updated[lastIdx] = { ...updated[lastIdx], content: updated[lastIdx].content + chunk };
-                          }
-                          return updated;
-                        });
-                      },
-                      ({ requestId }) => {
-                        if (requestId) setRequestId(requestId);
-                      }
-                    ).catch(err => {
-                      setErrorMessage(err instanceof Error ? err.message : "Unknown error");
-                    }).finally(() => setIsLoading(false));
-                  }
+                  if (!lastUserMessage || isLoading) return;
+                  setErrorMessage(undefined);
+                  setIsLoading(true);
+                  setMessages(prev => [...prev, { role: "assistant", content: "" }]);
+                  streamChatMessage(
+                    { message: lastUserMessage, session_id: sessionId },
+                    (chunk) => {
+                      setMessages(prev => {
+                        const updated = [...prev];
+                        const lastIdx = updated.length - 1;
+                        if (lastIdx >= 0 && updated[lastIdx].role === "assistant") {
+                          updated[lastIdx] = { ...updated[lastIdx], content: updated[lastIdx].content + chunk };
+                        }
+                        return updated;
+                      });
+                    },
+                    ({ requestId }) => {
+                      if (requestId) setRequestId(requestId);
+                    }
+                  ).catch(err => {
+                    console.warn("Chat retry error:", err);
+                    applyStreamError(err);
+                  }).finally(() => setIsLoading(false));
                 }}
                 className="inline-flex items-center justify-center rounded-md border px-3 py-1 text-xs font-medium hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >

@@ -68,12 +68,9 @@ python -m mypy
 - Critical modules (dependencies, lifecycle, auth) aim for ≥90% coverage.
 
 ### Initial Configuration
-1. Open app in browser (usually http://localhost:8501)
-2. Load sample data from sidebar
-3. Enable all Phase 2 features:
-   - ✅ Use Hybrid Agent
-   - ✅ Show Query Analysis
-   - ✅ Use Result Reranking
+1. Open UI in browser: http://localhost:3000
+2. Navigate to Search and run a sample query (e.g., "apartments in Krakow")
+3. Navigate to Assistant and verify streaming responses render progressively
 
 ---
 

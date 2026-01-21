@@ -178,6 +178,19 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
     tests for rules (coverage 91%); integration test ensures zero error severity across core.
   - Estimate update: Actual 1d; follow-up to raise unit coverage gates from 75→90 in CI post-MVP.
 
+- TM-QA-002 (high, 1d, completed)
+  - Task: Update Playwright e2e to Next.js UI (3000) and harden chat retry UX
+  - Subtasks:
+    - Migrate Playwright baseURL/output paths and add optional webServer auto-start
+    - Replace legacy Streamlit e2e specs with Next.js smoke + observability coverage
+    - Ensure chat errors surface request_id and retry does not corrupt message history
+  - Acceptance: Playwright e2e runs locally, is deterministic (no external LLM keys), and produces artifacts.
+  - Tests: Playwright (UI smoke + observability), frontend unit tests for chat error/retry
+  - Docs: API Reference (streaming/CORS note), User Guide (request_id behavior), Developer Notes (Playwright env vars)
+  - Notes: Playwright now stubs `/api/v1/chat` via route interception with CORS-exposed `X-Request-ID` to keep
+    request correlation visible in browser-like environments.
+  - Estimate update: Actual 0.5d; remaining 0.5d kept as buffer (no pending tasks).
+
 ### Epic: Docs (CE)
 - TM-DOCS-001 (medium, 1d, completed)
   - Task: API Reference, User Guide, Troubleshooting updates

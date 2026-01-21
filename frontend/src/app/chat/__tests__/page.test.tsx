@@ -93,6 +93,7 @@ describe("ChatPage", () => {
     await waitFor(() => {
       expect(screen.getByText("I apologize, but I encountered an error. Please try again.")).toBeInTheDocument()
     })
+    expect(screen.getByText("request_id=req-xyz")).toBeInTheDocument()
   })
 
   it("shows retry button and retries stream", async () => {
@@ -113,6 +114,7 @@ describe("ChatPage", () => {
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /retry/i })).toBeInTheDocument()
     })
+    expect(screen.getByText("request_id=req-123")).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole("button", { name: /retry/i }))
 

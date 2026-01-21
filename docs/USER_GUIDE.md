@@ -99,7 +99,7 @@ For real-time streaming from the assistant:
 - The response uses `text/event-stream` with lines like `data: <text-delta>` and finishes with `data: [DONE]`
 - Ensure you include the `X-API-Key` header; see API Reference for an example
 - The UI progressively renders assistant messages and shows a Retry button on errors
-- The UI displays `request_id` when available to help correlate with server logs
+- The UI displays `request_id` on both success and error paths (when available) to help correlate with server logs
 
 ## Search Filters
 

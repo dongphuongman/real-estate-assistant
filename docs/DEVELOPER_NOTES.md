@@ -93,6 +93,17 @@ in V4.
   cd frontend
   npm test
   ```
+- E2E (Playwright):
+  ```powershell
+  $env:PLAYWRIGHT_START_WEB='1'
+  npx playwright test -c playwright.config.ts --reporter=list
+  ```
+- Playwright env vars:
+  - `PLAYWRIGHT_BASE_URL` (default `http://localhost:3000`)
+  - `PLAYWRIGHT_START_WEB` (`1`/`true` to auto-start Next.js dev server)
+  - `PLAYWRIGHT_OUTPUT_DIR` (default `artifacts/playwright`)
+  - `PLAYWRIGHT_SCREENSHOT_DIR` (default `artifacts/playwright/screenshots`)
+  - `PLAYWRIGHT_LOG_DIR` (default `artifacts/playwright/logs`)
 - Client configuration:
   - `NEXT_PUBLIC_API_URL` points to backend base (default `http://localhost:8000/api/v1`)
   - `NEXT_PUBLIC_API_KEY` is forwarded as `X-API-Key`

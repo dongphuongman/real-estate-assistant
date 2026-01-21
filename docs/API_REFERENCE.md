@@ -186,6 +186,7 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
         *   Events: `data: <text-delta>`
         *   End of stream: `data: [DONE]`
         *   Headers: `X-Request-ID` present on the streaming response
+        *   CORS (browser clients): `X-Request-ID` is exposed via `Access-Control-Expose-Headers`
         *   Example (Windows PowerShell, streaming):
             ```powershell
             curl.exe -N `

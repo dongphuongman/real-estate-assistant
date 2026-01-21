@@ -2,7 +2,8 @@ import { test, expect } from '@playwright/test';
 import { writeFile, mkdir } from 'fs/promises';
 
 test('collect console and network metrics', async ({ page }) => {
-  await mkdir('artifacts/test_run_2025-12-09/logs', { recursive: true });
+  const logsDir = process.env.PLAYWRIGHT_LOG_DIR || 'artifacts/playwright/logs';
+  await mkdir(logsDir, { recursive: true });
   const logs: Array<{ level: string; text: string; ts: number }> = [];
   const responses: Array<{ url: string; status: number; ok: boolean; ts: number }> = [];
 
@@ -19,12 +20,15 @@ test('collect console and network metrics', async ({ page }) => {
 
   await page.goto('/');
   await page.waitForURL('**/');
-  await expect(page.locator('[data-testid="stAppViewBlockContainer"]')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole('heading', { name: 'AI Real Estate Assistant' })).toBeVisible({ timeout: 10000 });
 
-  const tabs = page.locator('.stTabs [data-baseweb="tab"]');
-  for (let i = 0; i < await tabs.count(); i++) {
-    await tabs.nth(i).click({ force: true });
-  }
+  await page.goto('/search');
+  await page.waitForURL('**/search');
+  await expect(page.getByRole('heading', { name: 'Find Your Property' })).toBeVisible({ timeout: 10000 });
+
+  await page.goto('/chat');
+  await page.waitForURL('**/chat');
+  await expect(page.getByRole('button', { name: /send message/i })).toBeVisible({ timeout: 10000 });
 
   const perf = await page.evaluate(() => {
     const nav = performance.getEntriesByType('navigation');
@@ -35,15 +39,15 @@ test('collect console and network metrics', async ({ page }) => {
   // keep raw logs and performance, omit derived summary for minimal footprint
 
   await writeFile(
-    'artifacts/test_run_2025-12-09/logs/browser_console.json',
+    `${logsDir}/browser_console.json`,
     JSON.stringify({ logs }, null, 2)
   );
   await writeFile(
-    'artifacts/test_run_2025-12-09/logs/browser_network.json',
+    `${logsDir}/browser_network.json`,
     JSON.stringify({ responses }, null, 2)
   );
   await writeFile(
-    'artifacts/test_run_2025-12-09/logs/browser_performance.json',
+    `${logsDir}/browser_performance.json`,
     JSON.stringify(perf, null, 2)
   );
 });
