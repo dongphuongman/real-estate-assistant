@@ -226,6 +226,54 @@ def test_list_model_catalog(mock_get_settings, mock_factory):
     assert data[1]["models"][0]["pricing"] is None
 
 
+@patch("api.routers.settings.PREFS_MANAGER")
+@patch("api.auth.get_settings")
+def test_get_settings_returns_500_on_unhandled_error(mock_get_settings, mock_prefs_manager):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+    mock_prefs_manager.get_preferences.side_effect = RuntimeError("boom")
+
+    response = client.get("/api/v1/settings/notifications", headers=HEADERS)
+    assert response.status_code == 500
+    assert response.json()["detail"] == "boom"
+
+
+@patch("api.routers.settings.PREFS_MANAGER")
+@patch("api.auth.get_settings")
+def test_update_settings_returns_500_on_unhandled_error(mock_get_settings, mock_prefs_manager):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+    mock_prefs_manager.get_preferences.side_effect = RuntimeError("boom")
+
+    response = client.put(
+        "/api/v1/settings/notifications",
+        json={
+            "email_digest": True,
+            "frequency": "daily",
+            "expert_mode": False,
+            "marketing_emails": False,
+        },
+        headers=HEADERS,
+    )
+    assert response.status_code == 500
+    assert response.json()["detail"] == "boom"
+
+
+@patch("api.routers.settings.ModelProviderFactory")
+@patch("api.auth.get_settings")
+def test_list_model_catalog_returns_500_on_error(mock_get_settings, mock_factory):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+    mock_factory.list_providers.side_effect = RuntimeError("boom")
+
+    response = client.get("/api/v1/settings/models", headers=HEADERS_NO_USER)
+    assert response.status_code == 500
+    assert response.json()["detail"] == "boom"
+
+
 @patch("api.routers.settings.user_model_preferences.MODEL_PREFS_MANAGER")
 @patch("api.auth.get_settings")
 def test_get_model_preferences(mock_get_settings, mock_model_prefs_manager):

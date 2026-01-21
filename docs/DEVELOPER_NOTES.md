@@ -25,6 +25,14 @@ in V4.
   - `API_RATE_LIMIT_ENABLED` (`true`/`false`)
   - `API_RATE_LIMIT_RPM` (requests per minute)
   - `API_ACCESS_KEY` (default `dev-secret-key` for dev)
+  - Email (optional; enables digest delivery when users opt in):
+    - `SMTP_PROVIDER` (`gmail` | `outlook` | `sendgrid` | `custom`)
+    - `SMTP_USERNAME` / `SMTP_PASSWORD`
+    - `SMTP_FROM_EMAIL` (optional; defaults to username)
+    - `SMTP_FROM_NAME` (optional; defaults to "Real Estate Assistant")
+    - `SMTP_USE_TLS` / `SMTP_USE_SSL` (optional; defaults `true` / `false`)
+    - `SMTP_TIMEOUT` (optional; seconds, default `30`)
+    - Custom SMTP only: `SMTP_SERVER`, `SMTP_PORT`
   - `CRM_WEBHOOK_URL` (optional; enables CE CRM webhook connector)
   - `DATA_ENRICHMENT_ENABLED` (`true`/`false`; enables CE enrichment endpoint)
   - `VALUATION_MODE` (default `simple`; set to non-`simple` to disable CE valuation stub)
@@ -135,6 +143,9 @@ in V4.
 ## Notes
 - Do not commit secrets; use environment variables.
 - In development, `auth/request-code` returns the code inline for easier testing.
+- Notifications:
+  - The notification scheduler starts on API startup and evaluates user preferences periodically.
+  - If SMTP is not configured, email delivery is skipped (preferences are still stored).
 
 ## Monitoring
 - Health endpoints:

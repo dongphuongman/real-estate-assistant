@@ -102,6 +102,8 @@ async def reindex_data(
             message="Reindexing successful",
             count=len(collection.properties)
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Reindexing failed: {e}")
         raise HTTPException(status_code=500, detail=str(e)) from e

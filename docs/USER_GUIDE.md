@@ -19,6 +19,8 @@ Whether you're a homebuyer looking for your dream house or an investor monitorin
 our digests provide the insights you need.
 
 All notification settings and labels follow your selected app language.
+Email delivery requires SMTP configuration on the backend. If SMTP is not configured, preferences
+are still saved but no emails will be sent.
 
 ### Consumer Digest
 Designed for homebuyers and renters, the Consumer Digest highlights:
@@ -49,28 +51,15 @@ To ensure your digest contains relevant properties:
 
 ## Data Sources
 
-The platform aggregates data from multiple sources:
-- **Direct Listings**: Properties uploaded directly to the platform.
-- **External APIs**: Real-time integrations with major real estate data providers (new in v1.1).
-- **Market Indices**: Aggregated regional data for market analysis.
+The Community Edition focuses on local-first workflows:
+- **Local datasets**: Properties indexed in the local vector store (ChromaDB) for search and tools.
+- **Optional connectors**: Some integrations are available as CE-safe webhooks/stubs and can be enabled via environment flags.
 
 ## Market Analytics
 
-The platform now supports comprehensive market analysis across multiple regions, including indices
-and comparables for CIS, Russia, Turkey, USA, and Africa.
-
-### Regional Insights
-You can access detailed statistics for specific countries and regions:
-- **Market Overview**: Total listings, average/median prices, and price per square meter.
-- **Price Trends**: Analyze historical price movements to identify growing or cooling markets.
-- **Comparables**: Compare property metrics across different cities and countries.
-
-### How to Use
-1. **Expert Mode**: Ensure you are in Expert Mode to view detailed indices.
-2. **Filtering**: Use the location filters to select a specific country (e.g., "Turkey") or region (e.g., "Marmara").
-3. **Indices Panel**: View the generated price indices and year-over-year (YoY) growth rates.
-
-These insights are automatically included in the **Expert Digest** for your subscribed regions.
+Market analytics are exposed in two places:
+- **Tools**: Price analysis and comparisons are available under **Analytics & Tools**.
+- **Email digests** (optional): If SMTP is configured, weekly/daily digests can include an Expert section with trends.
 
 ## Exporting Data
 
@@ -269,12 +258,15 @@ You can upload your own notes to enable question answering over your content.
 
 Example (PowerShell):
 ```powershell
-Invoke-WebRequest `
-  -Uri http://localhost:8000/api/v1/rag/upload `
-  -Headers @{ "X-API-Key" = "dev-secret-key" } `
+$form = @{
+  files = Get-Item .\notes.md
+}
+
+Invoke-RestMethod `
+  -Uri "http://localhost:8000/api/v1/rag/upload" `
   -Method Post `
-  -InFile .\notes.md `
-  -ContentType "multipart/form-data"
+  -Headers @{ "X-API-Key" = "dev-secret-key" } `
+  -Form $form
 ```
 
 ### Ask Questions

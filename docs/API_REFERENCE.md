@@ -13,7 +13,8 @@ The V4 API is built with FastAPI and provides a RESTful interface for the AI Rea
 ### Authentication
 
 The API uses API Key authentication via the `X-API-Key` header.
-To configure the key, set the `API_ACCESS_KEY` environment variable (defaults to `dev-secret-key` for development).
+To configure the key, set the `API_ACCESS_KEY` environment variable (defaults to `dev-secret-key` for local development).
+For production deployments, set a strong, unique key and do not expose it to untrusted clients.
 
 ### Request IDs
 
@@ -185,10 +186,12 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
         *   Events: `data: <text-delta>`
         *   End of stream: `data: [DONE]`
         *   Headers: `X-Request-ID` present on the streaming response
-        *   Example (curl):
-            ```bash
-            curl -N -H "X-API-Key: your-api-key" -H "Content-Type: application/json" \
-              -d "{\"message\": \"Hello\", \"stream\": true}" \
+        *   Example (Windows PowerShell, streaming):
+            ```powershell
+            curl.exe -N `
+              -H "X-API-Key: your-api-key" `
+              -H "Content-Type: application/json" `
+              -d '{ "message": "Hello", "stream": true }' `
               http://localhost:8000/api/v1/chat
             ```
         *   Example (client):
@@ -305,53 +308,6 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
     *   List all available property analysis tools.
     *   **Headers**: `X-API-Key: your-api-key
     *   **Returns**: List of tools with names and descriptions.
-
-*   `POST /api/v1/tools/mortgage-calculator`
-    *   Calculate mortgage payments and breakdown.
-    *   **Headers**: `X-API-Key: your-api-key
-    *   **Body**:
-        ```json
-        {
-          "property_price": 500000,
-          "down_payment_percent": 20.0,
-          "interest_rate": 4.5,
-          "loan_years": 30
-        }
-        ```
-    *   **Returns**: `MortgageResult` with monthly payment, total interest, and cost breakdown.
-
-*   `POST /api/v1/tools/compare-properties`
-    *   Compare multiple properties by ID (basic fields + summary).
-    *   **Headers**: `X-API-Key: your-api-key
-    *   **Body**:
-        ```json
-        {
-          "property_ids": ["prop1", "prop2", "prop3"]
-        }
-        ```
-    *   **Returns**: `ComparePropertiesResponse` with `properties[]` and `summary` (min/max/difference).
-
-*   `POST /api/v1/tools/price-analysis`
-    *   Compute basic price statistics from retrieved listings.
-    *   **Headers**: `X-API-Key: your-api-key
-    *   **Body**:
-        ```json
-        {
-          "query": "apartments in Madrid"
-        }
-        ```
-    *   **Returns**: `PriceAnalysisResponse` (count, avg/median/min/max, price/m² stats, distribution by type).
-
-*   `POST /api/v1/tools/location-analysis`
-    *   Fetch basic location information for a property by ID (city/neighborhood/coords).
-    *   **Headers**: `X-API-Key: your-api-key
-    *   **Body**:
-        ```json
-        {
-          "property_id": "prop1"
-        }
-        ```
-    *   **Returns**: `LocationAnalysisResponse`.
 
 #### Prompt Templates
 

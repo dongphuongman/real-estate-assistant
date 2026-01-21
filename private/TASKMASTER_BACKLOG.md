@@ -179,10 +179,14 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
   - Estimate update: Actual 1d; follow-up to raise unit coverage gates from 75→90 in CI post-MVP.
 
 ### Epic: Docs (CE)
-- TM-DOCS-001 (medium, 1d, pending)
+- TM-DOCS-001 (medium, 1d, completed)
   - Task: API Reference, User Guide, Troubleshooting updates
   - Acceptance: complete docs; navigable from README
-  - Notes: Settings docs partially updated (API + User + Developer Notes) during TM-SETTINGS-001.
+  - Notes: Updated API Reference PowerShell streaming example, removed duplicated tool endpoint docs,
+    corrected RAG upload PowerShell example, expanded Developer Notes env vars, refreshed
+    Troubleshooting for V4 ports/venv, and added README doc links.
+  - Estimate update: Actual 1d; no remaining.
+  - Follow-ups: Consider generating API docs from OpenAPI schema in CI to reduce drift.
 
 ## Cross-Cutting Requirements
 - Tests: unit ≥90% coverage per module; integration ≥70%; critical paths ≥90%

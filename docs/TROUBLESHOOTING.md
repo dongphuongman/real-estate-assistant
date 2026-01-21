@@ -9,12 +9,11 @@ numpy: Error importing numpy: you should not try to import numpy from
 **Fix**
 ```powershell
 deactivate
-Remove-Item -Recurse -Force venv
-py -3.11 -m venv venv
-.\venv\Scripts\Activate.ps1
+Remove-Item -Recurse -Force .\.venv
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip setuptools wheel
-python -m pip install "numpy>=1.24.0,<2.0.0"
-python -m pip install -r requirements.txt
+python -m pip install -e .[dev]
 python -c "import numpy; print('NumPy OK')"
 ```
 
@@ -42,24 +41,35 @@ python -m pip install -r requirements.txt
 
 ## Common Issues
 
-**Port 8501 already in use**
-```bash
-# Windows
-netstat -ano | findstr :8501
-TASKKILL /PID <PID> /F
-# macOS/Linux
-lsof -ti:8501 | xargs kill -9
+**Port already in use**
+```powershell
+# Backend (8000)
+netstat -ano | findstr :8000
+taskkill /PID <PID> /F
+
+# Frontend (3000)
+netstat -ano | findstr :3000
+taskkill /PID <PID> /F
 ```
 
 **API Key not recognized**
 - Ensure `.env` exists and is in project root
 - Restart the app after editing `.env`
+- Ensure the client sends `X-API-Key` (frontend uses `NEXT_PUBLIC_API_KEY`)
 
 **ChromaDB persistence issues**
-```bash
-rm -rf chroma_db/
+```powershell
+Remove-Item -Recurse -Force .\chroma_db
 # Restart app — database will be recreated
 ```
+
+**CORS errors in the browser**
+- In production, set `ENVIRONMENT=production` and pin `CORS_ALLOW_ORIGINS` to your frontend URL(s).
+- For local dev, keep `ENVIRONMENT` not `production` (backend allows `*`).
+
+**Local Ollama not detected**
+- Ensure Ollama is running and reachable from the backend container/host (`OLLAMA_API_BASE`).
+- The Settings > Models view shows `runtime_available=false` when the API cannot connect.
 ### ChromaDB metadata errors
 
 Symptoms:

@@ -382,14 +382,16 @@ function PromptTemplatesSection() {
 
   useEffect(() => {
     if (!selected) return;
-    const next: Record<string, string> = {};
-    for (const v of selected.variables) {
-      next[v.name] = variables[v.name] ?? "";
-    }
-    setVariables(next);
+    setVariables((prev) => {
+      const next: Record<string, string> = {};
+      for (const v of selected.variables) {
+        next[v.name] = prev[v.name] ?? "";
+      }
+      return next;
+    });
     setResult("");
     setError(null);
-  }, [selectedId]);
+  }, [selected]);
 
   return (
     <section>
