@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { IdentitySettings } from "@/components/settings/identity-settings";
+import { ModelSettings } from "@/components/settings/model-settings";
 import { NotificationSettings } from "@/components/settings/notification-settings";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,53 +14,7 @@ function formatMoneyPer1m(value: number, currency: string): string {
   return `${currency} ${value.toFixed(2)}`;
 }
 
-function ModelCatalogComparison() {
-  const [catalog, setCatalog] = useState<ModelProviderCatalog[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchCatalog = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getModelsCatalog();
-      setCatalog(data);
-    } catch (err) {
-      console.error("Failed to load model catalog:", err);
-      setCatalog(null);
-      setError("Failed to load model catalog. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCatalog();
-  }, []);
-
-  if (loading) {
-    return <div className="p-4 text-center">Loading model catalog...</div>;
-  }
-
-  if (!catalog) {
-    return (
-      <div className="p-4 text-center text-red-500">
-        {error || "Something went wrong."}
-        <Button onClick={fetchCatalog} className="ml-4">
-          Retry
-        </Button>
-      </div>
-    );
-  }
-
-  if (catalog.length === 0) {
-    return (
-      <div className="rounded-lg border bg-card p-6 text-center text-sm text-muted-foreground">
-        No models available.
-      </div>
-    );
-  }
-
+function ModelCatalogComparisonTable({ catalog }: { catalog: ModelProviderCatalog[] }) {
   return (
     <div className="grid gap-6">
       {catalog.map((provider) => (
@@ -169,6 +125,32 @@ function ModelCatalogComparison() {
 }
 
 export default function SettingsPage() {
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [catalog, setCatalog] = useState<ModelProviderCatalog[] | null>(null);
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
+
+  const fetchCatalog = async () => {
+    setCatalogLoading(true);
+    setCatalogError(null);
+    try {
+      const data = await getModelsCatalog();
+      setCatalog(data);
+    } catch (err) {
+      console.error("Failed to load model catalog:", err);
+      setCatalog(null);
+      setCatalogError("Failed to load model catalog. Please try again.");
+    } finally {
+      setCatalogLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const email = window.localStorage.getItem("userEmail");
+    setUserEmail(email && email.trim() ? email.trim() : null);
+    fetchCatalog();
+  }, []);
+
   return (
     <div className="container py-10">
       <div className="flex flex-col space-y-4 mb-8">
@@ -180,16 +162,39 @@ export default function SettingsPage() {
       
       <div className="grid gap-8">
         <section>
+          <h2 className="text-lg font-semibold mb-4">Identity</h2>
+          <IdentitySettings onChange={(email) => setUserEmail(email)} />
+        </section>
+
+        <section>
           <h2 className="text-lg font-semibold mb-4">Notifications</h2>
           <NotificationSettings />
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold mb-2">Models & Costs</h2>
+          <h2 className="text-lg font-semibold mb-2">Models</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Compare model context windows and token pricing across providers.
+            Select your default model and compare pricing/capabilities across providers.
           </p>
-          <ModelCatalogComparison />
+          <div className="grid gap-6">
+            <ModelSettings catalog={catalogLoading ? null : catalog} userEmail={userEmail} />
+            {catalogLoading ? (
+              <div className="p-4 text-center">Loading model catalog...</div>
+            ) : !catalog ? (
+              <div className="p-4 text-center text-red-500">
+                {catalogError || "Something went wrong."}
+                <Button onClick={fetchCatalog} className="ml-4">
+                  Retry
+                </Button>
+              </div>
+            ) : catalog.length === 0 ? (
+              <div className="rounded-lg border bg-card p-6 text-center text-sm text-muted-foreground">
+                No models available.
+              </div>
+            ) : (
+              <ModelCatalogComparisonTable catalog={catalog} />
+            )}
+          </div>
         </section>
       </div>
     </div>

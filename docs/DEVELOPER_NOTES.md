@@ -89,9 +89,21 @@ in V4.
   - `NEXT_PUBLIC_API_URL` points to backend base (default `http://localhost:8000/api/v1`)
   - `NEXT_PUBLIC_API_KEY` is forwarded as `X-API-Key`
   - `userEmail` stored in `localStorage` is forwarded as `X-User-Email`
+  - `modelPrefs:<email>` stored in `localStorage` caches per-user default model selection
 - Chat streaming:
   - `streamChatMessage` emits text deltas parsed from `data: <text>`
   - `X-Request-ID` is available on the streaming response; the UI surfaces it for correlation
+
+## Settings (Backend)
+- Notification preferences storage: `.preferences/notification_preferences.json`
+- Model preferences storage: `.preferences/model_preferences.json`
+- Endpoints:
+  - `GET/PUT /api/v1/settings/notifications` (requires `X-User-Email` or `?user_email=`)
+  - `GET /api/v1/settings/models` (catalog only)
+  - `GET/PUT /api/v1/settings/model-preferences` (requires `X-User-Email` or `?user_email=`)
+- LLM selection:
+  - [get_llm](file:///c:/Projects/ai-real-estate-assistant/api/dependencies.py) loads per-user model preferences via `X-User-Email`
+  - Falls back to `settings.default_provider`/`settings.default_model` if preferences are missing or invalid
 
 ## CI/CD
 - GitHub Actions workflow: `.github/workflows/ci.yml`

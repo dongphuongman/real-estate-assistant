@@ -22,6 +22,7 @@ describe("MainNav", () => {
     expect(screen.getByText("Search")).toBeInTheDocument()
     expect(screen.getByText("Assistant")).toBeInTheDocument()
     expect(screen.getByText("Analytics")).toBeInTheDocument()
+    expect(screen.getByText("Settings")).toBeInTheDocument()
   })
 
   it("highlights active link", () => {

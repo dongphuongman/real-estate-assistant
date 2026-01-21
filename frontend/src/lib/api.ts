@@ -2,6 +2,7 @@ import {
   ChatRequest,
   ChatResponse,
   ModelProviderCatalog,
+  ModelPreferences,
   MortgageInput,
   MortgageResult,
   NotificationSettings,
@@ -103,6 +104,27 @@ export async function getModelsCatalog(): Promise<ModelProviderCatalog[]> {
     },
   });
   return handleResponse<ModelProviderCatalog[]>(response);
+}
+
+export async function getModelPreferences(): Promise<ModelPreferences> {
+  const response = await fetch(`${getApiUrl()}/settings/model-preferences`, {
+    method: "GET",
+    headers: {
+      ...buildHeaders(),
+    },
+  });
+  return handleResponse<ModelPreferences>(response);
+}
+
+export async function updateModelPreferences(payload: Partial<ModelPreferences>): Promise<ModelPreferences> {
+  const response = await fetch(`${getApiUrl()}/settings/model-preferences`, {
+    method: "PUT",
+    headers: {
+      ...buildHeaders(),
+    },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<ModelPreferences>(response);
 }
 
 export async function calculateMortgage(input: MortgageInput): Promise<MortgageResult> {

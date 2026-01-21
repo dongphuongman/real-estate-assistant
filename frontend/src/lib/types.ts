@@ -121,6 +121,11 @@ export interface ModelProviderCatalog {
   available_models?: string[] | null;
 }
 
+export interface ModelPreferences {
+  preferred_provider: string | null;
+  preferred_model: string | null;
+}
+
 export type ExportFormat = "csv" | "xlsx" | "json" | "md" | "pdf";
 
 export interface ExportSearchRequest {

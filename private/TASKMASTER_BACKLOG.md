@@ -109,13 +109,19 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
   - Follow-ups: Add Pro connectors for valuation/legal/enrichment/CRM behind explicit feature flags.
 
 ### Epic: Saved Settings
-- TM-SETTINGS-001 (medium, 2d, pending)
+- TM-SETTINGS-001 (medium, 2d, completed)
   - Task: Client-side preferences and settings page
   - Subtasks:
     - Notification preferences; model settings by email
     - Persistence via local storage
   - Acceptance: settings persist/load; validated inputs
   - Tests: UI state and serialization
+  - Notes: Added Settings navigation link; Settings page now includes Identity (email), Notifications
+    (including marketing emails), and Default Model selection. Implemented per-user model preferences
+    backend (`/settings/model-preferences`) and applied in LLM selection via `X-User-Email`. Client
+    caches model selection in `localStorage` per email.
+  - Estimate update: Actual 1d; remaining 1d reallocated to TM-DOCS-001.
+  - Follow-ups: Consider exposing model selection in RAG UI; add provider/model capability badges.
 
 ### Epic: Exports
 - TM-EXPORTS-001 (medium, 2d, pending)
@@ -163,9 +169,10 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
   - Estimate update: Actual 1d; follow-up to raise unit coverage gates from 75→90 in CI post-MVP.
 
 ### Epic: Docs (CE)
-- TM-DOCS-001 (medium, 2d, pending)
+- TM-DOCS-001 (medium, 1.5d, pending)
   - Task: API Reference, User Guide, Troubleshooting updates
   - Acceptance: complete docs; navigable from README
+  - Notes: Settings docs partially updated (API + User + Developer Notes) during TM-SETTINGS-001.
 
 ## Cross-Cutting Requirements
 - Tests: unit ≥90% coverage per module; integration ≥70%; critical paths ≥90%

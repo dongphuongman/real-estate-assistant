@@ -246,3 +246,97 @@ def test_model_catalog_lists_providers_and_models():
     assert ollama["is_local"] is True
     assert isinstance(ollama["runtime_available"], bool)
     assert isinstance(ollama["available_models"], list)
+
+
+def test_model_preferences_are_scoped_by_user_email(tmp_path):
+    from models.user_model_preferences import UserModelPreferencesManager
+
+    settings = get_settings()
+    key = settings.api_access_key
+
+    manager = UserModelPreferencesManager(storage_path=str(tmp_path))
+
+    with patch("models.user_model_preferences.MODEL_PREFS_MANAGER", manager):
+        catalog = client.get("/api/v1/settings/models", headers={"X-API-Key": key}).json()
+        openai = next(p for p in catalog if p["name"] == "openai")
+        ollama = next(p for p in catalog if p["name"] == "ollama")
+
+        openai_model = openai["models"][0]["id"]
+        ollama_model = ollama["models"][0]["id"]
+
+        user1_headers = {"X-API-Key": key, "X-User-Email": "u1@example.com"}
+        user2_headers = {"X-API-Key": key, "X-User-Email": "u2@example.com"}
+
+        r1 = client.put(
+            "/api/v1/settings/model-preferences",
+            json={"preferred_provider": "openai", "preferred_model": openai_model},
+            headers=user1_headers,
+        )
+        assert r1.status_code == 200
+
+        r2 = client.put(
+            "/api/v1/settings/model-preferences",
+            json={"preferred_provider": "ollama", "preferred_model": ollama_model},
+            headers=user2_headers,
+        )
+        assert r2.status_code == 200
+
+        g1 = client.get("/api/v1/settings/model-preferences", headers=user1_headers)
+        g2 = client.get("/api/v1/settings/model-preferences", headers=user2_headers)
+        assert g1.status_code == 200
+        assert g2.status_code == 200
+
+        d1 = g1.json()
+        d2 = g2.json()
+        assert d1["preferred_provider"] == "openai"
+        assert d1["preferred_model"] == openai_model
+        assert d2["preferred_provider"] == "ollama"
+        assert d2["preferred_model"] == ollama_model
+
+
+def test_chat_uses_user_model_preferences(tmp_path):
+    import types
+
+    from models.user_model_preferences import UserModelPreferencesManager
+
+    settings = get_settings()
+    key = settings.api_access_key
+
+    manager = UserModelPreferencesManager(storage_path=str(tmp_path))
+
+    created: list[dict] = []
+
+    class FakeProvider:
+        def list_models(self):
+            return [types.SimpleNamespace(id="default-a"), types.SimpleNamespace(id="pref-b")]
+
+        def create_model(self, model_id, temperature, max_tokens, **kwargs):
+            created.append({"model_id": model_id, "temperature": temperature, "max_tokens": max_tokens})
+            return types.SimpleNamespace(model_id=model_id)
+
+    fake_provider = FakeProvider()
+
+    class FakeStore:
+        def get_retriever(self):
+            return object()
+
+    class FakeAgent:
+        def process_query(self, message):
+            return {"answer": "ok", "source_documents": []}
+
+    manager.update_preferences("u1@example.com", preferred_provider="openai", preferred_model="pref-b")
+
+    with patch("models.user_model_preferences.MODEL_PREFS_MANAGER", manager):
+        with patch("api.dependencies.ModelProviderFactory.get_provider", lambda *_args, **_kwargs: fake_provider):
+            with patch("api.routers.chat.create_hybrid_agent", lambda **_kwargs: FakeAgent()):
+                app.dependency_overrides[get_vector_store] = lambda: FakeStore()
+
+                r = client.post(
+                    "/api/v1/chat",
+                    json={"message": "hello", "stream": False},
+                    headers={"X-API-Key": key, "X-User-Email": "u1@example.com"},
+                )
+                assert r.status_code == 200
+                assert created and created[0]["model_id"] == "pref-b"
+
+                app.dependency_overrides = {}

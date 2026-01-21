@@ -110,7 +110,7 @@ The digest system bridges raw property data and user notifications.
 - **Chat**: `/api/v1/chat` (SSE supported; responses include `X-Request-ID`)
 - **Tools**: `/api/v1/tools/*` (mortgage, compare, price analysis, location analysis; CE stubs:
   valuation, legal-check, enrich-address, crm-sync-contact)
-- **Settings**: `/api/v1/settings/notifications`, `/api/v1/settings/models`
+- **Settings**: `/api/v1/settings/notifications`, `/api/v1/settings/models`, `/api/v1/settings/model-preferences`
 - **Auth**: `/api/v1/auth/*`
 - **Admin**: `/api/v1/admin/*` (ingest, reindex)
 - **RAG (CE)**: `/api/v1/rag/upload`, `/api/v1/rag/qa`

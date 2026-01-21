@@ -121,6 +121,22 @@ export function NotificationSettings() {
               <option value="weekly">Weekly</option>
             </select>
           </div>
+
+          <div className="flex items-center justify-between space-x-2">
+            <Label htmlFor="marketing_emails" className="flex flex-col space-y-1">
+              <span>Product Updates</span>
+              <span className="font-normal text-muted-foreground">
+                Receive occasional emails about new features and improvements.
+              </span>
+            </Label>
+            <input
+              type="checkbox"
+              id="marketing_emails"
+              className="h-4 w-4 rounded border-gray-300"
+              checked={settings.marketing_emails}
+              onChange={() => toggleSetting("marketing_emails")}
+            />
+          </div>
         </CardContent>
       </Card>
 

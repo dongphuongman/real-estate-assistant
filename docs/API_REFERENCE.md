@@ -474,6 +474,33 @@ CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
         ]
         ```
 
+*   `GET /api/v1/settings/model-preferences`
+    *   Get the default model preferences for the current user.
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **User selection**: Provide `X-User-Email: <user@example.com>` header or
+        `?user_email=<user@example.com>` query param (query param overrides header).
+    *   **Returns**:
+        ```json
+        {
+          "preferred_provider": "openai",
+          "preferred_model": "gpt-4o"
+        }
+        ```
+
+*   `PUT /api/v1/settings/model-preferences`
+    *   Update the default model preferences for the current user (used by `/api/v1/chat` and `/api/v1/rag/qa`).
+    *   **Headers**: `X-API-Key: your-api-key
+    *   **User selection**: Provide `X-User-Email: <user@example.com>` header or
+        `?user_email=<user@example.com>` query param (query param overrides header).
+    *   **Body**:
+        ```json
+        {
+          "preferred_provider": "openai",
+          "preferred_model": "gpt-4o"
+        }
+        ```
+    *   **Returns**: Updated model preferences.
+
 #### Admin
 
 *   `GET /api/v1/admin/health`

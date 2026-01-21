@@ -7,6 +7,8 @@ jest.mock("@/lib/api", () => ({
   getNotificationSettings: jest.fn(),
   updateNotificationSettings: jest.fn(),
   getModelsCatalog: jest.fn(),
+  getModelPreferences: jest.fn(),
+  updateModelPreferences: jest.fn(),
 }));
 
 // Mock child component to simplify integration test
@@ -14,12 +16,20 @@ jest.mock("@/components/settings/notification-settings", () => ({
   NotificationSettings: () => <div data-testid="notification-settings">Notification Settings Component</div>,
 }));
 
+jest.mock("@/components/settings/identity-settings", () => ({
+  IdentitySettings: () => <div data-testid="identity-settings">Identity Settings Component</div>,
+}));
+
+jest.mock("@/components/settings/model-settings", () => ({
+  ModelSettings: () => <div data-testid="model-settings">Model Settings Component</div>,
+}));
+
 describe("SettingsPage", () => {
   const mockGetModelsCatalog = getModelsCatalog as jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetModelsCatalog.mockResolvedValue([]);
+    mockGetModelsCatalog.mockImplementation(() => new Promise(() => {}));
   });
 
   it("renders page title and description", () => {
@@ -30,6 +40,8 @@ describe("SettingsPage", () => {
 
   it("renders notification settings section", () => {
     render(<SettingsPage />);
+    expect(screen.getByText("Identity")).toBeInTheDocument();
+    expect(screen.getByTestId("identity-settings")).toBeInTheDocument();
     expect(screen.getByText("Notifications")).toBeInTheDocument();
     expect(screen.getByTestId("notification-settings")).toBeInTheDocument();
   });
@@ -58,7 +70,8 @@ describe("SettingsPage", () => {
 
     render(<SettingsPage />);
 
-    expect(screen.getByText("Models & Costs")).toBeInTheDocument();
+    expect(screen.getByText("Models")).toBeInTheDocument();
+    expect(screen.getByTestId("model-settings")).toBeInTheDocument();
     expect(screen.getByText("Loading model catalog...")).toBeInTheDocument();
 
     await waitFor(() => {

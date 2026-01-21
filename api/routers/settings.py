@@ -2,7 +2,15 @@ import logging
 
 from fastapi import APIRouter, Header, HTTPException, Query
 
-from api.models import ModelCatalogItem, ModelPricing, ModelProviderCatalog, NotificationSettings
+import models.user_model_preferences as user_model_preferences
+from api.models import (
+    ModelCatalogItem,
+    ModelPreferences,
+    ModelPreferencesUpdate,
+    ModelPricing,
+    ModelProviderCatalog,
+    NotificationSettings,
+)
 from models.provider_factory import ModelProviderFactory
 from notifications.notification_preferences import (
     AlertFrequency,
@@ -149,4 +157,90 @@ async def list_model_catalog():
         return providers
     except Exception as e:
         logger.error(f"Error listing model catalog: {e}")
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.get("/settings/model-preferences", response_model=ModelPreferences)
+async def get_model_preferences(
+    user_email: str | None = Query(default=None),
+    x_user_email: str | None = Header(default=None, alias="X-User-Email"),
+):
+    try:
+        resolved_user_email = _resolve_user_email(user_email, x_user_email)
+        prefs = user_model_preferences.MODEL_PREFS_MANAGER.get_preferences(resolved_user_email)
+        return ModelPreferences(
+            preferred_provider=prefs.preferred_provider,
+            preferred_model=prefs.preferred_model,
+        )
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    except Exception as e:
+        logger.error(f"Error fetching model preferences: {e}")
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.put("/settings/model-preferences", response_model=ModelPreferences)
+async def update_model_preferences(
+    payload: ModelPreferencesUpdate,
+    user_email: str | None = Query(default=None),
+    x_user_email: str | None = Header(default=None, alias="X-User-Email"),
+):
+    try:
+        resolved_user_email = _resolve_user_email(user_email, x_user_email)
+        existing = user_model_preferences.MODEL_PREFS_MANAGER.get_preferences(resolved_user_email)
+
+        incoming_provider = payload.preferred_provider
+        incoming_model = payload.preferred_model
+
+        next_provider = incoming_provider if incoming_provider is not None else existing.preferred_provider
+        next_model = incoming_model if incoming_model is not None else existing.preferred_model
+
+        if incoming_provider is not None and (incoming_provider.strip() == ""):
+            next_provider = None
+            if incoming_model is None:
+                next_model = None
+
+        if incoming_model is not None and (incoming_model.strip() == ""):
+            next_model = None
+
+        if next_model and not next_provider:
+            raise HTTPException(
+                status_code=400,
+                detail="preferred_provider is required when setting preferred_model",
+            )
+
+        if next_provider:
+            allowed_providers = set(ModelProviderFactory.list_providers())
+            if next_provider not in allowed_providers:
+                raise HTTPException(status_code=400, detail=f"Unknown provider: {next_provider}")
+
+            provider = ModelProviderFactory.get_provider(next_provider)
+            if next_model:
+                allowed_models = {m.id for m in provider.list_models()}
+                if next_model not in allowed_models:
+                    raise HTTPException(status_code=400, detail=f"Unknown model for provider '{next_provider}': {next_model}")
+            else:
+                if incoming_provider is not None and existing.preferred_model:
+                    allowed_models = {m.id for m in provider.list_models()}
+                    if existing.preferred_model in allowed_models:
+                        next_model = existing.preferred_model
+
+        updated = user_model_preferences.MODEL_PREFS_MANAGER.update_preferences(
+            resolved_user_email,
+            preferred_provider=next_provider,
+            preferred_model=next_model,
+        )
+
+        return ModelPreferences(
+            preferred_provider=updated.preferred_provider,
+            preferred_model=updated.preferred_model,
+        )
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    except Exception as e:
+        logger.error(f"Error updating model preferences: {e}")
         raise HTTPException(status_code=500, detail=str(e)) from e

@@ -224,3 +224,96 @@ def test_list_model_catalog(mock_get_settings, mock_factory):
     assert data[1]["runtime_available"] is True
     assert data[1]["available_models"] == ["llama3.2:3b"]
     assert data[1]["models"][0]["pricing"] is None
+
+
+@patch("api.routers.settings.user_model_preferences.MODEL_PREFS_MANAGER")
+@patch("api.auth.get_settings")
+def test_get_model_preferences(mock_get_settings, mock_model_prefs_manager):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+
+    mock_prefs = MagicMock()
+    mock_prefs.preferred_provider = "openai"
+    mock_prefs.preferred_model = "gpt-4o"
+    mock_model_prefs_manager.get_preferences.return_value = mock_prefs
+
+    response = client.get("/api/v1/settings/model-preferences", headers=HEADERS)
+    assert response.status_code == 200
+    mock_model_prefs_manager.get_preferences.assert_called_once_with("u1@example.com")
+    data = response.json()
+    assert data["preferred_provider"] == "openai"
+    assert data["preferred_model"] == "gpt-4o"
+
+
+@patch("api.routers.settings.user_model_preferences.MODEL_PREFS_MANAGER")
+@patch("api.routers.settings.ModelProviderFactory")
+@patch("api.auth.get_settings")
+def test_update_model_preferences_validates_provider_and_model(
+    mock_get_settings, mock_factory, mock_model_prefs_manager
+):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+
+    mock_factory.list_providers.return_value = ["openai"]
+    provider = MagicMock()
+    model = MagicMock()
+    model.id = "gpt-4o"
+    provider.list_models.return_value = [model]
+    mock_factory.get_provider.return_value = provider
+
+    existing = MagicMock()
+    existing.preferred_provider = None
+    existing.preferred_model = None
+    mock_model_prefs_manager.get_preferences.return_value = existing
+
+    updated = MagicMock()
+    updated.preferred_provider = "openai"
+    updated.preferred_model = "gpt-4o"
+    mock_model_prefs_manager.update_preferences.return_value = updated
+
+    response = client.put(
+        "/api/v1/settings/model-preferences",
+        json={"preferred_provider": "openai", "preferred_model": "gpt-4o"},
+        headers=HEADERS,
+    )
+    assert response.status_code == 200
+    assert response.json()["preferred_provider"] == "openai"
+    assert response.json()["preferred_model"] == "gpt-4o"
+
+
+@patch("api.routers.settings.user_model_preferences.MODEL_PREFS_MANAGER")
+@patch("api.auth.get_settings")
+def test_update_model_preferences_requires_provider_when_setting_model(
+    mock_get_settings, mock_model_prefs_manager
+):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+
+    existing = MagicMock()
+    existing.preferred_provider = None
+    existing.preferred_model = None
+    mock_model_prefs_manager.get_preferences.return_value = existing
+
+    response = client.put(
+        "/api/v1/settings/model-preferences",
+        json={"preferred_model": "gpt-4o"},
+        headers=HEADERS,
+    )
+    assert response.status_code == 400
+    assert "preferred_provider is required" in response.json()["detail"]
+
+
+@patch("api.routers.settings.user_model_preferences.MODEL_PREFS_MANAGER")
+@patch("api.auth.get_settings")
+def test_get_model_preferences_missing_user_email_returns_400(mock_get_settings, mock_model_prefs_manager):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+
+    response = client.get("/api/v1/settings/model-preferences", headers=HEADERS_NO_USER)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Missing user email"
+    assert not mock_model_prefs_manager.get_preferences.called

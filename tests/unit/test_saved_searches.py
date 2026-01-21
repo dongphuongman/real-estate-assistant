@@ -41,3 +41,34 @@ def test_matches_year_built_and_energy_cert_filters():
     assert ss.matches({**prop, "year_built": 1990}) is False
     assert ss.matches({**prop, "energy_cert": "C"}) is False
 
+
+def test_matches_property_type_with_value_attr_and_amenities():
+    class _EnumLike:
+        def __init__(self, value: str):
+            self.value = value
+
+    ss = SavedSearch(
+        id="s2",
+        name="Amenity filters",
+        city="Gdansk",
+        property_types=["Apartment"],
+        must_have_elevator=True,
+        must_have_garden=True,
+        must_have_pool=True,
+    )
+    prop = {
+        "city": "Gdansk",
+        "property_type": _EnumLike("apartment"),
+        "has_elevator": True,
+        "has_garden": True,
+        "has_pool": True,
+    }
+    assert ss.matches(prop) is True
+    assert ss.matches({**prop, "has_pool": False}) is False
+
+
+def test_energy_certs_filter_ignores_empty_values():
+    ss = SavedSearch(id="s3", name="Energy", energy_certs=["", "  ", "A"])
+    assert ss.matches({"energy_cert": "a"}) is True
+    assert ss.matches({"energy_cert": "b"}) is False
+

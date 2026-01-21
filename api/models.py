@@ -155,6 +155,22 @@ class ModelProviderCatalog(BaseModel):
     available_models: Optional[List[str]] = None
 
 
+class ModelPreferences(BaseModel):
+    preferred_provider: Optional[str] = None
+    preferred_model: Optional[str] = None
+
+
+class ModelPreferencesUpdate(BaseModel):
+    preferred_provider: Optional[str] = None
+    preferred_model: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_not_empty(self) -> "ModelPreferencesUpdate":
+        if self.preferred_provider is None and self.preferred_model is None:
+            raise ValueError("At least one of preferred_provider or preferred_model must be provided")
+        return self
+
+
 class ComparePropertiesRequest(BaseModel):
     property_ids: List[str]
 

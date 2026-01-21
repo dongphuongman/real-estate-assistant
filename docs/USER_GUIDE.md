@@ -5,6 +5,13 @@
 Use the theme button (moon/sun) in the top navigation to switch between Light and Dark mode. Your
 selection is saved in your browser.
 
+## Settings
+
+Open **Settings** from the top navigation to manage:
+- **Identity**: Set the email address used to scope settings (saved locally in your browser).
+- **Default Model**: Choose the provider/model used by the Assistant for responses.
+- **Notifications**: Configure digest frequency and optional Expert Mode / product updates.
+
 ## Notifications & Digests
 
 The AI Real Estate Assistant helps you stay on top of the market with personalized email digests.
