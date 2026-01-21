@@ -168,6 +168,34 @@ jobs:
           name: frontend-coverage
           path: frontend/coverage
 
+  compose_smoke:
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: CI disabled notice
+        if: ${{ env.MVP_CI_DISABLED == 'true' }}
+        run: |
+          echo "CI temporarily disabled for MVP sprint."
+      - name: Set up Python
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Docker Compose smoke test (build + health checks)
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
+        env:
+          API_ACCESS_KEY: ci-test-key
+          NEXT_PUBLIC_API_KEY: ci-test-key
+        run: |
+          docker --version
+          docker compose version
+          python scripts/compose_smoke.py --ci --timeout-seconds 300
+
   security:
     runs-on: ubuntu-latest
     steps:

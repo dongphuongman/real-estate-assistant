@@ -205,6 +205,19 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
   - Estimate update: Actual 1d; no remaining.
   - Follow-ups: Optional Ollama service enablement docs; add CI compose smoke test.
 
+- TM-DEPLOY-002 (high, 0.5d, completed)
+  - Task: Add Docker Compose smoke test in CI (build + health)
+  - Subtasks:
+    - Add `scripts/compose_smoke.py` to build Compose and wait for `/health` + `/`
+    - Add a CI job that runs the smoke test and always tears down containers
+  - Acceptance: CI validates docker-compose build and service health without external keys; local smoke script works on Windows and Linux.
+  - Tests: unit (command building + wait loop), integration (CLI dry-run wiring)
+  - Docs: API Reference, User Guide, Developer Notes
+  - Dependencies: TM-DEPLOY-001
+  - Notes: Added `compose_smoke` CI job and a cross-platform smoke script to prevent drift in Compose/Dockerfiles.
+  - Estimate update: Actual 0.25d; remaining 0.25d reallocated to TM-DOCS-001 follow-ups.
+  - Follow-ups: Consider calling a minimal authenticated `/api/v1/verify-auth` check once stable.
+
 ### Epic: QA & Security
 - TM-QA-001 (high, 1d, completed)
   - Task: ruff/mypy gates and RuleEngine cleanliness

@@ -146,6 +146,9 @@ in V4.
   - Lint: `npm run lint`
   - Tests + coverage: `npm run test -- --ci --coverage` (thresholds enforced in `jest.config.ts`)
 - Artifacts: coverage reports uploaded per job
+- Docker Compose smoke:
+  - CI runs a Compose smoke job that builds backend/frontend images and waits for `/health` + `/`.
+  - Local equivalent: `python scripts\compose_smoke.py --ci`
 - Security:
   - Static analysis: Bandit (fail on high severity/high confidence)
   - Dependency audit: pip-audit (fail on vulnerabilities)
