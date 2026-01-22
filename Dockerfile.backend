@@ -8,7 +8,9 @@ RUN apt-get update && apt-get upgrade -y && \
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel==0.46.3 && \
     pip install --no-cache-dir -r requirements.txt && \
-    rm -f /usr/local/lib/python3.12/ensurepip/_bundled/wheel-*.whl
+    rm -f /usr/local/lib/python3.12/ensurepip/_bundled/wheel-*.whl && \
+    (find /usr -type f -name "wheel-0.45.1*" -delete || true) && \
+    (find /usr -type d -name "wheel-0.45.1.dist-info" -exec rm -rf {} + || true)
 COPY . .
 ENV PYTHONUNBUFFERED=1
 EXPOSE 8000
