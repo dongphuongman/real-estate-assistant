@@ -328,21 +328,36 @@ jobs:
             const rows = Object.entries(needs).map(([job, data]) => [job, data.result || 'unknown']);
             core.summary.addHeading('Pipeline Health');
             core.summary.addTable([['Job', 'Result'], ...rows]);
-            const failures = rows.filter(([, result]) => result !== 'success');
-            if (failures.length) {
-              core.summary.addRaw(`Failures detected: ${failures.map(([job]) => job).join(', ')}`);
+            const isActionableFailure = (result) => ['failure', 'cancelled', 'timed_out'].includes(result);
+            const nonSuccess = rows.filter(([, result]) => result !== 'success');
+            const actionableFailures = rows.filter(([, result]) => isActionableFailure(result));
+
+            if (nonSuccess.length) {
+              core.summary.addRaw(`Non-success jobs: ${nonSuccess.map(([job, result]) => `${job}(${result})`).join(', ')}`);
             } else {
               core.summary.addRaw('All pipeline jobs succeeded.');
             }
-            await core.summary.write();
-            if (failures.length) {
-              const { owner, repo } = context.repo;
-              const title = `CI failure: ${process.env.GITHUB_WORKFLOW} #${process.env.GITHUB_RUN_NUMBER}`;
-              const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
-              const body = `Run: ${runUrl}\n\nFailures:\n${failures.map(([job, result]) => `- ${job}: ${result}`).join('\n')}`;
-              const query = `repo:${process.env.GITHUB_REPOSITORY} is:issue in:title "${title}"`;
-              const existing = await github.rest.search.issuesAndPullRequests({ q: query });
-              if (existing.data.total_count === 0) {
-                await github.rest.issues.create({ owner, repo, title, body });
+
+            const defaultBranch = context?.payload?.repository?.default_branch;
+            const isPushToDefaultBranch = context.eventName === 'push' && defaultBranch && context.ref === `refs/heads/${defaultBranch}`;
+            const isFork = Boolean(context?.payload?.repository?.fork);
+            const shouldOpenIssue = isPushToDefaultBranch && !isFork && actionableFailures.length > 0;
+
+            if (shouldOpenIssue) {
+              try {
+                const { owner, repo } = context.repo;
+                const title = `CI failure: ${process.env.GITHUB_WORKFLOW} #${process.env.GITHUB_RUN_NUMBER}`;
+                const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+                const body = `Run: ${runUrl}\n\nFailures:\n${actionableFailures.map(([job, result]) => `- ${job}: ${result}`).join('\n')}`;
+                const query = `repo:${process.env.GITHUB_REPOSITORY} is:issue in:title "${title}"`;
+                const existing = await github.rest.search.issuesAndPullRequests({ q: query });
+                if (existing.data.total_count === 0) {
+                  await github.rest.issues.create({ owner, repo, title, body });
+                }
+              } catch (err) {
+                core.warning(`Failed to create CI failure issue: ${err?.message || String(err)}`);
+                core.summary.addRaw('\n\nNote: Failed to create issue (insufficient permissions or API error).');
               }
             }
+
+            await core.summary.write();
