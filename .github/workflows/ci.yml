@@ -80,17 +80,17 @@ jobs:
         run: |
           git fetch origin ${{ github.base_ref }} --depth=1
 
-      - name: Coverage gate (unit: diff)
+      - name: "Coverage gate (unit: diff)"
         if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name == 'pull_request' }}
         run: |
           python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --base-ref origin/${{ github.base_ref }} --exclude tests/* --exclude scripts/* --exclude workflows/*
 
-      - name: Coverage gate (unit: diff fallback)
+      - name: "Coverage gate (unit: diff fallback)"
         if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name != 'pull_request' }}
         run: |
           python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude tests/* --exclude scripts/* --exclude workflows/*
 
-      - name: Coverage gate (unit: critical)
+      - name: "Coverage gate (unit: critical)"
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python scripts/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include api/*.py --include api/routers/*.py --include rules/*.py --include models/provider_factory.py --include models/user_model_preferences.py --include config/*.py
@@ -107,12 +107,12 @@ jobs:
         run: |
           python -m pytest tests/integration --cov=. --cov-report=xml --cov-report=term -n auto
 
-      - name: Coverage gate (integration: diff)
+      - name: "Coverage gate (integration: diff)"
         if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name == 'pull_request' }}
         run: |
           python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --base-ref origin/${{ github.base_ref }} --exclude tests/* --exclude scripts/* --exclude workflows/*
 
-      - name: Coverage gate (integration: diff fallback)
+      - name: "Coverage gate (integration: diff fallback)"
         if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name != 'pull_request' }}
         run: |
           python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude tests/* --exclude scripts/* --exclude workflows/*
