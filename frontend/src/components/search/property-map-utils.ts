@@ -11,24 +11,23 @@ export type PropertyMapPoint = {
 };
 
 export function extractMapPoints(results: SearchResultItem[]): PropertyMapPoint[] {
-  return results
-    .map((item, index) => {
-      const prop = item.property;
-      const lat = prop.latitude;
-      const lon = prop.longitude;
-      if (typeof lat !== "number" || typeof lon !== "number") return null;
-      const id = prop.id ?? `unknown-${index}`;
-      return {
-        id,
-        lat,
-        lon,
-        title: prop.title ?? undefined,
-        city: prop.city ?? undefined,
-        country: prop.country ?? undefined,
-        price: prop.price ?? undefined,
-      } satisfies PropertyMapPoint;
-    })
-    .filter((p): p is PropertyMapPoint => Boolean(p));
+  return results.reduce<PropertyMapPoint[]>((acc, item, index) => {
+    const prop = item.property;
+    const lat = prop.latitude;
+    const lon = prop.longitude;
+    if (typeof lat !== "number" || typeof lon !== "number") return acc;
+    const id = prop.id ?? `unknown-${index}`;
+    acc.push({
+      id,
+      lat,
+      lon,
+      title: prop.title ?? undefined,
+      city: prop.city ?? undefined,
+      country: prop.country ?? undefined,
+      price: prop.price ?? undefined,
+    });
+    return acc;
+  }, []);
 }
 
 export type MapBounds = [[number, number], [number, number]];
@@ -55,4 +54,3 @@ export function computeCenter(points: PropertyMapPoint[]): { lat: number; lon: n
   );
   return { lat: sum.lat / points.length, lon: sum.lon / points.length };
 }
-
