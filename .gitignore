@@ -212,6 +212,7 @@ temp/
 # Node modules (if using any Node.js tools)
 node_modules/
 package-lock.json
+!frontend/package-lock.json
 yarn.lock
 frontend/.next/
 !frontend/src/lib/
