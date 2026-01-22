@@ -45,6 +45,11 @@ Cross-Origin Resource Sharing (CORS) is controlled via environment:
 - `ENVIRONMENT=production` pins allowed origins from `CORS_ALLOW_ORIGINS` (comma‑separated).
 - `ENVIRONMENT` not `production` allows all origins (`*`) for local development.
 
+### Search & Mapping
+
+- `POST /api/v1/search` returns `SearchResponse.results[].property.latitude` and `SearchResponse.results[].property.longitude` when available.
+- Clients should treat coordinates as optional and handle `null` / missing values.
+
 ### Quality & Stability
 - Static analysis enforced: ruff (lint), mypy (types), RuleEngine (custom rules).
 - CI runs RuleEngine as a dedicated step for fast feedback; run locally with `python -m pytest -q tests\integration\test_rule_engine_clean.py`.

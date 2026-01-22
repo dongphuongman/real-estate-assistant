@@ -107,6 +107,9 @@ in V4.
   cd frontend
   npm test
   ```
+- Mapping (Search Map view):
+  - Libraries: `leaflet`, `react-leaflet`
+  - Tiles: OpenStreetMap (`https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`) via the browser (no API key required)
 - E2E (Playwright):
   ```powershell
   $env:PLAYWRIGHT_START_WEB='1'
@@ -186,6 +189,7 @@ in V4.
 ## Search Filters (End-to-End)
 - UI (Next.js): `frontend/src/app/search/page.tsx` collects `min_price`, `max_price`, `rooms`,
   `property_type` and validates query/price range (neutral state before first search)
+- UI Map view: toggles between list and map; map plots results with `property.latitude`/`property.longitude`
 - Client API: `frontend/src/lib/api.ts` sends `filters` in `POST /api/v1/search` payload
 - Backend Router: `api/routers/search.py` forwards `request.filters` to `store.hybrid_search`
 - Vector Store: `vector_store/chroma_store.py` converts filters to Chroma format via `_build_chroma_filter`

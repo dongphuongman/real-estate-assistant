@@ -72,6 +72,20 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
   - Estimate update: Actual 1d; remaining 1d reallocated to TM-DOCS-001.
   - Docs: User Guide (search), API Reference (search), Developer Notes
 
+- TM-SEARCH-003 (medium, 0.5d, completed)
+  - Task: Add map view to Search UI (CE-safe, no API keys)
+  - Subtasks:
+    - Render property results on an interactive map when coordinates are available
+    - Add List/Map toggle and “mappable” count
+    - Keep behavior deterministic when coordinates are missing
+  - Acceptance: map view renders without external keys; users can switch views; missing coords degrade gracefully
+  - Tests: unit (map point/bounds utils), component (map wrapper), integration (Search page toggle)
+  - Docs: User Guide (map view), Developer Notes (leaflet deps), API Reference (coords note)
+  - Dependencies: TM-SEARCH-002
+  - Notes: Implemented Leaflet-based map using OpenStreetMap tiles, plus a List/Map toggle and a “mappable” count.
+  - Estimate update: Actual 0.25d; no remaining.
+  - Follow-ups: Consider clustering for dense results; add per-property detail page map focus when available.
+
 ### Epic: Local RAG
 - TM-RAG-001 (high, 3d, completed)
   - Task: Upload pipeline (parse, chunk, embed) and QA endpoint

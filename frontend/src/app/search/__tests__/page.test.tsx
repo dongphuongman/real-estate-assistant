@@ -7,6 +7,11 @@ jest.mock("@/lib/api", () => ({
   exportPropertiesBySearch: jest.fn(),
 }))
 
+jest.mock("@/components/search/property-map", () => ({
+  __esModule: true,
+  default: ({ points }: { points: unknown[] }) => <div data-testid="property-map">{points.length}</div>,
+}))
+
 const mockSearchProperties = searchProperties as jest.Mock
 const mockExport = exportPropertiesBySearch as jest.Mock
 
@@ -57,6 +62,8 @@ describe("SearchPage", () => {
             country: "US",
             rooms: 2,
             bathrooms: 2,
+            latitude: 40.0,
+            longitude: -74.0,
           },
           score: 0.9
         }
@@ -80,6 +87,32 @@ describe("SearchPage", () => {
       expect(screen.getByText("Downtown, US")).toBeInTheDocument()
     })
   })
+
+  it("toggles between list and map views", async () => {
+    mockSearchProperties.mockResolvedValueOnce({
+      results: [
+        {
+          property: { id: "1", title: "A", city: "Warsaw", country: "PL", latitude: 52.23, longitude: 21.01 },
+          score: 0.9,
+        },
+      ],
+      count: 1,
+    });
+
+    render(<SearchPage />);
+    fireEvent.change(screen.getByLabelText("Search query"), { target: { value: "Test" } });
+    fireEvent.click(screen.getByRole("button", { name: /search/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("A")).toBeInTheDocument();
+    });
+
+    expect(screen.queryByTestId("property-map")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Map" }));
+    expect(screen.getByTestId("property-map")).toHaveTextContent("1");
+    fireEvent.click(screen.getByRole("button", { name: "List" }));
+    expect(screen.queryByTestId("property-map")).not.toBeInTheDocument();
+  });
 
   it("sends filters and sorting in the search payload", async () => {
     mockSearchProperties.mockResolvedValueOnce({ results: [], count: 0 })

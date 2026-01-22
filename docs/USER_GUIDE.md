@@ -122,6 +122,12 @@ Neutral/empty states:
 - Before the first search, the page shows a neutral prompt to enter a query
 - After a search with zero matches, the page shows “No results found”
 
+### Map View
+- Use the **List / Map** toggle above results to switch views.
+- The map renders markers only for listings that include `latitude` and `longitude`.
+- The UI shows a “mappable” count (e.g., `3 / 10`) to indicate how many results can be plotted.
+- If no results include coordinates, the map view shows a “No mappable results” message.
+
 ## Geo Search
 
 Use geo filters to target a specific area:

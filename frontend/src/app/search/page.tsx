@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Search as SearchIcon, MapPin, Filter, Download } from "lucide-react";
 import { searchProperties, exportPropertiesBySearch } from "@/lib/api";
 import { SearchResultItem } from "@/lib/types";
+import PropertyMap from "@/components/search/property-map";
+import { extractMapPoints } from "@/components/search/property-map-utils";
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
@@ -24,6 +26,9 @@ export default function SearchPage() {
   const [csvDecimal, setCsvDecimal] = useState<string>(".");
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
+
+  const mapPoints = extractMapPoints(results);
 
   const buildFilters = (): { filters?: Record<string, unknown>; error?: string } => {
     const min = minPrice.trim() ? Number(minPrice) : undefined;
@@ -74,6 +79,7 @@ export default function SearchPage() {
         filters,
       });
       setResults(response.results);
+      setViewMode("list");
     } catch {
       setResults([]);
       setError("Failed to perform search. Please try again.");
@@ -438,42 +444,93 @@ export default function SearchPage() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {results.map((item, index) => {
-                  const prop = item.property;
-                  return (
-                    <div
-                      key={`${prop.id ?? "unknown"}-${index}`}
-                      className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden"
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="inline-flex rounded-md border bg-background p-1">
+                    <button
+                      type="button"
+                      onClick={() => setViewMode("list")}
+                      className={[
+                        "px-3 py-1.5 text-sm rounded-md",
+                        viewMode === "list" ? "bg-muted font-medium" : "hover:bg-muted/50",
+                      ].join(" ")}
+                      aria-pressed={viewMode === "list"}
                     >
-                      <div className="aspect-video w-full bg-muted relative">
-                        {/* Placeholder for image */}
-                        <div
-                          className="absolute inset-0 flex items-center justify-center text-muted-foreground"
-                          aria-label="Property image placeholder"
-                        >
-                          Property image
+                      List
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setViewMode("map")}
+                      className={[
+                        "px-3 py-1.5 text-sm rounded-md",
+                        viewMode === "map" ? "bg-muted font-medium" : "hover:bg-muted/50",
+                      ].join(" ")}
+                      aria-pressed={viewMode === "map"}
+                    >
+                      Map
+                    </button>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {mapPoints.length} / {results.length} mappable
+                  </div>
+                </div>
+
+                {viewMode === "map" ? (
+                  mapPoints.length ? (
+                    <PropertyMap points={mapPoints} />
+                  ) : (
+                    <div className="flex items-center justify-center h-64 text-center border rounded-lg border-dashed">
+                      <div>
+                        <div className="font-semibold">No mappable results</div>
+                        <div className="text-sm text-muted-foreground mt-1">
+                          These listings do not include latitude/longitude coordinates.
                         </div>
-                      </div>
-                      <div className="p-6 space-y-2">
-                        <h3 className="text-2xl font-semibold leading-none tracking-tight">
-                          {prop.title || "Untitled Property"}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">{prop.city}, {prop.country}</p>
-                        <div className="font-bold text-lg">
-                          {prop.price ? `$${prop.price.toLocaleString()}` : "Price on request"}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {[
-                            prop.rooms ? `${prop.rooms} beds` : null,
-                            prop.bathrooms ? `${prop.bathrooms} baths` : null,
-                            prop.area_sqm ? `${prop.area_sqm} m²` : null
-                          ].filter(Boolean).join(" • ")}
-                        </p>
                       </div>
                     </div>
-                  );
-                })}
+                  )
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {results.map((item, index) => {
+                      const prop = item.property;
+                      return (
+                        <div
+                          key={`${prop.id ?? "unknown"}-${index}`}
+                          className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden"
+                        >
+                          <div className="aspect-video w-full bg-muted relative">
+                            {/* Placeholder for image */}
+                            <div
+                              className="absolute inset-0 flex items-center justify-center text-muted-foreground"
+                              aria-label="Property image placeholder"
+                            >
+                              Property image
+                            </div>
+                          </div>
+                          <div className="p-6 space-y-2">
+                            <h3 className="text-2xl font-semibold leading-none tracking-tight">
+                              {prop.title || "Untitled Property"}
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              {prop.city}, {prop.country}
+                            </p>
+                            <div className="font-bold text-lg">
+                              {prop.price ? `$${prop.price.toLocaleString()}` : "Price on request"}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {[
+                                prop.rooms ? `${prop.rooms} beds` : null,
+                                prop.bathrooms ? `${prop.bathrooms} baths` : null,
+                                prop.area_sqm ? `${prop.area_sqm} m²` : null,
+                              ]
+                                .filter(Boolean)
+                                .join(" • ")}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </div>
