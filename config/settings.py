@@ -82,6 +82,17 @@ class AppSettings(BaseModel):
     default_max_tokens: int = 4096
     default_k_results: int = 5
 
+    # Chat (SSE sources payload safety)
+    chat_sources_max_items: int = Field(
+        default_factory=lambda: int(os.getenv("CHAT_SOURCES_MAX_ITEMS", "5"))
+    )
+    chat_source_content_max_chars: int = Field(
+        default_factory=lambda: int(os.getenv("CHAT_SOURCE_CONTENT_MAX_CHARS", "2000"))
+    )
+    chat_sources_max_total_bytes: int = Field(
+        default_factory=lambda: int(os.getenv("CHAT_SOURCES_MAX_TOTAL_BYTES", "20000"))
+    )
+
     # Vector Store
     embedding_model: str = "BAAI/bge-small-en-v1.5"
     chunk_size: int = 1000

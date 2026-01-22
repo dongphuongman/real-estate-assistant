@@ -59,6 +59,12 @@ The response uses Server-Sent Events (`text/event-stream`) with:
 - A final metadata event: `event: meta` with `data: {"sources":[...],"session_id":"..."}`
 - A terminator: `data: [DONE]`
 
+To keep responses deterministic and safe for clients, the server may truncate the `sources` payload
+(number of items and per-source content length). Configure via:
+- `CHAT_SOURCES_MAX_ITEMS`
+- `CHAT_SOURCE_CONTENT_MAX_CHARS`
+- `CHAT_SOURCES_MAX_TOTAL_BYTES`
+
 PowerShell example (prints raw SSE frames):
 ```powershell
 $env:API_ACCESS_KEY="dev-secret-key"

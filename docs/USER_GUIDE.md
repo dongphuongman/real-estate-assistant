@@ -106,6 +106,7 @@ For real-time streaming from the assistant:
 - Ensure you include the `X-API-Key` header; see API Reference for an example
 - The UI progressively renders assistant messages, shows a Retry button on errors, and displays Sources (when available)
 - The UI displays `request_id` on both success and error paths (when available) to help correlate with server logs
+- Sources may be truncated (count and per-item content length) to keep payloads safe for clients
 
 ## Search Filters
 

@@ -10,8 +10,10 @@ from langchain_core.language_models import BaseChatModel
 
 from agents.hybrid_agent import create_hybrid_agent
 from ai.memory import get_session_history
+from api.chat_sources import serialize_chat_sources
 from api.dependencies import get_llm, get_vector_store
 from api.models import ChatRequest, ChatResponse
+from config.settings import get_settings
 from vector_store.chroma_store import ChromaPropertyStore
 
 # Configure logger
@@ -30,10 +32,15 @@ async def chat_endpoint(
     """
     try:
         if not store:
-             raise HTTPException(
+            raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Vector store unavailable"
             )
+
+        settings = get_settings()
+        sources_max_items = max(0, int(settings.chat_sources_max_items))
+        sources_max_content_chars = max(0, int(settings.chat_source_content_max_chars))
+        sources_max_total_bytes = max(0, int(settings.chat_sources_max_total_bytes))
 
         # Handle Session ID
         session_id = request.session_id
@@ -64,9 +71,12 @@ async def chat_endpoint(
                 if hasattr(agent, "get_sources_for_query"):
                     try:
                         docs = agent.get_sources_for_query(request.message)
-                        sources_payload["sources"] = [
-                            {"content": doc.page_content, "metadata": doc.metadata} for doc in docs
-                        ]
+                        sources_payload["sources"] = serialize_chat_sources(
+                            docs,
+                            max_items=sources_max_items,
+                            max_content_chars=sources_max_content_chars,
+                            max_total_bytes=sources_max_total_bytes,
+                        )
                     except Exception:
                         sources_payload["sources"] = []
                 yield "event: meta\n"
@@ -82,14 +92,12 @@ async def chat_endpoint(
         
         # HybridPropertyAgent returns dict with 'answer', 'source_documents', etc.
         answer = result.get("answer", "")
-        sources = []
-        if "source_documents" in result:
-            for doc in result["source_documents"]:
-                # Convert Document to dict source
-                sources.append({
-                    "content": doc.page_content,
-                    "metadata": doc.metadata
-                })
+        sources = serialize_chat_sources(
+            result.get("source_documents") or [],
+            max_items=sources_max_items,
+            max_content_chars=sources_max_content_chars,
+            max_total_bytes=sources_max_total_bytes,
+        )
         
         return ChatResponse(
             response=answer,

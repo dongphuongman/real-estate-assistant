@@ -35,6 +35,10 @@ in V4.
   - `API_RATE_LIMIT_ENABLED` (`true`/`false`)
   - `API_RATE_LIMIT_RPM` (requests per minute)
   - `API_ACCESS_KEY` (default `dev-secret-key` for dev)
+  - Chat sources payload limits (SSE `event: meta` and non-stream `ChatResponse.sources`):
+    - `CHAT_SOURCES_MAX_ITEMS` (default `5`)
+    - `CHAT_SOURCE_CONTENT_MAX_CHARS` (default `2000`)
+    - `CHAT_SOURCES_MAX_TOTAL_BYTES` (default `20000`)
   - Email (optional; enables digest delivery when users opt in):
     - `SMTP_PROVIDER` (`gmail` | `outlook` | `sendgrid` | `custom`)
     - `SMTP_USERNAME` / `SMTP_PASSWORD`
