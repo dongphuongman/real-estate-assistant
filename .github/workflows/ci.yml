@@ -75,6 +75,10 @@ jobs:
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python scripts/generate_api_reference.py --check
+      - name: API reference (full) drift check
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
+        run: |
+          python scripts/update_api_reference_full.py --check
 
       - name: Run unit tests with coverage (pytest)
         if: ${{ env.MVP_CI_DISABLED != 'true' }}

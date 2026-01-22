@@ -330,6 +330,18 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
   - Estimate update: Actual 0.5d; no remaining.
   - Follow-ups: Consider wiring `scripts/update_api_reference_full.py --check` into CI post-MVP alongside existing drift checks.
 
+- TM-DOCS-005 (high, 0.1d, completed)
+  - Task: Wire full API Reference drift check into CI
+  - Subtasks:
+    - Add CI step to run `python scripts/update_api_reference_full.py --check`
+    - Document CI drift check command in Developer Notes
+  - Acceptance: CI fails on drift in `docs/API_REFERENCE.md` Endpoints section; docs updated
+  - Tests: existing unit/integration tests for the generator/drift remain green
+  - Docs: Developer Notes (CI drift check command)
+  - Dependencies: TM-DOCS-004
+  - Notes: Added a dedicated CI step to enforce full API Reference drift detection; aligns with OpenAPI snapshot checks.
+  - Estimate update: Actual 0.1d; no remaining.
+
 ## Cross-Cutting Requirements
 - Tests: unit ≥90% coverage per module; integration ≥70%; critical paths ≥90%
 - Code Quality: ruff check ., mypy strict for `api` and `agents/services`

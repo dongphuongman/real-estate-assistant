@@ -12,6 +12,7 @@ in V4.
   - Repo snapshot: `docs/openapi.json` (regenerate: `python scripts\export_openapi.py`)
   - Generated endpoint index: `docs/API_REFERENCE.generated.md` (regenerate: `python scripts\generate_api_reference.py`)
   - Update full API reference Endpoints section: `python scripts\update_api_reference_full.py`
+  - CI drift check (full API Reference): `python scripts\update_api_reference_full.py --check`
   - CI drift check (when enabled): fails if snapshot differs from the runtime schema generated from `api/main.py`
 - Observability: `api/observability.py` adds:
   - `X-Request-ID` header to all responses
