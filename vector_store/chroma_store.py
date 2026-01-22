@@ -404,7 +404,8 @@ class ChromaPropertyStore:
             return len(documents)
 
         # Add documents in batches
-        total_added = 0
+        total_cached = 0
+        total_indexed = 0
         for i in range(0, len(documents), batch_size):
             batch = documents[i:i + batch_size]
             batch_ids = [str(d.metadata.get("id", f"doc-{i+j}")) for j, d in enumerate(batch)]
@@ -441,6 +442,7 @@ class ChromaPropertyStore:
             # This allows searching while embeddings are being generated/indexed
             with self._cache_lock:
                 self._documents.extend(batch)
+            total_cached += len(batch)
 
             try:
                 # 2. Generate Embeddings (CPU/Network) - WITHOUT LOCK
@@ -491,18 +493,17 @@ class ChromaPropertyStore:
                 # with self._cache_lock:
                 #    self._documents.extend(batch)
                     
-                total_added += len(batch)
+                total_indexed += len(batch)
                 logger.info(f"Added batch {i // batch_size + 1}: {len(batch)} properties")
 
             except Exception as e:
                 logger.error(f"Error adding batch: {e}")
                 continue
 
-        if total_added > 0:
-            logger.info(f"Total properties added to vector store: {total_added}")
-            return total_added
-        else:
-            return 0
+        if total_indexed > 0:
+            logger.info(f"Total properties added to vector store: {total_indexed}")
+
+        return total_cached
 
     def add_property_collection(
         self,
