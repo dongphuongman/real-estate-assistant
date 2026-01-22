@@ -266,10 +266,42 @@ jobs:
           name: pip-audit-report
           path: artifacts/pip-audit.json
 
+  trivy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build backend image
+        run: |
+          docker build -f Dockerfile.backend -t ai-backend:ci .
+      - name: Build frontend image
+        run: |
+          docker build -f frontend/Dockerfile.frontend -t ai-frontend:ci ./frontend
+      - name: Trivy scan (backend)
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          image-ref: ai-backend:ci
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"
+      - name: Trivy scan (frontend)
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          image-ref: ai-frontend:ci
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"
+
   pipeline_health:
     runs-on: ubuntu-latest
     if: always()
-    needs: [backend, frontend, security, audit, compose_smoke]
+    needs: [backend, frontend, security, audit, trivy, compose_smoke]
     steps:
       - name: Summarize pipeline health
         uses: actions/github-script@v7
