@@ -168,6 +168,12 @@ Context from property database will be provided when relevant."""),
 
         return result
 
+    def get_sources_for_query(self, query: str, k: int = 5) -> List[Document]:
+        analysis = self.analyzer.analyze(query)
+        if analysis.intent in [QueryIntent.CALCULATION, QueryIntent.GENERAL_QUESTION]:
+            return []
+        return self._retrieve_documents(query, analysis, k=k)
+
     def _retrieve_documents(
         self,
         query: str,
@@ -510,6 +516,12 @@ class SimpleRAGAgent:
                 "method": "rag_only",
                 "error": str(e)
             }
+
+    def get_sources_for_query(self, query: str, k: int = 5) -> List[Document]:
+        try:
+            return self.retriever.get_relevant_documents(query)[:k]
+        except Exception:
+            return []
 
     def clear_memory(self) -> None:
         """Clear conversation memory."""

@@ -127,8 +127,10 @@ in V4.
   - `userEmail` stored in `localStorage` is forwarded as `X-User-Email`
   - `modelPrefs:<email>` stored in `localStorage` caches per-user default model selection
 - Chat streaming:
-  - `streamChatMessage` emits text deltas parsed from `data: <text>`
-  - `X-Request-ID` is available on the streaming response; the UI surfaces it for correlation
+  - `streamChatMessage` parses SSE messages from `POST /api/v1/chat` when `"stream": true`
+  - Text deltas are JSON: `data: {"content":"<delta>"}`
+  - Final citations are emitted as `event: meta` with `data: {"sources":[...],"session_id":"..."}`
+  - `data: [DONE]` ends the stream; `X-Request-ID` is available on the streaming response
 
 ## Settings (Backend)
 - Notification preferences storage: `.preferences/notification_preferences.json`

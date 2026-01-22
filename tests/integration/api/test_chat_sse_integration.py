@@ -2,6 +2,7 @@ import types
 
 import pytest
 from fastapi.testclient import TestClient
+from langchain_core.documents import Document
 
 from api.dependencies import get_llm, get_vector_store
 from api.main import app
@@ -18,6 +19,9 @@ class FakeAgent:
 
     def process_query(self, msg: str):
         return {"answer": "Hello World", "source_documents": []}
+
+    def get_sources_for_query(self, query: str):
+        return [Document(page_content="Doc", metadata={"id": "1"})]
 
 
 @pytest.fixture(autouse=True)
@@ -39,4 +43,6 @@ def test_chat_sse_streams_events_and_sets_request_id_header():
     # Ensure we received two events and [DONE]
     data_lines = [line for line in chunks if line]
     assert any(line.startswith("data: ") for line in data_lines)
+    assert any(line.strip() == "event: meta" for line in data_lines)
+    assert any(line.startswith("data: {") and "\"sources\"" in line and "\"session_id\"" in line for line in data_lines)
     assert any(line.strip() == "data: [DONE]" for line in data_lines)

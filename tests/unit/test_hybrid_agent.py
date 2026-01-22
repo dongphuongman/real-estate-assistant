@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from langchain_core.documents import Document
 
-from agents.hybrid_agent import HybridPropertyAgent
+from agents.hybrid_agent import HybridPropertyAgent, SimpleRAGAgent
 from agents.query_analyzer import Complexity, QueryAnalysis, QueryIntent
 
 
@@ -159,3 +159,51 @@ class TestHybridPropertyAgent:
             agent._process_hybrid(query, analysis)
             
             mock_rag.assert_called_once_with(query, analysis)
+
+    def test_get_sources_for_query_skips_calculation_intent(self, agent):
+        query = "calculate mortgage payment"
+        analysis = QueryAnalysis(
+            query=query,
+            intent=QueryIntent.CALCULATION,
+            complexity=Complexity.SIMPLE,
+            extracted_filters={}
+        )
+        agent.analyzer.analyze = MagicMock(return_value=analysis)
+        with patch.object(agent, "_retrieve_documents") as mock_retrieve:
+            docs = agent.get_sources_for_query(query)
+            assert docs == []
+            mock_retrieve.assert_not_called()
+
+    def test_get_sources_for_query_uses_retrieve_documents(self, agent):
+        query = "apartments in Krakow"
+        analysis = QueryAnalysis(
+            query=query,
+            intent=QueryIntent.FILTERED_SEARCH,
+            complexity=Complexity.SIMPLE,
+            extracted_filters={"city": "Krakow"}
+        )
+        agent.analyzer.analyze = MagicMock(return_value=analysis)
+        expected = [Document(page_content="Doc", metadata={"id": "x"})]
+        with patch.object(agent, "_retrieve_documents", return_value=expected) as mock_retrieve:
+            docs = agent.get_sources_for_query(query)
+            assert docs == expected
+            mock_retrieve.assert_called_once_with(query, analysis, k=5)
+
+    def test_simple_rag_agent_get_sources_for_query_returns_docs(self, mock_llm):
+        retriever = MagicMock()
+        retriever.get_relevant_documents.return_value = [
+            Document(page_content="Doc 1", metadata={"id": "1"}),
+            Document(page_content="Doc 2", metadata={"id": "2"}),
+        ]
+        with patch("agents.hybrid_agent.ConversationalRetrievalChain.from_llm", return_value=MagicMock()):
+            agent = SimpleRAGAgent(llm=mock_llm, retriever=retriever)
+        docs = agent.get_sources_for_query("q", k=1)
+        assert len(docs) == 1
+        assert docs[0].metadata["id"] == "1"
+
+    def test_simple_rag_agent_get_sources_for_query_returns_empty_on_error(self, mock_llm):
+        retriever = MagicMock()
+        retriever.get_relevant_documents.side_effect = RuntimeError("fail")
+        with patch("agents.hybrid_agent.ConversationalRetrievalChain.from_llm", return_value=MagicMock()):
+            agent = SimpleRAGAgent(llm=mock_llm, retriever=retriever)
+        assert agent.get_sources_for_query("q") == []

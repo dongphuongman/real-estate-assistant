@@ -89,6 +89,18 @@ export default function ChatPage() {
         },
         ({ requestId }) => {
           if (requestId) setRequestId(requestId);
+        },
+        ({ sources, sessionId: returnedSessionId }) => {
+          if (returnedSessionId && !sessionId) setSessionId(returnedSessionId);
+          if (!sources || sources.length === 0) return;
+          setMessages(prev => {
+            const updated = [...prev];
+            const lastIdx = updated.length - 1;
+            if (lastIdx >= 0 && updated[lastIdx].role === "assistant") {
+              updated[lastIdx] = { ...updated[lastIdx], sources };
+            }
+            return updated;
+          });
         }
       );
 
@@ -121,6 +133,27 @@ export default function ChatPage() {
               <div className="prose break-words dark:prose-invert text-sm leading-relaxed">
                 {message.content}
               </div>
+              {message.role === "assistant" && message.sources && message.sources.length > 0 && (
+                <details className="rounded-md border bg-muted/30 px-3 py-2 text-xs">
+                  <summary className="cursor-pointer select-none font-medium">
+                    Sources ({message.sources.length})
+                  </summary>
+                  <ol className="mt-2 list-decimal pl-4 space-y-2">
+                    {message.sources.map((source, i) => {
+                      const rawMeta = JSON.stringify(source.metadata || {});
+                      const meta = rawMeta.length > 400 ? `${rawMeta.slice(0, 400)}…` : rawMeta;
+                      const rawContent = source.content || "";
+                      const content = rawContent.length > 400 ? `${rawContent.slice(0, 400)}…` : rawContent;
+                      return (
+                        <li key={`${i}`} className="space-y-1">
+                          <div className="font-mono text-[11px] text-muted-foreground break-all">{meta}</div>
+                          <div className="text-[12px] leading-snug break-words">{content}</div>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </details>
+              )}
             </div>
           </div>
         ))}
@@ -163,6 +196,17 @@ export default function ChatPage() {
                     },
                     ({ requestId }) => {
                       if (requestId) setRequestId(requestId);
+                    },
+                    ({ sources }) => {
+                      if (!sources || sources.length === 0) return;
+                      setMessages(prev => {
+                        const updated = [...prev];
+                        const lastIdx = updated.length - 1;
+                        if (lastIdx >= 0 && updated[lastIdx].role === "assistant") {
+                          updated[lastIdx] = { ...updated[lastIdx], sources };
+                        }
+                        return updated;
+                      });
                     }
                   ).catch(err => {
                     console.warn("Chat retry error:", err);

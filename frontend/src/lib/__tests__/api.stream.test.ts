@@ -40,7 +40,11 @@ describe("streamChatMessage", () => {
       }
     }
     g.TextDecoder = FakeTextDecoder as unknown as typeof TextDecoder;
-    const chunks = ["data: Hello\n\n", "data: world\n\n", "data: [DONE]\n\n"];
+    const chunks = [
+      "data: {\"content\":\"Hello\"}\n\n",
+      "data: {\"content\":\"world\"}\n\n",
+      "data: [DONE]\n\n",
+    ];
     g.fetch = jest.fn().mockResolvedValue({
       ok: true,
       body: createMockReadable(chunks),
@@ -62,6 +66,37 @@ describe("streamChatMessage", () => {
     expect(startedWith).toBe("req-456");
   });
 
+  it("parses meta SSE event and calls onMeta with sources", async () => {
+    class FakeTextDecoder {
+      decode(u: Uint8Array) {
+        return Buffer.from(u).toString("utf-8");
+      }
+    }
+    g.TextDecoder = FakeTextDecoder as unknown as typeof TextDecoder;
+    const chunks = [
+      "data: {\"content\":\"Hello\"}\n\n",
+      "event: meta\ndata: {\"sources\":[{\"content\":\"Doc\",\"metadata\":{\"id\":\"1\"}}],\"session_id\":\"sid-1\"}\n\n",
+      "data: [DONE]\n\n",
+    ];
+    g.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      body: createMockReadable(chunks),
+      headers: { get: () => null },
+    }) as unknown as typeof fetch;
+
+    const metas: Array<{ sources?: unknown; sessionId?: unknown }> = [];
+    await streamChatMessage(
+      { message: "hi" } as ChatRequest,
+      () => {},
+      undefined,
+      (meta) => metas.push(meta)
+    );
+
+    expect(metas).toHaveLength(1);
+    expect((metas[0] as { sessionId?: string }).sessionId).toBe("sid-1");
+    expect(Array.isArray((metas[0] as { sources?: unknown[] }).sources)).toBe(true);
+  });
+
   it("propagates errors with request_id if present", async () => {
     g.fetch = jest.fn().mockResolvedValue({
       ok: false,
@@ -72,5 +107,41 @@ describe("streamChatMessage", () => {
     await expect(
       streamChatMessage({ message: "x" } as ChatRequest, () => {})
     ).rejects.toThrow(/request_id=req-999/);
+  });
+
+  it("throws when the stream yields an error JSON payload", async () => {
+    class FakeTextDecoder {
+      decode(u: Uint8Array) {
+        return Buffer.from(u).toString("utf-8");
+      }
+    }
+    g.TextDecoder = FakeTextDecoder as unknown as typeof TextDecoder;
+    const chunks = ["data: {\"error\":\"bad\"}\n\n", "data: [DONE]\n\n"];
+    g.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      body: createMockReadable(chunks),
+      headers: { get: () => null },
+    }) as unknown as typeof fetch;
+
+    await expect(streamChatMessage({ message: "x" } as ChatRequest, () => {})).rejects.toThrow("bad");
+  });
+
+  it("passes through non-JSON data payloads as chunks", async () => {
+    class FakeTextDecoder {
+      decode(u: Uint8Array) {
+        return Buffer.from(u).toString("utf-8");
+      }
+    }
+    g.TextDecoder = FakeTextDecoder as unknown as typeof TextDecoder;
+    const chunks = ["data: hello\n\n", "data: [DONE]\n\n"];
+    g.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      body: createMockReadable(chunks),
+      headers: { get: () => null },
+    }) as unknown as typeof fetch;
+
+    const received: string[] = [];
+    await streamChatMessage({ message: "x" } as ChatRequest, (chunk) => received.push(chunk));
+    expect(received).toEqual(["hello"]);
   });
 });

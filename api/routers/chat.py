@@ -1,3 +1,4 @@
+import json
 import logging
 import uuid
 from typing import Annotated, Optional
@@ -59,6 +60,17 @@ async def chat_endpoint(
             async def event_generator():
                 async for chunk in agent.astream_query(request.message):
                     yield f"data: {chunk}\n\n"
+                sources_payload = {"sources": [], "session_id": session_id}
+                if hasattr(agent, "get_sources_for_query"):
+                    try:
+                        docs = agent.get_sources_for_query(request.message)
+                        sources_payload["sources"] = [
+                            {"content": doc.page_content, "metadata": doc.metadata} for doc in docs
+                        ]
+                    except Exception:
+                        sources_payload["sources"] = []
+                yield "event: meta\n"
+                yield f"data: {json.dumps(sources_payload)}\n\n"
                 yield "data: [DONE]\n\n"
 
             return StreamingResponse(

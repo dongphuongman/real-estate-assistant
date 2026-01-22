@@ -100,9 +100,11 @@ The AI-powered chat interface allows you to search for properties using natural 
 ### Streaming Responses (SSE)
 For real-time streaming from the assistant:
 - In API mode, set `"stream": true` in `POST /api/v1/chat`
-- The response uses `text/event-stream` with lines like `data: <text-delta>` and finishes with `data: [DONE]`
+- The response uses `text/event-stream` with message deltas as JSON lines: `data: {"content":"<text-delta>"}`
+- After the assistant finishes streaming text, the server emits a final metadata event: `event: meta` with `data: {"sources":[...],"session_id":"..."}`
+- The stream finishes with `data: [DONE]`
 - Ensure you include the `X-API-Key` header; see API Reference for an example
-- The UI progressively renders assistant messages and shows a Retry button on errors
+- The UI progressively renders assistant messages, shows a Retry button on errors, and displays Sources (when available)
 - The UI displays `request_id` on both success and error paths (when available) to help correlate with server logs
 
 ## Search Filters

@@ -29,7 +29,8 @@ describe("ChatPage", () => {
   })
 
   it("handles message submission", async () => {
-    mockStream.mockImplementation(async (_req, onChunk) => {
+    mockStream.mockImplementation(async (_req, onChunk, onStart) => {
+      onStart?.({ requestId: "req-1" })
       onChunk("This is a real API response")
     })
 
@@ -121,6 +122,31 @@ describe("ChatPage", () => {
     await waitFor(() => {
       expect(screen.getByText(/Recovered response/)).toBeInTheDocument()
     })
+  })
+
+  it("renders sources when provided by stream metadata", async () => {
+    mockStream.mockImplementation(async (_req, onChunk, _onStart, onMeta) => {
+      onChunk("Answer")
+      onMeta?.({
+        sessionId: "sid-1",
+        sources: [{ content: "Doc", metadata: { id: "1" } }],
+      })
+    })
+
+    render(<ChatPage />)
+
+    const input = screen.getByPlaceholderText("Ask about properties, market trends, or investment advice...")
+    const sendButton = screen.getByRole("button", { name: /send message/i })
+
+    fireEvent.change(input, { target: { value: "Show sources" } })
+    fireEvent.click(sendButton)
+
+    await waitFor(() => {
+      expect(screen.getByText("Answer")).toBeInTheDocument()
+    })
+
+    expect(screen.getByText(/Sources \(1\)/)).toBeInTheDocument()
+    expect(screen.getByText("Doc")).toBeInTheDocument()
   })
 
   it("does not submit empty message", async () => {

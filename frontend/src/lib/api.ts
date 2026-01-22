@@ -274,7 +274,8 @@ export async function chatMessage(request: ChatRequest): Promise<ChatResponse> {
 export async function streamChatMessage(
   request: ChatRequest,
   onChunk: (chunk: string) => void,
-  onStart?: (meta: { requestId?: string }) => void
+  onStart?: (meta: { requestId?: string }) => void,
+  onMeta?: (meta: { sources?: ChatResponse["sources"]; sessionId?: string }) => void
 ): Promise<void> {
   const response = await fetch(`${getApiUrl()}/chat`, {
     method: "POST",
@@ -301,19 +302,70 @@ export async function streamChatMessage(
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
+  let buffer = "";
 
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
 
-    const chunk = decoder.decode(value);
-    const lines = chunk.split("\n\n");
-    for (const line of lines) {
-      if (line.startsWith("data: ")) {
-        const data = line.slice(6);
-        if (data === "[DONE]") return;
-        onChunk(data);
+    buffer += decoder.decode(value);
+    while (true) {
+      const boundaryIndex = buffer.indexOf("\n\n");
+      if (boundaryIndex === -1) break;
+      const rawEvent = buffer.slice(0, boundaryIndex);
+      buffer = buffer.slice(boundaryIndex + 2);
+
+      let eventName = "message";
+      const dataLines: string[] = [];
+      for (const rawLine of rawEvent.split("\n")) {
+        const line = rawLine.trimEnd();
+        if (!line) continue;
+        if (line.startsWith("event:")) {
+          eventName = line.slice(6).trim() || "message";
+          continue;
+        }
+        if (line.startsWith("data:")) {
+          dataLines.push(line.slice(5).trimStart());
+        }
       }
+
+      const data = dataLines.join("\n");
+      if (!data) continue;
+      if (data === "[DONE]") return;
+
+      let parsed: unknown = undefined;
+      try {
+        parsed = JSON.parse(data);
+      } catch {
+        parsed = undefined;
+      }
+
+      if (parsed && typeof parsed === "object") {
+        const maybeError = (parsed as { error?: unknown }).error;
+        if (typeof maybeError === "string" && maybeError.trim()) {
+          throw new Error(maybeError);
+        }
+
+        if (eventName === "meta") {
+          if (onMeta) {
+            const sources = (parsed as { sources?: unknown }).sources;
+            const sessionId = (parsed as { session_id?: unknown }).session_id;
+            onMeta({
+              sources: Array.isArray(sources) ? (sources as ChatResponse["sources"]) : undefined,
+              sessionId: typeof sessionId === "string" && sessionId.trim() ? sessionId : undefined,
+            });
+          }
+          continue;
+        }
+
+        const content = (parsed as { content?: unknown }).content;
+        if (typeof content === "string") {
+          onChunk(content);
+          continue;
+        }
+      }
+
+      onChunk(data);
     }
   }
 }

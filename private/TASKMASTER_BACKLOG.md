@@ -45,6 +45,20 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
   - Follow-ups: Add localization for chat UI strings; monitor frontend error rates.
   - Docs: User Guide (chat page)
 
+- TM-CHAT-003 (high, 0.5d, completed)
+  - Task: Streaming chat returns citations/sources and UI renders Sources expander
+  - Subtasks:
+    - Emit a final SSE `meta` event with `sources` and `session_id` on `/api/v1/chat` streaming mode
+    - Update `streamChatMessage` to parse SSE JSON frames and handle `meta` events
+    - Render Sources expander per assistant message in Chat UI
+  - Acceptance: streaming chat text remains progressive; citations appear deterministically after stream completes; no secrets exposed; existing clients remain functional
+  - Tests: unit (agent sources retrieval), integration (SSE includes meta), frontend unit (SSE parser meta)
+  - Docs: API Reference (chat streaming), User Guide (chat streaming/sources), Developer Notes (SSE framing), Architecture note
+  - Dependencies: TM-CHAT-001, TM-CHAT-002
+  - Notes: Added `get_sources_for_query` to agents for CE-safe retrieval in streaming; streaming chat now emits `event: meta` with `sources`; Chat UI renders Sources when present.
+  - Estimate update: Actual 0.25d; remaining 0.25d reallocated to backlog buffer.
+  - Follow-ups: Consider limiting source payload size via truncation settings; consider structured source titles for cleaner UI display.
+
 ### Epic: Property Search (Hybrid)
 - TM-SEARCH-001 (high, 3d, completed)
   - Task: Filters, sorting, and geo (radius/box) endpoints

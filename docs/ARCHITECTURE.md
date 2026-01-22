@@ -107,7 +107,7 @@ The digest system bridges raw property data and user notifications.
 
 ## API Surface
 - **Search**: `/api/v1/search`
-- **Chat**: `/api/v1/chat` (SSE supported; responses include `X-Request-ID`)
+- **Chat**: `/api/v1/chat` (SSE supported; responses include `X-Request-ID`; streaming emits text deltas plus a final `meta` event with `sources`)
 - **Tools**: `/api/v1/tools/*` (mortgage, compare, price analysis, location analysis; CE stubs:
   valuation, legal-check, enrich-address, crm-sync-contact)
 - **Prompt Templates**: `/api/v1/prompt-templates`, `/api/v1/prompt-templates/apply`

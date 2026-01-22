@@ -29,7 +29,7 @@ def test_chat_sse_stream_success():
     app.dependency_overrides[get_llm] = lambda: mock_llm
     app.dependency_overrides[get_vector_store] = lambda: mock_store
 
-    agent = _make_sse_agent(["data: {\"content\": \"chunk-1\"}\n\n", "data: {\"content\": \"chunk-2\"}\n\n", "data: [DONE]\n\n"])
+    agent = _make_sse_agent(["{\"content\": \"chunk-1\"}", "{\"content\": \"chunk-2\"}"])
 
     with patch("api.routers.chat.create_hybrid_agent", return_value=agent):
         with client.stream(
@@ -44,6 +44,8 @@ def test_chat_sse_stream_success():
             body = b"".join(list(r.iter_bytes())).decode("utf-8")
             assert "data: {\"content\": \"chunk-1\"}" in body
             assert "data: {\"content\": \"chunk-2\"}" in body
+            assert "event: meta" in body
+            assert "\"sources\"" in body
             assert "data: [DONE]" in body
 
     app.dependency_overrides = {}

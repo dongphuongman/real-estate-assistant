@@ -50,6 +50,25 @@ Cross-Origin Resource Sharing (CORS) is controlled via environment:
 - `POST /api/v1/search` returns `SearchResponse.results[].property.latitude` and `SearchResponse.results[].property.longitude` when available.
 - Clients should treat coordinates as optional and handle `null` / missing values.
 
+### Chat Streaming (SSE)
+
+To stream chat responses, set `"stream": true` in `POST /api/v1/chat`.
+
+The response uses Server-Sent Events (`text/event-stream`) with:
+- Text deltas as JSON: `data: {"content":"<delta>"}`
+- A final metadata event: `event: meta` with `data: {"sources":[...],"session_id":"..."}`
+- A terminator: `data: [DONE]`
+
+PowerShell example (prints raw SSE frames):
+```powershell
+$env:API_ACCESS_KEY="dev-secret-key"
+curl.exe -N `
+  -H "X-API-Key: your-api-key" `
+  -H "Content-Type: application/json" `
+  -d "{\"message\":\"Hello\",\"stream\":true}" `
+  "http://localhost:8000/api/v1/chat"
+```
+
 ### Quality & Stability
 - Static analysis enforced: ruff (lint), mypy (types), RuleEngine (custom rules).
 - CI runs RuleEngine as a dedicated step for fast feedback; run locally with `python -m pytest -q tests\integration\test_rule_engine_clean.py`.
