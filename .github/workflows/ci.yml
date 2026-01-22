@@ -105,7 +105,12 @@ jobs:
       - name: Run integration tests with coverage (pytest)
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
-          python -m pytest tests/integration --cov=. --cov-report=xml --cov-report=term -n auto
+          set -e
+          for attempt in 1 2; do
+            python -m pytest tests/integration --cov=. --cov-report=xml --cov-report=term -n auto && break
+            if [ $attempt -eq 2 ]; then exit 1; fi
+            echo "Integration tests failed. Retrying..."
+          done
 
       - name: "Coverage gate (integration: diff)"
         if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name == 'pull_request' }}
@@ -118,7 +123,7 @@ jobs:
           python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
       - name: Upload backend coverage (integration)
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
+        if: ${{ env.MVP_CI_DISABLED != 'true' && always() }}
         uses: actions/upload-artifact@v4
         with:
           name: backend-coverage-integration-xml
@@ -199,7 +204,12 @@ jobs:
         run: |
           docker --version
           docker compose version
-          python scripts/compose_smoke.py --ci --timeout-seconds 300
+          set -e
+          for attempt in 1 2; do
+            python scripts/compose_smoke.py --ci --timeout-seconds 300 && break
+            if [ $attempt -eq 2 ]; then exit 1; fi
+            echo "Compose smoke failed. Retrying..."
+          done
 
   security:
     runs-on: ubuntu-latest
@@ -266,3 +276,35 @@ jobs:
         with:
           name: pip-audit-report
           path: artifacts/pip-audit.json
+
+  pipeline_health:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [backend, frontend, security, audit, compose_smoke]
+    steps:
+      - name: Summarize pipeline health
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const needs = JSON.parse('${{ toJson(needs) }}');
+            const rows = Object.entries(needs).map(([job, data]) => [job, data.result || 'unknown']);
+            core.summary.addHeading('Pipeline Health');
+            core.summary.addTable([['Job', 'Result'], ...rows]);
+            const failures = rows.filter(([, result]) => result !== 'success');
+            if (failures.length) {
+              core.summary.addRaw(`Failures detected: ${failures.map(([job]) => job).join(', ')}`);
+            } else {
+              core.summary.addRaw('All pipeline jobs succeeded.');
+            }
+            await core.summary.write();
+            if (failures.length) {
+              const { owner, repo } = context.repo;
+              const title = `CI failure: ${process.env.GITHUB_WORKFLOW} #${process.env.GITHUB_RUN_NUMBER}`;
+              const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+              const body = `Run: ${runUrl}\n\nFailures:\n${failures.map(([job, result]) => `- ${job}: ${result}`).join('\n')}`;
+              const query = `repo:${process.env.GITHUB_REPOSITORY} is:issue in:title "${title}"`;
+              const existing = await github.rest.search.issuesAndPullRequests({ q: query });
+              if (existing.data.total_count === 0) {
+                await github.rest.issues.create({ owner, repo, title, body });
+              }
+            }

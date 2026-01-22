@@ -70,6 +70,44 @@ Remove-Item -Recurse -Force .\chroma_db
 **Local Ollama not detected**
 - Ensure Ollama is running and reachable from the backend container/host (`OLLAMA_API_BASE`).
 - The Settings > Models view shows `runtime_available=false` when the API cannot connect.
+
+## CI Pipeline Failures
+
+**Identify failing jobs**
+```powershell
+gh run list -R AleksNeStu/ai-real-estate-assistant --limit 10
+gh run view -R AleksNeStu/ai-real-estate-assistant <run_id> --json jobs
+```
+
+**Fetch failed step logs**
+```powershell
+gh run view -R AleksNeStu/ai-real-estate-assistant <run_id> --log-failed
+```
+
+**Common failure patterns**
+- Integration test flake: async indexing can race with shared in-memory Chroma state across tests.
+- Coverage gates: missing diff/critical coverage on changed modules.
+- Compose smoke: transient Docker startup or health check delays.
+
+**Immediate actions**
+- Re-run the workflow from the failed run if the error is clearly transient.
+- Re-run locally using the CI commands in TESTING_GUIDE.md to confirm determinism.
+
+## CI Rollback Procedure
+
+**Rollback a bad CI change**
+```powershell
+git log -n 5
+git revert <commit_sha>
+git push origin ver4
+```
+
+**Rollback a bad vector-store change**
+```powershell
+git log -n 5 -- vector_store/chroma_store.py
+git revert <commit_sha>
+git push origin ver4
+```
 ### ChromaDB metadata errors
 
 Symptoms:

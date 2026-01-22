@@ -398,10 +398,18 @@ class ChromaPropertyStore:
 
         # If vector store is unavailable, keep documents in fallback cache only
         if vector_store is None:
+            total_cached = 0
             with self._cache_lock:
-                self._documents.extend(documents)
-            logger.info(f"Vector store disabled; cached {len(documents)} properties in memory")
-            return len(documents)
+                for doc in documents:
+                    doc_id = str(doc.metadata.get("id", ""))
+                    if doc_id and doc_id in self._doc_ids:
+                        continue
+                    self._documents.append(doc)
+                    if doc_id:
+                        self._doc_ids.add(doc_id)
+                    total_cached += 1
+            logger.info(f"Vector store disabled; cached {total_cached} properties in memory")
+            return total_cached
 
         # Add documents in batches
         total_cached = 0
@@ -410,39 +418,35 @@ class ChromaPropertyStore:
             batch = documents[i:i + batch_size]
             batch_ids = [str(d.metadata.get("id", f"doc-{i+j}")) for j, d in enumerate(batch)]
             
+            with self._cache_lock:
+                for doc, doc_id in zip(batch, batch_ids, strict=False):
+                    if doc_id and doc_id in self._doc_ids:
+                        continue
+                    self._documents.append(doc)
+                    if doc_id:
+                        self._doc_ids.add(doc_id)
+                    total_cached += 1
+
             # 1. Filter duplicates (check against DB)
             try:
-                # Use a lightweight check if possible, or trust Chroma to handle upserts.
-                # Here we fetch existing IDs in this batch to skip embedding them if needed.
-                # Or we can just upsert. If we upsert, we re-embed, which costs money/CPU.
-                # So checking existence is better.
                 if vector_store:
-                     # Check which IDs exist
                     existing = vector_store._collection.get(ids=batch_ids, include=[])
                     existing_ids = set(existing.get("ids", []))
-                    
-                    # Filter batch
+
                     new_batch = []
                     new_ids = []
                     for doc, doc_id in zip(batch, batch_ids, strict=False):
                         if doc_id not in existing_ids:
                             new_batch.append(doc)
                             new_ids.append(doc_id)
-                    
+
                     if not new_batch:
                         continue
-                    
+
                     batch = new_batch
                     batch_ids = new_ids
             except Exception as e:
                 logger.warning(f"Error checking duplicates: {e}")
-                # If check fails, proceed with all (upsert)
-            
-            # Update local cache for fallback search immediately (optimistic)
-            # This allows searching while embeddings are being generated/indexed
-            with self._cache_lock:
-                self._documents.extend(batch)
-            total_cached += len(batch)
 
             try:
                 # 2. Generate Embeddings (CPU/Network) - WITHOUT LOCK

@@ -50,6 +50,22 @@ python -m pytest tests/integration --cov=. --cov-report=xml --cov-report=term -n
 python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude tests/* --exclude scripts/* --exclude workflows/*
 ```
 
+### CI Reliability Controls
+- Integration tests and Compose smoke runs retry once on failure in CI.
+- Pipeline health summary is posted to the run summary, with a failure issue created when any job fails.
+
+### CI Maintenance Procedures
+- Review pipeline health issues weekly and close resolved alerts.
+- Re-run flaky jobs only after validating the root cause locally.
+- Keep dependency lockfiles current to avoid cache mismatches.
+
+### Pipeline Template (Standard)
+- Checkout and cache dependencies.
+- Install toolchain and dependencies.
+- Run lint, type checks, and targeted rule checks.
+- Run tests with coverage and enforce gates.
+- Upload coverage artifacts and emit pipeline health summary.
+
 ### Frontend (Next.js)
 ```bash
 cd frontend
