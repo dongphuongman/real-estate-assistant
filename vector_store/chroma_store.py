@@ -97,6 +97,8 @@ class ChromaPropertyStore:
 
         # Initialize or load vector store
         self.vector_store: Optional[Chroma] = self._initialize_vector_store()
+        self._vector_store_local = threading.local()
+        self._vector_store_local.store = self.vector_store
 
         # Text splitter for long descriptions
         self.text_splitter = RecursiveCharacterTextSplitter(
@@ -112,6 +114,10 @@ class ChromaPropertyStore:
         self._vector_lock = threading.Lock()
         self._indexing_event = threading.Event()
         self._index_future: Optional[Future[int]] = None
+
+    def _get_vector_store(self) -> Optional[Chroma]:
+        store = getattr(self._vector_store_local, "store", None)
+        return store if store is not None else self.vector_store
 
     def _create_embeddings(_self, model_name: str) -> Optional[Embeddings]:
         try:
@@ -326,7 +332,8 @@ class ChromaPropertyStore:
         Returns:
             List of Documents
         """
-        if not self.vector_store:
+        vector_store = self._get_vector_store()
+        if not vector_store:
             # Fallback to cache
             with self._cache_lock:
                 return [
@@ -336,7 +343,7 @@ class ChromaPropertyStore:
 
         try:
             # Fetch from Chroma
-            results = self.vector_store._collection.get(
+            results = vector_store._collection.get(
                 ids=property_ids,
                 include=["documents", "metadatas"]
             )
@@ -387,8 +394,10 @@ class ChromaPropertyStore:
             logger.warning("No valid documents to add")
             return 0
 
+        vector_store = self._get_vector_store()
+
         # If vector store is unavailable, keep documents in fallback cache only
-        if self.vector_store is None:
+        if vector_store is None:
             with self._cache_lock:
                 self._documents.extend(documents)
             logger.info(f"Vector store disabled; cached {len(documents)} properties in memory")
@@ -406,9 +415,9 @@ class ChromaPropertyStore:
                 # Here we fetch existing IDs in this batch to skip embedding them if needed.
                 # Or we can just upsert. If we upsert, we re-embed, which costs money/CPU.
                 # So checking existence is better.
-                if self.vector_store:
+                if vector_store:
                      # Check which IDs exist
-                    existing = self.vector_store._collection.get(ids=batch_ids, include=[])
+                    existing = vector_store._collection.get(ids=batch_ids, include=[])
                     existing_ids = set(existing.get("ids", []))
                     
                     # Filter batch
@@ -466,7 +475,7 @@ class ChromaPropertyStore:
                             metadatas_for_chroma.append(_sanitize_metadata(md))
 
                         # Direct add to collection to avoid re-embedding
-                        self.vector_store._collection.add(
+                        vector_store._collection.add(
                             ids=batch_ids,
                             embeddings=embeddings_for_chroma,
                             metadatas=cast(Any, metadatas_for_chroma),
@@ -474,7 +483,7 @@ class ChromaPropertyStore:
                         )
                     else:
                         # Fallback if no embeddings (rare)
-                        self.vector_store.add_documents(batch, ids=batch_ids)
+                        vector_store.add_documents(batch, ids=batch_ids)
                 
                 # Update local cache for fallback search (if we want to keep it sync)
                 # Note: We don't load initial docs, so this cache is partial.
@@ -534,6 +543,9 @@ class ChromaPropertyStore:
         def _work() -> int:
             self._indexing_event.set()
             try:
+                self._vector_store_local.store = self.vector_store
+                if isinstance(self.vector_store, Chroma):
+                    self._vector_store_local.store = self._initialize_vector_store()
                 return self.add_property_collection(
                     collection,
                     replace_existing=replace_existing,
@@ -632,8 +644,9 @@ class ChromaPropertyStore:
             List of (Document, score) tuples
         """
         try:
+            vector_store = self._get_vector_store()
             # We trust the lock to handle concurrency with indexing
-            if self.vector_store is not None:
+            if vector_store is not None:
                 # Build filter if it looks like user filters (flat dict)
                 # If it has operators like $and, assume it's already Chroma format
                 chroma_filter = filter
@@ -647,7 +660,7 @@ class ChromaPropertyStore:
                         chroma_filter = self._build_chroma_filter(filter)
                 
                 with self._vector_lock:
-                    results = self.vector_store.similarity_search_with_score(
+                    results = vector_store.similarity_search_with_score(
                         query=query,
                         k=k,
                         filter=chroma_filter,
@@ -924,7 +937,8 @@ class ChromaPropertyStore:
             List of matching documents
         """
         # If vector store is missing, use fallback cache
-        if self.vector_store is None:
+        vector_store = self._get_vector_store()
+        if vector_store is None:
             with self._cache_lock:
                 docs = list(self._documents)
             filtered: List[Document] = []
@@ -970,7 +984,7 @@ class ChromaPropertyStore:
         # Note: ChromaDB has limited support for range queries
         # For complex filtering, retrieve more results and filter in Python
         with self._vector_lock:
-            results = self.vector_store.similarity_search(
+            results = vector_store.similarity_search(
                 query="",  # Empty query for metadata-only search
                 k=k * 5,  # Retrieve more for filtering
                 filter=filter_dict if filter_dict else None
@@ -1021,8 +1035,9 @@ class ChromaPropertyStore:
         # Use DB retriever only if we actually have documents in the DB
         db_count = stats.get("db_document_count", 0)
         
-        if self.vector_store is not None and db_count > 0:
-            return self.vector_store.as_retriever(
+        vector_store = self._get_vector_store()
+        if vector_store is not None and db_count > 0:
+            return vector_store.as_retriever(
                 search_type=search_type,
                 search_kwargs={
                     "k": k,
@@ -1059,10 +1074,13 @@ class ChromaPropertyStore:
     def clear(self) -> None:
         """Clear all documents from the vector store."""
         try:
-            if self.vector_store is not None:
+            vector_store = self._get_vector_store()
+            if vector_store is not None:
                 with self._vector_lock:
-                    self.vector_store.delete_collection()
-                    self.vector_store = self._initialize_vector_store()
+                    vector_store.delete_collection()
+                    new_store = self._initialize_vector_store()
+                    self.vector_store = new_store
+                    self._vector_store_local.store = new_store
             with self._cache_lock:
                 self._documents = []
                 self._doc_ids = set()
@@ -1087,10 +1105,11 @@ class ChromaPropertyStore:
             with self._cache_lock:
                 cache_count = len(self._documents)
 
-            if self.vector_store is not None:
+            vector_store = self._get_vector_store()
+            if vector_store is not None:
                 with self._vector_lock:
                     try:
-                        db_count = self.vector_store._collection.count()
+                        db_count = vector_store._collection.count()
                     except Exception:
                         pass
             
@@ -1127,10 +1146,11 @@ class ChromaPropertyStore:
             source_url: Source URL to filter by
         """
         try:
-            if self.vector_store is None:
+            vector_store = self._get_vector_store()
+            if vector_store is None:
                 return
             with self._vector_lock:
-                self.vector_store.delete(
+                vector_store.delete(
                     filter={"source_url": source_url}
                 )
             logger.info(f"Deleted properties from source: {source_url}")
