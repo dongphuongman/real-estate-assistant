@@ -3,11 +3,17 @@ name: CI
 env:
   MVP_CI_DISABLED: 'false'
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
 on:
   push:
     branches: [ main, ver4, '**' ]
   pull_request:
     branches: [ main, ver4 ]
+  workflow_dispatch:
 
 jobs:
   backend:
@@ -74,6 +80,20 @@ jobs:
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python -m pytest tests/unit --cov=. --cov-report=xml --cov-report=term -n auto
+      - name: Unit coverage summary
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
+        run: |
+          python - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          tree = ET.parse("coverage.xml")
+          root = tree.getroot()
+          rate = float(root.attrib.get("line-rate", 0)) * 100
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          with open(summary, "a", encoding="utf-8") as fh:
+              fh.write("### Backend Unit Coverage\n\n")
+              fh.write(f"Line coverage: {rate:.2f}%\n")
+          PY
 
       - name: Fetch base ref (PR only)
         if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name == 'pull_request' }}
@@ -111,6 +131,20 @@ jobs:
             if [ $attempt -eq 2 ]; then exit 1; fi
             echo "Integration tests failed. Retrying..."
           done
+      - name: Integration coverage summary
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
+        run: |
+          python - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          tree = ET.parse("coverage.xml")
+          root = tree.getroot()
+          rate = float(root.attrib.get("line-rate", 0)) * 100
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          with open(summary, "a", encoding="utf-8") as fh:
+              fh.write("### Backend Integration Coverage\n\n")
+              fh.write(f"Line coverage: {rate:.2f}%\n")
+          PY
 
       - name: "Coverage gate (integration: diff)"
         if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name == 'pull_request' }}
@@ -170,6 +204,10 @@ jobs:
       - name: Run tests
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: npm run test -- --ci --coverage
+      - name: Frontend coverage summary
+        if: ${{ env.MVP_CI_DISABLED != 'true' }}
+        run: >
+          node -e "const fs=require('fs'); const summary=JSON.parse(fs.readFileSync('coverage/coverage-summary.json','utf8')); const total=summary.total; const text=`### Frontend Coverage\n\nLines: ${total.lines.pct}%\nStatements: ${total.statements.pct}%\nFunctions: ${total.functions.pct}%\nBranches: ${total.branches.pct}%\n`; fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, text);"
 
       - name: Upload frontend coverage
         if: ${{ env.MVP_CI_DISABLED != 'true' }}

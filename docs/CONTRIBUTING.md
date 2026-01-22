@@ -128,6 +128,41 @@ cd frontend
 npm test
 ```
 
+### CI Parity (GitHub Actions)
+Run the same checks locally before opening a PR:
+```bash
+python -m pip install -r requirements.txt
+python -m pip install pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout ruff mypy httpx types-requests
+python -m ruff check .
+python -m mypy
+python -m pytest -q tests/integration/test_rule_engine_clean.py
+python scripts/export_openapi.py --check
+python scripts/generate_api_reference.py --check
+python -m pytest tests/unit --cov=. --cov-report=xml --cov-report=term -n auto
+python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude tests/* --exclude scripts/* --exclude workflows/*
+python scripts/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include api/*.py --include api/routers/*.py --include rules/*.py --include models/provider_factory.py --include models/user_model_preferences.py --include config/*.py
+python -m pytest tests/integration --cov=. --cov-report=xml --cov-report=term -n auto
+python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude tests/* --exclude scripts/* --exclude workflows/*
+```
+
+For frontend parity:
+```bash
+cd frontend
+npm ci
+npm run lint
+npm run test -- --ci --coverage
+```
+
+Optional smoke test (requires Docker):
+```bash
+API_ACCESS_KEY=ci-test-key NEXT_PUBLIC_API_KEY=ci-test-key python scripts/compose_smoke.py --ci --timeout-seconds 300
+```
+
+Secrets and env notes:
+- CI does not require real API keys; tests use mocks or local fixtures.
+- Use `.env` from `.env.example` for local development keys and SMTP settings.
+- Pipeline failure notifications are created as GitHub issues and written to the job summary.
+
 ## 🔄 Pull Request Process
 
 ### Commit Message Convention
