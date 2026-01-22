@@ -1,8 +1,5 @@
 name: CI
 
-env:
-  MVP_CI_DISABLED: 'false'
-
 permissions:
   contents: read
   issues: write
@@ -23,13 +20,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: CI disabled notice
-        if: ${{ env.MVP_CI_DISABLED == 'true' }}
-        run: |
-          echo "CI temporarily disabled for MVP sprint."
 
       - name: Cache pip
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
@@ -38,54 +30,44 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Set up Python
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
       - name: Install dependencies
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
           python -m pip install pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout ruff mypy httpx types-requests
 
       - name: Lint (ruff)
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python -m ruff check .
 
       - name: Type check (mypy)
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python -m mypy
         continue-on-error: false
 
       - name: RuleEngine (custom rules)
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python -m pytest -q tests/integration/test_rule_engine_clean.py
 
       - name: OpenAPI schema drift check
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python scripts/export_openapi.py --check
 
       - name: API reference (generated) drift check
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python scripts/generate_api_reference.py --check
       - name: API reference (full) drift check
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python scripts/update_api_reference_full.py --check
 
       - name: Run unit tests with coverage (pytest)
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python -m pytest tests/unit --cov=. --cov-report=xml --cov-report=term -n auto
       - name: Unit coverage summary
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python - <<'PY'
           import os
@@ -100,34 +82,31 @@ jobs:
           PY
 
       - name: Fetch base ref (PR only)
-        if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' }}
         run: |
           git fetch origin ${{ github.base_ref }} --depth=1
 
       - name: "Coverage gate (unit: diff)"
-        if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' }}
         run: |
           python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --base-ref origin/${{ github.base_ref }} --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
       - name: "Coverage gate (unit: diff fallback)"
-        if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name != 'pull_request' }}
+        if: ${{ github.event_name != 'pull_request' }}
         run: |
           python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
       - name: "Coverage gate (unit: critical)"
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python scripts/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include 'api/*.py' --include 'api/routers/*.py' --include 'rules/*.py' --include 'models/provider_factory.py' --include 'models/user_model_preferences.py' --include 'config/*.py'
 
       - name: Upload backend coverage (unit)
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: backend-coverage-unit-xml
           path: coverage.xml
 
       - name: Run integration tests with coverage (pytest)
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           set -e
           for attempt in 1 2; do
@@ -136,7 +115,6 @@ jobs:
             echo "Integration tests failed. Retrying..."
           done
       - name: Integration coverage summary
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python - <<'PY'
           import os
@@ -151,17 +129,17 @@ jobs:
           PY
 
       - name: "Coverage gate (integration: diff)"
-        if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' }}
         run: |
           python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --base-ref origin/${{ github.base_ref }} --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
       - name: "Coverage gate (integration: diff fallback)"
-        if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name != 'pull_request' }}
+        if: ${{ github.event_name != 'pull_request' }}
         run: |
           python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
       - name: Upload backend coverage (integration)
-        if: ${{ env.MVP_CI_DISABLED != 'true' && always() }}
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: backend-coverage-integration-xml
@@ -177,13 +155,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: CI disabled notice
-        if: ${{ env.MVP_CI_DISABLED == 'true' }}
-        run: |
-          echo "CI temporarily disabled for MVP sprint."
 
       - name: Cache npm
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         uses: actions/cache@v4
         with:
           path: ~/.npm
@@ -192,29 +165,23 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Set up Node
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Install dependencies
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: npm ci
 
       - name: Lint
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: npm run lint
 
       - name: Run tests
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: npm run test -- --ci --coverage
       - name: Frontend coverage summary
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: >
           node -e "const fs=require('fs'); const summary=JSON.parse(fs.readFileSync('coverage/coverage-summary.json','utf8')); const total=summary.total; const text=`### Frontend Coverage\n\nLines: ${total.lines.pct}%\nStatements: ${total.statements.pct}%\nFunctions: ${total.functions.pct}%\nBranches: ${total.branches.pct}%\n`; fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, text);"
 
       - name: Upload frontend coverage
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage
@@ -229,17 +196,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: CI disabled notice
-        if: ${{ env.MVP_CI_DISABLED == 'true' }}
-        run: |
-          echo "CI temporarily disabled for MVP sprint."
       - name: Set up Python
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Docker Compose smoke test (build + health checks)
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         env:
           API_ACCESS_KEY: ci-test-key
           NEXT_PUBLIC_API_KEY: ci-test-key
@@ -260,22 +221,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: CI disabled notice
-        if: ${{ env.MVP_CI_DISABLED == 'true' }}
-        run: |
-          echo "CI temporarily disabled for MVP sprint."
       - name: Set up Python
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Install bandit
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python -m pip install --upgrade pip
           python -m pip install bandit
       - name: Run Bandit (exclude tests, fail on high severity)
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           mkdir -p artifacts
           python -m bandit -r api agents ai analytics data models notifications rules scripts utils workflows -x tests,node_modules,.history,venv,venv/*,.venv,.venv/*,.venv_ci,.venv_ci/* --severity-level high --confidence-level high -f json -o artifacts/bandit.json
@@ -293,22 +247,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: CI disabled notice
-        if: ${{ env.MVP_CI_DISABLED == 'true' }}
-        run: |
-          echo "CI temporarily disabled for MVP sprint."
       - name: Set up Python
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Install pip-audit
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python -m pip install --upgrade pip
           python -m pip install pip-audit
       - name: Run pip-audit (fail on vulnerabilities)
-        if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           mkdir -p artifacts
           python -m pip_audit -r requirements.txt -f json -o artifacts/pip-audit.json

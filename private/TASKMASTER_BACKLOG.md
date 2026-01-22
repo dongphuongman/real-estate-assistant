@@ -282,6 +282,16 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
   - Estimate update: Actual 0.1d; no remaining.
   - Follow-ups: Consider making the RuleEngine step a required branch protection check.
 
+- TM-QA-005 (medium, 0.2d, completed)
+  - Task: Re-enable CI Jobs Post-MVP
+  - Description: Reactivate all CI pipeline jobs after MVP completion
+  - Acceptance Criteria: All previously disabled jobs must be successfully restored and verified
+  - Priority: Medium
+  - Estimated Effort: 1-2 hours
+  - Notes: Removed the `MVP_CI_DISABLED` workflow kill-switch so backend/frontend/compose_smoke/pipeline_health always run; docs updated to reflect always-on CI.
+  - Estimate update: Actual 0.15d; remaining 0.05d reallocated to backlog buffer.
+  - Follow-ups: None.
+
 ### Epic: Docs (CE)
 - TM-DOCS-001 (medium, 1d, completed)
   - Task: API Reference, User Guide, Troubleshooting updates

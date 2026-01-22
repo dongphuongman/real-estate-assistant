@@ -4,6 +4,9 @@
 This document captures practical details for working on the FastAPI backend and Next.js frontend
 in V4.
 
+## Development Process
+- CI is expected to run on every PR and push; keep ruff, mypy, RuleEngine, and coverage gates green before merging.
+
 ## Backend (FastAPI)
 - Entry point: `api/main.py`
 - Routers: `api/routers/*` (chat, search, tools, settings, admin, auth)
@@ -156,10 +159,6 @@ in V4.
 - Security:
   - Static analysis: Bandit (fail on high severity/high confidence)
   - Dependency audit: pip-audit (fail on vulnerabilities)
-- Temporary MVP pause:
-  - CI jobs are gated by `MVP_CI_DISABLED` (workflow env).
-  - Set `MVP_CI_DISABLED` to `'true'` to disable heavy steps (jobs still succeed quickly).
-  - Default is `'false'` so full CI runs on pushes and PRs.
 
 ## Branch Protection
 - Protect `main` and `ver4` branches with required CI checks:

@@ -4,7 +4,7 @@
 Protect `main` and `ver4` with required status checks to ensure quality gates before merge.
 
 ## Required Checks
-- Backend CI: ruff, mypy, unit coverage (≥75 temporary, target 90), integration coverage (≥40 temporary, target 70)
+- Backend CI: ruff, mypy, unit diff coverage (≥90), integration diff coverage (≥70), unit critical coverage (≥90)
 - Frontend CI: eslint, jest tests + coverage (thresholds in `jest.config.ts`)
 - Security CI: Bandit (fail on high severity, high confidence)
 
@@ -22,7 +22,3 @@ Protect `main` and `ver4` with required status checks to ensure quality gates be
 ## Notes
 - Temporary thresholds are documented in [DEVELOPER_NOTES.md](file:///c:/Projects/ai-real-estate-assistant/docs/DEVELOPER_NOTES.md); raise to targets as tests improve.
 - Avoid storing secrets in code; CI jobs must not echo secret values.
-- MVP Pause:
-  - CI jobs are currently gated by `MVP_CI_DISABLED` and will complete quickly without running heavy checks.
-  - If branch protection requires specific checks, they will still report success (skipped heavy steps).
-  - To fully re-enable, set `MVP_CI_DISABLED='false'` in `.github/workflows/ci.yml` (or remove the env).
