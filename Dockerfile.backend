@@ -7,7 +7,8 @@ RUN apt-get update && apt-get upgrade -y && \
     rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel==0.46.3 && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements.txt && \
+    rm -f /usr/local/lib/python3.12/ensurepip/_bundled/wheel-*.whl
 COPY . .
 ENV PYTHONUNBUFFERED=1
 EXPOSE 8000
