@@ -58,7 +58,7 @@ def run_diagnostics(base: list[str]) -> None:
             continue
 
 
-def http_get_status(url: str, *, timeout_seconds: float) -> int:
+def http_get_status(url: str, timeout_seconds: float) -> int:
     req = urllib.request.Request(url, method="GET")
     try:
         with urllib.request.urlopen(req, timeout=timeout_seconds) as resp:
