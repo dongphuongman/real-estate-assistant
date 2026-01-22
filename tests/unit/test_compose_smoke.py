@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from unittest.mock import patch
 
 import pytest
@@ -101,6 +102,7 @@ def test_main_dry_run_prints_commands(tmp_path, capsys):
     assert "UP:" in out
     assert "DOWN:" in out
     assert "CHECK:" in out
+    assert "CHECK_AUTH:" in out
 
 
 def test_main_missing_compose_file_raises(tmp_path):
@@ -112,19 +114,33 @@ def test_main_ci_runs_up_waits_and_tears_down(tmp_path):
     compose_file = tmp_path / "docker-compose.yml"
     compose_file.write_text("version: '3.8'\nservices: {}\n", encoding="utf-8")
 
-    with patch("scripts.compose_smoke.run_command") as run_command_mock, patch(
-        "scripts.compose_smoke.wait_for_http_ok"
-    ) as wait_mock:
+    with patch.dict(os.environ, {"API_ACCESS_KEY": "ci-test-key"}, clear=False), patch(
+        "scripts.compose_smoke.run_command"
+    ) as run_command_mock, patch("scripts.compose_smoke.wait_for_http_ok") as wait_mock:
         rc = main(["--compose-file", str(compose_file), "--ci"])
 
     assert rc == 0
-    assert wait_mock.call_count == 2
+    assert wait_mock.call_count == 3
     assert run_command_mock.call_count == 2
 
     up_cmd = run_command_mock.call_args_list[0].args[0]
     down_cmd = run_command_mock.call_args_list[1].args[0]
     assert "up" in up_cmd
     assert "down" in down_cmd
+
+
+def test_main_ci_skips_verify_auth_when_api_key_missing(tmp_path):
+    compose_file = tmp_path / "docker-compose.yml"
+    compose_file.write_text("version: '3.8'\nservices: {}\n", encoding="utf-8")
+
+    with patch.dict(os.environ, {"API_ACCESS_KEY": ""}, clear=False), patch(
+        "scripts.compose_smoke.run_command"
+    ) as run_command_mock, patch("scripts.compose_smoke.wait_for_http_ok") as wait_mock:
+        rc = main(["--compose-file", str(compose_file), "--ci"])
+
+    assert rc == 0
+    assert wait_mock.call_count == 2
+    assert run_command_mock.call_count == 2
 
 
 def test_main_ci_tears_down_on_wait_timeout(tmp_path):
@@ -156,3 +172,22 @@ def test_http_get_status_returns_http_error_code():
     )
     with patch("urllib.request.urlopen", side_effect=err):
         assert http_get_status("http://example", timeout_seconds=0.1) == 418
+
+
+def test_http_get_status_sends_headers():
+    class _Resp:
+        status = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    def _fake_urlopen(req, timeout: float | None = None) -> _Resp:
+        del timeout
+        assert req.headers.get("X-api-key") == "k"
+        return _Resp()
+
+    with patch("urllib.request.urlopen", side_effect=_fake_urlopen):
+        assert http_get_status("http://example", timeout_seconds=0.1, headers={"X-API-Key": "k"}) == 200

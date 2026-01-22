@@ -26,4 +26,4 @@ def test_compose_smoke_script_dry_run(tmp_path: Path):
     assert "UP:" in result.stdout
     assert "docker compose -f" in result.stdout
     assert "CHECK:" in result.stdout
-
+    assert "CHECK_AUTH:" in result.stdout

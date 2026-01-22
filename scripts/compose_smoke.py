@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 import time
@@ -15,7 +16,9 @@ from typing import Callable
 class SmokeConfig:
     compose_file: Path
     backend_health_url: str
+    backend_verify_auth_url: str
     frontend_url: str
+    api_access_key: str
     timeout_seconds: int
     interval_seconds: float
     build: bool
@@ -58,8 +61,8 @@ def run_diagnostics(base: list[str]) -> None:
             continue
 
 
-def http_get_status(url: str, timeout_seconds: float) -> int:
-    req = urllib.request.Request(url, method="GET")
+def http_get_status(url: str, timeout_seconds: float, headers: dict[str, str] | None = None) -> int:
+    req = urllib.request.Request(url, method="GET", headers=headers or {})
     try:
         with urllib.request.urlopen(req, timeout=timeout_seconds) as resp:
             return int(resp.status)
@@ -94,7 +97,9 @@ def parse_args(argv: list[str]) -> SmokeConfig:
     parser = argparse.ArgumentParser(description="Docker Compose smoke test (backend + frontend).")
     parser.add_argument("--compose-file", default="docker-compose.yml")
     parser.add_argument("--backend-health-url", default="http://localhost:8000/health")
+    parser.add_argument("--backend-verify-auth-url", default="http://localhost:8000/api/v1/verify-auth")
     parser.add_argument("--frontend-url", default="http://localhost:3000/")
+    parser.add_argument("--api-access-key", default=os.environ.get("API_ACCESS_KEY", ""))
     parser.add_argument("--timeout-seconds", type=int, default=180)
     parser.add_argument("--interval-seconds", type=float, default=2.0)
     parser.add_argument("--build", action="store_true")
@@ -115,7 +120,9 @@ def parse_args(argv: list[str]) -> SmokeConfig:
     return SmokeConfig(
         compose_file=Path(ns.compose_file),
         backend_health_url=str(ns.backend_health_url),
+        backend_verify_auth_url=str(ns.backend_verify_auth_url),
         frontend_url=str(ns.frontend_url),
+        api_access_key=str(ns.api_access_key),
         timeout_seconds=timeout_seconds,
         interval_seconds=float(ns.interval_seconds),
         build=build,
@@ -140,6 +147,10 @@ def main(argv: list[str]) -> int:
         print("DOWN:", " ".join(down_cmd))
         print("CHECK:", cfg.backend_health_url)
         print("CHECK:", cfg.frontend_url)
+        if cfg.api_access_key:
+            print("CHECK_AUTH:", cfg.backend_verify_auth_url)
+        else:
+            print("CHECK_AUTH: (skipped; API_ACCESS_KEY not set)")
         return 0
 
     try:
@@ -159,6 +170,16 @@ def main(argv: list[str]) -> int:
                 get_status=http_get_status,
                 sleep=time.sleep,
             )
+            if cfg.api_access_key:
+                wait_for_http_ok(
+                    cfg.backend_verify_auth_url,
+                    timeout_seconds=cfg.timeout_seconds,
+                    interval_seconds=cfg.interval_seconds,
+                    get_status=lambda url, timeout: http_get_status(
+                        url, timeout, headers={"X-API-Key": cfg.api_access_key}
+                    ),
+                    sleep=time.sleep,
+                )
         except Exception:
             run_diagnostics(base)
             raise

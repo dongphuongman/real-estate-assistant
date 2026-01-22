@@ -48,7 +48,7 @@ Cross-Origin Resource Sharing (CORS) is controlled via environment:
 ### Quality & Stability
 - Static analysis enforced: ruff (lint), mypy (types), RuleEngine (custom rules).
 - CI runs RuleEngine as a dedicated step for fast feedback; run locally with `python -m pytest -q tests\integration\test_rule_engine_clean.py`.
-- CI also runs a Docker Compose smoke test (build + health checks). Local equivalent: `python scripts\compose_smoke.py --ci`.
+- CI also runs a Docker Compose smoke test (build + health checks). It waits for `/health` and the frontend `/`, and also checks `/api/v1/verify-auth` when `API_ACCESS_KEY` is set. Local equivalent: `python scripts\compose_smoke.py --ci`.
 - CI coverage enforcement uses `python scripts\\coverage_gate.py`:
   - Diff coverage: enforces minimum coverage on changed Python lines in a PR (excluding tests/scripts).
   - Critical coverage: enforces ≥90% line coverage on core backend modules.

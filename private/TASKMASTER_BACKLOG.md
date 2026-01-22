@@ -218,6 +218,20 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
   - Estimate update: Actual 0.25d; remaining 0.25d reallocated to TM-DOCS-001 follow-ups.
   - Follow-ups: Consider calling a minimal authenticated `/api/v1/verify-auth` check once stable.
 
+- TM-DEPLOY-003 (high, 0.25d, completed)
+  - Task: Extend Compose smoke to verify authenticated API endpoint
+  - Subtasks:
+    - Check `GET /api/v1/verify-auth` when `API_ACCESS_KEY` is set (send `X-API-Key`)
+    - Ensure dry-run output does not print secrets
+    - Update unit + integration coverage and docs
+  - Acceptance: CI smoke validates `/health`, frontend `/`, and `/api/v1/verify-auth` without external keys; local smoke supports auth check when `API_ACCESS_KEY` is set.
+  - Tests: unit (header pass-through + CI gating), integration (CLI dry-run wiring)
+  - Docs: API Reference, User Guide, Developer Notes
+  - Dependencies: TM-DEPLOY-002
+  - Notes: Smoke script now performs an authenticated verify-auth check when `API_ACCESS_KEY` is available, improving confidence that auth wiring works in Compose.
+  - Estimate update: Actual 0.1d; no remaining.
+  - Follow-ups: None.
+
 ### Epic: QA & Security
 - TM-QA-001 (high, 1d, completed)
   - Task: ruff/mypy gates and RuleEngine cleanliness

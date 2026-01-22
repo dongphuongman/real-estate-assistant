@@ -2,12 +2,19 @@
 Pytest configuration and shared fixtures.
 """
 
+import os
+
 import pytest
 from langchain_core.documents import Document
 
 from agents.query_analyzer import QueryAnalyzer
 from data.schemas import Property, PropertyCollection, PropertyType
 from vector_store.reranker import PropertyReranker
+
+
+def pytest_configure() -> None:
+    os.environ.setdefault("ENVIRONMENT", "test")
+    os.environ["API_ACCESS_KEY"] = "dev-secret-key"
 
 
 @pytest.fixture
@@ -30,7 +37,7 @@ def sample_properties():
             has_parking=True,
             has_garden=False,
             property_type=PropertyType.APARTMENT,
-            source_url="http://example.com/1"
+            source_url="http://example.com/1",
         ),
         Property(
             id="prop2",
@@ -42,7 +49,7 @@ def sample_properties():
             has_parking=False,
             has_garden=True,
             property_type=PropertyType.APARTMENT,
-            source_url="http://example.com/2"
+            source_url="http://example.com/2",
         ),
         Property(
             id="prop3",
@@ -54,7 +61,7 @@ def sample_properties():
             has_parking=True,
             has_garden=False,
             property_type=PropertyType.APARTMENT,
-            source_url="http://example.com/3"
+            source_url="http://example.com/3",
         ),
         Property(
             id="prop4",
@@ -66,7 +73,7 @@ def sample_properties():
             has_parking=False,
             has_garden=False,
             property_type=PropertyType.STUDIO,
-            source_url="http://example.com/4"
+            source_url="http://example.com/4",
         ),
         Property(
             id="prop5",
@@ -78,7 +85,7 @@ def sample_properties():
             has_parking=True,
             has_garden=True,
             property_type=PropertyType.APARTMENT,
-            source_url="http://example.com/5"
+            source_url="http://example.com/5",
         ),
     ]
     return PropertyCollection(properties=properties, total_count=5)
@@ -91,7 +98,7 @@ def sample_documents(sample_properties):
     for prop in sample_properties.properties:
         doc = Document(
             page_content=prop.to_search_text(),
-            metadata=prop.to_dict()
+            metadata=prop.to_dict(),
         )
         documents.append(doc)
     return documents
@@ -101,5 +108,3 @@ def sample_documents(sample_properties):
 def reranker():
     """Fixture for property reranker."""
     return PropertyReranker()
-
-

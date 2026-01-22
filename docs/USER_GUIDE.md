@@ -85,7 +85,7 @@ The AI-powered chat interface allows you to search for properties using natural 
 - Ensure Docker Desktop is installed
 - Copy environment: `Copy-Item .env.example .env`
 - Start: `docker compose up -d --build`
-- Optional smoke (build + health checks): `python scripts\compose_smoke.py --ci`
+- Optional smoke (build + health checks): `python scripts\compose_smoke.py --ci` (checks `/api/v1/verify-auth` when `API_ACCESS_KEY` is set)
 - Open UI: `http://localhost:3000`
 - API docs: `http://localhost:8000/docs`
 - OpenAPI schema: `http://localhost:8000/openapi.json` (repo snapshot: `docs/openapi.json`)
