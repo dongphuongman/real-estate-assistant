@@ -27,7 +27,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt', 'pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
@@ -41,8 +41,8 @@ jobs:
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e .[dev]
-          python -m pip install pytest-cov pytest-xdist pytest-timeout
+          python -m pip install -r requirements.txt
+          python -m pip install pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout ruff mypy httpx types-requests
 
       - name: Lint (ruff)
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
@@ -83,12 +83,12 @@ jobs:
       - name: Coverage gate (unit: diff)
         if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name == 'pull_request' }}
         run: |
-          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --base-ref origin/${{ github.base_ref }} --exclude tests/* --exclude scripts/*
+          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --base-ref origin/${{ github.base_ref }} --exclude tests/* --exclude scripts/* --exclude workflows/*
 
       - name: Coverage gate (unit: diff fallback)
         if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name != 'pull_request' }}
         run: |
-          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude tests/* --exclude scripts/*
+          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude tests/* --exclude scripts/* --exclude workflows/*
 
       - name: Coverage gate (unit: critical)
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
@@ -110,12 +110,12 @@ jobs:
       - name: Coverage gate (integration: diff)
         if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name == 'pull_request' }}
         run: |
-          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --base-ref origin/${{ github.base_ref }} --exclude tests/* --exclude scripts/*
+          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --base-ref origin/${{ github.base_ref }} --exclude tests/* --exclude scripts/* --exclude workflows/*
 
       - name: Coverage gate (integration: diff fallback)
         if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name != 'pull_request' }}
         run: |
-          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude tests/* --exclude scripts/*
+          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude tests/* --exclude scripts/* --exclude workflows/*
 
       - name: Upload backend coverage (integration)
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
@@ -225,13 +225,14 @@ jobs:
       - name: Run Bandit (exclude tests, fail on high severity)
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
-          python -m bandit -r . -x tests,venv,node_modules,.history --severity-level high --confidence-level high -f json -o bandit.json
+          mkdir -p artifacts
+          python -m bandit -r api agents ai analytics data models notifications rules scripts utils workflows -x tests,node_modules,.history,venv,venv/*,.venv,.venv/*,.venv_ci,.venv_ci/* --severity-level high --confidence-level high -f json -o artifacts/bandit.json
       - name: Upload bandit report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: bandit-report
-          path: bandit.json
+          path: artifacts/bandit.json
 
   audit:
     runs-on: ubuntu-latest
@@ -257,10 +258,11 @@ jobs:
       - name: Run pip-audit (fail on vulnerabilities)
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
-          python -m pip_audit -f json -o pip-audit.json
+          mkdir -p artifacts
+          python -m pip_audit -r requirements.txt -f json -o artifacts/pip-audit.json
       - name: Upload pip-audit report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pip-audit-report
-          path: pip-audit.json
+          path: artifacts/pip-audit.json

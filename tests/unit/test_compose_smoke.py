@@ -137,9 +137,11 @@ def test_main_ci_tears_down_on_wait_timeout(tmp_path):
         with pytest.raises(TimeoutError):
             main(["--compose-file", str(compose_file), "--ci"])
 
-    assert run_command_mock.call_count == 2
+    assert run_command_mock.call_count >= 2
     assert "up" in run_command_mock.call_args_list[0].args[0]
-    assert "down" in run_command_mock.call_args_list[1].args[0]
+    assert "down" in run_command_mock.call_args_list[-1].args[0]
+    assert any("ps" in call.args[0] for call in run_command_mock.call_args_list)
+    assert any("logs" in call.args[0] for call in run_command_mock.call_args_list)
 
 
 def test_http_get_status_returns_http_error_code():

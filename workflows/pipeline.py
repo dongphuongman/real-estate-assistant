@@ -5,11 +5,12 @@ import logging
 import re
 import subprocess
 import uuid
-from typing import Any, Dict
+from typing import Any
 
 from agents.dev.coding import CodingAgent
 from agents.dev.documentation import DocumentationAgent
 from agents.dev.testing import TestingAgent
+
 from rules.engine import RuleEngine
 
 logger = logging.getLogger(__name__)
@@ -61,7 +62,7 @@ class DevPipeline:
             logger.warning(f"Failed to commit: {e}")
             return False
 
-    def implement_feature(self, description: str, use_git: bool = False) -> Dict[str, Any]:
+    def implement_feature(self, description: str, use_git: bool = False) -> dict[str, Any]:
         """
         Run the full implementation pipeline: Code -> Validate -> Test -> Document.
         

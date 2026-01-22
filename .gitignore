@@ -14,6 +14,7 @@ __azurite_*
 # Trae Agent configuration
 trae_config.yaml
 trae_config.yml
+.trae/documents/
 
 # Streamlit secrets
 .streamlit/secrets.toml
@@ -76,6 +77,8 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+artifacts/bandit.json
+artifacts/pip-audit.json
 
 # Translations
 *.mo
@@ -150,6 +153,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
+.venv_ci
 env/
 venv/
 ENV/

@@ -25,6 +25,54 @@ npm run test:watch       # Run tests in watch mode
 - **Backend Integration**: ≥70% lines/functions (enforced via `--cov-fail-under=70`)
 - **Frontend Global**: ≥85% lines/functions; branches ≥70% (enforced in `jest.config.ts`)
 
+---
+
+## ✅ CI Repro (GitHub Actions Parity)
+
+This section mirrors the CI workflow in [.github/workflows/ci.yml](file:///c:/Projects/ai-real-estate-assistant/.github/workflows/ci.yml).
+
+### Backend (Python)
+```bash
+python -m pip install -r requirements.txt
+python -m pip install pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout ruff mypy httpx types-requests
+
+python -m ruff check .
+python -m mypy
+python -m pytest -q tests/integration/test_rule_engine_clean.py
+python scripts/export_openapi.py --check
+python scripts/generate_api_reference.py --check
+
+python -m pytest tests/unit --cov=. --cov-report=xml --cov-report=term -n auto
+python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude tests/* --exclude scripts/* --exclude workflows/*
+python scripts/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include api/*.py --include api/routers/*.py --include rules/*.py --include models/provider_factory.py --include models/user_model_preferences.py --include config/*.py
+
+python -m pytest tests/integration --cov=. --cov-report=xml --cov-report=term -n auto
+python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude tests/* --exclude scripts/* --exclude workflows/*
+```
+
+### Frontend (Next.js)
+```bash
+cd frontend
+npm ci
+npm run lint
+npm run test -- --ci --coverage
+```
+
+### Security & Audit
+```bash
+python -m pip install bandit pip-audit
+python -m bandit -r api agents ai analytics data models notifications rules scripts utils workflows -x tests,node_modules,.history --severity-level high --confidence-level high -f json -o artifacts/bandit.json
+python -m pip_audit -r requirements.txt -f json -o artifacts/pip-audit.json
+```
+
+### Docker Compose Smoke (optional)
+```bash
+python scripts/compose_smoke.py --ci --timeout-seconds 300
+```
+
+### Windows note (npm EPERM)
+If `npm ci` fails with `EPERM: operation not permitted, unlink ...tailwindcss-oxide...` on Windows, delete `frontend/node_modules` completely and rerun `npm ci`.
+
 #### Key Testing Practices
 - **Mocking**: Next.js hooks (`useRouter`, `usePathname`) and `fetch` are mocked globally or per test.
 - **Async Handling**: Use `act()` and `waitFor()` for state updates. Use `jest.useFakeTimers()` for time-dependent logic.

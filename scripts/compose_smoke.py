@@ -38,8 +38,24 @@ def build_compose_down_command(base: list[str]) -> list[str]:
     return [*base, "down", "--volumes", "--remove-orphans"]
 
 
+def build_compose_ps_command(base: list[str]) -> list[str]:
+    return [*base, "ps"]
+
+
+def build_compose_logs_command(base: list[str]) -> list[str]:
+    return [*base, "logs", "--no-color", "--tail", "200"]
+
+
 def run_command(cmd: list[str]) -> None:
     subprocess.run(cmd, check=True)
+
+
+def run_diagnostics(base: list[str]) -> None:
+    for cmd in (build_compose_ps_command(base), build_compose_logs_command(base)):
+        try:
+            run_command(cmd)
+        except Exception:
+            continue
 
 
 def http_get_status(url: str, *, timeout_seconds: float) -> int:
@@ -128,20 +144,24 @@ def main(argv: list[str]) -> int:
 
     try:
         run_command(up_cmd)
-        wait_for_http_ok(
-            cfg.backend_health_url,
-            timeout_seconds=cfg.timeout_seconds,
-            interval_seconds=cfg.interval_seconds,
-            get_status=http_get_status,
-            sleep=time.sleep,
-        )
-        wait_for_http_ok(
-            cfg.frontend_url,
-            timeout_seconds=cfg.timeout_seconds,
-            interval_seconds=cfg.interval_seconds,
-            get_status=http_get_status,
-            sleep=time.sleep,
-        )
+        try:
+            wait_for_http_ok(
+                cfg.backend_health_url,
+                timeout_seconds=cfg.timeout_seconds,
+                interval_seconds=cfg.interval_seconds,
+                get_status=http_get_status,
+                sleep=time.sleep,
+            )
+            wait_for_http_ok(
+                cfg.frontend_url,
+                timeout_seconds=cfg.timeout_seconds,
+                interval_seconds=cfg.interval_seconds,
+                get_status=http_get_status,
+                sleep=time.sleep,
+            )
+        except Exception:
+            run_diagnostics(base)
+            raise
         return 0
     finally:
         if cfg.down:
@@ -150,4 +170,3 @@ def main(argv: list[str]) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv[1:]))
-
