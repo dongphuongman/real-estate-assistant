@@ -110,7 +110,7 @@ jobs:
         run: |
           set -e
           for attempt in 1 2; do
-            python -m pytest tests/integration --cov=. --cov-report=xml --cov-report=term -n auto && break
+            python -m pytest tests/integration --cov=. --cov-report=xml --cov-report=term && break
             if [ $attempt -eq 2 ]; then exit 1; fi
             echo "Integration tests failed. Retrying..."
           done
@@ -209,7 +209,7 @@ jobs:
           docker compose version
           set -e
           for attempt in 1 2; do
-            python scripts/compose_smoke.py --ci --timeout-seconds 300 && break
+            python scripts/compose_smoke.py --ci --timeout-seconds 420 && break
             if [ $attempt -eq 2 ]; then exit 1; fi
             echo "Compose smoke failed. Retrying..."
           done
@@ -319,6 +319,9 @@ jobs:
               core.summary.addRaw(`Non-success jobs: ${nonSuccess.map(([job, result]) => `${job}(${result})`).join(', ')}`);
             } else {
               core.summary.addRaw('All pipeline jobs succeeded.');
+            }
+            if (nonSuccess.length) {
+              core.setFailed(`Non-success jobs: ${nonSuccess.map(([job, result]) => `${job}(${result})`).join(', ')}`);
             }
 
             const defaultBranch = context?.payload?.repository?.default_branch;
