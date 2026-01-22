@@ -52,6 +52,7 @@ ignore = ["E501"]
 "agents/services/__init__.py" = ["I001", "F401"]
 "agents/services/crm_connector.py" = ["I001"]
 "agents/services/data_enrichment.py" = ["I001"]
+"workflows/pipeline.py" = ["I001"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"

@@ -4,11 +4,10 @@ RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y build-essential curl git && \
     rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+RUN pip install --no-cache-dir --upgrade pip setuptools "wheel>=0.46.2" && \
     pip install --no-cache-dir -r requirements.txt
 COPY . .
 ENV PYTHONUNBUFFERED=1
 EXPOSE 8000
 HEALTHCHECK CMD curl --fail http://localhost:8000/health || exit 1
 CMD ["python", "-m", "uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
-
