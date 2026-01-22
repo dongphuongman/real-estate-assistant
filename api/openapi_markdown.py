@@ -69,6 +69,13 @@ def serialize_api_reference_markdown(schema: dict[str, Any]) -> str:
     return "\n".join(blocks).rstrip() + "\n"
 
 
+def serialize_endpoints_markdown(schema: dict[str, Any]) -> str:
+    blocks: list[str] = []
+    for path, method, operation in iter_openapi_operations(schema):
+        blocks.append(render_operation_block(path=path, method=method, operation=operation))
+    return "\n".join(blocks).rstrip() + "\n"
+
+
 def iter_openapi_operations(schema: dict[str, Any]) -> Iterable[tuple[str, str, dict[str, Any]]]:
     paths = schema.get("paths", {})
     if not isinstance(paths, dict):

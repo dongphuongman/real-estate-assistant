@@ -316,6 +316,20 @@ Pro features remain out of scope for CE and are tracked elsewhere privately.
   - Estimate update: Actual 0.25d; no remaining.
   - Follow-ups: Consider generating the full `docs/API_REFERENCE.md` from OpenAPI post-MVP to reduce manual drift further.
 
+- TM-DOCS-004 (high, 0.5d, completed)
+  - Task: Update full `docs/API_REFERENCE.md` Endpoints section from OpenAPI snapshot
+  - Subtasks:
+    - Add `serialize_endpoints_markdown` to OpenAPI→Markdown generator
+    - Create `scripts/update_api_reference_full.py` with `--check` drift mode
+    - Replace `### Endpoints` section in `docs/API_REFERENCE.md` deterministically
+    - Add unit + integration tests for generator and drift
+  - Acceptance: `docs/API_REFERENCE.md` Endpoints section is generated from `docs/openapi.json`; tests pass; CI gates remain clean
+  - Tests: unit (`tests/unit/test_update_api_reference_full.py`), integration (`tests/integration/api/test_api_reference_full_integration.py`)
+  - Docs: Developer Notes updated with command
+  - Notes: Keeps manual non-endpoint content while eliminating endpoint drift; uses committed schema snapshot
+  - Estimate update: Actual 0.5d; no remaining.
+  - Follow-ups: Consider wiring `scripts/update_api_reference_full.py --check` into CI post-MVP alongside existing drift checks.
+
 ## Cross-Cutting Requirements
 - Tests: unit ≥90% coverage per module; integration ≥70%; critical paths ≥90%
 - Code Quality: ruff check ., mypy strict for `api` and `agents/services`
