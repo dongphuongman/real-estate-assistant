@@ -4,8 +4,13 @@ import { useState } from "react";
 import { Search as SearchIcon, MapPin, Filter, Download } from "lucide-react";
 import { searchProperties, exportPropertiesBySearch } from "@/lib/api";
 import { SearchResultItem } from "@/lib/types";
-import PropertyMap from "@/components/search/property-map";
 import { extractMapPoints } from "@/components/search/property-map-utils";
+import dynamic from "next/dynamic";
+
+const PropertyMap = dynamic(() => import("@/components/search/property-map"), {
+  ssr: false,
+  loading: () => <div className="h-[420px] w-full bg-muted animate-pulse rounded-lg" />,
+});
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");

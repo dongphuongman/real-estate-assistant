@@ -109,7 +109,7 @@ describe("SearchPage", () => {
 
     expect(screen.queryByTestId("property-map")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Map" }));
-    expect(screen.getByTestId("property-map")).toHaveTextContent("1");
+    expect(await screen.findByTestId("property-map")).toHaveTextContent("1");
     fireEvent.click(screen.getByRole("button", { name: "List" }));
     expect(screen.queryByTestId("property-map")).not.toBeInTheDocument();
   });
