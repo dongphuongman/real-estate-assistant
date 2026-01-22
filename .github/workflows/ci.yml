@@ -83,17 +83,17 @@ jobs:
       - name: "Coverage gate (unit: diff)"
         if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name == 'pull_request' }}
         run: |
-          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --base-ref origin/${{ github.base_ref }} --exclude tests/* --exclude scripts/* --exclude workflows/*
+          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --base-ref origin/${{ github.base_ref }} --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
       - name: "Coverage gate (unit: diff fallback)"
         if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name != 'pull_request' }}
         run: |
-          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude tests/* --exclude scripts/* --exclude workflows/*
+          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
       - name: "Coverage gate (unit: critical)"
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
         run: |
-          python scripts/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include api/*.py --include api/routers/*.py --include rules/*.py --include models/provider_factory.py --include models/user_model_preferences.py --include config/*.py
+          python scripts/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include 'api/*.py' --include 'api/routers/*.py' --include 'rules/*.py' --include 'models/provider_factory.py' --include 'models/user_model_preferences.py' --include 'config/*.py'
 
       - name: Upload backend coverage (unit)
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
@@ -110,12 +110,12 @@ jobs:
       - name: "Coverage gate (integration: diff)"
         if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name == 'pull_request' }}
         run: |
-          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --base-ref origin/${{ github.base_ref }} --exclude tests/* --exclude scripts/* --exclude workflows/*
+          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --base-ref origin/${{ github.base_ref }} --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
       - name: "Coverage gate (integration: diff fallback)"
         if: ${{ env.MVP_CI_DISABLED != 'true' && github.event_name != 'pull_request' }}
         run: |
-          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude tests/* --exclude scripts/* --exclude workflows/*
+          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
       - name: Upload backend coverage (integration)
         if: ${{ env.MVP_CI_DISABLED != 'true' }}
