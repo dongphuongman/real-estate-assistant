@@ -8,7 +8,18 @@ Ensure high quality through rigorous testing at all levels.
 ## Backend (Python)
 - **Framework**: `pytest`.
 - **Location**: `tests/unit`, `tests/integration`.
-- **Command**: `pytest` or `./run_tests.sh`.
+- **Commands**:
+  - `python -m ruff check .`
+  - `python -m mypy`
+  - `python -m pytest -q tests/integration/test_rule_engine_clean.py`
+  - `python scripts/export_openapi.py --check`
+  - `python scripts/generate_api_reference.py --check`
+  - `python scripts/update_api_reference_full.py --check`
+  - `python -m pytest tests/unit --cov=. --cov-report=xml --cov-report=term -n auto`
+  - `python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude tests/* --exclude scripts/* --exclude workflows/*`
+  - `python scripts/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include api/*.py --include api/routers/*.py --include rules/*.py --include models/provider_factory.py --include models/user_model_preferences.py --include config/*.py`
+  - `python -m pytest tests/integration --cov=. --cov-report=xml --cov-report=term -n auto`
+  - `python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude tests/* --exclude scripts/* --exclude workflows/*`
 - **Standards**:
   - Mock external services (AI providers, Database) in unit tests.
   - Use fixtures for setup/teardown.
@@ -17,7 +28,10 @@ Ensure high quality through rigorous testing at all levels.
 ## Frontend (TypeScript)
 - **Framework**: Jest + React Testing Library.
 - **Location**: `__tests__` directories co-located with components/pages.
-- **Command**: `npm test` (inside `frontend/`).
+- **Commands** (inside `frontend/`):
+  - `npm ci`
+  - `npm run lint`
+  - `npm run test -- --ci --coverage`
 - **Standards**:
   - Test component rendering and user interactions.
   - Mock API calls using Jest mocks.
@@ -33,3 +47,4 @@ Ensure high quality through rigorous testing at all levels.
 ## CI/CD
 - Tests run automatically on PRs via GitHub Actions (`.github/workflows/ci.yml`).
 - Maintain coverage thresholds (Rule 3).
+- Verify post-push CI status with `gh run view` and fix failures immediately.

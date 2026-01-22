@@ -178,8 +178,8 @@ jobs:
       - name: Run tests
         run: npm run test -- --ci --coverage
       - name: Frontend coverage summary
-        run: >
-          node -e "const fs=require('fs'); const summary=JSON.parse(fs.readFileSync('coverage/coverage-summary.json','utf8')); const total=summary.total; const text=`### Frontend Coverage\n\nLines: ${total.lines.pct}%\nStatements: ${total.statements.pct}%\nFunctions: ${total.functions.pct}%\nBranches: ${total.branches.pct}%\n`; fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, text);"
+        run: |
+          node -e 'const fs=require("fs"); const summary=JSON.parse(fs.readFileSync("coverage/coverage-summary.json","utf8")); const total=summary.total; const text=["### Frontend Coverage","","Lines: "+total.lines.pct+"%","Statements: "+total.statements.pct+"%","Functions: "+total.functions.pct+"%","Branches: "+total.branches.pct+"%",""].join("\n"); fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, text);'
 
       - name: Upload frontend coverage
         uses: actions/upload-artifact@v4

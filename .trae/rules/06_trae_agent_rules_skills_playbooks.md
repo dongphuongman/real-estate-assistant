@@ -4,6 +4,7 @@
 - **Flow**: Zero clarification. Win paths. English.
 - **Format**: Full paths (Rule 7). DD.MM.YYYY.
 - **Role**: Proactive. Fix lint. Use **Context7 MCP**.
+- **CI**: Validate local checks before push and verify GitHub Actions status via `gh run view` after push.
 
 ## Skills
 - **Nav**: Search first. Read context. Use `#Web`/`#Doc`.
