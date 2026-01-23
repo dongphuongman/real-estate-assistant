@@ -156,9 +156,9 @@ Invoke-RestMethod `
 - Requests/responses documented per endpoint; examples verified in tests.
 
 Example:
-```
-ENVIRONMENT=production
-CORS_ALLOW_ORIGINS=https://yourapp.com,https://studio.vercel.app
+```powershell
+$env:ENVIRONMENT="production"
+$env:CORS_ALLOW_ORIGINS="https://yourapp.com,https://studio.vercel.app"
 ```
 
 ### Endpoints

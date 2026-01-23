@@ -26,6 +26,11 @@ in V4.
 - CORS:
   - Development: `ENVIRONMENT!=production` → `allow_origins=["*"]`
   - Production: `ENVIRONMENT=production` → `CORS_ALLOW_ORIGINS` (comma-separated list)
+  - Example:
+    ```powershell
+    $env:ENVIRONMENT="production"
+    $env:CORS_ALLOW_ORIGINS="https://yourapp.com,https://studio.vercel.app"
+    ```
 
 ## Configuration
 - Source: `config/settings.py` (`AppSettings`)
