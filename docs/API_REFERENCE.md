@@ -75,6 +75,56 @@ curl.exe -N `
   "http://localhost:8000/api/v1/chat"
 ```
 
+### Local RAG (Upload + QA)
+
+The API supports local-first question answering over documents you upload.
+
+- Web app: use the **Knowledge** tab (calls the endpoints below)
+- API: use `POST /api/v1/rag/upload` then `POST /api/v1/rag/qa`
+
+Upload example (PowerShell):
+```powershell
+$env:API_ACCESS_KEY="dev-secret-key"
+
+$form = @{
+  files = @(
+    Get-Item .\notes.md,
+    Get-Item .\contract.txt
+  )
+}
+
+Invoke-RestMethod `
+  -Uri "http://localhost:8000/api/v1/rag/upload" `
+  -Method Post `
+  -Headers @{ "X-API-Key" = $env:API_ACCESS_KEY } `
+  -Form $form
+```
+
+Upload response shape (example):
+```json
+{
+  "message": "Upload processed",
+  "chunks_indexed": 12,
+  "errors": []
+}
+```
+
+Ask example (PowerShell):
+```powershell
+$env:API_ACCESS_KEY="dev-secret-key"
+
+$body = @{
+  question = "Summarize the contract termination clause"
+  top_k = 5
+} | ConvertTo-Json
+
+Invoke-RestMethod `
+  -Uri "http://localhost:8000/api/v1/rag/qa" `
+  -Method Post `
+  -Headers @{ "X-API-Key" = $env:API_ACCESS_KEY; "Content-Type" = "application/json" } `
+  -Body $body
+```
+
 ### Quality & Stability
 - Static analysis enforced: ruff (lint), mypy (types), RuleEngine (custom rules).
 - CI runs RuleEngine as a dedicated step for fast feedback; run locally with `python -m pytest -q tests\integration\test_rule_engine_clean.py`.

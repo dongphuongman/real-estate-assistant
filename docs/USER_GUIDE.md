@@ -274,6 +274,12 @@ You can upload your own notes to enable question answering over your content.
 - Upload limits (max files / max bytes) are enforced by the backend; oversized files are reported in `errors`.
 - If total payload exceeds the configured limit, the API returns `413` and indexes nothing.
 
+### Using the Web App
+1. Open the **Knowledge** tab in the top navigation.
+2. In **Upload**, select one or more files and click **Upload**.
+3. In **Ask**, enter a question and click **Ask**.
+4. The answer is shown along with **Citations** (source + chunk index) for traceability.
+
 ### Upload Flow
 1. Use a client or cURL to call `POST /api/v1/rag/upload` with form-data `files`.
 2. The server chunks your documents and indexes them locally.

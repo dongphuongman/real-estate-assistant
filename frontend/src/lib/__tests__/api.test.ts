@@ -8,8 +8,10 @@ import {
   chatMessage,
   getModelsCatalog,
   getNotificationSettings,
+  ragQa,
   searchProperties,
   streamChatMessage,
+  uploadRagDocuments,
   updateNotificationSettings,
 } from "../api";
 import { TextEncoder, TextDecoder } from 'util';
@@ -271,6 +273,57 @@ describe("API Client", () => {
         expect.objectContaining({
           method: "POST",
           body: JSON.stringify({ message: "hi" }),
+        })
+      );
+    });
+  });
+
+  describe("RAG", () => {
+    it("uploads files without forcing JSON content type", async () => {
+      window.localStorage.setItem("userEmail", "user@example.com");
+      process.env.NEXT_PUBLIC_API_KEY = "public-test-key";
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ message: "Upload processed", chunks_indexed: 1, errors: [] }),
+      });
+
+      const file = new File(["hello"], "hello.txt", { type: "text/plain" });
+      await uploadRagDocuments([file]);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/rag/upload"),
+        expect.objectContaining({
+          method: "POST",
+        })
+      );
+
+      const [, options] = (global.fetch as jest.Mock).mock.calls[0];
+      expect(options.headers["X-API-Key"]).toBe("public-test-key");
+      expect(options.headers["X-User-Email"]).toBe("user@example.com");
+      expect(options.headers["Content-Type"]).toBeUndefined();
+
+      const body = options.body as FormData;
+      expect(body).toBeInstanceOf(FormData);
+      expect(body.getAll("files")).toHaveLength(1);
+    });
+
+    it("calls /rag/qa endpoint", async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ answer: "A", citations: [], llm_used: false, provider: null, model: null }),
+      });
+
+      await ragQa({ question: "What is this?", top_k: 3 });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/rag/qa"),
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({ question: "What is this?", top_k: 3 }),
         })
       );
     });

@@ -72,6 +72,32 @@ export interface ChatResponse {
   session_id?: string;
 }
 
+export interface RagUploadResponse {
+  message: string;
+  chunks_indexed: number;
+  errors: string[];
+}
+
+export interface RagQaRequest {
+  question: string;
+  top_k?: number;
+  provider?: string;
+  model?: string;
+}
+
+export interface RagQaCitation {
+  source: string;
+  chunk_index: number;
+}
+
+export interface RagQaResponse {
+  answer: string;
+  citations: RagQaCitation[];
+  llm_used: boolean;
+  provider: string | null;
+  model: string | null;
+}
+
 export interface MortgageInput {
   property_price: number;
   down_payment_percent?: number;

@@ -6,6 +6,9 @@ import {
   MortgageInput,
   MortgageResult,
   NotificationSettings,
+  RagQaRequest,
+  RagQaResponse,
+  RagUploadResponse,
   SearchRequest,
   SearchResponse,
   ExportFormat,
@@ -29,10 +32,8 @@ function getUserEmail(): string | undefined {
   return email && email.trim() ? email.trim() : undefined;
 }
 
-function buildHeaders(extra?: Record<string, string>): Record<string, string> {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
+function buildAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {};
 
   const apiKey = getApiKey();
   if (apiKey) headers["X-API-Key"] = apiKey;
@@ -40,7 +41,19 @@ function buildHeaders(extra?: Record<string, string>): Record<string, string> {
   const userEmail = getUserEmail();
   if (userEmail) headers["X-User-Email"] = userEmail;
 
-  return { ...headers, ...(extra || {}) };
+  return headers;
+}
+
+function buildHeaders(extra?: Record<string, string>): Record<string, string> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  return { ...headers, ...buildAuthHeaders(), ...(extra || {}) };
+}
+
+function buildMultipartHeaders(extra?: Record<string, string>): Record<string, string> {
+  return { ...buildAuthHeaders(), ...(extra || {}) };
 }
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -240,6 +253,29 @@ export async function applyPromptTemplate(
     body: JSON.stringify({ template_id: templateId, variables }),
   });
   return handleResponse<PromptTemplateApplyResponse>(response);
+}
+
+export async function uploadRagDocuments(files: File[]): Promise<RagUploadResponse> {
+  const formData = new FormData();
+  for (const file of files) {
+    formData.append("files", file, file.name);
+  }
+
+  const response = await fetch(`${getApiUrl()}/rag/upload`, {
+    method: "POST",
+    headers: buildMultipartHeaders(),
+    body: formData,
+  });
+  return handleResponse<RagUploadResponse>(response);
+}
+
+export async function ragQa(request: RagQaRequest): Promise<RagQaResponse> {
+  const response = await fetch(`${getApiUrl()}/rag/qa`, {
+    method: "POST",
+    headers: buildHeaders(),
+    body: JSON.stringify(request),
+  });
+  return handleResponse<RagQaResponse>(response);
 }
 
 export async function crmSyncContactApi(name: string, phone?: string, email?: string) {

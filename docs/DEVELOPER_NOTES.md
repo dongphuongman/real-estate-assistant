@@ -39,6 +39,10 @@ in V4.
     - `CHAT_SOURCES_MAX_ITEMS` (default `5`)
     - `CHAT_SOURCE_CONTENT_MAX_CHARS` (default `2000`)
     - `CHAT_SOURCES_MAX_TOTAL_BYTES` (default `20000`)
+  - Local RAG upload limits:
+    - `RAG_MAX_FILES` (default `10`)
+    - `RAG_MAX_FILE_BYTES` (default `10485760`)
+    - `RAG_MAX_TOTAL_BYTES` (default `26214400`)
   - Email (optional; enables digest delivery when users opt in):
     - `SMTP_PROVIDER` (`gmail` | `outlook` | `sendgrid` | `custom`)
     - `SMTP_USERNAME` / `SMTP_PASSWORD`
@@ -133,6 +137,7 @@ in V4.
   - `NEXT_PUBLIC_API_KEY` is forwarded as `X-API-Key`
   - `userEmail` stored in `localStorage` is forwarded as `X-User-Email`
   - `modelPrefs:<email>` stored in `localStorage` caches per-user default model selection
+  - Knowledge (Local RAG) page: `frontend/src/app/knowledge/page.tsx` calls `/api/v1/rag/upload` via multipart FormData (do not set `Content-Type` manually)
 - Chat streaming:
   - `streamChatMessage` parses SSE messages from `POST /api/v1/chat` when `"stream": true`
   - Text deltas are JSON: `data: {"content":"<delta>"}`
