@@ -1,23 +1,23 @@
-# Phase 2 Testing Guide
+# Testing Guide (V4)
 
 ## Overview
 
-This guide provides comprehensive testing procedures for all Phase 2 (Intelligence) features. Follow these test cases to validate functionality, accuracy, and user experience.
+This guide provides Windows PowerShell-friendly commands and a manual test checklist for the V4 FastAPI + Next.js application. Use the CI parity section to reproduce GitHub Actions locally.
 
 ---
 
-## 🧪 Test Environment Setup
+## Test Environment Setup
 
 ### Frontend Testing
 The frontend application (Next.js) includes a comprehensive test suite using Jest and React Testing Library.
 
 #### Running Frontend Tests
-```bash
+```powershell
 cd frontend
-npm install              # Ensure dependencies are installed
-npm test                 # Run all tests
-npm run test:coverage    # Run tests with coverage report
-npm run test:watch       # Run tests in watch mode
+npm install
+npm test
+npm run test:coverage
+npm run test:watch
 ```
 
 #### Test Coverage Requirements
@@ -32,22 +32,23 @@ npm run test:watch       # Run tests in watch mode
 This section mirrors the CI workflow in [.github/workflows/ci.yml](file:///c:/Projects/ai-real-estate-assistant/.github/workflows/ci.yml).
 
 ### Backend (Python)
-```bash
-python -m pip install -r requirements.txt
-python -m pip install pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout ruff mypy httpx types-requests
+```powershell
+python -m pip install --upgrade pip
+python -m pip install -e .[dev]
 
 python -m ruff check .
 python -m mypy
-python -m pytest -q tests/integration/test_rule_engine_clean.py
-python scripts/export_openapi.py --check
-python scripts/generate_api_reference.py --check
+python -m pytest -q tests\integration\test_rule_engine_clean.py
+python scripts\export_openapi.py --check
+python scripts\generate_api_reference.py --check
+python scripts\update_api_reference_full.py --check
 
 python -m pytest tests/unit --cov=. --cov-report=xml --cov-report=term -n auto
-python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude tests/* --exclude scripts/* --exclude workflows/*
-python scripts/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include api/*.py --include api/routers/*.py --include rules/*.py --include models/provider_factory.py --include models/user_model_preferences.py --include config/*.py
+python scripts\coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude tests/* --exclude scripts/* --exclude workflows/*
+python scripts\coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include api/*.py --include api/routers/*.py --include rules/*.py --include models/provider_factory.py --include models/user_model_preferences.py --include config/*.py
 
 python -m pytest tests/integration --cov=. --cov-report=xml --cov-report=term -n auto
-python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude tests/* --exclude scripts/* --exclude workflows/*
+python scripts\coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude tests/* --exclude scripts/* --exclude workflows/*
 ```
 
 ### CI Reliability Controls
@@ -67,7 +68,7 @@ python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 
 - Upload coverage artifacts and emit pipeline health summary.
 
 ### Frontend (Next.js)
-```bash
+```powershell
 cd frontend
 npm ci
 npm run lint
@@ -75,15 +76,15 @@ npm run test -- --ci --coverage
 ```
 
 ### Security & Audit
-```bash
+```powershell
 python -m pip install bandit pip-audit
 python -m bandit -r api agents ai analytics data models notifications rules scripts utils workflows -x tests,node_modules,.history --severity-level high --confidence-level high -f json -o artifacts/bandit.json
 python -m pip_audit -r requirements.txt -f json -o artifacts/pip-audit.json
 ```
 
 ### Docker Compose Smoke (optional)
-```bash
-python scripts/compose_smoke.py --ci --timeout-seconds 300
+```powershell
+python scripts\compose_smoke.py --ci --timeout-seconds 300
 ```
 
 ### Windows note (npm EPERM)
@@ -96,31 +97,26 @@ If `npm ci` fails with `EPERM: operation not permitted, unlink ...tailwindcss-ox
 
 ---
 
-### Backend Prerequisites
-```bash
-# 1. Ensure dependencies are installed
-pip install -r requirements.txt
+### Backend Prerequisites (V4)
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
 
-# 2. Set API key (at least one)
-export OPENAI_API_KEY="your-key"
+python -m pip install --upgrade pip
+python -m pip install -e .[dev]
 
-# 3. Run the modern app
-./run_modern.sh
-# or directly:
-streamlit run app_modern.py
+Copy-Item .env.example .env
+# Edit .env as needed (do not commit secrets)
+
+python -m uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Backend Testing
-Use these commands to validate the backend quickly:
-```bash
-# Run unit/integration tests
+### Backend Quick Checks
+```powershell
 python -m pytest
-
-# Lint (imports, style) and auto-fix suggestions
 python -m ruff check .
-
-# Type checks
 python -m mypy
+python -m pytest -q tests\integration\test_rule_engine_clean.py
 ```
 
 #### CORS Verification
@@ -958,14 +954,11 @@ Run after any code changes to ensure nothing broke
 
 ---
 
-**Happy Testing! 🧪**
+**Happy Testing!**
 ### Playwright E2E Setup
-```bash
-# Install Playwright browsers (required for MCP/CLI)
+```powershell
 npx playwright install
 npx playwright install chromium
-
-# Run e2e tests
 npx playwright test -c playwright.config.ts --reporter=list
 ```
 Note: Playwright is used for CI and local debugging only. The application does not include any MCP Playwright integrations or test‑specific DOM markers.

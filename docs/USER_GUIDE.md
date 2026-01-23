@@ -180,6 +180,7 @@ The backend will only allow these origins.
 ## Quality & Stability
 - The app enforces backend quality gates (lint, types, custom rules) to improve reliability.
 - If requests fail due to rate limits or validation, try again after the suggested reset time.
+- Contributors: run CI parity commands from `docs/TESTING_GUIDE.md` on Windows PowerShell.
 - For contributors, run backend checks locally:
   - `python -m pytest`
   - `python -m pytest -q tests\integration\test_rule_engine_clean.py`

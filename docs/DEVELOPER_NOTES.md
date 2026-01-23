@@ -74,6 +74,7 @@ in V4.
 - `langchain-experimental` is required only for the legacy dataframe agent (`ai/agent.py` -> `RealEstateGPT`). The V4 API does not depend on it.
 
 ## Testing
+- Full CI parity commands (Windows): see `docs/TESTING_GUIDE.md`.
 - Run all tests:
   ```powershell
   python -m pytest
