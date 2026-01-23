@@ -1830,6 +1830,28 @@
             ],
             "title": "Chunk Index"
           },
+          "page_number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Number"
+          },
+          "paragraph_number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paragraph Number"
+          },
           "source": {
             "anyOf": [
               {

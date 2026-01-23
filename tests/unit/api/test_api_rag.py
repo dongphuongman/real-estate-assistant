@@ -41,7 +41,7 @@ def test_rag_upload_unsupported_type(monkeypatch, tmp_path):
 
     try:
         monkeypatch.setattr(
-            "utils.document_text_extractor._extract_pdf_text",
+            "utils.document_text_extractor._extract_pdf_text_segments",
             lambda _data: (_ for _ in ()).throw(
                 OptionalDependencyMissingError(
                     "PDF parsing requires optional dependency 'pypdf'. Install with: pip install pypdf",
@@ -65,7 +65,7 @@ def test_rag_upload_mixed_text_and_pdf_returns_partial_success(monkeypatch, tmp_
 
     try:
         monkeypatch.setattr(
-            "utils.document_text_extractor._extract_pdf_text",
+            "utils.document_text_extractor._extract_pdf_text_segments",
             lambda _data: (_ for _ in ()).throw(
                 OptionalDependencyMissingError(
                     "PDF parsing requires optional dependency 'pypdf'. Install with: pip install pypdf",
@@ -91,7 +91,7 @@ def test_rag_upload_empty_extracted_text_returns_422(monkeypatch, tmp_path):
     _override_store(store)
 
     try:
-        monkeypatch.setattr("api.routers.rag.extract_text_from_upload", lambda **_kwargs: "   ")
+        monkeypatch.setattr("api.routers.rag.extract_text_segments_from_upload", lambda **_kwargs: [])
         files = {"files": ("note.md", b"# Title\n\nHello world", "text/markdown")}
         resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
         assert resp.status_code == 422
@@ -108,7 +108,7 @@ def test_rag_upload_document_extraction_error_is_reported(monkeypatch, tmp_path)
 
     try:
         monkeypatch.setattr(
-            "api.routers.rag.extract_text_from_upload",
+            "api.routers.rag.extract_text_segments_from_upload",
             lambda **_kwargs: (_ for _ in ()).throw(DocumentTextExtractionError("bad parse")),
         )
         files = {"files": ("note.md", b"Hello", "text/markdown")}
@@ -127,7 +127,7 @@ def test_rag_upload_unexpected_extraction_error_is_reported(monkeypatch, tmp_pat
 
     try:
         monkeypatch.setattr(
-            "api.routers.rag.extract_text_from_upload",
+            "api.routers.rag.extract_text_segments_from_upload",
             lambda **_kwargs: (_ for _ in ()).throw(RuntimeError("unexpected")),
         )
         files = {"files": ("note.md", b"Hello", "text/markdown")}
@@ -328,7 +328,9 @@ def test_rag_qa_llm_failure_falls_back_to_snippet(monkeypatch, tmp_path):
 def test_rag_upload_ingest_exception_is_reported(monkeypatch, tmp_path):
     store = _make_store(monkeypatch, tmp_path)
     _override_store(store)
-    monkeypatch.setattr(store, "ingest_text", lambda text, source: (_ for _ in ()).throw(RuntimeError("boom")))
+    monkeypatch.setattr(
+        store, "ingest_text_segments", lambda **_kwargs: (_ for _ in ()).throw(RuntimeError("boom"))
+    )
 
     try:
         files = {"files": ("note.md", b"Hello", "text/markdown")}

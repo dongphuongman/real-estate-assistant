@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import io
+from dataclasses import dataclass
+from typing import Any, Dict, List
 
 
 class DocumentTextExtractionError(Exception):
@@ -17,29 +19,46 @@ class OptionalDependencyMissingError(DocumentTextExtractionError):
         self.dependency = dependency
 
 
+@dataclass(frozen=True)
+class ExtractedTextSegment:
+    text: str
+    metadata: Dict[str, Any]
+
+
 def extract_text_from_upload(*, filename: str, content_type: str, data: bytes) -> str:
+    segments = extract_text_segments_from_upload(
+        filename=filename,
+        content_type=content_type,
+        data=data,
+    )
+    return "\n".join([s.text for s in segments]).strip()
+
+
+def extract_text_segments_from_upload(
+    *, filename: str, content_type: str, data: bytes
+) -> List[ExtractedTextSegment]:
     name = (filename or "").lower()
     ctype = (content_type or "").lower()
 
     if ctype in {"text/plain", "text/markdown"} or name.endswith((".txt", ".md")):
-        return data.decode("utf-8", errors="ignore")
+        return [ExtractedTextSegment(text=data.decode("utf-8", errors="ignore"), metadata={})]
 
     if ctype == "application/pdf" or name.endswith(".pdf"):
-        return _extract_pdf_text(data)
+        return _extract_pdf_text_segments(data)
 
     if (
         ctype
         == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         or name.endswith(".docx")
     ):
-        return _extract_docx_text(data)
+        return _extract_docx_text_segments(data)
 
     raise UnsupportedDocumentTypeError(
         f"Unsupported file type: {filename} ({content_type}). Allowed: .txt, .md, .pdf, .docx"
     )
 
 
-def _extract_pdf_text(data: bytes) -> str:
+def _extract_pdf_text_segments(data: bytes) -> List[ExtractedTextSegment]:
     try:
         from pypdf import PdfReader
     except ImportError as e:
@@ -49,13 +68,18 @@ def _extract_pdf_text(data: bytes) -> str:
         ) from e
 
     reader = PdfReader(io.BytesIO(data))
-    parts: list[str] = []
-    for page in reader.pages:
-        parts.append(page.extract_text() or "")
-    return "\n".join(parts).strip()
+    segments: List[ExtractedTextSegment] = []
+    for idx, page in enumerate(reader.pages):
+        segments.append(
+            ExtractedTextSegment(
+                text=(page.extract_text() or ""),
+                metadata={"page_number": idx + 1},
+            )
+        )
+    return segments
 
 
-def _extract_docx_text(data: bytes) -> str:
+def _extract_docx_text_segments(data: bytes) -> List[ExtractedTextSegment]:
     try:
         from docx import Document
     except ImportError as e:
@@ -65,6 +89,15 @@ def _extract_docx_text(data: bytes) -> str:
         ) from e
 
     doc = Document(io.BytesIO(data))
-    parts = [p.text for p in doc.paragraphs if p.text]
-    return "\n".join(parts).strip()
-
+    segments: List[ExtractedTextSegment] = []
+    for idx, paragraph in enumerate(doc.paragraphs):
+        text = getattr(paragraph, "text", "") or ""
+        if not text.strip():
+            continue
+        segments.append(
+            ExtractedTextSegment(
+                text=text,
+                metadata={"paragraph_number": idx + 1},
+            )
+        )
+    return segments

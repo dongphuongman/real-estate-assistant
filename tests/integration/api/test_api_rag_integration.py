@@ -1,4 +1,6 @@
 import builtins
+import sys
+import types
 
 from fastapi.testclient import TestClient
 
@@ -33,6 +35,44 @@ def test_rag_end_to_end_text_upload_and_qa(monkeypatch, tmp_path):
         assert isinstance(payload["answer"], str)
         assert len(payload["citations"]) >= 1
         assert isinstance(payload["llm_used"], bool)
+    finally:
+        app.dependency_overrides.pop(get_knowledge_store, None)
+
+
+def test_rag_end_to_end_pdf_upload_citations_include_page_number(monkeypatch, tmp_path):
+    monkeypatch.setattr("vector_store.knowledge_store._create_embeddings", lambda: None)
+    store = KnowledgeStore(persist_directory=str(tmp_path), collection_name="knowledge-test")
+    app.dependency_overrides[get_knowledge_store] = lambda: store
+
+    class _Page:
+        def __init__(self, text: str):
+            self._text = text
+
+        def extract_text(self):
+            return self._text
+
+    class _Reader:
+        def __init__(self, _stream):
+            self.pages = [_Page("alpha"), _Page("beta")]
+
+    monkeypatch.setitem(sys.modules, "pypdf", types.SimpleNamespace(PdfReader=_Reader))
+
+    try:
+        files = {"files": ("doc.pdf", b"%PDF-", "application/pdf")}
+        r = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
+        assert r.status_code == 200
+        assert r.json()["chunks_indexed"] > 0
+
+        q = client.post(
+            "/api/v1/rag/qa",
+            json={"question": "beta", "top_k": 3},
+            headers={"X-API-Key": "dev-secret-key"},
+        )
+        assert q.status_code == 200
+        payload = q.json()
+        assert isinstance(payload["answer"], str)
+        assert payload["citations"] != []
+        assert any(c.get("page_number") == 2 for c in payload["citations"])
     finally:
         app.dependency_overrides.pop(get_knowledge_store, None)
 
@@ -210,7 +250,7 @@ def test_rag_upload_document_extraction_error_returns_422(monkeypatch, tmp_path)
 
     try:
         monkeypatch.setattr(
-            "api.routers.rag.extract_text_from_upload",
+            "api.routers.rag.extract_text_segments_from_upload",
             lambda **_kwargs: (_ for _ in ()).throw(DocumentTextExtractionError("bad parse")),
         )
         files = {"files": ("guide.txt", b"Hello", "text/plain")}
@@ -229,7 +269,7 @@ def test_rag_upload_empty_text_returns_422(monkeypatch, tmp_path):
     app.dependency_overrides[get_knowledge_store] = lambda: store
 
     try:
-        monkeypatch.setattr("api.routers.rag.extract_text_from_upload", lambda **_kwargs: "   ")
+        monkeypatch.setattr("api.routers.rag.extract_text_segments_from_upload", lambda **_kwargs: [])
         files = {"files": ("guide.txt", b"Hello", "text/plain")}
         resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
         assert resp.status_code == 422
@@ -243,7 +283,9 @@ def test_rag_upload_empty_text_returns_422(monkeypatch, tmp_path):
 def test_rag_upload_ingest_exception_returns_422(monkeypatch, tmp_path):
     monkeypatch.setattr("vector_store.knowledge_store._create_embeddings", lambda: None)
     store = KnowledgeStore(persist_directory=str(tmp_path), collection_name="knowledge-test")
-    monkeypatch.setattr(store, "ingest_text", lambda text, source: (_ for _ in ()).throw(RuntimeError("boom")))
+    monkeypatch.setattr(
+        store, "ingest_text_segments", lambda **_kwargs: (_ for _ in ()).throw(RuntimeError("boom"))
+    )
     app.dependency_overrides[get_knowledge_store] = lambda: store
 
     try:

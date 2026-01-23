@@ -95,6 +95,8 @@ class ChatResponse(BaseModel):
 class RagCitation(BaseModel):
     source: Optional[str] = None
     chunk_index: Optional[int] = None
+    page_number: Optional[int] = None
+    paragraph_number: Optional[int] = None
 
 
 class RagQaRequest(BaseModel):

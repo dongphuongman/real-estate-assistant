@@ -77,6 +77,30 @@ class KnowledgeStore:
         self._docs.extend(docs)
         return len(docs)
 
+    def ingest_text_segments(
+        self,
+        *,
+        segments: List[tuple[str, Dict[str, Any]]],
+        source: str,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> int:
+        chunk_index = 0
+        docs_to_add: List[Document] = []
+        for text, segment_metadata in segments:
+            docs = self.splitter.create_documents([text])
+            for d in docs:
+                d.metadata = {
+                    "source": source,
+                    "chunk_index": chunk_index,
+                    **(metadata or {}),
+                    **(segment_metadata or {}),
+                }
+                chunk_index += 1
+            docs_to_add.extend(docs)
+
+        self._docs.extend(docs_to_add)
+        return len(docs_to_add)
+
     def similarity_search_with_score(
         self, query: str, k: int = 5
     ) -> List[Tuple[Document, float]]:

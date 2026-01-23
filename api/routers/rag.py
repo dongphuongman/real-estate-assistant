@@ -11,7 +11,7 @@ from utils.document_text_extractor import (
     DocumentTextExtractionError,
     OptionalDependencyMissingError,
     UnsupportedDocumentTypeError,
-    extract_text_from_upload,
+    extract_text_segments_from_upload,
 )
 from vector_store.knowledge_store import KnowledgeStore
 
@@ -92,7 +92,7 @@ async def upload_documents(
     for name, content_type, data in buffered:
         try:
             try:
-                text = extract_text_from_upload(
+                segments = extract_text_segments_from_upload(
                     filename=name,
                     content_type=content_type,
                     data=data,
@@ -104,12 +104,15 @@ async def upload_documents(
                 errors.append(f"{name}: {e}")
                 continue
 
-            if not text.strip():
+            filtered_segments = [
+                (s.text, s.metadata) for s in segments if (s.text or "").strip()
+            ]
+            if not filtered_segments:
                 errors.append(f"{name}: No extractable text found")
                 continue
 
             try:
-                added = store.ingest_text(text=text, source=name)
+                added = store.ingest_text_segments(segments=filtered_segments, source=name)
                 total_chunks += added
             except Exception as e:
                 logger.warning("Failed to ingest %s: %s", name, e)
@@ -183,7 +186,12 @@ async def rag_qa(
 
     context = "\n\n".join([doc.page_content for doc in docs])
     citations = [
-        {"source": doc.metadata.get("source"), "chunk_index": doc.metadata.get("chunk_index")}
+        {
+            "source": doc.metadata.get("source"),
+            "chunk_index": doc.metadata.get("chunk_index"),
+            "page_number": doc.metadata.get("page_number"),
+            "paragraph_number": doc.metadata.get("paragraph_number"),
+        }
         for doc in docs
     ]
 

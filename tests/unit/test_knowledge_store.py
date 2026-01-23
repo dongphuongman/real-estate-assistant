@@ -41,3 +41,21 @@ def test_get_stats_counts_docs():
     ks.ingest_text("a " * 500, source="s.md")
     stats = ks.get_stats()
     assert stats["documents"] >= 1
+
+
+def test_ingest_text_segments_preserves_segment_metadata_and_sequential_chunk_index():
+    ks = KnowledgeStore()
+    added = ks.ingest_text_segments(
+        segments=[
+            ("alpha", {"page_number": 1}),
+            ("beta", {"page_number": 2}),
+        ],
+        source="doc.pdf",
+    )
+    assert added >= 2
+    res = ks.similarity_search_with_score("beta", k=5)
+    assert len(res) >= 1
+    doc, _score = res[0]
+    assert doc.metadata["source"] == "doc.pdf"
+    assert doc.metadata["page_number"] == 2
+    assert isinstance(doc.metadata["chunk_index"], int)

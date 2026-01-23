@@ -280,7 +280,7 @@ You can upload your own notes to enable question answering over your content.
 1. Open the **Knowledge** tab in the top navigation.
 2. In **Upload**, select one or more files and click **Upload**.
 3. In **Ask**, enter a question and click **Ask**.
-4. The answer is shown along with **Citations** (source + chunk index) for traceability.
+4. The answer is shown along with **Citations** (source + chunk index, plus optional PDF page / DOCX paragraph) for traceability.
 5. If you want to start fresh, click **Clear knowledge** to remove all indexed documents.
 
 ### Upload Flow

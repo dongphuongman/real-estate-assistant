@@ -82,6 +82,7 @@ The API supports local-first question answering over documents you upload.
 
 - Web app: use the **Knowledge** tab (calls the endpoints below)
 - API: use `POST /api/v1/rag/upload` then `POST /api/v1/rag/qa`
+- Citations in `/api/v1/rag/qa` include `source` + `chunk_index`, and may also include `page_number` (PDF) or `paragraph_number` (DOCX).
 
 Upload example (PowerShell):
 ```powershell

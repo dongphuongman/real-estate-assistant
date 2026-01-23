@@ -261,6 +261,8 @@ Testing:
 - Routers: `api/routers/rag.py` (`/api/v1/rag/upload`, `/api/v1/rag/qa`, `/api/v1/rag/reset`)
 - Supported ingestion types (CE): `.txt`, `.md`
 - Supported with optional install: `.pdf` (`pip install pypdf`), `.docx` (`pip install python-docx`)
+- PDF uploads preserve `page_number` metadata per chunk; DOCX uploads preserve `paragraph_number` metadata per chunk.
+- `/api/v1/rag/qa` citations include `source` + `chunk_index` and may include `page_number` / `paragraph_number`.
 - If nothing is indexed (only errors), the upload endpoint returns `422` with a structured error list.
 - `/api/v1/rag/qa` accepts optional `provider` / `model` overrides in the JSON body; otherwise it uses per-user preferences (`X-User-Email`) or defaults.
 - `/api/v1/rag/reset` clears all indexed documents to allow deterministic “start fresh” flows in the UI and tests.
