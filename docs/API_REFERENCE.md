@@ -56,7 +56,7 @@ To stream chat responses, set `"stream": true` in `POST /api/v1/chat`.
 
 The response uses Server-Sent Events (`text/event-stream`) with:
 - Text deltas as JSON: `data: {"content":"<delta>"}`
-- A final metadata event: `event: meta` with `data: {"sources":[...],"session_id":"..."}`
+- A final metadata event: `event: meta` with `data: {"sources":[...],"sources_truncated":false,"session_id":"..."}`
 - A terminator: `data: [DONE]`
 
 To keep responses deterministic and safe for clients, the server may truncate the `sources` payload

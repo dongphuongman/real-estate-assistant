@@ -5,6 +5,7 @@ import { Send, User, Bot, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { streamChatMessage } from "@/lib/api";
 import type { ChatResponse } from "@/lib/types";
+import { extractSourceTitle, formatMetadataInline, truncateText } from "@/lib/chatSources";
 
 interface Message {
   role: "user" | "assistant";
@@ -141,14 +142,17 @@ export default function ChatPage() {
                   </summary>
                   <ol className="mt-2 list-decimal pl-4 space-y-2">
                     {message.sources.map((source, i) => {
-                      const rawMeta = JSON.stringify(source.metadata || {});
-                      const meta = rawMeta.length > 400 ? `${rawMeta.slice(0, 400)}…` : rawMeta;
-                      const rawContent = source.content || "";
-                      const content = rawContent.length > 400 ? `${rawContent.slice(0, 400)}…` : rawContent;
+                      const metadata = source.metadata || {};
+                      const title = extractSourceTitle(metadata) || `Source ${i + 1}`;
+                      const metaInline = formatMetadataInline(metadata);
+                      const content = truncateText(source.content || "", 400);
                       return (
                         <li key={`${i}`} className="space-y-1">
-                          <div className="font-mono text-[11px] text-muted-foreground break-all">{meta}</div>
-                          <div className="text-[12px] leading-snug break-words">{content}</div>
+                          <div className="text-[12px] font-medium break-words">{title}</div>
+                          {metaInline ? (
+                            <div className="font-mono text-[11px] text-muted-foreground break-all">{metaInline}</div>
+                          ) : null}
+                          {content ? <div className="text-[12px] leading-snug break-words">{content}</div> : null}
                         </li>
                       );
                     })}

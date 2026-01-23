@@ -101,10 +101,11 @@ The AI-powered chat interface allows you to search for properties using natural 
 For real-time streaming from the assistant:
 - In API mode, set `"stream": true` in `POST /api/v1/chat`
 - The response uses `text/event-stream` with message deltas as JSON lines: `data: {"content":"<text-delta>"}`
-- After the assistant finishes streaming text, the server emits a final metadata event: `event: meta` with `data: {"sources":[...],"session_id":"..."}`
+- After the assistant finishes streaming text, the server emits a final metadata event: `event: meta` with `data: {"sources":[...],"sources_truncated":false,"session_id":"..."}`
 - The stream finishes with `data: [DONE]`
 - Ensure you include the `X-API-Key` header; see API Reference for an example
 - The UI progressively renders assistant messages, shows a Retry button on errors, and displays Sources (when available)
+- Sources are displayed with a human-friendly title (derived from source metadata) plus a compact metadata summary and content preview
 - The UI displays `request_id` on both success and error paths (when available) to help correlate with server logs
 - Sources may be truncated (count and per-item content length) to keep payloads safe for clients
 

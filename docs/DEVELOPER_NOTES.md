@@ -133,7 +133,7 @@ in V4.
 - Chat streaming:
   - `streamChatMessage` parses SSE messages from `POST /api/v1/chat` when `"stream": true`
   - Text deltas are JSON: `data: {"content":"<delta>"}`
-  - Final citations are emitted as `event: meta` with `data: {"sources":[...],"session_id":"..."}`
+  - Final citations are emitted as `event: meta` with `data: {"sources":[...],"sources_truncated":false,"session_id":"..."}`
   - `data: [DONE]` ends the stream; `X-Request-ID` is available on the streaming response
 
 ## Settings (Backend)
