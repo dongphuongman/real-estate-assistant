@@ -18,6 +18,7 @@
 ## Recommendations
 - Frontend: add `overrides` to enforce `diff >= 8.0.3` if compatible; monitor jest chain.
 - Backend: CI includes `pip-audit` job; pin critical dependencies; enable Trivy/Docker Scout for images.
+- Backend: `pip-audit` temporarily ignores `GHSA-7gcm-g887-7qv7` / `CVE-2026-0994` (protobuf) because the current Google SDK dependency chain requires protobuf `<6`; remove the ignore once upstream provides a compatible fixed version.
 - Logging: keep redaction policy; avoid sensitive payloads in logs.
 - Input validation: continue using Pydantic; sanitize free‑text if used for search.
 - Secrets: use platform secrets; never commit `.env`; rotate keys quarterly.
