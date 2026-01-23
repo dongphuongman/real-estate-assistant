@@ -355,6 +355,34 @@ def test_rag_qa_store_unavailable_returns_503(monkeypatch):
         app.dependency_overrides.pop(get_knowledge_store, None)
 
 
+def test_rag_reset_clears_all_documents(monkeypatch, tmp_path):
+    store = _make_store(monkeypatch, tmp_path)
+    _override_store(store)
+    try:
+        store.ingest_text("Alpha", source="a.txt")
+        store.ingest_text("Beta", source="b.txt")
+
+        resp = client.post("/api/v1/rag/reset", headers={"X-API-Key": "dev-secret-key"})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["message"] == "Knowledge cleared"
+        assert data["documents_removed"] > 0
+        assert data["documents_remaining"] == 0
+        assert getattr(store, "_docs", []) == []
+    finally:
+        app.dependency_overrides.pop(get_knowledge_store, None)
+
+
+def test_rag_reset_store_unavailable_returns_503(monkeypatch):
+    _override_store(None)
+    try:
+        resp = client.post("/api/v1/rag/reset", headers={"X-API-Key": "dev-secret-key"})
+        assert resp.status_code == 503
+        assert resp.json()["detail"] == "Knowledge store is not available"
+    finally:
+        app.dependency_overrides.pop(get_knowledge_store, None)
+
+
 def test_rag_qa_lazy_llm_success(monkeypatch, tmp_path):
     store = _make_store(monkeypatch, tmp_path)
     _override_store(store)

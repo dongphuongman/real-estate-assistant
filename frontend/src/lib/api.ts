@@ -8,6 +8,7 @@ import {
   NotificationSettings,
   RagQaRequest,
   RagQaResponse,
+  RagResetResponse,
   RagUploadResponse,
   SearchRequest,
   SearchResponse,
@@ -267,6 +268,14 @@ export async function uploadRagDocuments(files: File[]): Promise<RagUploadRespon
     body: formData,
   });
   return handleResponse<RagUploadResponse>(response);
+}
+
+export async function resetRagKnowledge(): Promise<RagResetResponse> {
+  const response = await fetch(`${getApiUrl()}/rag/reset`, {
+    method: "POST",
+    headers: buildHeaders(),
+  });
+  return handleResponse<RagResetResponse>(response);
 }
 
 export async function ragQa(request: RagQaRequest): Promise<RagQaResponse> {

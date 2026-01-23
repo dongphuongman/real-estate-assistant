@@ -109,6 +109,25 @@ Upload response shape (example):
 }
 ```
 
+Reset knowledge (PowerShell):
+```powershell
+$env:API_ACCESS_KEY="dev-secret-key"
+
+Invoke-RestMethod `
+  -Uri "http://localhost:8000/api/v1/rag/reset" `
+  -Method Post `
+  -Headers @{ "X-API-Key" = $env:API_ACCESS_KEY }
+```
+
+Reset response shape (example):
+```json
+{
+  "message": "Knowledge cleared",
+  "documents_removed": 12,
+  "documents_remaining": 0
+}
+```
+
 Ask example (PowerShell):
 ```powershell
 $env:API_ACCESS_KEY="dev-secret-key"
@@ -370,6 +389,20 @@ Simple QA over uploaded knowledge with citations. If LLM is unavailable, returns
 |---|---|---|
 | 200 | Successful Response | RagQaResponse |
 | 422 | Validation Error | HTTPValidationError |
+
+## POST /api/v1/rag/reset
+
+**Summary**: Reset Rag Knowledge
+
+**Tags**: RAG
+
+Clear all indexed knowledge documents for local RAG (CE-safe).
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | RagResetResponse |
 
 ## POST /api/v1/rag/upload
 

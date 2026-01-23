@@ -240,6 +240,20 @@ Simple QA over uploaded knowledge with citations. If LLM is unavailable, returns
 | 200 | Successful Response | RagQaResponse |
 | 422 | Validation Error | HTTPValidationError |
 
+## POST /api/v1/rag/reset
+
+**Summary**: Reset Rag Knowledge
+
+**Tags**: RAG
+
+Clear all indexed knowledge documents for local RAG (CE-safe).
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | RagResetResponse |
+
 ## POST /api/v1/rag/upload
 
 **Summary**: Upload Documents

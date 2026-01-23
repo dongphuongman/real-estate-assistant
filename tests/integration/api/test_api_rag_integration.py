@@ -37,6 +37,38 @@ def test_rag_end_to_end_text_upload_and_qa(monkeypatch, tmp_path):
         app.dependency_overrides.pop(get_knowledge_store, None)
 
 
+def test_rag_reset_clears_documents_and_qa_returns_empty(monkeypatch, tmp_path):
+    monkeypatch.setattr("vector_store.knowledge_store._create_embeddings", lambda: None)
+    store = KnowledgeStore(persist_directory=str(tmp_path), collection_name="knowledge-test")
+    app.dependency_overrides[get_knowledge_store] = lambda: store
+
+    try:
+        files = {"files": ("guide.txt", b"Some content to index", "text/plain")}
+        r = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
+        assert r.status_code == 200
+        assert r.json()["chunks_indexed"] > 0
+
+        reset = client.post("/api/v1/rag/reset", headers={"X-API-Key": "dev-secret-key"})
+        assert reset.status_code == 200
+        payload = reset.json()
+        assert payload["message"] == "Knowledge cleared"
+        assert payload["documents_removed"] > 0
+        assert payload["documents_remaining"] == 0
+
+        q = client.post(
+            "/api/v1/rag/qa",
+            json={"question": "anything"},
+            headers={"X-API-Key": "dev-secret-key"},
+        )
+        assert q.status_code == 200
+        data = q.json()
+        assert data["answer"] == ""
+        assert data["citations"] == []
+        assert data["llm_used"] is False
+    finally:
+        app.dependency_overrides.pop(get_knowledge_store, None)
+
+
 def test_rag_qa_no_docs_returns_empty_answer(monkeypatch, tmp_path):
     monkeypatch.setattr("vector_store.knowledge_store._create_embeddings", lambda: None)
     store = KnowledgeStore(persist_directory=str(tmp_path), collection_name="knowledge-test")

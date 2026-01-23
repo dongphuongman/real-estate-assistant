@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from langchain_core.language_models import BaseChatModel
 
 from api.dependencies import get_knowledge_store, get_rag_qa_llm_details, parse_rag_qa_request
-from api.models import RagQaRequest, RagQaResponse
+from api.models import RagQaRequest, RagQaResponse, RagResetResponse
 from config.settings import get_settings
 from utils.document_text_extractor import (
     DocumentTextExtractionError,
@@ -125,6 +125,28 @@ async def upload_documents(
         )
 
     return {"message": "Upload processed", "chunks_indexed": total_chunks, "errors": errors}
+
+
+@router.post("/rag/reset", tags=["RAG"], response_model=RagResetResponse)
+async def reset_rag_knowledge(
+    store: Annotated[Optional[KnowledgeStore], Depends(get_knowledge_store)],
+):
+    """
+    Clear all indexed knowledge documents for local RAG (CE-safe).
+    """
+    if not store:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Knowledge store is not available",
+        )
+
+    removed = store.clear()
+    stats = store.get_stats()
+    return {
+        "message": "Knowledge cleared",
+        "documents_removed": removed,
+        "documents_remaining": int(stats.get("documents", 0)),
+    }
 
 
 @router.post("/rag/qa", tags=["RAG"], response_model=RagQaResponse)

@@ -112,6 +112,12 @@ class RagQaResponse(BaseModel):
     model: Optional[str] = None
 
 
+class RagResetResponse(BaseModel):
+    message: str
+    documents_removed: int
+    documents_remaining: int
+
+
 class IngestRequest(BaseModel):
     """Request model for data ingestion."""
 

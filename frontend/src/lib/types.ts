@@ -78,6 +78,12 @@ export interface RagUploadResponse {
   errors: string[];
 }
 
+export interface RagResetResponse {
+  message: string;
+  documents_removed: number;
+  documents_remaining: number;
+}
+
 export interface RagQaRequest {
   question: string;
   top_k?: number;

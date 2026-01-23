@@ -279,6 +279,7 @@ You can upload your own notes to enable question answering over your content.
 2. In **Upload**, select one or more files and click **Upload**.
 3. In **Ask**, enter a question and click **Ask**.
 4. The answer is shown along with **Citations** (source + chunk index) for traceability.
+5. If you want to start fresh, click **Clear knowledge** to remove all indexed documents.
 
 ### Upload Flow
 1. Use a client or cURL to call `POST /api/v1/rag/upload` with form-data `files`.
@@ -307,3 +308,6 @@ Invoke-RestMethod `
 - Response includes `answer`, `citations`, and `llm_used` (plus the effective `provider` / `model`).
 
 Tip: If no model is configured, the API returns a snippet from the most relevant chunks.
+
+### Reset Knowledge
+If you want to remove all indexed documents without restarting the app, call `POST /api/v1/rag/reset`.

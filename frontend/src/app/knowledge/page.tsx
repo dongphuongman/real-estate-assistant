@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { FileUp, Loader2, MessageSquareText } from "lucide-react";
-import { ragQa, uploadRagDocuments } from "@/lib/api";
-import type { RagQaResponse, RagUploadResponse } from "@/lib/types";
+import { FileUp, Loader2, MessageSquareText, Trash2 } from "lucide-react";
+import { ragQa, resetRagKnowledge, uploadRagDocuments } from "@/lib/api";
+import type { RagQaResponse, RagResetResponse, RagUploadResponse } from "@/lib/types";
 
 export default function KnowledgePage() {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadResult, setUploadResult] = useState<RagUploadResponse | null>(null);
+
+  const [resetting, setResetting] = useState(false);
+  const [resetError, setResetError] = useState<string | null>(null);
+  const [resetResult, setResetResult] = useState<RagResetResponse | null>(null);
 
   const [question, setQuestion] = useState<string>("");
   const [topK, setTopK] = useState<string>("5");
@@ -46,6 +50,28 @@ export default function KnowledgePage() {
       setUploadError(msg || "Upload failed");
     } finally {
       setUploading(false);
+    }
+  };
+
+  const onResetKnowledge = async () => {
+    setResetError(null);
+    setResetResult(null);
+
+    const confirmed = window.confirm("Clear all indexed knowledge documents? This cannot be undone.");
+    if (!confirmed) return;
+
+    setResetting(true);
+    try {
+      const res = await resetRagKnowledge();
+      setResetResult(res);
+      setUploadResult(null);
+      setQaResult(null);
+      setQaError(null);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setResetError(msg || "Reset failed");
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -149,6 +175,33 @@ export default function KnowledgePage() {
             ) : null}
           </div>
         ) : null}
+
+        <div className="mt-6 pt-6 border-t">
+          <div className="flex items-center gap-2 mb-3">
+            <Trash2 className="w-4 h-4" />
+            <p className="font-medium">Manage</p>
+          </div>
+          <button
+            className="border px-3 py-2 rounded disabled:opacity-50"
+            disabled={resetting}
+            onClick={onResetKnowledge}
+          >
+            {resetting ? (
+              <span className="inline-flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Clearing...
+              </span>
+            ) : (
+              "Clear knowledge"
+            )}
+          </button>
+          {resetError && <p className="text-red-600 mt-3">{resetError}</p>}
+          {resetResult ? (
+            <p className="text-sm text-muted-foreground mt-3">
+              {resetResult.message}. Removed {resetResult.documents_removed}. Remaining {resetResult.documents_remaining}.
+            </p>
+          ) : null}
+        </div>
       </section>
 
       <section className="border rounded-lg p-6">
@@ -250,4 +303,3 @@ export default function KnowledgePage() {
     </div>
   );
 }
-

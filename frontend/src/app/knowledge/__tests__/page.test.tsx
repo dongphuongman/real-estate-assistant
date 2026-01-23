@@ -1,13 +1,18 @@
 import "@testing-library/jest-dom";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import KnowledgePage from "../page";
-import { ragQa, uploadRagDocuments } from "@/lib/api";
+import { ragQa, resetRagKnowledge, uploadRagDocuments } from "@/lib/api";
 
 jest.mock("@/lib/api", () => ({
   uploadRagDocuments: jest.fn(async () => ({
     message: "Upload processed",
     chunks_indexed: 3,
     errors: [],
+  })),
+  resetRagKnowledge: jest.fn(async () => ({
+    message: "Knowledge cleared",
+    documents_removed: 0,
+    documents_remaining: 0,
   })),
   ragQa: jest.fn(async () => ({
     answer: "Answer text",
@@ -103,5 +108,46 @@ describe("KnowledgePage", () => {
     fireEvent.change(screen.getByLabelText("Knowledge question"), { target: { value: "Q" } });
     fireEvent.click(screen.getByRole("button", { name: "Ask" }));
     await waitFor(() => expect(screen.getByText("QA failed (status=503)")).toBeInTheDocument());
+  });
+
+  it("clears knowledge after confirmation", async () => {
+    const confirmSpy = jest.spyOn(window, "confirm").mockReturnValue(true);
+    (resetRagKnowledge as jest.Mock).mockResolvedValueOnce({
+      message: "Knowledge cleared",
+      documents_removed: 3,
+      documents_remaining: 0,
+    });
+
+    render(<KnowledgePage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear knowledge" }));
+    await waitFor(() => expect(resetRagKnowledge).toHaveBeenCalled());
+    expect(screen.getByText(/Removed 3\. Remaining 0\./)).toBeInTheDocument();
+
+    confirmSpy.mockRestore();
+  });
+
+  it("does not clear knowledge when confirmation is cancelled", async () => {
+    const confirmSpy = jest.spyOn(window, "confirm").mockReturnValue(false);
+
+    render(<KnowledgePage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear knowledge" }));
+    await waitFor(() => expect(confirmSpy).toHaveBeenCalled());
+    expect(resetRagKnowledge).not.toHaveBeenCalled();
+
+    confirmSpy.mockRestore();
+  });
+
+  it("surfaces reset failures", async () => {
+    const confirmSpy = jest.spyOn(window, "confirm").mockReturnValue(true);
+    (resetRagKnowledge as jest.Mock).mockRejectedValueOnce(new Error("Reset failed (status=503)"));
+
+    render(<KnowledgePage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear knowledge" }));
+    await waitFor(() => expect(screen.getByText("Reset failed (status=503)")).toBeInTheDocument());
+
+    confirmSpy.mockRestore();
   });
 });

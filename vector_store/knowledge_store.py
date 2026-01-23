@@ -103,3 +103,8 @@ class KnowledgeStore:
             "documents": count,
             "embedding_provider": provider,
         }
+
+    def clear(self) -> int:
+        removed = len(getattr(self, "_docs", []))
+        self._docs = []
+        return removed

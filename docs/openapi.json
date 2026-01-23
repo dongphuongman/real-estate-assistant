@@ -1935,6 +1935,29 @@
         "title": "RagQaResponse",
         "type": "object"
       },
+      "RagResetResponse": {
+        "properties": {
+          "documents_remaining": {
+            "title": "Documents Remaining",
+            "type": "integer"
+          },
+          "documents_removed": {
+            "title": "Documents Removed",
+            "type": "integer"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "documents_removed",
+          "documents_remaining"
+        ],
+        "title": "RagResetResponse",
+        "type": "object"
+      },
       "ReindexRequest": {
         "description": "Request model for reindexing.",
         "properties": {
@@ -2924,6 +2947,33 @@
           }
         ],
         "summary": "Rag Qa",
+        "tags": [
+          "RAG"
+        ]
+      }
+    },
+    "/api/v1/rag/reset": {
+      "post": {
+        "description": "Clear all indexed knowledge documents for local RAG (CE-safe).",
+        "operationId": "reset_rag_knowledge_api_v1_rag_reset_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RagResetResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Reset Rag Knowledge",
         "tags": [
           "RAG"
         ]
