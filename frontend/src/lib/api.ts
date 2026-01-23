@@ -275,7 +275,7 @@ export async function streamChatMessage(
   request: ChatRequest,
   onChunk: (chunk: string) => void,
   onStart?: (meta: { requestId?: string }) => void,
-  onMeta?: (meta: { sources?: ChatResponse["sources"]; sessionId?: string }) => void
+  onMeta?: (meta: { sources?: ChatResponse["sources"]; sourcesTruncated?: boolean; sessionId?: string }) => void
 ): Promise<void> {
   const response = await fetch(`${getApiUrl()}/chat`, {
     method: "POST",
@@ -349,9 +349,11 @@ export async function streamChatMessage(
         if (eventName === "meta") {
           if (onMeta) {
             const sources = (parsed as { sources?: unknown }).sources;
+            const sourcesTruncated = (parsed as { sources_truncated?: unknown }).sources_truncated;
             const sessionId = (parsed as { session_id?: unknown }).session_id;
             onMeta({
               sources: Array.isArray(sources) ? (sources as ChatResponse["sources"]) : undefined,
+              sourcesTruncated: typeof sourcesTruncated === "boolean" ? sourcesTruncated : undefined,
               sessionId: typeof sessionId === "string" && sessionId.trim() ? sessionId : undefined,
             });
           }

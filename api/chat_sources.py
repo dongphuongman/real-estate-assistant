@@ -10,16 +10,24 @@ def serialize_chat_sources(
     max_items: int,
     max_content_chars: int,
     max_total_bytes: int,
-) -> list[dict[str, Any]]:
+) -> tuple[list[dict[str, Any]], bool]:
     max_items = max(0, int(max_items))
     max_content_chars = max(0, int(max_content_chars))
     max_total_bytes = max(0, int(max_total_bytes))
 
     sources: list[dict[str, Any]] = []
     total_bytes = 0
+    truncated = False
 
-    for doc in docs:
+    iterator = iter(docs)
+    while True:
         if max_items and len(sources) >= max_items:
+            if next(iterator, None) is not None:
+                truncated = True
+            break
+
+        doc = next(iterator, None)
+        if doc is None:
             break
 
         content = getattr(doc, "page_content", "")
@@ -27,6 +35,7 @@ def serialize_chat_sources(
             content = str(content)
         if max_content_chars and len(content) > max_content_chars:
             content = content[:max_content_chars]
+            truncated = True
 
         metadata = getattr(doc, "metadata", {}) or {}
         if not isinstance(metadata, dict):
@@ -43,10 +52,10 @@ def serialize_chat_sources(
         if max_total_bytes:
             encoded = json.dumps(item, ensure_ascii=False).encode("utf-8")
             if total_bytes + len(encoded) > max_total_bytes:
+                truncated = True
                 break
             total_bytes += len(encoded)
 
         sources.append(item)
 
-    return sources
-
+    return sources, truncated

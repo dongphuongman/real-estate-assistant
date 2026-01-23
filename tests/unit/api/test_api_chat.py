@@ -44,6 +44,7 @@ def test_chat_success(mock_agent, valid_headers):
     assert data["response"] == "This is a test answer."
     assert len(data["sources"]) == 1
     assert data["sources"][0]["content"] == "doc content"
+    assert data["sources_truncated"] is False
     
     app.dependency_overrides = {}
 

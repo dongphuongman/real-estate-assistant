@@ -67,18 +67,21 @@ async def chat_endpoint(
             async def event_generator():
                 async for chunk in agent.astream_query(request.message):
                     yield f"data: {chunk}\n\n"
-                sources_payload = {"sources": [], "session_id": session_id}
+                sources_payload = {"sources": [], "sources_truncated": False, "session_id": session_id}
                 if hasattr(agent, "get_sources_for_query"):
                     try:
                         docs = agent.get_sources_for_query(request.message)
-                        sources_payload["sources"] = serialize_chat_sources(
+                        sources, sources_truncated = serialize_chat_sources(
                             docs,
                             max_items=sources_max_items,
                             max_content_chars=sources_max_content_chars,
                             max_total_bytes=sources_max_total_bytes,
                         )
+                        sources_payload["sources"] = sources
+                        sources_payload["sources_truncated"] = sources_truncated
                     except Exception:
                         sources_payload["sources"] = []
+                        sources_payload["sources_truncated"] = False
                 yield "event: meta\n"
                 yield f"data: {json.dumps(sources_payload)}\n\n"
                 yield "data: [DONE]\n\n"
@@ -92,7 +95,7 @@ async def chat_endpoint(
         
         # HybridPropertyAgent returns dict with 'answer', 'source_documents', etc.
         answer = result.get("answer", "")
-        sources = serialize_chat_sources(
+        sources, sources_truncated = serialize_chat_sources(
             result.get("source_documents") or [],
             max_items=sources_max_items,
             max_content_chars=sources_max_content_chars,
@@ -102,6 +105,7 @@ async def chat_endpoint(
         return ChatResponse(
             response=answer,
             sources=sources,
+            sources_truncated=sources_truncated,
             session_id=session_id
         )
 

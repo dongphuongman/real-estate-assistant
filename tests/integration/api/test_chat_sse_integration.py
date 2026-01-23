@@ -62,6 +62,7 @@ def test_chat_sse_streams_events_and_sets_request_id_header():
 
         meta = json.loads(meta_line[len("data: ") :])
         assert meta["sources"] == [{"content": "Do", "metadata": {"id": "1"}}]
+        assert meta["sources_truncated"] is True
         assert any(line.strip() == "data: [DONE]" for line in data_lines)
     finally:
         app_settings.chat_sources_max_items = old_max_items

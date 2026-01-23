@@ -68,6 +68,7 @@ export interface ChatResponse {
     content: string;
     metadata: Record<string, unknown>;
   }>;
+  sources_truncated?: boolean;
   session_id?: string;
 }
 

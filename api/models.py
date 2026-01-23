@@ -88,6 +88,7 @@ class ChatResponse(BaseModel):
 
     response: str
     sources: List[Dict[str, Any]] = []
+    sources_truncated: bool = False
     session_id: Optional[str] = None
 
 

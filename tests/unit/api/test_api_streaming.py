@@ -54,6 +54,7 @@ def test_chat_streaming(valid_headers):
         assert 'data: {"content": " World"}\n\n' in content
         assert "event: meta\n" in content
         assert '"sources"' in content
+        assert '"sources_truncated"' in content
         assert '"session_id"' in content
         assert 'data: [DONE]\n\n' in content
         
@@ -86,6 +87,7 @@ def test_chat_streaming_meta_sources_falls_back_on_error(valid_headers):
         content = response.text
         assert "event: meta\n" in content
         assert '"sources": []' in content
+        assert '"sources_truncated": false' in content
         assert 'data: [DONE]\n\n' in content
     finally:
         app.dependency_overrides = {}
@@ -132,6 +134,7 @@ def test_chat_streaming_meta_sources_are_truncated_by_settings(valid_headers):
 
         meta = json.loads(meta_line[len("data: ") :])
         assert meta["sources"] == [{"content": "abc", "metadata": {"id": "1"}}]
+        assert meta["sources_truncated"] is True
     finally:
         app_settings.chat_sources_max_items = old_max_items
         app_settings.chat_source_content_max_chars = old_max_chars

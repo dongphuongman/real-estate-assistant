@@ -10,6 +10,7 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   sources?: ChatResponse["sources"];
+  sourcesTruncated?: boolean;
 }
 
 export default function ChatPage() {
@@ -90,14 +91,14 @@ export default function ChatPage() {
         ({ requestId }) => {
           if (requestId) setRequestId(requestId);
         },
-        ({ sources, sessionId: returnedSessionId }) => {
+        ({ sources, sourcesTruncated, sessionId: returnedSessionId }) => {
           if (returnedSessionId && !sessionId) setSessionId(returnedSessionId);
           if (!sources || sources.length === 0) return;
           setMessages(prev => {
             const updated = [...prev];
             const lastIdx = updated.length - 1;
             if (lastIdx >= 0 && updated[lastIdx].role === "assistant") {
-              updated[lastIdx] = { ...updated[lastIdx], sources };
+              updated[lastIdx] = { ...updated[lastIdx], sources, sourcesTruncated };
             }
             return updated;
           });
@@ -136,7 +137,7 @@ export default function ChatPage() {
               {message.role === "assistant" && message.sources && message.sources.length > 0 && (
                 <details className="rounded-md border bg-muted/30 px-3 py-2 text-xs">
                   <summary className="cursor-pointer select-none font-medium">
-                    Sources ({message.sources.length})
+                    Sources ({message.sources.length}){message.sourcesTruncated ? " (truncated)" : ""}
                   </summary>
                   <ol className="mt-2 list-decimal pl-4 space-y-2">
                     {message.sources.map((source, i) => {
@@ -197,13 +198,13 @@ export default function ChatPage() {
                     ({ requestId }) => {
                       if (requestId) setRequestId(requestId);
                     },
-                    ({ sources }) => {
+                    ({ sources, sourcesTruncated }) => {
                       if (!sources || sources.length === 0) return;
                       setMessages(prev => {
                         const updated = [...prev];
                         const lastIdx = updated.length - 1;
                         if (lastIdx >= 0 && updated[lastIdx].role === "assistant") {
-                          updated[lastIdx] = { ...updated[lastIdx], sources };
+                          updated[lastIdx] = { ...updated[lastIdx], sources, sourcesTruncated };
                         }
                         return updated;
                       });

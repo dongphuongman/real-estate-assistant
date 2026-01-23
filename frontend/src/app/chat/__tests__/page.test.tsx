@@ -130,6 +130,7 @@ describe("ChatPage", () => {
       onMeta?.({
         sessionId: "sid-1",
         sources: [{ content: "Doc", metadata: { id: "1" } }],
+        sourcesTruncated: true,
       })
     })
 
@@ -145,7 +146,7 @@ describe("ChatPage", () => {
       expect(screen.getByText("Answer")).toBeInTheDocument()
     })
 
-    expect(screen.getByText(/Sources \(1\)/)).toBeInTheDocument()
+    expect(screen.getByText(/Sources \(1\) \(truncated\)/)).toBeInTheDocument()
     expect(screen.getByText("Doc")).toBeInTheDocument()
   })
 
