@@ -54,6 +54,7 @@ To ensure your digest contains relevant properties:
 The Community Edition focuses on local-first workflows:
 - **Local datasets**: Properties indexed in the local vector store (ChromaDB) for search and tools.
 - **Optional connectors**: Some integrations are available as CE-safe webhooks/stubs and can be enabled via environment flags.
+- **Optional developer features**: Some non-API helper modules may require extra Python packages and are not needed for normal UI/API usage.
 
 ## Market Analytics
 

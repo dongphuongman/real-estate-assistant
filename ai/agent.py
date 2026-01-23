@@ -3,8 +3,12 @@ from typing import Dict, List, Sequence
 
 import pandas as pd
 from langchain.agents.agent_types import AgentType
-from langchain_experimental.agents import create_pandas_dataframe_agent
 from langchain_openai import ChatOpenAI
+
+try:
+    from langchain_experimental.agents import create_pandas_dataframe_agent
+except ImportError:
+    create_pandas_dataframe_agent = None
 
 
 class RealEstateGPT:
@@ -45,6 +49,11 @@ class RealEstateGPT:
         os.environ["OPENAI_API_KEY"] = key
 
         # Initialize the agent
+        if create_pandas_dataframe_agent is None:
+            raise ImportError(
+                "Optional dependency missing: langchain-experimental. "
+                "Install it to use RealEstateGPT dataframe agent features."
+            )
         self.agent = create_pandas_dataframe_agent(
             ChatOpenAI(temperature=0, model="gpt-3.5-turbo"),
             df,

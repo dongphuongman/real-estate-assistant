@@ -61,6 +61,9 @@ in V4.
   - `FORCE_FASTEMBED` (`1` to force FastEmbed on Windows; alias)
   - `UPTIME_MONITOR_COOLDOWN_SECONDS` (default `1800`)
 
+## Optional Dependencies
+- `langchain-experimental` is required only for the legacy dataframe agent (`ai/agent.py` -> `RealEstateGPT`). The V4 API does not depend on it.
+
 ## Testing
 - Run all tests:
   ```powershell

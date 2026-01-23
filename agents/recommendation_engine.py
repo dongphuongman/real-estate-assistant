@@ -174,14 +174,14 @@ class PropertyRecommendationEngine:
         if preferences.preferred_cities:
             checks += 1
             city = metadata.get("city")
-            if isinstance(city, str) and city in preferences.preferred_cities:
+            if isinstance(city, str) and any(city.lower() == pref.lower() for pref in preferences.preferred_cities):
                 score += 1.0
 
         # Rooms match
         if preferences.preferred_rooms:
             checks += 1
             rooms = metadata.get("rooms")
-            if isinstance(rooms, int) and rooms in preferences.preferred_rooms:
+            if isinstance(rooms, (int, float)) and float(rooms) in preferences.preferred_rooms:
                 score += 1.0
 
         # Must-have amenities
@@ -195,7 +195,9 @@ class PropertyRecommendationEngine:
         if preferences.preferred_neighborhoods:
             checks += 1
             neighborhood = metadata.get("neighborhood")
-            if isinstance(neighborhood, str) and neighborhood in preferences.preferred_neighborhoods:
+            if isinstance(neighborhood, str) and any(
+                neighborhood.lower() == pref.lower() for pref in preferences.preferred_neighborhoods
+            ):
                 score += 1.0
 
         # Normalize

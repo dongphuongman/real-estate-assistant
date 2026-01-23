@@ -313,3 +313,40 @@ class TestRerankerEdgeCases:
 
         # Should return documents with neutral scoring
         assert len(results) > 0
+
+    def test_initial_scores_length_mismatch_falls_back_to_equal_scores(self, reranker):
+        docs = [
+            Document(page_content="A", metadata={"id": "1", "price": 1000}),
+            Document(page_content="B", metadata={"id": "2", "price": 900}),
+        ]
+        results = reranker.rerank("apartment", docs, initial_scores=[0.1], k=2)
+        assert len(results) == 2
+
+    def test_exact_match_boost_ignores_stop_words(self, reranker):
+        doc = Document(page_content="apartment with parking", metadata={"id": "1"})
+        boost = reranker._calculate_exact_match_boost("the and to for of", doc)
+        assert boost == 0.0
+
+    def test_quality_boost_defaults_has_images_true(self, reranker):
+        doc = Document(page_content="short", metadata={"id": "1"})
+        boost = reranker._calculate_quality_boost(doc)
+        assert boost > 0.0
+
+    def test_investor_strategy_logs_and_recovers_on_model_failure(self, caplog):
+        from vector_store.reranker import StrategicReranker
+
+        class FailingModel:
+            def predict_fair_price(self, prop):
+                raise RuntimeError("fail")
+
+        reranker = StrategicReranker(valuation_model=FailingModel())
+        docs = [
+            Document(page_content="A", metadata={"id": "1", "city": "Warsaw", "price": 100000, "area_sqm": 50}),
+            Document(page_content="B", metadata={"id": "2", "city": "Warsaw", "price": 250000, "area_sqm": 50}),
+        ]
+
+        with caplog.at_level("WARNING"):
+            results = reranker.rerank_with_strategy("apartment", docs, strategy="investor", initial_scores=[1.0, 1.0])
+
+        assert len(results) == 2
+        assert any("Failed to value property 1" in record.message for record in caplog.records)

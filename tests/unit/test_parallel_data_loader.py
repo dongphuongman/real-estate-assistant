@@ -65,3 +65,40 @@ class TestParallelDataLoader:
             loader = ParallelDataLoader()
             loader._process_single_file(file)
             mock_read_excel.assert_called_once()
+
+    def test_load_files_calls_progress_callback(self, mock_loader_csv, mock_property_collection):
+        file1 = MagicMock()
+        file1.name = "file1.csv"
+        file2 = MagicMock()
+        file2.name = "file2.csv"
+
+        progress_updates = []
+
+        def cb(progress: float, message: str) -> None:
+            progress_updates.append((progress, message))
+
+        with patch('pandas.read_csv') as mock_read_csv:
+            mock_df = pd.DataFrame({'col': [1]})
+            mock_read_csv.return_value = mock_df
+            mock_loader_csv.format_df.return_value = mock_df
+
+            mock_collection = MagicMock()
+            mock_property_collection.from_dataframe.return_value = mock_collection
+
+            loader = ParallelDataLoader(max_workers=2)
+            loader.load_files([file1, file2], progress_callback=cb)
+
+        assert len(progress_updates) == 2
+        assert progress_updates[-1][0] == 1.0
+        assert "Processed" in progress_updates[-1][1]
+
+    def test_process_single_file_seeks_before_reading(self, mock_loader_csv):
+        file = MagicMock()
+        file.name = "test.csv"
+
+        with patch('pandas.read_csv') as mock_read_csv:
+            mock_read_csv.return_value = pd.DataFrame({'col': [1]})
+            loader = ParallelDataLoader()
+            loader._process_single_file(file)
+
+        file.seek.assert_called_once_with(0)
