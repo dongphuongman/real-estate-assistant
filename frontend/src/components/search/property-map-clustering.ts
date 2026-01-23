@@ -77,22 +77,24 @@ export function clusterMapPoints(points: PropertyMapPoint[], zoom: number, optio
       if (a.cellY !== b.cellY) return a.cellY - b.cellY;
       return a.cellX - b.cellX;
     })
-    .flatMap((group) => {
+    .reduce<ClusteredMapItem[]>((acc, group) => {
       if (group.points.length === 1) {
-        return [{ kind: "point" as const, point: group.points[0] }];
+        acc.push({ kind: "point", point: group.points[0] });
+        return acc;
       }
+
       const count = group.points.length;
       const lat = group.sumLat / count;
       const lon = group.sumLon / count;
-      return [
-        {
-          kind: "cluster" as const,
-          id: `cluster-${group.cellX}-${group.cellY}`,
-          lat,
-          lon,
-          count,
-          points: group.points,
-        },
-      ];
-    });
+
+      acc.push({
+        kind: "cluster",
+        id: `cluster-${group.cellX}-${group.cellY}`,
+        lat,
+        lon,
+        count,
+        points: group.points,
+      });
+      return acc;
+    }, []);
 }
