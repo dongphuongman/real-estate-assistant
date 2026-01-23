@@ -19,6 +19,7 @@ jest.mock("react-leaflet", () => ({
   ),
   Popup: ({ children }: { children: ReactNode }) => <div data-testid="popup">{children}</div>,
   useMap: () => ({ fitBounds: fitBoundsMock }),
+  useMapEvents: () => ({ getZoom: () => 12 }),
 }));
 
 describe("PropertyMap", () => {
@@ -59,5 +60,22 @@ describe("PropertyMap", () => {
   it("does not fit bounds when no points are present", () => {
     render(<PropertyMap points={[]} />);
     expect(fitBoundsMock).not.toHaveBeenCalled();
+  });
+
+  it("clusters dense points and renders a cluster popup summary", () => {
+    const points = Array.from({ length: 80 }, (_, idx) => ({
+      id: `p-${idx}`,
+      lat: 52.23 + idx * 0.000001,
+      lon: 21.01 + idx * 0.000001,
+      title: `Property ${idx}`,
+      city: "Warsaw",
+      country: "PL",
+    }));
+
+    render(<PropertyMap points={points} />);
+
+    expect(screen.getAllByTestId("marker").length).toBeLessThan(points.length);
+    expect(screen.getByText("80 properties in this area")).toBeInTheDocument();
+    expect(screen.getByText("Property 0")).toBeInTheDocument();
   });
 });

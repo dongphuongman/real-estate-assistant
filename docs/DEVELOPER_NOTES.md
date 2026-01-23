@@ -127,6 +127,7 @@ in V4.
 - Mapping (Search Map view):
   - Libraries: `leaflet`, `react-leaflet`
   - Tiles: OpenStreetMap (`https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`) via the browser (no API key required)
+  - Marker clustering: client-side, zoom-aware grouping to keep dense result sets readable
 - E2E (Playwright):
   ```powershell
   $env:PLAYWRIGHT_START_WEB='1'
