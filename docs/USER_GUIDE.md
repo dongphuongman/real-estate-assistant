@@ -96,6 +96,9 @@ The AI-powered chat interface allows you to search for properties using natural 
 - OpenAPI schema: `http://localhost:8000/openapi.json` (repo snapshot: `docs/openapi.json`)
 - Generated endpoint index (repo): `docs/API_REFERENCE.generated.md`
 
+Operator note:
+- Rotate/revoke API keys safely via `API_ACCESS_KEYS` (staged rotation). See `docs/SECURITY.md` for the runbook.
+
 ### How to Use
 1. Navigate to the **Chat** tab.
 2. Type your request (e.g., "Find me a 2-bedroom apartment in Warsaw under 3000 PLN").
