@@ -116,7 +116,7 @@ For real-time streaming from the assistant:
 - Contributors: do not place API keys in public client env vars; the repo enforces this via `python scripts\forbidden_tokens_check.py`.
 - The UI progressively renders assistant messages, shows a Retry button on errors, and displays Sources (when available)
 - Sources are displayed with a human-friendly title (derived from source metadata) plus a compact metadata summary and content preview
-- The UI displays `request_id` on both success and error paths (when available) to help correlate with server logs
+- The UI displays `request_id` on both success and error paths (when available) to help correlate with server logs (derived from `X-Request-ID`)
 - Sources may be truncated (count and per-item content length) to keep payloads safe for clients
 
 ## Search Filters
@@ -187,6 +187,8 @@ $env:ENVIRONMENT="production"
 $env:CORS_ALLOW_ORIGINS="https://yourapp.com,https://studio.vercel.app"
 ```
 The backend will only allow these origins.
+When the API is called cross-origin from a browser, the backend exposes `X-Request-ID` via
+`Access-Control-Expose-Headers` so client code can read it for support and troubleshooting.
 
 ## Quality & Stability
 - The app enforces backend quality gates (lint, types, custom rules) to improve reliability.

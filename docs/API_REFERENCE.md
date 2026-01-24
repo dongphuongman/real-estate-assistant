@@ -38,6 +38,8 @@ For staged key rotation and revocation guidance, see `docs/SECURITY.md` (API Key
 All API responses include an `X-Request-ID` header.
 You can optionally provide your own `X-Request-ID` (letters/numbers plus `._-`, up to 128 chars)
 to correlate client logs with server logs.
+The header is included on error responses (including unexpected `500` errors) and is exposed to browser
+JavaScript via `Access-Control-Expose-Headers: X-Request-ID` when CORS applies.
 
 ### Rate Limiting
 

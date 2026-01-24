@@ -1,7 +1,12 @@
+import logging
 import re
+
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
 from api.observability import (
     RateLimiter,
+    add_observability,
     client_id_from_api_key,
     generate_request_id,
     normalize_request_id,
@@ -51,4 +56,38 @@ def test_client_id_from_api_key_hashing():
     assert len(h1) == 12
     assert h1 == h2
     assert h1 != h3
+
+
+def test_request_id_header_replaced_when_invalid():
+    app = FastAPI()
+    add_observability(app, logger=logging.getLogger("test"))
+
+    @app.get("/ping")
+    def _ping():
+        return {"ok": True}
+
+    client = TestClient(app)
+    invalid = "not ok!*"
+    r = client.get("/ping", headers={"X-Request-ID": invalid})
+    assert r.status_code == 200
+    rid = r.headers.get("x-request-id")
+    assert rid
+    assert rid != invalid
+    assert bool(re.fullmatch(r"[0-9a-f]{32}", rid))
+
+
+def test_request_id_is_present_on_unhandled_exception_response():
+    app = FastAPI()
+    add_observability(app, logger=logging.getLogger("test"))
+
+    @app.get("/boom")
+    def _boom():
+        raise RuntimeError("boom")
+
+    client = TestClient(app)
+    request_id = "test-req-500"
+    r = client.get("/boom", headers={"X-Request-ID": request_id})
+    assert r.status_code == 500
+    assert r.headers.get("x-request-id") == request_id
+    assert r.json()["detail"] == "Internal server error"
 

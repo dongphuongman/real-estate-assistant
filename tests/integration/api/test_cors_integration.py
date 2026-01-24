@@ -6,3 +6,5 @@ def test_cors_dev_environment_allows_all_origin_header():
     r = client.get("/health", headers={"Origin": "http://example.com"})
     assert r.status_code == 200
     assert r.headers.get("access-control-allow-origin") == "*"
+    exposed = (r.headers.get("access-control-expose-headers") or "").lower()
+    assert "x-request-id" in exposed

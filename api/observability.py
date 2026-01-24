@@ -138,7 +138,31 @@ def add_observability(app: FastAPI, logger: logging.Logger) -> None:
                     )
 
         start = time.perf_counter()
-        response = await call_next(request)
+        try:
+            response = await call_next(request)
+        except Exception:
+            elapsed_ms = (time.perf_counter() - start) * 1000.0
+            client_id = client_id_from_api_key(request.headers.get("X-API-Key"))
+            logger.exception(
+                "api_unhandled_exception",
+                extra={
+                    "event": "api_unhandled_exception",
+                    "request_id": request_id,
+                    "client_id": (client_id or "-"),
+                    "method": request.method,
+                    "path": request.url.path,
+                    "status": 500,
+                    "duration_ms": float(elapsed_ms),
+                },
+            )
+            key = f"{request.method} {request.url.path}"
+            app.state.metrics[key] = int(app.state.metrics.get(key, 0)) + 1
+            return JSONResponse(
+                status_code=500,
+                content={"detail": "Internal server error"},
+                headers=response_headers,
+            )
+
         elapsed_ms = (time.perf_counter() - start) * 1000.0
 
         for k, v in response_headers.items():

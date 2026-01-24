@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.auth import get_api_key
 from api.dependencies import get_vector_store
 from api.models import HealthCheck
-from api.observability import add_observability
+from api.observability import REQUEST_ID_HEADER, add_observability
 from api.routers import admin, auth, chat, exports, prompt_templates, search, tools
 from api.routers import rag as rag_router
 from api.routers import settings as settings_router
@@ -140,6 +140,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=[REQUEST_ID_HEADER],
 )
 
 # Include Routers

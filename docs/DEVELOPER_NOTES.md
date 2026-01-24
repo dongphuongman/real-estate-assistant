@@ -18,7 +18,7 @@ in V4.
   - CI drift check (full API Reference): `python scripts\update_api_reference_full.py --check`
   - CI drift check (when enabled): fails if snapshot differs from the runtime schema generated from `api/main.py`
 - Observability: `api/observability.py` adds:
-  - `X-Request-ID` header to all responses
+  - `X-Request-ID` header to all responses (including unexpected `500` errors)
   - Per-client rate limiting for `/api/v1/*`
   - Structured JSON logs (`utils/json_logging.py`) with `event`, `request_id`, `client_id`,
     `method`, `path`, `status`, `duration_ms`
@@ -26,6 +26,7 @@ in V4.
 - CORS:
   - Development: `ENVIRONMENT!=production` → `allow_origins=["*"]`
   - Production: `ENVIRONMENT=production` → `CORS_ALLOW_ORIGINS` (comma-separated list)
+  - The API exposes `X-Request-ID` via `Access-Control-Expose-Headers` so browser clients can read it
   - Example:
     ```powershell
     $env:ENVIRONMENT="production"
