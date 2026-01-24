@@ -112,6 +112,7 @@ For real-time streaming from the assistant:
 - After the assistant finishes streaming text, the server emits a final metadata event: `event: meta` with `data: {"sources":[...],"sources_truncated":false,"session_id":"..."}`
 - The stream finishes with `data: [DONE]`
 - For direct API calls, include the `X-API-Key` header (see API Reference). The web app proxies API calls server-side, so the browser does not embed the API key (proxy uses `API_ACCESS_KEY` or the first entry in `API_ACCESS_KEYS`; keys are trimmed and empty entries are ignored).
+- Contributors: do not place API keys in public client env vars; the repo enforces this via `python scripts\forbidden_tokens_check.py`.
 - The UI progressively renders assistant messages, shows a Retry button on errors, and displays Sources (when available)
 - Sources are displayed with a human-friendly title (derived from source metadata) plus a compact metadata summary and content preview
 - The UI displays `request_id` on both success and error paths (when available) to help correlate with server logs

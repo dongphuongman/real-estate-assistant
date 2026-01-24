@@ -75,7 +75,7 @@ Open Core & Walled Garden strategy. Conversational, data‑driven assistant for 
 - Alternatives: Supabase free (Postgres+Auth+Storage) to unify.
 
 ## Risks & Mitigations
-- Secrets exposure: never use `NEXT_PUBLIC_API_KEY` in prod; server‑side auth only.
+- Secrets exposure: never expose API keys via public client env vars; server-side auth only.
 - Resource limits: small vector index; cache and model routing to cheaper providers.
 - CORS misconfig: restrict to frontend origin in prod via env.
 - Rate abuse: per‑client RPM limiting; budgets per provider.

@@ -53,6 +53,10 @@ jobs:
         run: |
           python -m pytest -q tests/integration/test_rule_engine_clean.py
 
+      - name: Forbidden token scan
+        run: |
+          python scripts/forbidden_tokens_check.py
+
       - name: OpenAPI schema drift check
         run: |
           python scripts/export_openapi.py --check
@@ -203,7 +207,6 @@ jobs:
       - name: Docker Compose smoke test (build + health checks)
         env:
           API_ACCESS_KEY: ci-test-key
-          NEXT_PUBLIC_API_KEY: ci-test-key
         run: |
           docker --version
           docker compose version

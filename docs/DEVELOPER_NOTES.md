@@ -106,6 +106,10 @@ in V4.
   ```powershell
   python -m pytest -q tests\integration\test_rule_engine_clean.py
   ```
+- Forbidden token scan (CI-equivalent):
+  ```powershell
+  python scripts\forbidden_tokens_check.py
+  ```
 - Run RuleEngine (sample):
   ```powershell
   python -c "from rules.engine import RuleEngine; print('rules ready')"
