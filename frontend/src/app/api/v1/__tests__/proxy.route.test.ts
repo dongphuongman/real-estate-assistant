@@ -1,45 +1,4 @@
-type ResponseInitLike = {
-  status?: number;
-  statusText?: string;
-  headers?: HeadersInit;
-};
-
-class PolyfilledResponse {
-  body: unknown;
-  status: number;
-  statusText: string;
-  headers: Headers;
-
-  constructor(body?: unknown, init?: ResponseInitLike) {
-    this.body = body;
-    this.status = init?.status ?? 200;
-    this.statusText = init?.statusText ?? "";
-    this.headers = new Headers(init?.headers);
-  }
-
-  async text(): Promise<string> {
-    return typeof this.body === "string" ? this.body : "";
-  }
-
-  async json(): Promise<unknown> {
-    const raw = await this.text();
-    return raw ? JSON.parse(raw) : null;
-  }
-}
-
-const globalWithResponse = globalThis as unknown as { Response?: unknown };
-if (!globalWithResponse.Response) {
-  globalWithResponse.Response = PolyfilledResponse;
-}
-
-const routeModule = require("../[...path]/route") as {
-  GET: (request: Request, context: { params: { path?: string[] } }) => Promise<Response>;
-  POST: (request: Request, context: { params: { path?: string[] } }) => Promise<Response>;
-  PUT: (request: Request, context: { params: { path?: string[] } }) => Promise<Response>;
-  PATCH: (request: Request, context: { params: { path?: string[] } }) => Promise<Response>;
-  DELETE: (request: Request, context: { params: { path?: string[] } }) => Promise<Response>;
-  OPTIONS: (request: Request, context: { params: { path?: string[] } }) => Promise<Response>;
-};
+import { DELETE, GET, OPTIONS, PATCH, POST, PUT } from "../[...path]/route";
 
 function makeRequest(options: {
   url: string;
@@ -90,7 +49,7 @@ describe("API v1 proxy route", () => {
       },
     });
 
-    const response = await routeModule.POST(request, { params: { path: ["search"] } });
+    const response = await POST(request, { params: { path: ["search"] } });
 
     expect(global.fetch).toHaveBeenCalledTimes(1);
     const [backendUrl, init] = (global.fetch as unknown as jest.Mock).mock.calls[0] as [
@@ -130,7 +89,7 @@ describe("API v1 proxy route", () => {
       },
     });
 
-    await routeModule.POST(request, { params: { path: ["settings", "notifications"] } });
+    await POST(request, { params: { path: ["settings", "notifications"] } });
 
     const [, init] = (global.fetch as unknown as jest.Mock).mock.calls[0] as [string, RequestInit & { headers?: Headers }];
     const headers = init.headers as Headers;
@@ -159,7 +118,7 @@ describe("API v1 proxy route", () => {
       },
     });
 
-    await routeModule.GET(request, { params: { path: [] } });
+    await GET(request, { params: { path: [] } });
 
     const [backendUrl, init] = (global.fetch as unknown as jest.Mock).mock.calls[0] as [
       string,
@@ -189,10 +148,10 @@ describe("API v1 proxy route", () => {
         headers: { "Content-Type": "application/json" },
       });
 
-    await routeModule.PUT(makeMethodRequest("PUT"), { params: { path: ["tools", "mortgage-calculator"] } });
-    await routeModule.PATCH(makeMethodRequest("PATCH"), { params: { path: ["tools", "mortgage-calculator"] } });
-    await routeModule.DELETE(makeMethodRequest("DELETE"), { params: { path: ["tools", "mortgage-calculator"] } });
-    await routeModule.OPTIONS(makeMethodRequest("OPTIONS"), { params: { path: ["tools", "mortgage-calculator"] } });
+    await PUT(makeMethodRequest("PUT"), { params: { path: ["tools", "mortgage-calculator"] } });
+    await PATCH(makeMethodRequest("PATCH"), { params: { path: ["tools", "mortgage-calculator"] } });
+    await DELETE(makeMethodRequest("DELETE"), { params: { path: ["tools", "mortgage-calculator"] } });
+    await OPTIONS(makeMethodRequest("OPTIONS"), { params: { path: ["tools", "mortgage-calculator"] } });
 
     expect(global.fetch).toHaveBeenCalledTimes(4);
   });
