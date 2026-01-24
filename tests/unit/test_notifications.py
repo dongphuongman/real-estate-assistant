@@ -876,20 +876,54 @@ def test_i18n_all_languages_cover_english_keys():
         assert non_string == [], f"Non-string i18n values for {lang}: {non_string}"
 
 
-def test_app_modern_get_text_keys_exist_in_translations():
-    import re
-    from pathlib import Path
+def test_get_text_literal_keys_exist_in_translations():
+    import ast
 
     from i18n.translations import TRANSLATIONS
 
-    app_path = Path(__file__).resolve().parents[2] / "app_modern.py"
-    if not app_path.exists():
-        pytest.skip("app_modern.py not found, skipping translation key check")
-    content = app_path.read_text(encoding="utf-8")
+    repo_root = Path(__file__).resolve().parents[2]
+    scan_roots = [
+        "agents",
+        "ai",
+        "analytics",
+        "api",
+        "config",
+        "data",
+        "models",
+        "notifications",
+        "rules",
+        "scripts",
+        "tools",
+        "utils",
+        "vector_store",
+        "workflows",
+    ]
 
-    keys = set(re.findall(r"get_text\(\s*['\"]([^'\"]+)['\"]", content))
+    keys: set[str] = set()
+    for rel_root in scan_roots:
+        root = repo_root / rel_root
+        if not root.exists():
+            continue
+
+        for path in root.rglob("*.py"):
+            if path.name == "translations.py" and path.parent.name == "i18n":
+                continue
+
+            content = path.read_text(encoding="utf-8")
+            tree = ast.parse(content, filename=str(path))
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.Call):
+                    continue
+                if not isinstance(node.func, ast.Name) or node.func.id != "get_text":
+                    continue
+                if not node.args:
+                    continue
+                first_arg = node.args[0]
+                if isinstance(first_arg, ast.Constant) and isinstance(first_arg.value, str):
+                    keys.add(first_arg.value)
+
     missing = sorted(k for k in keys if k not in TRANSLATIONS["en"])
-    assert missing == [], f"app_modern.py uses unknown i18n keys: {missing}"
+    assert missing == [], f"get_text() uses unknown i18n keys: {missing}"
 
 
 def test_i18n_get_text_fallbacks_and_helpers():

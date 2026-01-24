@@ -102,6 +102,7 @@ in V4.
 ## Quality Gates
 - Static rules: RuleEngine checks line length, secrets, and loop concatenations.
 - Config: rules/config.py defines IGNORE_PATTERNS and MAX_LINE_LENGTH.
+- i18n safety: backend tests validate any `get_text("<literal>")` usage references an existing translation key.
 - Run RuleEngine (CI-equivalent):
   ```powershell
   python -m pytest -q tests\integration\test_rule_engine_clean.py

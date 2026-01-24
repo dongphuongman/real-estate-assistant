@@ -59,6 +59,7 @@ Cross-Origin Resource Sharing (CORS) is controlled via environment:
 
 - Notification settings are managed via `GET/PUT /api/v1/settings/notifications`.
 - If SMTP is configured, the backend scheduler sends digests and (optional) instant alerts.
+- If backend code uses `get_text("<literal>")` for localized strings, tests enforce that the key exists in `i18n/translations.py`.
 
 ### Settings: Model Catalog Runtime Status
 

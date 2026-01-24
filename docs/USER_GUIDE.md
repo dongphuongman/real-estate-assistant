@@ -18,7 +18,7 @@ The AI Real Estate Assistant helps you stay on top of the market with personaliz
 Whether you're a homebuyer looking for your dream house or an investor monitoring market trends,
 our digests provide the insights you need.
 
-All notification settings and labels follow your selected app language.
+Notification settings and labels follow your selected app language. Email content is currently sent in English.
 Email delivery requires SMTP configuration on the backend. If SMTP is not configured, preferences
 are still saved but no emails will be sent.
 
