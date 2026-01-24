@@ -117,6 +117,7 @@ For real-time streaming from the assistant:
 - The UI progressively renders assistant messages, shows a Retry button on errors, and displays Sources (when available)
 - Sources are displayed with a human-friendly title (derived from source metadata) plus a compact metadata summary and content preview
 - The UI displays `request_id` on both success and error paths (when available) to help correlate with server logs (derived from `X-Request-ID`)
+- When reporting a bug to operators, include the `request_id` from the UI whenever possible.
 - Sources may be truncated (count and per-item content length) to keep payloads safe for clients
 
 ## Search Filters

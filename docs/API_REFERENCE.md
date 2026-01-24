@@ -193,6 +193,7 @@ Invoke-RestMethod `
 ### Quality & Stability
 - Static analysis enforced: ruff (lint), mypy (types), RuleEngine (custom rules).
 - For full CI parity commands on Windows, see `docs/TESTING_GUIDE.md`.
+- One-command backend CI parity: `python scripts\ci_parity.py` (or `--dry-run` to print commands only).
 - CI runs RuleEngine as a dedicated step for fast feedback; run locally with `python -m pytest -q tests\integration\test_rule_engine_clean.py`.
 - CI runs OpenAPI and API Reference drift checks to keep `docs/openapi.json` and endpoint docs in sync.
 - CI also runs a Docker Compose smoke test (build + health checks). It waits for `/health` and the frontend `/`, and also checks `/api/v1/verify-auth` when `API_ACCESS_KEY` is set. Local equivalent: `python scripts\compose_smoke.py --ci`.

@@ -78,6 +78,14 @@ in V4.
 
 ## Testing
 - Full CI parity commands (Windows): see `docs/TESTING_GUIDE.md`.
+- One-command backend CI parity:
+  ```powershell
+  python scripts\ci_parity.py
+  ```
+- CI parity (dry run; prints commands only):
+  ```powershell
+  python scripts\ci_parity.py --dry-run
+  ```
 - Run all tests:
   ```powershell
   python -m pytest
