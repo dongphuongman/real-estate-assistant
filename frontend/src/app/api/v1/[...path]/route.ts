@@ -1,9 +1,11 @@
+import type { NextRequest } from "next/server";
+
 export const runtime = "nodejs";
 
 type ProxyContext = {
-  params: {
-    path?: string[];
-  };
+  params: Promise<{
+    path: string[];
+  }>;
 };
 
 const HOP_BY_HOP_RESPONSE_HEADERS = new Set<string>([
@@ -63,7 +65,8 @@ function buildBackendRequestHeaders(original: Headers): Headers {
 
 async function proxyRequest(request: Request, context: ProxyContext): Promise<Response> {
   const requestUrl = new URL(request.url);
-  const pathParts = context.params.path ?? [];
+  const { path } = await context.params;
+  const pathParts = path ?? [];
 
   const body = request.method === "GET" || request.method === "HEAD" ? undefined : request.body;
 
@@ -90,26 +93,26 @@ async function proxyRequest(request: Request, context: ProxyContext): Promise<Re
   });
 }
 
-export async function GET(request: Request, context: ProxyContext): Promise<Response> {
+export async function GET(request: NextRequest, context: ProxyContext): Promise<Response> {
   return proxyRequest(request, context);
 }
 
-export async function POST(request: Request, context: ProxyContext): Promise<Response> {
+export async function POST(request: NextRequest, context: ProxyContext): Promise<Response> {
   return proxyRequest(request, context);
 }
 
-export async function PUT(request: Request, context: ProxyContext): Promise<Response> {
+export async function PUT(request: NextRequest, context: ProxyContext): Promise<Response> {
   return proxyRequest(request, context);
 }
 
-export async function PATCH(request: Request, context: ProxyContext): Promise<Response> {
+export async function PATCH(request: NextRequest, context: ProxyContext): Promise<Response> {
   return proxyRequest(request, context);
 }
 
-export async function DELETE(request: Request, context: ProxyContext): Promise<Response> {
+export async function DELETE(request: NextRequest, context: ProxyContext): Promise<Response> {
   return proxyRequest(request, context);
 }
 
-export async function OPTIONS(request: Request, context: ProxyContext): Promise<Response> {
+export async function OPTIONS(request: NextRequest, context: ProxyContext): Promise<Response> {
   return proxyRequest(request, context);
 }

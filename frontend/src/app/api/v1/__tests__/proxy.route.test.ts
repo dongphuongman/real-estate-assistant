@@ -49,7 +49,7 @@ describe("API v1 proxy route", () => {
       },
     });
 
-    const response = await POST(request, { params: { path: ["search"] } });
+    const response = await POST(request, { params: Promise.resolve({ path: ["search"] }) });
 
     expect(global.fetch).toHaveBeenCalledTimes(1);
     const [backendUrl, init] = (global.fetch as unknown as jest.Mock).mock.calls[0] as [
@@ -89,7 +89,7 @@ describe("API v1 proxy route", () => {
       },
     });
 
-    await POST(request, { params: { path: ["settings", "notifications"] } });
+    await POST(request, { params: Promise.resolve({ path: ["settings", "notifications"] }) });
 
     const [, init] = (global.fetch as unknown as jest.Mock).mock.calls[0] as [string, RequestInit & { headers?: Headers }];
     const headers = init.headers as Headers;
@@ -118,7 +118,7 @@ describe("API v1 proxy route", () => {
       },
     });
 
-    await GET(request, { params: { path: [] } });
+    await GET(request, { params: Promise.resolve({ path: [] }) });
 
     const [backendUrl, init] = (global.fetch as unknown as jest.Mock).mock.calls[0] as [
       string,
@@ -148,10 +148,11 @@ describe("API v1 proxy route", () => {
         headers: { "Content-Type": "application/json" },
       });
 
-    await PUT(makeMethodRequest("PUT"), { params: { path: ["tools", "mortgage-calculator"] } });
-    await PATCH(makeMethodRequest("PATCH"), { params: { path: ["tools", "mortgage-calculator"] } });
-    await DELETE(makeMethodRequest("DELETE"), { params: { path: ["tools", "mortgage-calculator"] } });
-    await OPTIONS(makeMethodRequest("OPTIONS"), { params: { path: ["tools", "mortgage-calculator"] } });
+    const params = Promise.resolve({ path: ["tools", "mortgage-calculator"] });
+    await PUT(makeMethodRequest("PUT"), { params });
+    await PATCH(makeMethodRequest("PATCH"), { params });
+    await DELETE(makeMethodRequest("DELETE"), { params });
+    await OPTIONS(makeMethodRequest("OPTIONS"), { params });
 
     expect(global.fetch).toHaveBeenCalledTimes(4);
   });
