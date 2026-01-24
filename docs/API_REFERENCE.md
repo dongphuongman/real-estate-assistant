@@ -91,7 +91,7 @@ Example (local runtime unavailable):
 - `POST /api/v1/search` returns `SearchResponse.results[].property.latitude` and `SearchResponse.results[].property.longitude` when available.
 - Clients should treat coordinates as optional and handle `null` / missing values.
 - For dense result sets, clients may cluster markers by zoom to keep the map readable (client-side only).
-- In the web app, cluster markers are clickable and zoom in to reveal individual properties.
+- In the web app, cluster markers are clickable and zoom in by fitting to the cluster bounds (client-side only).
 
 ### Chat Streaming (SSE)
 

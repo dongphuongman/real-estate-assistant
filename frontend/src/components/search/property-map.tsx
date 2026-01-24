@@ -40,9 +40,16 @@ function ClusterMarker({
 }) {
   const map = useMap();
   const onClick = useCallback(() => {
-    const nextZoom = Math.min(zoom + 2, 18);
-    map.setView([cluster.lat, cluster.lon], nextZoom);
-  }, [cluster.lat, cluster.lon, map, zoom]);
+    const bounds = computeBounds(cluster.points);
+    if (!bounds) {
+      const nextZoom = Math.min(zoom + 2, 18);
+      map.setView([cluster.lat, cluster.lon], nextZoom);
+      return;
+    }
+
+    const maxZoom = Math.min(zoom + 2, 18);
+    map.fitBounds(bounds, { padding: [24, 24], maxZoom });
+  }, [cluster.lat, cluster.lon, cluster.points, map, zoom]);
 
   return (
     <Marker position={[cluster.lat, cluster.lon]} icon={icon} eventHandlers={{ click: onClick }}>

@@ -92,7 +92,7 @@ describe("PropertyMap", () => {
     expect(screen.getByText("Property 0")).toBeInTheDocument();
   });
 
-  it("zooms in when clicking a cluster marker", () => {
+  it("fits bounds when clicking a cluster marker", () => {
     const points = Array.from({ length: 80 }, (_, idx) => ({
       id: `p-${idx}`,
       lat: 52.23 + idx * 0.000001,
@@ -106,7 +106,22 @@ describe("PropertyMap", () => {
     const clickButtons = screen.getAllByTestId("marker-click");
     clickButtons[0].click();
 
-    expect(setViewMock).toHaveBeenCalledTimes(1);
-    expect(setViewMock).toHaveBeenCalledWith(expect.any(Array), 14);
+    expect(setViewMock).not.toHaveBeenCalled();
+    expect(fitBoundsMock).toHaveBeenCalledTimes(2);
+
+    const lats = points.map((p) => p.lat);
+    const lons = points.map((p) => p.lon);
+    const minLat = Math.min(...lats);
+    const maxLat = Math.max(...lats);
+    const minLon = Math.min(...lons);
+    const maxLon = Math.max(...lons);
+
+    expect(fitBoundsMock).toHaveBeenLastCalledWith(
+      [
+        [minLat, minLon],
+        [maxLat, maxLon],
+      ],
+      { padding: [24, 24], maxZoom: 14 }
+    );
   });
 });
