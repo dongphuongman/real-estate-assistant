@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { divIcon, type LatLngBoundsExpression } from "leaflet";
 import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
 
 import { computeBounds, computeCenter, type PropertyMapPoint } from "./property-map-utils";
-import { clusterMapPoints } from "./property-map-clustering";
+import { clusterMapPoints, type ClusteredMapItem } from "./property-map-clustering";
 
 function FitBounds({ bounds }: { bounds: LatLngBoundsExpression | null }) {
   const map = useMap();
@@ -25,6 +25,30 @@ function ZoomTracker({ onZoomChange }: { onZoomChange: (zoom: number) => void })
     onZoomChange(map.getZoom());
   }, [map, onZoomChange]);
   return null;
+}
+
+function ClusterMarker({
+  cluster,
+  zoom,
+  icon,
+  children,
+}: {
+  cluster: Extract<ClusteredMapItem, { kind: "cluster" }>;
+  zoom: number;
+  icon: ReturnType<typeof divIcon>;
+  children: ReactNode;
+}) {
+  const map = useMap();
+  const onClick = useCallback(() => {
+    const nextZoom = Math.min(zoom + 2, 18);
+    map.setView([cluster.lat, cluster.lon], nextZoom);
+  }, [cluster.lat, cluster.lon, map, zoom]);
+
+  return (
+    <Marker position={[cluster.lat, cluster.lon]} icon={icon} eventHandlers={{ click: onClick }}>
+      {children}
+    </Marker>
+  );
 }
 
 export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) {
@@ -97,7 +121,7 @@ export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) 
               .slice(0, 5);
 
             return (
-              <Marker key={item.id} position={[item.lat, item.lon]} icon={getClusterIcon(item.count)}>
+              <ClusterMarker key={item.id} cluster={item} zoom={zoom} icon={getClusterIcon(item.count)}>
                 <Popup>
                   <div className="space-y-2">
                     <div className="font-semibold">{item.count} properties in this area</div>
@@ -112,7 +136,7 @@ export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) 
                     )}
                   </div>
                 </Popup>
-              </Marker>
+              </ClusterMarker>
             );
           })}
         </MapContainer>

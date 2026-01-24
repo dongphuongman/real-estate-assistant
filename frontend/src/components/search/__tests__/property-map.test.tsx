@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import PropertyMap from "../property-map";
 
 const fitBoundsMock = jest.fn();
+const setViewMock = jest.fn();
 const divIconMock = jest.fn(() => ({}));
 
 jest.mock("leaflet", () => ({
@@ -12,19 +13,31 @@ jest.mock("leaflet", () => ({
 jest.mock("react-leaflet", () => ({
   MapContainer: ({ children }: { children: ReactNode }) => <div data-testid="map">{children}</div>,
   TileLayer: () => <div data-testid="tile" />,
-  Marker: ({ children, position }: { children: ReactNode; position: unknown }) => (
+  Marker: ({
+    children,
+    position,
+    eventHandlers,
+  }: {
+    children: ReactNode;
+    position: unknown;
+    eventHandlers?: { click?: () => void };
+  }) => (
     <div data-testid="marker" data-position={JSON.stringify(position)}>
+      <button type="button" data-testid="marker-click" onClick={() => eventHandlers?.click?.()}>
+        click
+      </button>
       {children}
     </div>
   ),
   Popup: ({ children }: { children: ReactNode }) => <div data-testid="popup">{children}</div>,
-  useMap: () => ({ fitBounds: fitBoundsMock }),
+  useMap: () => ({ fitBounds: fitBoundsMock, setView: setViewMock }),
   useMapEvents: () => ({ getZoom: () => 12 }),
 }));
 
 describe("PropertyMap", () => {
   beforeEach(() => {
     fitBoundsMock.mockClear();
+    setViewMock.mockClear();
     divIconMock.mockClear();
   });
 
@@ -77,5 +90,23 @@ describe("PropertyMap", () => {
     expect(screen.getAllByTestId("marker").length).toBeLessThan(points.length);
     expect(screen.getByText("80 properties in this area")).toBeInTheDocument();
     expect(screen.getByText("Property 0")).toBeInTheDocument();
+  });
+
+  it("zooms in when clicking a cluster marker", () => {
+    const points = Array.from({ length: 80 }, (_, idx) => ({
+      id: `p-${idx}`,
+      lat: 52.23 + idx * 0.000001,
+      lon: 21.01 + idx * 0.000001,
+      title: `Property ${idx}`,
+    }));
+
+    render(<PropertyMap points={points} />);
+
+    expect(screen.getAllByTestId("marker").length).toBeLessThan(points.length);
+    const clickButtons = screen.getAllByTestId("marker-click");
+    clickButtons[0].click();
+
+    expect(setViewMock).toHaveBeenCalledTimes(1);
+    expect(setViewMock).toHaveBeenCalledWith(expect.any(Array), 14);
   });
 });

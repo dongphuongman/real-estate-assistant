@@ -135,6 +135,7 @@ Neutral/empty states:
 - The map renders markers only for listings that include `latitude` and `longitude`.
 - The UI shows a “mappable” count (e.g., `3 / 10`) to indicate how many results can be plotted.
 - When many results are present, markers are clustered into count bubbles; zoom in to see individual properties.
+- Click a cluster bubble to zoom into that area and reveal individual markers.
 - If no results include coordinates, the map view shows a “No mappable results” message.
 
 ## Geo Search

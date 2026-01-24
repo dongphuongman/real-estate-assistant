@@ -128,6 +128,7 @@ in V4.
   - Libraries: `leaflet`, `react-leaflet`
   - Tiles: OpenStreetMap (`https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`) via the browser (no API key required)
   - Marker clustering: client-side, zoom-aware grouping to keep dense result sets readable
+  - Cluster interaction: clicking a cluster zooms in (current zoom + 2, capped at 18)
 - E2E (Playwright):
   ```powershell
   $env:PLAYWRIGHT_START_WEB='1'
