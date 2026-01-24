@@ -155,7 +155,7 @@ npm run test -- --ci --coverage
 
 Optional smoke test (requires Docker):
 ```bash
-API_ACCESS_KEY=ci-test-key NEXT_PUBLIC_API_KEY=ci-test-key python scripts/compose_smoke.py --ci --timeout-seconds 300
+API_ACCESS_KEY=ci-test-key python scripts/compose_smoke.py --ci --timeout-seconds 300
 ```
 
 Secrets and env notes:

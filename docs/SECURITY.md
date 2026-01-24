@@ -3,7 +3,7 @@
 ## Summary
 - Backend hardened: CORS via env in prod; dev default API key blocked.
 - Rate limiting active with per‑client RPM and request IDs.
-- No secrets in frontend bundle; `NEXT_PUBLIC_API_KEY` marked dev‑only.
+- No secrets in frontend bundle; the web app injects `X-API-Key` server-side via the Next.js `/api/v1/*` proxy (`API_ACCESS_KEY`).
 
 ## Findings (Priority)
 - Low: Frontend `npm audit` reports transitive issues (jest/ts-node/diff). Impact: dev‑only, low severity.

@@ -1,0 +1,199 @@
+type ResponseInitLike = {
+  status?: number;
+  statusText?: string;
+  headers?: HeadersInit;
+};
+
+class PolyfilledResponse {
+  body: unknown;
+  status: number;
+  statusText: string;
+  headers: Headers;
+
+  constructor(body?: unknown, init?: ResponseInitLike) {
+    this.body = body;
+    this.status = init?.status ?? 200;
+    this.statusText = init?.statusText ?? "";
+    this.headers = new Headers(init?.headers);
+  }
+
+  async text(): Promise<string> {
+    return typeof this.body === "string" ? this.body : "";
+  }
+
+  async json(): Promise<unknown> {
+    const raw = await this.text();
+    return raw ? JSON.parse(raw) : null;
+  }
+}
+
+const globalWithResponse = globalThis as unknown as { Response?: unknown };
+if (!globalWithResponse.Response) {
+  globalWithResponse.Response = PolyfilledResponse;
+}
+
+const routeModule = require("../[...path]/route") as {
+  GET: (request: Request, context: { params: { path?: string[] } }) => Promise<Response>;
+  POST: (request: Request, context: { params: { path?: string[] } }) => Promise<Response>;
+  PUT: (request: Request, context: { params: { path?: string[] } }) => Promise<Response>;
+  PATCH: (request: Request, context: { params: { path?: string[] } }) => Promise<Response>;
+  DELETE: (request: Request, context: { params: { path?: string[] } }) => Promise<Response>;
+  OPTIONS: (request: Request, context: { params: { path?: string[] } }) => Promise<Response>;
+};
+
+function makeRequest(options: {
+  url: string;
+  method: string;
+  headers?: Record<string, string>;
+  body?: unknown;
+}): Request {
+  return {
+    url: options.url,
+    method: options.method,
+    headers: new Headers(options.headers ?? {}),
+    body: options.body ?? null,
+  } as unknown as Request;
+}
+
+describe("API v1 proxy route", () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+    (global.fetch as unknown as jest.Mock) = jest.fn();
+    process.env.BACKEND_API_URL = "http://backend:8000/api/v1";
+    process.env.API_ACCESS_KEY = "server-secret-key";
+    delete process.env.NEXT_PUBLIC_API_KEY;
+  });
+
+  afterEach(() => {
+    delete process.env.BACKEND_API_URL;
+    delete process.env.API_ACCESS_KEY;
+  });
+
+  it("forwards requests to backend and injects X-API-Key server-side", async () => {
+    (global.fetch as unknown as jest.Mock).mockResolvedValueOnce(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "X-Request-ID": "req-1",
+        },
+      })
+    );
+
+    const request = makeRequest({
+      url: "http://localhost/api/v1/search?foo=1",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-User-Email": "user@example.com",
+        "X-API-Key": "malicious-client-key",
+      },
+    });
+
+    const response = await routeModule.POST(request, { params: { path: ["search"] } });
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    const [backendUrl, init] = (global.fetch as unknown as jest.Mock).mock.calls[0] as [
+      string,
+      RequestInit & { headers?: Headers },
+    ];
+
+    expect(backendUrl).toBe("http://backend:8000/api/v1/search?foo=1");
+    expect(init.method).toBe("POST");
+
+    const headers = init.headers as Headers;
+    expect(headers.get("X-API-Key")).toBe("server-secret-key");
+    expect(headers.get("X-User-Email")).toBe("user@example.com");
+    expect(headers.get("Content-Type")).toBe("application/json");
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("X-Request-ID")).toBe("req-1");
+  });
+
+  it("does not forward client cookie or client-supplied X-API-Key", async () => {
+    (global.fetch as unknown as jest.Mock).mockResolvedValueOnce(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+    );
+
+    const request = makeRequest({
+      url: "http://localhost/api/v1/settings/notifications",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: "session=abc",
+        "X-API-Key": "malicious-client-key",
+      },
+    });
+
+    await routeModule.POST(request, { params: { path: ["settings", "notifications"] } });
+
+    const [, init] = (global.fetch as unknown as jest.Mock).mock.calls[0] as [string, RequestInit & { headers?: Headers }];
+    const headers = init.headers as Headers;
+    expect(headers.get("cookie")).toBeNull();
+    expect(headers.get("X-API-Key")).toBe("server-secret-key");
+  });
+
+  it("supports empty path and falls back to NEXT_PUBLIC_API_KEY on server", async () => {
+    delete process.env.API_ACCESS_KEY;
+    process.env.NEXT_PUBLIC_API_KEY = "fallback-key";
+
+    (global.fetch as unknown as jest.Mock).mockResolvedValueOnce(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+    );
+
+    const request = makeRequest({
+      url: "http://localhost/api/v1?x=1",
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    await routeModule.GET(request, { params: { path: [] } });
+
+    const [backendUrl, init] = (global.fetch as unknown as jest.Mock).mock.calls[0] as [
+      string,
+      RequestInit & { headers?: Headers; body?: unknown },
+    ];
+    expect(backendUrl).toBe("http://backend:8000/api/v1?x=1");
+
+    const headers = init.headers as Headers;
+    expect(headers.get("X-API-Key")).toBe("fallback-key");
+    expect(init.body).toBeUndefined();
+  });
+
+  it("exposes method wrappers for PUT/PATCH/DELETE/OPTIONS", async () => {
+    (global.fetch as unknown as jest.Mock).mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+    );
+
+    const makeMethodRequest = (method: string) =>
+      makeRequest({
+        url: "http://localhost/api/v1/tools/mortgage-calculator",
+        method,
+        headers: { "Content-Type": "application/json" },
+      });
+
+    await routeModule.PUT(makeMethodRequest("PUT"), { params: { path: ["tools", "mortgage-calculator"] } });
+    await routeModule.PATCH(makeMethodRequest("PATCH"), { params: { path: ["tools", "mortgage-calculator"] } });
+    await routeModule.DELETE(makeMethodRequest("DELETE"), { params: { path: ["tools", "mortgage-calculator"] } });
+    await routeModule.OPTIONS(makeMethodRequest("OPTIONS"), { params: { path: ["tools", "mortgage-calculator"] } });
+
+    expect(global.fetch).toHaveBeenCalledTimes(4);
+  });
+});

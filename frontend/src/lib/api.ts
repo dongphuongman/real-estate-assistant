@@ -19,12 +19,7 @@ import {
 } from "./types";
 
 function getApiUrl(): string {
-  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-}
-
-function getApiKey(): string | undefined {
-  const key = process.env.NEXT_PUBLIC_API_KEY;
-  return key && key.trim() ? key.trim() : undefined;
+  return process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 }
 
 function getUserEmail(): string | undefined {
@@ -35,9 +30,6 @@ function getUserEmail(): string | undefined {
 
 function buildAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = {};
-
-  const apiKey = getApiKey();
-  if (apiKey) headers["X-API-Key"] = apiKey;
 
   const userEmail = getUserEmail();
   if (userEmail) headers["X-User-Email"] = userEmail;

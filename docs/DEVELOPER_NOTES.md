@@ -141,8 +141,8 @@ in V4.
   - `PLAYWRIGHT_SCREENSHOT_DIR` (default `artifacts/playwright/screenshots`)
   - `PLAYWRIGHT_LOG_DIR` (default `artifacts/playwright/logs`)
 - Client configuration:
-  - `NEXT_PUBLIC_API_URL` points to backend base (default `http://localhost:8000/api/v1`)
-  - `NEXT_PUBLIC_API_KEY` is forwarded as `X-API-Key`
+  - `NEXT_PUBLIC_API_URL` points to the frontend proxy base (default `/api/v1`)
+  - Next.js proxies `/api/v1/*` server-side to `BACKEND_API_URL`, injecting `API_ACCESS_KEY` as `X-API-Key` (do not expose keys via `NEXT_PUBLIC_*`)
   - `userEmail` stored in `localStorage` is forwarded as `X-User-Email`
   - `modelPrefs:<email>` stored in `localStorage` caches per-user default model selection
   - Knowledge (Local RAG) page: `frontend/src/app/knowledge/page.tsx` calls `/api/v1/rag/upload` via multipart FormData (do not set `Content-Type` manually)

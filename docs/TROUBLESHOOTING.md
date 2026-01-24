@@ -55,7 +55,7 @@ taskkill /PID <PID> /F
 **API Key not recognized**
 - Ensure `.env` exists and is in project root
 - Restart the app after editing `.env`
-- Ensure the client sends `X-API-Key` (frontend uses `NEXT_PUBLIC_API_KEY`)
+- Ensure `API_ACCESS_KEY` is set for the backend; the web app injects `X-API-Key` server-side via its `/api/v1/*` proxy
 
 **ChromaDB persistence issues**
 ```powershell

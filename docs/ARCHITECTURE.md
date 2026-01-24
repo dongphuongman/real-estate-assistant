@@ -35,6 +35,7 @@ backend and follows an Open Core & Walled Garden model: Community Edition (publi
 #### Key Features
 - **Theming**: Dark/light mode via `next-themes` or manual CSS class toggling.
 - **Streaming**: Consumes Server-Sent Events (SSE) from `/api/v1/chat` for real-time AI responses.
+- **API Proxy**: The web app calls `/api/v1/*` on the Next.js server, which proxies to the FastAPI backend and injects `X-API-Key` server-side (no secrets in browser bundles).
 - **Auth**: Email-based OTP login flow (`/api/v1/auth`).
 
 ### 2. Backend Architecture (FastAPI)

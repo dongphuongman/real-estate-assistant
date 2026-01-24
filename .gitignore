@@ -23,6 +23,8 @@ trae_config.yml
 .preferences/
 .notifications/
 .sessions/
+.alerts/
+.test_alerts/
 chroma_db/
 
 # Byte-compiled / optimized / DLL files
