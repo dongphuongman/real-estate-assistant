@@ -128,27 +128,38 @@ export default function SettingsPage() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [catalog, setCatalog] = useState<ModelProviderCatalog[] | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogRefreshing, setCatalogRefreshing] = useState(false);
   const [catalogError, setCatalogError] = useState<string | null>(null);
 
-  const fetchCatalog = async () => {
-    setCatalogLoading(true);
+  const fetchCatalog = async (mode: "initial" | "refresh" = "initial") => {
+    if (mode === "initial") {
+      setCatalogLoading(true);
+    } else {
+      setCatalogRefreshing(true);
+    }
     setCatalogError(null);
     try {
       const data = await getModelsCatalog();
       setCatalog(data);
     } catch (err) {
       console.error("Failed to load model catalog:", err);
-      setCatalog(null);
+      if (mode === "initial") {
+        setCatalog(null);
+      }
       setCatalogError("Failed to load model catalog. Please try again.");
     } finally {
-      setCatalogLoading(false);
+      if (mode === "initial") {
+        setCatalogLoading(false);
+      } else {
+        setCatalogRefreshing(false);
+      }
     }
   };
 
   useEffect(() => {
     const email = window.localStorage.getItem("userEmail");
     setUserEmail(email && email.trim() ? email.trim() : null);
-    fetchCatalog();
+    fetchCatalog("initial");
   }, []);
 
   return (
@@ -172,10 +183,21 @@ export default function SettingsPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold mb-2">Models</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            Select your default model and compare pricing/capabilities across providers.
-          </p>
+          <div className="flex items-start justify-between gap-4 mb-2">
+            <div>
+              <h2 className="text-lg font-semibold">Models</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Select your default model and compare pricing/capabilities across providers.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => fetchCatalog(catalog ? "refresh" : "initial")}
+              disabled={catalogLoading || catalogRefreshing}
+            >
+              {catalogRefreshing ? "Refreshing..." : "Refresh Catalog"}
+            </Button>
+          </div>
           <div className="grid gap-6">
             <ModelSettings catalog={catalogLoading ? null : catalog} userEmail={userEmail} />
             {catalogLoading ? (
@@ -183,7 +205,7 @@ export default function SettingsPage() {
             ) : !catalog ? (
               <div className="p-4 text-center text-red-500">
                 {catalogError || "Something went wrong."}
-                <Button onClick={fetchCatalog} className="ml-4">
+                <Button onClick={() => fetchCatalog("initial")} className="ml-4">
                   Retry
                 </Button>
               </div>

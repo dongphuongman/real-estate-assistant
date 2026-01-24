@@ -73,17 +73,81 @@ describe("SettingsPage", () => {
     expect(screen.getByText("Models")).toBeInTheDocument();
     expect(screen.getByTestId("model-settings")).toBeInTheDocument();
     expect(screen.getByText("Loading model catalog...")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Refresh Catalog" })).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText("OpenAI")).toBeInTheDocument();
     });
 
+    expect(screen.getByRole("button", { name: "Refresh Catalog" })).toBeEnabled();
     expect(screen.getByText("GPT-4o")).toBeInTheDocument();
     expect(screen.getByText("gpt-4o")).toBeInTheDocument();
     expect(screen.getByText("128,000")).toBeInTheDocument();
     expect(screen.getByText("USD 2.50")).toBeInTheDocument();
     expect(screen.getByText("USD 10.00")).toBeInTheDocument();
     expect(screen.getByText("streaming, vision")).toBeInTheDocument();
+  });
+
+  it("refreshes catalog without clearing existing table", async () => {
+    mockGetModelsCatalog
+      .mockResolvedValueOnce([
+        {
+          name: "openai",
+          display_name: "OpenAI",
+          is_local: false,
+          requires_api_key: true,
+          models: [
+            {
+              id: "gpt-4o",
+              display_name: "GPT-4o",
+              provider_name: "OpenAI",
+              context_window: 128000,
+              pricing: { input_price_per_1m: 2.5, output_price_per_1m: 10, currency: "USD" },
+              capabilities: ["streaming", "vision"],
+              description: null,
+              recommended_for: [],
+            },
+          ],
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          name: "ollama",
+          display_name: "Ollama",
+          is_local: true,
+          requires_api_key: false,
+          runtime_available: true,
+          available_models: ["llama3.3:8b"],
+          models: [
+            {
+              id: "llama3.3:8b",
+              display_name: "Llama 3.3 8B",
+              provider_name: "Ollama",
+              context_window: 128000,
+              pricing: null,
+              capabilities: [],
+              description: null,
+              recommended_for: [],
+            },
+          ],
+        },
+      ]);
+
+    render(<SettingsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("OpenAI")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh Catalog" }));
+
+    expect(screen.getByRole("button", { name: "Refreshing..." })).toBeInTheDocument();
+    expect(screen.getByText("OpenAI")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(mockGetModelsCatalog).toHaveBeenCalledTimes(2);
+      expect(screen.getByText("Ollama")).toBeInTheDocument();
+    });
   });
 
   it("shows retry on catalog load failure", async () => {
