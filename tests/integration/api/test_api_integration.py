@@ -52,9 +52,9 @@ def test_protected_route_valid_auth_accepts_rotated_keys():
     old_keys = getattr(settings, "api_access_keys", None)
 
     settings.api_access_key = "key-1"
-    settings.api_access_keys = ["key-1", "key-2"]
+    settings.api_access_keys = ["  key-1  ", "", "key-2", " key-2 "]
     try:
-        response = client.get("/api/v1/verify-auth", headers={"X-API-Key": "key-2"})
+        response = client.get("/api/v1/verify-auth", headers={"X-API-Key": "  key-2  "})
         assert response.status_code == 200
         assert response.json()["valid"] is True
     finally:
@@ -331,7 +331,9 @@ def test_chat_uses_user_model_preferences(tmp_path):
             return [types.SimpleNamespace(id="default-a"), types.SimpleNamespace(id="pref-b")]
 
         def create_model(self, model_id, temperature, max_tokens, **kwargs):
-            created.append({"model_id": model_id, "temperature": temperature, "max_tokens": max_tokens})
+            created.append(
+                {"model_id": model_id, "temperature": temperature, "max_tokens": max_tokens}
+            )
             return types.SimpleNamespace(model_id=model_id)
 
     fake_provider = FakeProvider()
@@ -344,10 +346,15 @@ def test_chat_uses_user_model_preferences(tmp_path):
         def process_query(self, message):
             return {"answer": "ok", "source_documents": []}
 
-    manager.update_preferences("u1@example.com", preferred_provider="openai", preferred_model="pref-b")
+    manager.update_preferences(
+        "u1@example.com", preferred_provider="openai", preferred_model="pref-b"
+    )
 
     with patch("models.user_model_preferences.MODEL_PREFS_MANAGER", manager):
-        with patch("api.dependencies.ModelProviderFactory.get_provider", lambda *_args, **_kwargs: fake_provider):
+        with patch(
+            "api.dependencies.ModelProviderFactory.get_provider",
+            lambda *_args, **_kwargs: fake_provider,
+        ):
             with patch("api.routers.chat.create_hybrid_agent", lambda **_kwargs: FakeAgent()):
                 app.dependency_overrides[get_vector_store] = lambda: FakeStore()
 

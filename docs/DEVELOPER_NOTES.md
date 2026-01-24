@@ -40,7 +40,8 @@ in V4.
   - `API_RATE_LIMIT_ENABLED` (`true`/`false`)
   - `API_RATE_LIMIT_RPM` (requests per minute)
   - `API_ACCESS_KEY` (single key; defaults to `dev-secret-key` when `ENVIRONMENT!=production` and unset)
-  - `API_ACCESS_KEYS` (comma-separated list for key rotation; any listed key is accepted)
+  - `API_ACCESS_KEYS` (comma-separated list for key rotation; any listed key is accepted; whitespace is trimmed, empty entries are ignored, and duplicates are removed)
+  - Key rotation runbook: deploy with `API_ACCESS_KEYS="new,old"` (both valid), then remove `old` and redeploy to revoke it
   - Chat sources payload limits (SSE `event: meta` and non-stream `ChatResponse.sources`):
     - `CHAT_SOURCES_MAX_ITEMS` (default `5`)
     - `CHAT_SOURCE_CONTENT_MAX_CHARS` (default `2000`)

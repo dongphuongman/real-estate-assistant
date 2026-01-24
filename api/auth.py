@@ -18,46 +18,43 @@ def _is_valid_api_key(candidate: str, valid_keys: list[str]) -> bool:
 async def get_api_key(api_key_header: str = Security(api_key_header)):
     """
     Validate API key from header.
-    
+
     Args:
         api_key_header: API key from X-API-Key header
-        
+
     Returns:
         The valid API key
-        
+
     Raises:
         HTTPException: If key is invalid or missing
     """
     settings = get_settings()
-    
-    if not api_key_header:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing API Key"
-        )
+
+    candidate = api_key_header.strip() if isinstance(api_key_header, str) else ""
+    if not candidate:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing API Key")
 
     configured_keys = getattr(settings, "api_access_keys", None)
     if not isinstance(configured_keys, list):
         configured_keys = []
 
-    if not configured_keys:
+    normalized_keys = [k.strip() for k in configured_keys if isinstance(k, str) and k.strip()]
+    if not normalized_keys:
         configured_key = getattr(settings, "api_access_key", None)
         if isinstance(configured_key, str) and configured_key.strip():
-            configured_keys = [configured_key.strip()]
+            normalized_keys = [configured_key.strip()]
 
     environment = str(getattr(settings, "environment", "") or "").strip().lower()
 
     if environment == "production":
-        if not configured_keys or any(k == "dev-secret-key" for k in configured_keys):
+        if not normalized_keys or any(k == "dev-secret-key" for k in normalized_keys):
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Invalid configuration"
+                status_code=status.HTTP_403_FORBIDDEN, detail="Invalid configuration"
             )
 
-    if _is_valid_api_key(api_key_header, configured_keys):
-        return api_key_header
-        
+    if _is_valid_api_key(candidate, normalized_keys):
+        return candidate
+
     raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail="Could not validate credentials"
+        status_code=status.HTTP_403_FORBIDDEN, detail="Could not validate credentials"
     )

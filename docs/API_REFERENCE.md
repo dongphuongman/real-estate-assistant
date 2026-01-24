@@ -23,6 +23,7 @@ The API uses API Key authentication via the `X-API-Key` header.
 To configure the key, set either:
 - `API_ACCESS_KEY` (single key), or
 - `API_ACCESS_KEYS` (comma-separated list for key rotation; any listed key is accepted).
+Keys are normalized by trimming whitespace, dropping empty entries, and de-duplicating (first occurrence wins).
 If neither is set and `ENVIRONMENT` is not `production`, the API defaults to `dev-secret-key`.
 In `ENVIRONMENT=production`, missing keys (or using `dev-secret-key`) is treated as an invalid configuration.
 For production deployments, set a strong, unique key and do not expose it to untrusted clients.

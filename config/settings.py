@@ -44,25 +44,13 @@ class AppSettings(BaseModel):
     assets_dir: Path = Field(default_factory=lambda: Path("./assets"))
 
     # API Keys (loaded from environment)
-    openai_api_key: Optional[str] = Field(
-        default_factory=lambda: os.getenv("OPENAI_API_KEY")
-    )
-    anthropic_api_key: Optional[str] = Field(
-        default_factory=lambda: os.getenv("ANTHROPIC_API_KEY")
-    )
-    google_api_key: Optional[str] = Field(
-        default_factory=lambda: os.getenv("GOOGLE_API_KEY")
-    )
-    grok_api_key: Optional[str] = Field(
-        default_factory=lambda: os.getenv("XAI_API_KEY")
-    )
-    deepseek_api_key: Optional[str] = Field(
-        default_factory=lambda: os.getenv("DEEPSEEK_API_KEY")
-    )
+    openai_api_key: Optional[str] = Field(default_factory=lambda: os.getenv("OPENAI_API_KEY"))
+    anthropic_api_key: Optional[str] = Field(default_factory=lambda: os.getenv("ANTHROPIC_API_KEY"))
+    google_api_key: Optional[str] = Field(default_factory=lambda: os.getenv("GOOGLE_API_KEY"))
+    grok_api_key: Optional[str] = Field(default_factory=lambda: os.getenv("XAI_API_KEY"))
+    deepseek_api_key: Optional[str] = Field(default_factory=lambda: os.getenv("DEEPSEEK_API_KEY"))
     # API Access Control
-    api_access_key: Optional[str] = Field(
-        default_factory=lambda: os.getenv("API_ACCESS_KEY")
-    )
+    api_access_key: Optional[str] = Field(default_factory=lambda: os.getenv("API_ACCESS_KEY"))
     api_access_keys: list[str] = Field(
         default_factory=lambda: _parse_csv_list(os.getenv("API_ACCESS_KEYS"))
     )
@@ -89,16 +77,14 @@ class AppSettings(BaseModel):
     auth_code_ttl_minutes: int = Field(
         default_factory=lambda: int(os.getenv("AUTH_CODE_TTL_MINUTES", "10"))
     )
-    session_ttl_days: int = Field(
-        default_factory=lambda: int(os.getenv("SESSION_TTL_DAYS", "30"))
-    )
-    auth_storage_dir: str = Field(
-        default_factory=lambda: os.getenv("AUTH_STORAGE_DIR", ".auth")
-    )
+    session_ttl_days: int = Field(default_factory=lambda: int(os.getenv("SESSION_TTL_DAYS", "30")))
+    auth_storage_dir: str = Field(default_factory=lambda: os.getenv("AUTH_STORAGE_DIR", ".auth"))
 
     # Model Defaults
     default_provider: str = Field(default="openai", description="Default LLM provider")
-    default_model: Optional[str] = Field(default=None, description="Default model ID (overrides provider default)")
+    default_model: Optional[str] = Field(
+        default=None, description="Default model ID (overrides provider default)"
+    )
     default_temperature: float = 0.0
     default_max_tokens: int = 4096
     default_k_results: int = 5
@@ -121,8 +107,12 @@ class AppSettings(BaseModel):
 
     # RAG (Local Knowledge)
     rag_max_files: int = Field(default_factory=lambda: int(os.getenv("RAG_MAX_FILES", "10")))
-    rag_max_file_bytes: int = Field(default_factory=lambda: int(os.getenv("RAG_MAX_FILE_BYTES", str(10 * 1024 * 1024))))
-    rag_max_total_bytes: int = Field(default_factory=lambda: int(os.getenv("RAG_MAX_TOTAL_BYTES", str(25 * 1024 * 1024))))
+    rag_max_file_bytes: int = Field(
+        default_factory=lambda: int(os.getenv("RAG_MAX_FILE_BYTES", str(10 * 1024 * 1024)))
+    )
+    rag_max_total_bytes: int = Field(
+        default_factory=lambda: int(os.getenv("RAG_MAX_TOTAL_BYTES", str(25 * 1024 * 1024)))
+    )
 
     # Data Loading
     max_properties: int = 2000
@@ -133,7 +123,8 @@ class AppSettings(BaseModel):
     valuation_mode: str = Field(default_factory=lambda: os.getenv("VALUATION_MODE", "simple"))
     legal_check_mode: str = Field(default_factory=lambda: os.getenv("LEGAL_CHECK_MODE", "basic"))
     data_enrichment_enabled: bool = Field(
-        default_factory=lambda: os.getenv("DATA_ENRICHMENT_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
+        default_factory=lambda: os.getenv("DATA_ENRICHMENT_ENABLED", "false").strip().lower()
+        in {"1", "true", "yes", "on"}
     )
 
     # UI Settings
@@ -153,17 +144,34 @@ class AppSettings(BaseModel):
 
     class Config:
         """Pydantic config."""
+
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = False
 
     @root_validator(skip_on_failure=True)
-    def _normalize_api_access_keys(cls: type["AppSettings"], values: dict[str, Any]) -> dict[str, Any]:
+    def _normalize_api_access_keys(
+        cls: type["AppSettings"], values: dict[str, Any]
+    ) -> dict[str, Any]:
         environment = (values.get("environment") or "development").strip().lower()
-        keys = _dedupe_preserve_order([k for k in (values.get("api_access_keys") or []) if k])
+        raw_primary = values.get("api_access_key")
+        primary = raw_primary.strip() if isinstance(raw_primary, str) else None
+        if not primary:
+            primary = None
 
-        if not keys and values.get("api_access_key"):
-            keys = [values["api_access_key"]]
+        normalized_keys: list[str] = []
+        for raw_key in values.get("api_access_keys") or []:
+            if not isinstance(raw_key, str):
+                continue
+            key = raw_key.strip()
+            if not key:
+                continue
+            normalized_keys.append(key)
+
+        keys = _dedupe_preserve_order(normalized_keys)
+
+        if not keys and primary:
+            keys = [primary]
 
         if not keys and environment != "production":
             keys = ["dev-secret-key"]
@@ -215,5 +223,6 @@ def update_api_key(provider: str, api_key: str) -> None:
 
     # Clear provider cache to pick up new API key
     from models.provider_factory import ModelProviderFactory
+
     ModelProviderFactory.clear_cache()
     return None

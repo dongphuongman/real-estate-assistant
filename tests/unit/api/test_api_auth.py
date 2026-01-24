@@ -24,6 +24,15 @@ async def test_get_api_key_valid():
 
 
 @pytest.mark.asyncio
+async def test_get_api_key_strips_header_whitespace():
+    key = "test-key"
+    with patch("api.auth.get_settings") as mock_settings:
+        mock_settings.return_value = AppSettings(api_access_key=key)
+        result = await get_api_key(api_key_header=f"  {key}  ")
+        assert result == key
+
+
+@pytest.mark.asyncio
 async def test_get_api_key_valid_with_rotated_keys():
     key1 = "key-1"
     key2 = "key-2"
@@ -64,7 +73,9 @@ async def test_get_api_key_missing():
 @pytest.mark.asyncio
 async def test_get_api_key_rejects_invalid_prod_configuration_with_default_key():
     with patch("api.auth.get_settings") as mock_settings:
-        mock_settings.return_value = AppSettings(environment="production", api_access_keys=["dev-secret-key"])
+        mock_settings.return_value = AppSettings(
+            environment="production", api_access_keys=["dev-secret-key"]
+        )
         with pytest.raises(HTTPException) as exc:
             await get_api_key(api_key_header="dev-secret-key")
         assert exc.value.status_code == 403
@@ -74,7 +85,9 @@ async def test_get_api_key_rejects_invalid_prod_configuration_with_default_key()
 @pytest.mark.asyncio
 async def test_get_api_key_rejects_invalid_prod_configuration_with_no_keys():
     with patch("api.auth.get_settings") as mock_settings:
-        mock_settings.return_value = AppSettings(environment="production", api_access_keys=[], api_access_key=None)
+        mock_settings.return_value = AppSettings(
+            environment="production", api_access_keys=[], api_access_key=None
+        )
         with pytest.raises(HTTPException) as exc:
             await get_api_key(api_key_header="any")
         assert exc.value.status_code == 403
