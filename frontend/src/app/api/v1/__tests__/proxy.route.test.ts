@@ -20,7 +20,6 @@ describe("API v1 proxy route", () => {
     (global.fetch as unknown as jest.Mock) = jest.fn();
     process.env.BACKEND_API_URL = "http://backend:8000/api/v1";
     process.env.API_ACCESS_KEY = "server-secret-key";
-    delete process.env.NEXT_PUBLIC_API_KEY;
   });
 
   afterEach(() => {
@@ -97,9 +96,8 @@ describe("API v1 proxy route", () => {
     expect(headers.get("X-API-Key")).toBe("server-secret-key");
   });
 
-  it("supports empty path and falls back to NEXT_PUBLIC_API_KEY on server", async () => {
+  it("supports empty path and omits X-API-Key when API_ACCESS_KEY is missing", async () => {
     delete process.env.API_ACCESS_KEY;
-    process.env.NEXT_PUBLIC_API_KEY = "fallback-key";
 
     (global.fetch as unknown as jest.Mock).mockResolvedValueOnce(
       new Response(JSON.stringify({ ok: true }), {
@@ -127,7 +125,7 @@ describe("API v1 proxy route", () => {
     expect(backendUrl).toBe("http://backend:8000/api/v1?x=1");
 
     const headers = init.headers as Headers;
-    expect(headers.get("X-API-Key")).toBe("fallback-key");
+    expect(headers.get("X-API-Key")).toBeNull();
     expect(init.body).toBeUndefined();
   });
 

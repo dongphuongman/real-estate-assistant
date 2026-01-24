@@ -23,6 +23,7 @@ The API uses API Key authentication via the `X-API-Key` header.
 To configure the key, set the `API_ACCESS_KEY` environment variable (defaults to `dev-secret-key` for local development).
 For production deployments, set a strong, unique key and do not expose it to untrusted clients.
 In the web app, API calls are proxied server-side by Next.js so the browser does not need (and must not embed) the API key.
+The proxy injects `X-API-Key` only from `API_ACCESS_KEY` and intentionally ignores `NEXT_PUBLIC_*` secrets.
 
 ### Request IDs
 

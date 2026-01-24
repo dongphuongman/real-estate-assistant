@@ -43,7 +43,7 @@ test.describe('UI Smoke', () => {
           'Access-Control-Expose-Headers': 'X-Request-ID',
           'X-Request-ID': 'req-stream-ok',
         },
-        body: 'data: STREAM_OK\\n\\ndata: [DONE]\\n\\n',
+        body: 'data: STREAM_OK\n\ndata: [DONE]\n\n',
       });
     });
 
@@ -96,7 +96,7 @@ test.describe('UI Smoke', () => {
           'Access-Control-Expose-Headers': 'X-Request-ID',
           'X-Request-ID': 'req-stream-retry-ok',
         },
-        body: 'data: RECOVERED_OK\\n\\ndata: [DONE]\\n\\n',
+        body: 'data: RECOVERED_OK\n\ndata: [DONE]\n\n',
       });
     });
 

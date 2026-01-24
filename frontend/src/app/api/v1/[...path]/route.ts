@@ -34,7 +34,7 @@ function getBackendApiBaseUrl(): string {
 }
 
 function getApiAccessKey(): string | undefined {
-  const raw = process.env.API_ACCESS_KEY || process.env.NEXT_PUBLIC_API_KEY;
+  const raw = process.env.API_ACCESS_KEY;
   if (!raw) return undefined;
   const trimmed = raw.trim();
   return trimmed ? trimmed : undefined;
