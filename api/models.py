@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -25,6 +26,17 @@ class HealthCheck(BaseModel):
 
     status: str
     version: str
+
+
+class NotificationsAdminStats(BaseModel):
+    scheduler_running: bool
+    alerts_storage_path: str
+
+    sent_alerts_total: int
+    pending_alerts_total: int
+    pending_alerts_by_type: Dict[str, int] = Field(default_factory=dict)
+    pending_alerts_oldest_created_at: Optional[datetime] = None
+    pending_alerts_newest_created_at: Optional[datetime] = None
 
 
 class SearchRequest(BaseModel):

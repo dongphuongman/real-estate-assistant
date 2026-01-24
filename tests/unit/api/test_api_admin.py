@@ -1,3 +1,4 @@
+import json
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
@@ -270,3 +271,47 @@ def test_admin_metrics_returns_500_on_invalid_metrics(mock_get_settings):
         assert resp.json()["detail"]
     finally:
         app.state.metrics = old_metrics if old_metrics is not None else {}
+
+
+@patch("api.auth.get_settings")
+def test_admin_notifications_stats_reads_alert_storage_and_scheduler_state(mock_get_settings, tmp_path):
+    mock_get_settings.return_value = MagicMock(api_access_key="test-key")
+
+    (tmp_path / "sent_alerts.json").write_text(
+        json.dumps({"alerts": ["sent-1"], "last_updated": "2026-01-24T10:00:00"}), encoding="utf-8"
+    )
+    (tmp_path / "pending_alerts.json").write_text(
+        json.dumps(
+            {
+                "alerts": [{"alert_type": "new_property", "created_at": "2026-01-24T10:00:00"}],
+                "last_updated": "2026-01-24T10:00:10",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    class _ThreadStub:
+        def is_alive(self) -> bool:
+            return True
+
+    class _SchedulerStub:
+        _storage_path_alerts = str(tmp_path)
+        _thread = _ThreadStub()
+
+    old_scheduler = getattr(app.state, "scheduler", None)
+    app.state.scheduler = _SchedulerStub()
+    try:
+        resp = client.get("/api/v1/admin/notifications-stats", headers=HEADERS)
+    finally:
+        if old_scheduler is None:
+            delattr(app.state, "scheduler")
+        else:
+            app.state.scheduler = old_scheduler
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["scheduler_running"] is True
+    assert data["alerts_storage_path"] == str(tmp_path)
+    assert data["sent_alerts_total"] == 1
+    assert data["pending_alerts_total"] == 1
+    assert data["pending_alerts_by_type"]["new_property"] == 1

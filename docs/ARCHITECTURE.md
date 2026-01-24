@@ -117,5 +117,5 @@ The digest system bridges raw property data and user notifications.
 - **Prompt Templates**: `/api/v1/prompt-templates`, `/api/v1/prompt-templates/apply`
 - **Settings**: `/api/v1/settings/notifications`, `/api/v1/settings/models`, `/api/v1/settings/model-preferences`
 - **Auth**: `/api/v1/auth/*`
-- **Admin**: `/api/v1/admin/*` (ingest, reindex)
+- **Admin**: `/api/v1/admin/*` (health, metrics, ingest, reindex, notifications-stats)
 - **RAG (CE)**: `/api/v1/rag/upload`, `/api/v1/rag/qa`, `/api/v1/rag/reset` (optional per-request `provider`/`model` overrides; citations include `source`/`chunk_index` plus optional `page_number`/`paragraph_number`)

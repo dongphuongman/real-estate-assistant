@@ -24,6 +24,7 @@ are still saved but no emails will be sent.
 
 ### Quiet Hours
 If you enable quiet hours, instant alerts that would normally be emailed immediately are queued and delivered after quiet hours end.
+If you are running the system as an operator, you can confirm the current queue size via `GET /api/v1/admin/notifications-stats` (requires `X-API-Key`).
 
 ### Consumer Digest
 Designed for homebuyers and renters, the Consumer Digest highlights:

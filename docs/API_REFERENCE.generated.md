@@ -61,6 +61,18 @@ Return simple API metrics.
 |---|---|---|
 | 200 | Successful Response | object |
 
+## GET /api/v1/admin/notifications-stats
+
+**Summary**: Admin Notifications Stats
+
+**Tags**: Admin
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | NotificationsAdminStats |
+
 ## POST /api/v1/admin/reindex
 
 **Summary**: Reindex Data

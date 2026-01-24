@@ -1,3 +1,4 @@
+import json
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
@@ -111,3 +112,40 @@ def test_admin_ingest_no_urls_returns_400(valid_headers, monkeypatch):
     response = client.post("/api/v1/admin/ingest", json={"file_urls": []}, headers=valid_headers)
     assert response.status_code == 400
     assert "No URLs provided" in response.json()["detail"]
+
+
+def test_admin_notifications_stats_endpoint_returns_queue_and_sent_counts(valid_headers, tmp_path):
+    (tmp_path / "sent_alerts.json").write_text(
+        json.dumps({"alerts": ["sent-1", "sent-2"], "last_updated": "2026-01-24T10:00:00"}), encoding="utf-8"
+    )
+    (tmp_path / "pending_alerts.json").write_text(
+        json.dumps(
+            {"alerts": [{"alert_type": "price_drop", "created_at": "2026-01-24T10:01:00"}], "last_updated": "2026-01-24T10:01:10"}
+        ),
+        encoding="utf-8",
+    )
+
+    class _ThreadStub:
+        def is_alive(self) -> bool:
+            return False
+
+    class _SchedulerStub:
+        _storage_path_alerts = str(tmp_path)
+        _thread = _ThreadStub()
+
+    old_scheduler = getattr(app.state, "scheduler", None)
+    app.state.scheduler = _SchedulerStub()
+    try:
+        response = client.get("/api/v1/admin/notifications-stats", headers=valid_headers)
+    finally:
+        if old_scheduler is None:
+            delattr(app.state, "scheduler")
+        else:
+            app.state.scheduler = old_scheduler
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["scheduler_running"] is False
+    assert data["sent_alerts_total"] == 2
+    assert data["pending_alerts_total"] == 1
+    assert data["pending_alerts_by_type"]["price_drop"] == 1

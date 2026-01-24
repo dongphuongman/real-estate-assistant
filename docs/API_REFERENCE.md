@@ -171,6 +171,30 @@ $env:ENVIRONMENT="production"
 $env:CORS_ALLOW_ORIGINS="https://yourapp.com,https://studio.vercel.app"
 ```
 
+Example (Admin notifications queue stats):
+```powershell
+Invoke-RestMethod `
+  -Uri "http://localhost:8000/api/v1/admin/notifications-stats" `
+  -Method Get `
+  -Headers @{ "X-API-Key" = $env:API_ACCESS_KEY }
+```
+
+Example response:
+```json
+{
+  "scheduler_running": true,
+  "alerts_storage_path": ".alerts",
+  "sent_alerts_total": 42,
+  "pending_alerts_total": 3,
+  "pending_alerts_by_type": {
+    "price_drop": 1,
+    "new_property": 2
+  },
+  "pending_alerts_oldest_created_at": "2026-01-24T10:00:00",
+  "pending_alerts_newest_created_at": "2026-01-24T12:00:00"
+}
+```
+
 ### Endpoints
 
 ## GET /api/v1/admin/health
@@ -220,6 +244,18 @@ Return simple API metrics.
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | object |
+
+## GET /api/v1/admin/notifications-stats
+
+**Summary**: Admin Notifications Stats
+
+**Tags**: Admin
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | NotificationsAdminStats |
 
 ## POST /api/v1/admin/reindex
 

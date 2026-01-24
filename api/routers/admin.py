@@ -4,10 +4,18 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from api.dependencies import get_vector_store
-from api.models import HealthCheck, IngestRequest, IngestResponse, ReindexRequest, ReindexResponse
+from api.models import (
+    HealthCheck,
+    IngestRequest,
+    IngestResponse,
+    NotificationsAdminStats,
+    ReindexRequest,
+    ReindexResponse,
+)
 from config.settings import settings
 from data.csv_loader import DataLoaderCsv
 from data.schemas import Property, PropertyCollection
+from notifications.alert_storage_stats import load_alert_storage_summary
 from utils.property_cache import load_collection, save_collection
 from vector_store.chroma_store import ChromaPropertyStore
 
@@ -137,4 +145,33 @@ async def admin_metrics(request: Request):
         return dict(metrics)
     except Exception as e:
         logger.error(f"Metrics retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.get("/admin/notifications-stats", response_model=NotificationsAdminStats)
+async def admin_notifications_stats(request: Request):
+    try:
+        scheduler = getattr(request.app.state, "scheduler", None)
+        scheduler_running = False
+        alerts_storage_path = ".alerts"
+
+        if scheduler is not None:
+            if hasattr(scheduler, "_thread") and scheduler._thread is not None:
+                scheduler_running = bool(scheduler._thread.is_alive())
+            if hasattr(scheduler, "_storage_path_alerts"):
+                alerts_storage_path = str(scheduler._storage_path_alerts)
+
+        summary = load_alert_storage_summary(alerts_storage_path)
+
+        return NotificationsAdminStats(
+            scheduler_running=scheduler_running,
+            alerts_storage_path=alerts_storage_path,
+            sent_alerts_total=int(summary.sent_total),
+            pending_alerts_total=int(summary.pending_total),
+            pending_alerts_by_type=dict(summary.pending_by_type),
+            pending_alerts_oldest_created_at=summary.pending_oldest_created_at,
+            pending_alerts_newest_created_at=summary.pending_newest_created_at,
+        )
+    except Exception as e:
+        logger.error("Notifications stats retrieval failed: %s", e)
         raise HTTPException(status_code=500, detail=str(e)) from e

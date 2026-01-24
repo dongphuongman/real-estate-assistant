@@ -975,6 +975,65 @@
         "title": "NotificationSettings",
         "type": "object"
       },
+      "NotificationsAdminStats": {
+        "properties": {
+          "alerts_storage_path": {
+            "title": "Alerts Storage Path",
+            "type": "string"
+          },
+          "pending_alerts_by_type": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Pending Alerts By Type",
+            "type": "object"
+          },
+          "pending_alerts_newest_created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pending Alerts Newest Created At"
+          },
+          "pending_alerts_oldest_created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pending Alerts Oldest Created At"
+          },
+          "pending_alerts_total": {
+            "title": "Pending Alerts Total",
+            "type": "integer"
+          },
+          "scheduler_running": {
+            "title": "Scheduler Running",
+            "type": "boolean"
+          },
+          "sent_alerts_total": {
+            "title": "Sent Alerts Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "scheduler_running",
+          "alerts_storage_path",
+          "sent_alerts_total",
+          "pending_alerts_total"
+        ],
+        "title": "NotificationsAdminStats",
+        "type": "object"
+      },
       "PointOfInterest": {
         "description": "Represents a point of interest near a property.",
         "properties": {
@@ -2471,6 +2530,32 @@
           }
         ],
         "summary": "Admin Metrics",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/api/v1/admin/notifications-stats": {
+      "get": {
+        "operationId": "admin_notifications_stats_api_v1_admin_notifications_stats_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationsAdminStats"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Admin Notifications Stats",
         "tags": [
           "Admin"
         ]
