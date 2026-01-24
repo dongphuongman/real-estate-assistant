@@ -20,10 +20,14 @@ The V4 API is built with FastAPI and provides a RESTful interface for the AI Rea
 ### Authentication
 
 The API uses API Key authentication via the `X-API-Key` header.
-To configure the key, set the `API_ACCESS_KEY` environment variable (defaults to `dev-secret-key` for local development).
+To configure the key, set either:
+- `API_ACCESS_KEY` (single key), or
+- `API_ACCESS_KEYS` (comma-separated list for key rotation; any listed key is accepted).
+If neither is set and `ENVIRONMENT` is not `production`, the API defaults to `dev-secret-key`.
+In `ENVIRONMENT=production`, missing keys (or using `dev-secret-key`) is treated as an invalid configuration.
 For production deployments, set a strong, unique key and do not expose it to untrusted clients.
 In the web app, API calls are proxied server-side by Next.js so the browser does not need (and must not embed) the API key.
-The proxy injects `X-API-Key` only from `API_ACCESS_KEY` and intentionally ignores `NEXT_PUBLIC_*` secrets.
+The proxy injects `X-API-Key` from `API_ACCESS_KEY` (or falls back to the first entry in `API_ACCESS_KEYS`) and intentionally ignores `NEXT_PUBLIC_*` secrets.
 
 ### Request IDs
 

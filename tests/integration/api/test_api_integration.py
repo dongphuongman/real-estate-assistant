@@ -46,6 +46,26 @@ def test_protected_route_valid_auth():
     assert response.json()["valid"] is True
 
 
+def test_protected_route_valid_auth_accepts_rotated_keys():
+    settings = get_settings()
+    old_primary = getattr(settings, "api_access_key", None)
+    old_keys = getattr(settings, "api_access_keys", None)
+
+    settings.api_access_key = "key-1"
+    settings.api_access_keys = ["key-1", "key-2"]
+    try:
+        response = client.get("/api/v1/verify-auth", headers={"X-API-Key": "key-2"})
+        assert response.status_code == 200
+        assert response.json()["valid"] is True
+    finally:
+        if old_keys is None:
+            if hasattr(settings, "api_access_keys"):
+                delattr(settings, "api_access_keys")
+        else:
+            settings.api_access_keys = old_keys
+        settings.api_access_key = old_primary
+
+
 def test_request_id_is_added_to_responses():
     response = client.get("/health")
     assert response.headers.get("x-request-id")

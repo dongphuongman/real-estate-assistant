@@ -35,9 +35,18 @@ function getBackendApiBaseUrl(): string {
 
 function getApiAccessKey(): string | undefined {
   const raw = process.env.API_ACCESS_KEY;
-  if (!raw) return undefined;
-  const trimmed = raw.trim();
-  return trimmed ? trimmed : undefined;
+  if (raw) {
+    const trimmed = raw.trim();
+    if (trimmed) return trimmed;
+  }
+
+  const rotated = process.env.API_ACCESS_KEYS;
+  if (!rotated) return undefined;
+  const first = rotated
+    .split(",")
+    .map((value) => value.trim())
+    .find((value) => Boolean(value));
+  return first ? first : undefined;
 }
 
 function buildBackendUrl(requestUrl: URL, pathParts: string[]): string {

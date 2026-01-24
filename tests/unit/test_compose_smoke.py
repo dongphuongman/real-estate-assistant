@@ -10,6 +10,7 @@ from scripts.compose_smoke import (
     build_compose_base_command,
     build_compose_down_command,
     build_compose_up_command,
+    get_default_api_access_key_from_env,
     http_get_status,
     main,
     parse_args,
@@ -91,6 +92,16 @@ def test_parse_args_ci_overrides_defaults(tmp_path):
     assert cfg.timeout_seconds >= 240
 
 
+def test_get_default_api_access_key_from_env_prefers_primary_key():
+    with patch.dict(os.environ, {"API_ACCESS_KEY": " primary ", "API_ACCESS_KEYS": "rot1,rot2"}, clear=False):
+        assert get_default_api_access_key_from_env() == "primary"
+
+
+def test_get_default_api_access_key_from_env_falls_back_to_rotated_keys():
+    with patch.dict(os.environ, {"API_ACCESS_KEY": "   ", "API_ACCESS_KEYS": " rot1 , rot2 "}, clear=False):
+        assert get_default_api_access_key_from_env() == "rot1"
+
+
 def test_main_dry_run_prints_commands(tmp_path, capsys):
     compose_file = tmp_path / "docker-compose.yml"
     compose_file.write_text("version: '3.8'\nservices: {}\n", encoding="utf-8")
@@ -133,13 +144,27 @@ def test_main_ci_skips_verify_auth_when_api_key_missing(tmp_path):
     compose_file = tmp_path / "docker-compose.yml"
     compose_file.write_text("version: '3.8'\nservices: {}\n", encoding="utf-8")
 
-    with patch.dict(os.environ, {"API_ACCESS_KEY": ""}, clear=False), patch(
+    with patch.dict(os.environ, {"API_ACCESS_KEY": "", "API_ACCESS_KEYS": ""}, clear=False), patch(
         "scripts.compose_smoke.run_command"
     ) as run_command_mock, patch("scripts.compose_smoke.wait_for_http_ok") as wait_mock:
         rc = main(["--compose-file", str(compose_file), "--ci"])
 
     assert rc == 0
     assert wait_mock.call_count == 2
+    assert run_command_mock.call_count == 2
+
+
+def test_main_ci_uses_api_access_keys_when_primary_key_missing(tmp_path):
+    compose_file = tmp_path / "docker-compose.yml"
+    compose_file.write_text("version: '3.8'\nservices: {}\n", encoding="utf-8")
+
+    with patch.dict(os.environ, {"API_ACCESS_KEY": "", "API_ACCESS_KEYS": "k1,k2"}, clear=False), patch(
+        "scripts.compose_smoke.run_command"
+    ) as run_command_mock, patch("scripts.compose_smoke.wait_for_http_ok") as wait_mock:
+        rc = main(["--compose-file", str(compose_file), "--ci"])
+
+    assert rc == 0
+    assert wait_mock.call_count == 3
     assert run_command_mock.call_count == 2
 
 

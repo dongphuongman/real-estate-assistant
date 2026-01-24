@@ -93,13 +93,25 @@ def wait_for_http_ok(
     raise TimeoutError(f"Timed out waiting for {url} (last_status={status_part})")
 
 
+def get_default_api_access_key_from_env() -> str:
+    raw = os.environ.get("API_ACCESS_KEY", "").strip()
+    if raw:
+        return raw
+
+    rotated = os.environ.get("API_ACCESS_KEYS", "")
+    if not rotated:
+        return ""
+    first = next((v.strip() for v in rotated.split(",") if v.strip()), "")
+    return first
+
+
 def parse_args(argv: list[str]) -> SmokeConfig:
     parser = argparse.ArgumentParser(description="Docker Compose smoke test (backend + frontend).")
     parser.add_argument("--compose-file", default="docker-compose.yml")
     parser.add_argument("--backend-health-url", default="http://localhost:8000/health")
     parser.add_argument("--backend-verify-auth-url", default="http://localhost:8000/api/v1/verify-auth")
     parser.add_argument("--frontend-url", default="http://localhost:3000/")
-    parser.add_argument("--api-access-key", default=os.environ.get("API_ACCESS_KEY", ""))
+    parser.add_argument("--api-access-key", default=get_default_api_access_key_from_env())
     parser.add_argument("--timeout-seconds", type=int, default=180)
     parser.add_argument("--interval-seconds", type=float, default=2.0)
     parser.add_argument("--build", action="store_true")
@@ -150,7 +162,7 @@ def main(argv: list[str]) -> int:
         if cfg.api_access_key:
             print("CHECK_AUTH:", cfg.backend_verify_auth_url)
         else:
-            print("CHECK_AUTH: (skipped; API_ACCESS_KEY not set)")
+            print("CHECK_AUTH: (skipped; API_ACCESS_KEY/API_ACCESS_KEYS not set)")
         return 0
 
     try:

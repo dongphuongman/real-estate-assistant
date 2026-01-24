@@ -20,11 +20,13 @@ describe("API v1 proxy route", () => {
     (global.fetch as unknown as jest.Mock) = jest.fn();
     process.env.BACKEND_API_URL = "http://backend:8000/api/v1";
     process.env.API_ACCESS_KEY = "server-secret-key";
+    delete process.env.API_ACCESS_KEYS;
   });
 
   afterEach(() => {
     delete process.env.BACKEND_API_URL;
     delete process.env.API_ACCESS_KEY;
+    delete process.env.API_ACCESS_KEYS;
   });
 
   it("forwards requests to backend and injects X-API-Key server-side", async () => {
@@ -96,8 +98,9 @@ describe("API v1 proxy route", () => {
     expect(headers.get("X-API-Key")).toBe("server-secret-key");
   });
 
-  it("supports empty path and omits X-API-Key when API_ACCESS_KEY is missing", async () => {
+  it("supports empty path and omits X-API-Key when no access key env is set", async () => {
     delete process.env.API_ACCESS_KEY;
+    delete process.env.API_ACCESS_KEYS;
 
     (global.fetch as unknown as jest.Mock).mockResolvedValueOnce(
       new Response(JSON.stringify({ ok: true }), {
@@ -127,6 +130,37 @@ describe("API v1 proxy route", () => {
     const headers = init.headers as Headers;
     expect(headers.get("X-API-Key")).toBeNull();
     expect(init.body).toBeUndefined();
+  });
+
+  it("falls back to API_ACCESS_KEYS when API_ACCESS_KEY is missing", async () => {
+    delete process.env.API_ACCESS_KEY;
+    process.env.API_ACCESS_KEYS = " rotated-key-1 , rotated-key-2 ";
+
+    (global.fetch as unknown as jest.Mock).mockResolvedValueOnce(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+    );
+
+    const request = makeRequest({
+      url: "http://localhost/api/v1/verify-auth",
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    await GET(request, { params: Promise.resolve({ path: ["verify-auth"] }) });
+
+    const [, init] = (global.fetch as unknown as jest.Mock).mock.calls[0] as [
+      string,
+      RequestInit & { headers?: Headers },
+    ];
+    const headers = init.headers as Headers;
+    expect(headers.get("X-API-Key")).toBe("rotated-key-1");
   });
 
   it("exposes method wrappers for PUT/PATCH/DELETE/OPTIONS", async () => {

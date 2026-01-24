@@ -22,7 +22,7 @@ in V4.
   - Per-client rate limiting for `/api/v1/*`
   - Structured JSON logs (`utils/json_logging.py`) with `event`, `request_id`, `client_id`,
     `method`, `path`, `status`, `duration_ms`
-- Auth: API key via `X-API-Key` header (`config/settings.py` -> `API_ACCESS_KEY`)
+- Auth: API key via `X-API-Key` header (`config/settings.py` -> `API_ACCESS_KEY` / `API_ACCESS_KEYS`)
 - CORS:
   - Development: `ENVIRONMENT!=production` → `allow_origins=["*"]`
   - Production: `ENVIRONMENT=production` → `CORS_ALLOW_ORIGINS` (comma-separated list)
@@ -39,7 +39,8 @@ in V4.
   - `CORS_ALLOW_ORIGINS` (comma-separated URLs; used in production)
   - `API_RATE_LIMIT_ENABLED` (`true`/`false`)
   - `API_RATE_LIMIT_RPM` (requests per minute)
-  - `API_ACCESS_KEY` (default `dev-secret-key` for dev)
+  - `API_ACCESS_KEY` (single key; defaults to `dev-secret-key` when `ENVIRONMENT!=production` and unset)
+  - `API_ACCESS_KEYS` (comma-separated list for key rotation; any listed key is accepted)
   - Chat sources payload limits (SSE `event: meta` and non-stream `ChatResponse.sources`):
     - `CHAT_SOURCES_MAX_ITEMS` (default `5`)
     - `CHAT_SOURCE_CONTENT_MAX_CHARS` (default `2000`)
@@ -142,7 +143,7 @@ in V4.
   - `PLAYWRIGHT_LOG_DIR` (default `artifacts/playwright/logs`)
 - Client configuration:
   - `NEXT_PUBLIC_API_URL` points to the frontend proxy base (default `/api/v1`)
-  - Next.js proxies `/api/v1/*` server-side to `BACKEND_API_URL`, injecting `API_ACCESS_KEY` as `X-API-Key` (no `NEXT_PUBLIC_*` secret fallback)
+  - Next.js proxies `/api/v1/*` server-side to `BACKEND_API_URL`, injecting `API_ACCESS_KEY` (or first of `API_ACCESS_KEYS`) as `X-API-Key` (no `NEXT_PUBLIC_*` secret fallback)
   - `userEmail` stored in `localStorage` is forwarded as `X-User-Email`
   - `modelPrefs:<email>` stored in `localStorage` caches per-user default model selection
   - Knowledge (Local RAG) page: `frontend/src/app/knowledge/page.tsx` calls `/api/v1/rag/upload` via multipart FormData (do not set `Content-Type` manually)
@@ -179,7 +180,7 @@ in V4.
 - Artifacts: coverage reports uploaded per job
 - Docker Compose smoke:
   - CI runs a Compose smoke job that builds backend/frontend images and waits for `/health` + the frontend `/`.
-  - If `API_ACCESS_KEY` is set, the smoke script also verifies `GET /api/v1/verify-auth` using `X-API-Key`.
+  - If `API_ACCESS_KEY` or `API_ACCESS_KEYS` is set, the smoke script also verifies `GET /api/v1/verify-auth` using `X-API-Key`.
   - Local equivalent: `python scripts\compose_smoke.py --ci`
 - Security:
   - Static analysis: Bandit (fail on high severity/high confidence)

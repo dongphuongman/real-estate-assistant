@@ -90,7 +90,7 @@ The AI-powered chat interface allows you to search for properties using natural 
 - Ensure Docker Desktop is installed
 - Copy environment: `Copy-Item .env.example .env`
 - Start: `docker compose up -d --build`
-- Optional smoke (build + health checks): `python scripts\compose_smoke.py --ci` (the same smoke test runs in CI; checks `/api/v1/verify-auth` when `API_ACCESS_KEY` is set)
+- Optional smoke (build + health checks): `python scripts\compose_smoke.py --ci` (the same smoke test runs in CI; checks `/api/v1/verify-auth` when `API_ACCESS_KEY` or `API_ACCESS_KEYS` is set)
 - Open UI: `http://localhost:3000`
 - API docs: `http://localhost:8000/docs`
 - OpenAPI schema: `http://localhost:8000/openapi.json` (repo snapshot: `docs/openapi.json`)
@@ -108,7 +108,7 @@ For real-time streaming from the assistant:
 - The response uses `text/event-stream` with message deltas as JSON lines: `data: {"content":"<text-delta>"}`
 - After the assistant finishes streaming text, the server emits a final metadata event: `event: meta` with `data: {"sources":[...],"sources_truncated":false,"session_id":"..."}`
 - The stream finishes with `data: [DONE]`
-- For direct API calls, include the `X-API-Key` header (see API Reference). The web app proxies API calls server-side, so the browser does not embed the API key (proxy uses `API_ACCESS_KEY` only).
+- For direct API calls, include the `X-API-Key` header (see API Reference). The web app proxies API calls server-side, so the browser does not embed the API key (proxy uses `API_ACCESS_KEY` or the first entry in `API_ACCESS_KEYS`).
 - The UI progressively renders assistant messages, shows a Retry button on errors, and displays Sources (when available)
 - Sources are displayed with a human-friendly title (derived from source metadata) plus a compact metadata summary and content preview
 - The UI displays `request_id` on both success and error paths (when available) to help correlate with server logs

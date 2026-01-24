@@ -6,9 +6,27 @@ This module provides centralized configuration management for the application.
 
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
+
+
+def _parse_csv_list(value: Optional[str]) -> list[str]:
+    if not value:
+        return []
+    items = [item.strip() for item in value.split(",")]
+    return [item for item in items if item]
+
+
+def _dedupe_preserve_order(values: list[str]) -> list[str]:
+    seen: set[str] = set()
+    deduped: list[str] = []
+    for value in values:
+        if value in seen:
+            continue
+        deduped.append(value)
+        seen.add(value)
+    return deduped
 
 
 class AppSettings(BaseModel):
@@ -43,7 +61,10 @@ class AppSettings(BaseModel):
     )
     # API Access Control
     api_access_key: Optional[str] = Field(
-        default_factory=lambda: os.getenv("API_ACCESS_KEY", "dev-secret-key")
+        default_factory=lambda: os.getenv("API_ACCESS_KEY")
+    )
+    api_access_keys: list[str] = Field(
+        default_factory=lambda: _parse_csv_list(os.getenv("API_ACCESS_KEYS"))
     )
     api_rate_limit_enabled: bool = Field(
         default_factory=lambda: os.getenv("API_RATE_LIMIT_ENABLED", "true").strip().lower()
@@ -135,6 +156,21 @@ class AppSettings(BaseModel):
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = False
+
+    @root_validator(skip_on_failure=True)
+    def _normalize_api_access_keys(cls: type["AppSettings"], values: dict[str, Any]) -> dict[str, Any]:
+        environment = (values.get("environment") or "development").strip().lower()
+        keys = _dedupe_preserve_order([k for k in (values.get("api_access_keys") or []) if k])
+
+        if not keys and values.get("api_access_key"):
+            keys = [values["api_access_key"]]
+
+        if not keys and environment != "production":
+            keys = ["dev-secret-key"]
+
+        values["api_access_keys"] = keys
+        values["api_access_key"] = keys[0] if keys else None
+        return values
 
 
 # Global settings instance
