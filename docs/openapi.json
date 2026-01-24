@@ -851,6 +851,17 @@
               }
             ],
             "title": "Runtime Available"
+          },
+          "runtime_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Runtime Error"
           }
         },
         "required": [

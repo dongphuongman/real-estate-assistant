@@ -58,6 +58,30 @@ Cross-Origin Resource Sharing (CORS) is controlled via environment:
 
 - Notification settings are managed via `GET/PUT /api/v1/settings/notifications`.
 - If SMTP is configured, the backend scheduler sends digests and (optional) instant alerts.
+
+### Settings: Model Catalog Runtime Status
+
+`GET /api/v1/settings/models` returns a catalog of providers/models. For local providers (`is_local=true`), the API includes runtime diagnostics to help operators and users troubleshoot local runtimes (e.g., Ollama):
+- `runtime_available`: whether the local runtime is reachable
+- `available_models`: models detected as installed/available on the runtime (may be empty)
+- `runtime_error`: a human-readable hint when `runtime_available=false`
+
+Example (local runtime unavailable):
+
+```json
+[
+  {
+    "name": "ollama",
+    "display_name": "Ollama (Local)",
+    "is_local": true,
+    "requires_api_key": false,
+    "models": [],
+    "runtime_available": false,
+    "available_models": [],
+    "runtime_error": "Could not connect to Ollama. Make sure Ollama is running (ollama serve)"
+  }
+]
+```
 - When quiet hours are enabled, instant alerts are queued and delivered after quiet hours end.
 
 ### Search & Mapping

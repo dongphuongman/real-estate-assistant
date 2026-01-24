@@ -46,6 +46,10 @@ export function ModelSettings({ catalog, userEmail }: { catalog: ModelProviderCa
     const provider = catalog.find((p) => p.name === preferredProvider);
     return provider ? provider.models.map((m) => m.id) : [];
   }, [catalog, preferredProvider]);
+  const selectedProvider = useMemo(() => {
+    if (!catalog || !preferredProvider) return null;
+    return catalog.find((p) => p.name === preferredProvider) ?? null;
+  }, [catalog, preferredProvider]);
 
   useEffect(() => {
     const init = async () => {
@@ -193,6 +197,26 @@ export function ModelSettings({ catalog, userEmail }: { catalog: ModelProviderCa
                 ))}
               </select>
             </div>
+
+            {selectedProvider?.is_local && selectedProvider.runtime_available !== undefined && selectedProvider.runtime_available !== null ? (
+              <div className="rounded-md border p-3 text-sm text-muted-foreground">
+                {selectedProvider.runtime_available ? (
+                  <div>
+                    <div>Local runtime: available.</div>
+                    {selectedProvider.available_models && selectedProvider.available_models.length ? (
+                      <div>Detected local models: {selectedProvider.available_models.join(", ")}</div>
+                    ) : (
+                      <div>No local models detected yet.</div>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <div>Local runtime: unavailable.</div>
+                    {selectedProvider.runtime_error ? <div>{selectedProvider.runtime_error}</div> : null}
+                  </div>
+                )}
+              </div>
+            ) : null}
 
             <div className="grid gap-2">
               <Label htmlFor="preferred_model">Model</Label>

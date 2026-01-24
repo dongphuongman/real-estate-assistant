@@ -200,6 +200,7 @@ def test_list_model_catalog(mock_get_settings, mock_factory):
     ollama_model.recommended_for = []
     ollama_provider.list_models.return_value = [ollama_model]
     ollama_provider.list_available_models.return_value = ["llama3.2:3b"]
+    ollama_provider.validate_connection.return_value = (True, None)
 
     def _get_provider(name):
         return openai_provider if name == "openai" else ollama_provider
@@ -223,7 +224,45 @@ def test_list_model_catalog(mock_get_settings, mock_factory):
     assert data[1]["is_local"] is True
     assert data[1]["runtime_available"] is True
     assert data[1]["available_models"] == ["llama3.2:3b"]
+    assert data[1]["runtime_error"] is None
     assert data[1]["models"][0]["pricing"] is None
+
+
+@patch("api.routers.settings.ModelProviderFactory")
+@patch("api.auth.get_settings")
+def test_list_model_catalog_includes_runtime_error_for_local_provider(mock_get_settings, mock_factory):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+
+    mock_factory.list_providers.return_value = ["ollama"]
+
+    ollama_provider = MagicMock()
+    ollama_provider.name = "ollama"
+    ollama_provider.display_name = "Ollama"
+    ollama_provider.is_local = True
+    ollama_provider.requires_api_key = False
+    ollama_provider.list_models.return_value = []
+    ollama_provider.validate_connection.return_value = (False, "Could not connect to Ollama")
+
+    mock_factory.get_provider.return_value = ollama_provider
+
+    response = client.get("/api/v1/settings/models", headers=HEADERS_NO_USER)
+    assert response.status_code == 200
+
+    data = response.json()
+    assert data == [
+        {
+            "name": "ollama",
+            "display_name": "Ollama",
+            "is_local": True,
+            "requires_api_key": False,
+            "models": [],
+            "runtime_available": False,
+            "available_models": [],
+            "runtime_error": "Could not connect to Ollama",
+        }
+    ]
 
 
 @patch("api.routers.settings.PREFS_MANAGER")
@@ -519,7 +558,7 @@ def test_list_model_catalog_local_provider_runtime_unavailable_sets_flags(mock_g
     ollama_provider.is_local = True
     ollama_provider.requires_api_key = False
     ollama_provider.list_models.return_value = []
-    ollama_provider.list_available_models.return_value = None
+    ollama_provider.validate_connection.return_value = (False, "Could not connect to Ollama")
     mock_factory.get_provider.return_value = ollama_provider
 
     response = client.get("/api/v1/settings/models", headers=HEADERS_NO_USER)
@@ -527,3 +566,4 @@ def test_list_model_catalog_local_provider_runtime_unavailable_sets_flags(mock_g
     data = response.json()
     assert data[0]["runtime_available"] is False
     assert data[0]["available_models"] == []
+    assert data[0]["runtime_error"] == "Could not connect to Ollama"

@@ -111,6 +111,7 @@ async def list_model_catalog():
             models: list[ModelCatalogItem] = []
             runtime_available: bool | None = None
             available_models: list[str] | None = None
+            runtime_error: str | None = None
 
             for model_info in provider.list_models():
                 pricing = None
@@ -134,14 +135,13 @@ async def list_model_catalog():
                     )
                 )
 
-            if provider.is_local and hasattr(provider, "list_available_models"):
-                maybe_models = provider.list_available_models()
-                if maybe_models is None:
-                    runtime_available = False
-                    available_models = []
+            if provider.is_local:
+                runtime_available, runtime_error = provider.validate_connection()
+                if runtime_available and hasattr(provider, "list_available_models"):
+                    maybe_models = provider.list_available_models()
+                    available_models = list(maybe_models) if maybe_models else []
                 else:
-                    runtime_available = True
-                    available_models = list(maybe_models)
+                    available_models = []
 
             providers.append(
                 ModelProviderCatalog(
@@ -152,6 +152,7 @@ async def list_model_catalog():
                     models=models,
                     runtime_available=runtime_available,
                     available_models=available_models,
+                    runtime_error=runtime_error,
                 )
             )
         return providers

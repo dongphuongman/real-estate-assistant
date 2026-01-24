@@ -9,7 +9,7 @@ selection is saved in your browser.
 
 Open **Settings** from the top navigation to manage:
 - **Identity**: Set the email address used to scope settings (saved locally in your browser).
-- **Default Model**: Choose the provider/model used by the Assistant for responses.
+- **Default Model**: Choose the provider/model used by the Assistant for responses. For local providers (e.g., Ollama), the page shows whether the runtime is reachable and includes an error hint when it is not.
 - **Notifications**: Configure digest frequency and optional Expert Mode / product updates.
 
 ## Notifications & Digests

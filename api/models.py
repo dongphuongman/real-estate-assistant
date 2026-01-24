@@ -194,6 +194,7 @@ class ModelProviderCatalog(BaseModel):
     models: List[ModelCatalogItem]
     runtime_available: Optional[bool] = None
     available_models: Optional[List[str]] = None
+    runtime_error: Optional[str] = None
 
 
 class ModelPreferences(BaseModel):

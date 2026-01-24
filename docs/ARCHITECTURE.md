@@ -116,7 +116,7 @@ The digest system bridges raw property data and user notifications.
 - **Tools**: `/api/v1/tools/*` (mortgage, compare, price analysis, location analysis; CE stubs:
   valuation, legal-check, enrich-address, crm-sync-contact)
 - **Prompt Templates**: `/api/v1/prompt-templates`, `/api/v1/prompt-templates/apply`
-- **Settings**: `/api/v1/settings/notifications`, `/api/v1/settings/models`, `/api/v1/settings/model-preferences`
+- **Settings**: `/api/v1/settings/notifications`, `/api/v1/settings/models` (local providers include `runtime_available`/`available_models`/`runtime_error`), `/api/v1/settings/model-preferences`
 - **Auth**: `/api/v1/auth/*`
 - **Admin**: `/api/v1/admin/*` (health, metrics, ingest, reindex, notifications-stats)
 - **RAG (CE)**: `/api/v1/rag/upload`, `/api/v1/rag/qa`, `/api/v1/rag/reset` (optional per-request `provider`/`model` overrides; citations include `source`/`chunk_index` plus optional `page_number`/`paragraph_number`)

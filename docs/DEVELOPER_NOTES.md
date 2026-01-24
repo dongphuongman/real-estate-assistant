@@ -163,7 +163,7 @@ in V4.
 - Model preferences storage: `.preferences/model_preferences.json`
 - Endpoints:
   - `GET/PUT /api/v1/settings/notifications` (requires `X-User-Email` or `?user_email=`)
-  - `GET /api/v1/settings/models` (catalog only)
+  - `GET /api/v1/settings/models` (catalog only; local providers include `runtime_available`, `available_models`, and `runtime_error` derived from `validate_connection()`)
   - `GET/PUT /api/v1/settings/model-preferences` (requires `X-User-Email` or `?user_email=`)
 - LLM selection:
   - [get_llm](file:///c:/Projects/ai-real-estate-assistant/api/dependencies.py) loads per-user model preferences

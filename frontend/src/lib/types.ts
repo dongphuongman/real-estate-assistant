@@ -152,6 +152,7 @@ export interface ModelProviderCatalog {
   models: ModelCatalogItem[];
   runtime_available?: boolean | null;
   available_models?: string[] | null;
+  runtime_error?: string | null;
 }
 
 export interface ModelPreferences {

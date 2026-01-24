@@ -38,6 +38,7 @@ const catalog: ModelProviderCatalog[] = [
     ],
     runtime_available: null,
     available_models: null,
+    runtime_error: null,
   },
   {
     name: "ollama",
@@ -58,6 +59,7 @@ const catalog: ModelProviderCatalog[] = [
     ],
     runtime_available: true,
     available_models: ["model-c"],
+    runtime_error: null,
   },
 ];
 
@@ -117,5 +119,31 @@ describe("ModelSettings", () => {
     expect(raw).toContain('"preferred_provider":"ollama"');
     expect(raw).toContain('"preferred_model":"model-c"');
   });
-});
 
+  it("shows runtime error for local providers when unavailable", async () => {
+    (getModelPreferences as jest.Mock).mockResolvedValue({ preferred_provider: "openai", preferred_model: "model-a" });
+    const downCatalog: ModelProviderCatalog[] = catalog.map((p) =>
+      p.name === "ollama"
+        ? {
+            ...p,
+            runtime_available: false,
+            available_models: [],
+            runtime_error: "Ollama is installed but not running. Start it with 'ollama serve'",
+          }
+        : p
+    );
+
+    render(<ModelSettings catalog={downCatalog} userEmail={"u1@example.com"} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Provider")).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "ollama" } });
+
+    expect(screen.getByText("Local runtime: unavailable.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Ollama is installed but not running. Start it with 'ollama serve'")
+    ).toBeInTheDocument();
+  });
+});
