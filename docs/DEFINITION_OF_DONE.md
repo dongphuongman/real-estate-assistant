@@ -10,7 +10,7 @@
 
 ## Frontend (Next.js)
 - Pages: `/chat`, `/search`, `/settings`, `/analytics` render without errors.
-- API client uses `NEXT_PUBLIC_API_URL`; no client‑exposed secrets in prod.
+- API client uses `NEXT_PUBLIC_API_URL` (defaults to `/api/v1`) via the Next.js proxy; no client‑exposed secrets in prod.
 - UI tests (Jest/Testing Library) pass with ≥90% unit coverage for critical UI.
 - Accessibility basics checked (labels, roles) and responsive layout verified.
  - Lint and coverage summary steps succeed in CI.

@@ -29,6 +29,7 @@ In `ENVIRONMENT=production`, missing keys (or using `dev-secret-key`) is treated
 For production deployments, set a strong, unique key and do not expose it to untrusted clients.
 In the web app, API calls are proxied server-side by Next.js so the browser does not need (and must not embed) the API key.
 The proxy injects `X-API-Key` from `API_ACCESS_KEY` (or falls back to the first entry in `API_ACCESS_KEYS`) and intentionally ignores `NEXT_PUBLIC_*` secrets.
+In production, the proxy requires `BACKEND_API_URL` and rejects localhost targets to avoid misconfigured deployments.
 The repository enforces this policy with `python scripts\forbidden_tokens_check.py`.
 For staged key rotation and revocation guidance, see `docs/SECURITY.md` (API Key Rotation & Staged Revocation).
 

@@ -188,4 +188,50 @@ describe("API v1 proxy route", () => {
 
     expect(global.fetch).toHaveBeenCalledTimes(4);
   });
+
+  it("returns 500 when BACKEND_API_URL is missing in production", async () => {
+    const originalNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+    delete process.env.BACKEND_API_URL;
+
+    const request = makeRequest({
+      url: "http://localhost/api/v1/search",
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    const response = await GET(request, { params: Promise.resolve({ path: ["search"] }) });
+
+    expect(response.status).toBe(500);
+    const payload = (await response.json()) as { detail?: unknown };
+    expect(payload.detail).toBe("BACKEND_API_URL must be set in production");
+    expect(global.fetch).not.toHaveBeenCalled();
+
+    process.env.NODE_ENV = originalNodeEnv;
+  });
+
+  it("returns 500 when BACKEND_API_URL points to localhost in production", async () => {
+    const originalNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+    process.env.BACKEND_API_URL = "http://localhost:8000/api/v1";
+
+    const request = makeRequest({
+      url: "http://localhost/api/v1/search",
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    const response = await GET(request, { params: Promise.resolve({ path: ["search"] }) });
+
+    expect(response.status).toBe(500);
+    const payload = (await response.json()) as { detail?: unknown };
+    expect(payload.detail).toBe("BACKEND_API_URL must not point to localhost in production");
+    expect(global.fetch).not.toHaveBeenCalled();
+
+    process.env.NODE_ENV = originalNodeEnv;
+  });
 });

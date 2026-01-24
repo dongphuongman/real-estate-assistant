@@ -28,9 +28,37 @@ const FORWARDED_REQUEST_HEADERS = [
   "x-request-id",
 ] as const;
 
+function isProductionRuntime(): boolean {
+  if (process.env.NODE_ENV === "production") return true;
+  if (process.env.VERCEL_ENV === "production") return true;
+  if (process.env.VERCEL === "1") return true;
+  return false;
+}
+
+function isLocalhostUrl(value: string): boolean {
+  const trimmed = value.trim().toLowerCase();
+  return (
+    trimmed.includes("://localhost") ||
+    trimmed.includes("://127.0.0.1") ||
+    trimmed.includes("://[::1]") ||
+    trimmed.includes("://0.0.0.0")
+  );
+}
+
 function getBackendApiBaseUrl(): string {
-  const raw = process.env.BACKEND_API_URL || "http://localhost:8000/api/v1";
-  return raw.replace(/\/+$/, "");
+  const raw = process.env.BACKEND_API_URL;
+  if (isProductionRuntime()) {
+    const trimmed = raw?.trim();
+    if (!trimmed) {
+      throw new Error("BACKEND_API_URL must be set in production");
+    }
+    if (isLocalhostUrl(trimmed)) {
+      throw new Error("BACKEND_API_URL must not point to localhost in production");
+    }
+  }
+
+  const fallback = raw || "http://localhost:8000/api/v1";
+  return fallback.replace(/\/+$/, "");
 }
 
 function getApiAccessKey(): string | undefined {
@@ -87,7 +115,22 @@ async function proxyRequest(request: Request, context: ProxyContext): Promise<Re
   };
   if (body) init.duplex = "half";
 
-  const backendResponse = await fetch(buildBackendUrl(requestUrl, pathParts), init);
+  let backendUrl: string;
+  try {
+    backendUrl = buildBackendUrl(requestUrl, pathParts);
+  } catch (error) {
+    const message =
+      error instanceof Error && error.message.trim() ? error.message.trim() : "Proxy configuration error";
+    return new Response(JSON.stringify({ detail: message }), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+
+  const backendResponse = await fetch(backendUrl, init);
 
   const responseHeaders = new Headers();
   for (const [name, value] of backendResponse.headers.entries()) {

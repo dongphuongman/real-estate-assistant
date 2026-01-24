@@ -125,7 +125,9 @@ To serve on a domain (e.g., `realestate.ai`) with SSL.
 ### Frontend (Vercel)
 1. Import `frontend/` directory to Vercel.
 2. Set Environment Variables:
-   - `NEXT_PUBLIC_API_URL`: URL of your backend (e.g., `https://api.yourdomain.com/api/v1`).
+   - `NEXT_PUBLIC_API_URL`: `/api/v1` (default; keep API calls going through the Next.js proxy)
+   - `BACKEND_API_URL`: backend base URL including `/api/v1` (e.g., `https://your-backend.onrender.com/api/v1`)
+   - `API_ACCESS_KEY` or `API_ACCESS_KEYS`: used server-side by the proxy to inject `X-API-Key` (never `NEXT_PUBLIC_*`)
 
 ### Backend (Railway/Render)
 1. Connect repository.
@@ -133,6 +135,8 @@ To serve on a domain (e.g., `realestate.ai`) with SSL.
 3. Build Command: `pip install -r requirements.txt`.
 4. Start Command: `uvicorn api.main:app --host 0.0.0.0 --port $PORT`.
 5. Set Environment Variables from `.env`.
+   - Production note: set `ENVIRONMENT=production` and pin `CORS_ALLOW_ORIGINS` to your frontend URL.
+   - Render blueprint (optional): `render.yaml` provides a ready-to-import service definition.
 
 ### BYOK Notes
 - Never expose secrets in frontend. All keys are server‑side env variables.
