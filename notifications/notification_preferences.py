@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
 from analytics import MarketInsights
-from notifications.alert_manager import AlertManager
+from notifications.alert_manager import AlertManager, AlertType
 from notifications.email_service import EmailService
 from notifications.notification_history import (
     NotificationHistory,
@@ -38,16 +38,6 @@ class AlertFrequency(str, Enum):
     HOURLY = "hourly"  # Batch and send hourly
     DAILY = "daily"  # Daily digest at specified time
     WEEKLY = "weekly"  # Weekly digest on specified day
-
-
-class AlertType(str, Enum):
-    """Types of alerts that can be enabled/disabled."""
-
-    PRICE_DROP = "price_drop"
-    NEW_PROPERTY = "new_property"
-    SAVED_SEARCH_MATCH = "saved_search_match"
-    MARKET_UPDATE = "market_update"
-    DIGEST = "digest"
 
 
 class DigestDay(str, Enum):

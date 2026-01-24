@@ -197,6 +197,8 @@ in V4.
 - Notifications:
   - The notification scheduler starts on API startup and evaluates user preferences periodically.
   - If SMTP is not configured, email delivery is skipped (preferences are still stored).
+  - Instant alerts during quiet hours are queued to `.alerts/pending_alerts.json` and delivered after quiet hours end.
+  - Alert deduplication uses `.alerts/sent_alerts.json` to avoid repeated sends for the same event.
 
 ## Monitoring
 - Health endpoints:

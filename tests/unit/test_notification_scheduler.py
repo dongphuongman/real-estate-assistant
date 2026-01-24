@@ -5,7 +5,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from data.schemas import Property, PropertyCollection
-from notifications.alert_manager import AlertType
+from notifications.alert_manager import Alert, AlertType
+from notifications.notification_history import NotificationType
 from notifications.notification_preferences import AlertFrequency, NotificationPreferences
 from notifications.scheduler import NotificationScheduler
 
@@ -90,7 +91,7 @@ def test_process_instant_alerts_price_drop(mock_alert_manager_cls, mock_load_col
     # Mock Search Manager (match found)
     mock_search = MagicMock()
     mock_search.matches.return_value = True
-    scheduler._search_manager.get_user_searches.return_value = [mock_search]
+    scheduler._search_manager.get_all_searches.return_value = [mock_search]
     
     # Mock Send success
     mock_am.send_price_drop_alert.return_value = True
@@ -144,7 +145,7 @@ def test_process_instant_alerts_quiet_hours(mock_alert_manager_cls, mock_load_co
     
     mock_search = MagicMock()
     mock_search.matches.return_value = True
-    scheduler._search_manager.get_user_searches.return_value = [mock_search]
+    scheduler._search_manager.get_all_searches.return_value = [mock_search]
     
     # Run at 23:00 (In Quiet Hours)
     now = datetime(2023, 1, 1, 23, 0, 0)
@@ -168,6 +169,7 @@ def test_send_due_digests_daily(mock_digest_gen_cls, mock_alert_manager_cls, moc
     user_prefs = NotificationPreferences(
         user_email="user@example.com",
         alert_frequency=AlertFrequency.DAILY,
+        enabled_alerts={AlertType.DIGEST},
         daily_digest_time="09:00",
         enabled=True
     )
@@ -212,4 +214,105 @@ def test_send_due_digests_wrong_time(mock_alert_manager_cls, mock_load_collectio
     # Assert
     assert count == 0
     mock_am.send_digest.assert_not_called()
+
+
+@patch("notifications.scheduler.AlertManager")
+def test_run_pending_processes_queued_alerts(mock_alert_manager_cls, scheduler):
+    mock_am = mock_alert_manager_cls.return_value
+
+    queued_alert = Alert(
+        alert_type=AlertType.PRICE_DROP,
+        user_email="user@example.com",
+        property_id="1",
+        data={
+            "property": {"id": "1", "city": "CityA", "price": 900, "rooms": 2, "bathrooms": 1},
+            "old_price": 1000,
+            "new_price": 900,
+            "percent_drop": 10.0,
+            "savings": 100,
+        },
+    )
+
+    mock_am.list_pending_alerts.side_effect = [[queued_alert], []]
+    mock_am.process_pending_alerts_with_result.return_value = (1, [queued_alert])
+
+    scheduler._prefs_manager.get_preferences.return_value = NotificationPreferences(
+        user_email="user@example.com",
+        alert_frequency=AlertFrequency.INSTANT,
+        quiet_hours_start=None,
+        quiet_hours_end=None,
+        enabled=True,
+    )
+
+    with patch.object(scheduler, "_refresh_data_sources"), patch.object(
+        scheduler, "_send_due_digests", return_value=0
+    ), patch.object(scheduler, "_process_instant_alerts", return_value={"sent": 0, "queued": 0}):
+        now = datetime(2023, 1, 1, 12, 0, 0)
+        result = scheduler.run_pending(now=now)
+
+    assert result["stats"]["queued_alerts_sent"] == 1
+    assert mock_am.process_pending_alerts_with_result.call_count == 1
+
+
+@patch("notifications.scheduler.AlertManager")
+def test_run_pending_defers_queued_alerts_during_quiet_hours(mock_alert_manager_cls, scheduler):
+    mock_am = mock_alert_manager_cls.return_value
+
+    queued_alert = Alert(
+        alert_type=AlertType.PRICE_DROP,
+        user_email="user@example.com",
+        property_id="1",
+        data={"property": {"id": "1", "city": "CityA"}},
+    )
+
+    mock_am.list_pending_alerts.side_effect = [[queued_alert], [queued_alert]]
+    mock_am.process_pending_alerts_with_result.return_value = (0, [])
+
+    scheduler._prefs_manager.get_preferences.return_value = NotificationPreferences(
+        user_email="user@example.com",
+        alert_frequency=AlertFrequency.INSTANT,
+        quiet_hours_start="22:00",
+        quiet_hours_end="08:00",
+        enabled=True,
+    )
+
+    with patch.object(scheduler, "_refresh_data_sources"), patch.object(
+        scheduler, "_send_due_digests", return_value=0
+    ), patch.object(scheduler, "_process_instant_alerts", return_value={"sent": 0, "queued": 0}):
+        now = datetime(2023, 1, 1, 23, 0, 0)
+        result = scheduler.run_pending(now=now)
+
+    assert result["stats"]["queued_alerts_sent"] == 0
+    assert result["stats"]["queued_alerts_deferred"] == 1
+
+
+@patch("notifications.scheduler.AlertManager")
+def test_run_pending_records_new_property_history_for_sent_queued_alerts(mock_alert_manager_cls, scheduler):
+    mock_am = mock_alert_manager_cls.return_value
+
+    queued_alert = Alert(
+        alert_type=AlertType.NEW_PROPERTY,
+        user_email="user@example.com",
+        data={"search_id": "s1", "search_name": "My Search", "properties": []},
+    )
+
+    mock_am.list_pending_alerts.side_effect = [[queued_alert], []]
+    mock_am.process_pending_alerts_with_result.return_value = (1, [queued_alert])
+
+    scheduler._prefs_manager.get_preferences.return_value = NotificationPreferences(
+        user_email="user@example.com",
+        alert_frequency=AlertFrequency.INSTANT,
+        quiet_hours_start=None,
+        quiet_hours_end=None,
+        enabled=True,
+    )
+
+    with patch.object(scheduler, "_refresh_data_sources"), patch.object(
+        scheduler, "_send_due_digests", return_value=0
+    ), patch.object(scheduler, "_process_instant_alerts", return_value={"sent": 0, "queued": 0}):
+        now = datetime(2023, 1, 1, 12, 0, 0)
+        scheduler.run_pending(now=now)
+
+    assert scheduler._history.record_notification.call_count == 1
+    assert scheduler._history.record_notification.call_args.kwargs["notification_type"] == NotificationType.NEW_PROPERTY
 

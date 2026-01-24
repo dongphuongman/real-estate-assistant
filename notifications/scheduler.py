@@ -19,7 +19,6 @@ from notifications.digest_generator import DigestGenerator
 from notifications.email_service import EmailService
 from notifications.notification_history import (
     NotificationHistory,
-    NotificationStatus,
     NotificationType,
 )
 from notifications.notification_preferences import (
@@ -95,7 +94,9 @@ class NotificationScheduler:
             "digests_daily": 0, 
             "digests_weekly": 0, 
             "instant_alerts": 0,
-            "queued_alerts": 0
+            "queued_alerts": 0,
+            "queued_alerts_sent": 0,
+            "queued_alerts_deferred": 0,
         }
         errors: List[str] = []
 
@@ -113,18 +114,10 @@ class NotificationScheduler:
             instant_stats = self._process_instant_alerts(check_time)
             stats["instant_alerts"] += instant_stats["sent"]
             stats["queued_alerts"] += instant_stats["queued"]
-            
-            # 3. Process Pending/Queued Alerts (if quiet hours ended)
-            # We should only process if we are NOT in quiet hours for the user.
-            # But process_pending_alerts() in AlertManager is global.
-            # This is a limitation. Ideally, AlertManager.process_pending_alerts() should take a callback 
-            # or we should iterate alerts here.
-            # For now, let's assume we can try to send, and if it's quiet hours, we queue it back.
-            # But wait, AlertManager doesn't check quiet hours.
-            # So we should iterate pending alerts here if possible, OR
-            # Update AlertManager to let us inspect pending alerts without consuming them.
-            # AlertManager.process_pending_alerts() logic consumes them.
-            # Let's leave this for refinement. For now, instant alerts queueing is the priority.
+
+            queued_stats = self._process_queued_alerts(check_time)
+            stats["queued_alerts_sent"] += queued_stats["sent"]
+            stats["queued_alerts_deferred"] += queued_stats["deferred"]
             
         except Exception as e:
             logger.error(f"Scheduler run error: {e}")
@@ -162,11 +155,7 @@ class NotificationScheduler:
                 if not self._is_time_match(prefs, now, frequency):
                     continue
                 
-                # Check if digest is enabled
-                # Note: 'DIGEST' alert type might not be in enabled_alerts if user unchecked it,
-                # but selected a frequency. We assume frequency > INSTANT implies enabled.
-                # But let's check prefs.enabled too.
-                if not prefs.enabled:
+                if not prefs.is_alert_enabled(AlertType.DIGEST):
                     continue
 
                 notification_type = (
@@ -196,13 +185,13 @@ class NotificationScheduler:
                 # AlertManager.send_digest takes data.
                 if am.send_digest(prefs.user_email, digest_type, data, send_email=True):
                     sent_count += 1
-                    # Record history
-                    self._history.record_notification(
+                    record = self._history.record_notification(
                         user_email=prefs.user_email,
                         notification_type=notification_type,
                         subject=f"Your {digest_type.title()} Real Estate Digest",
-                        status=NotificationStatus.SENT
+                        metadata={"digest_type": digest_type},
                     )
+                    self._history.mark_sent(record.id)
 
             except Exception as e:
                 logger.error(f"Error sending digest to {prefs.user_email}: {e}")
@@ -246,9 +235,9 @@ class NotificationScheduler:
         # Let's replicate the logic from DigestGenerator manually here or use it if available
         # The DigestGenerator expects vector_store. 
         if self._vector_store:
-             generator = DigestGenerator(market_insights, self._vector_store)
-             saved_searches = self._search_manager.get_user_searches(prefs.user_email)
-             return generator.generate_digest(prefs, saved_searches, digest_type)
+            generator = DigestGenerator(market_insights, self._vector_store)
+            saved_searches = self._search_manager.get_all_searches()
+            return generator.generate_digest(prefs, saved_searches, digest_type)
         
         # Fallback if no vector store (e.g. testing)
         return {
@@ -315,7 +304,7 @@ class NotificationScheduler:
                 # Filter by saved searches? (Optional, implies "Watchlist")
                 # For now, we send all drops that meet threshold? No, that's spam.
                 # Let's assume we filter by saved searches matching the property.
-                user_searches = self._search_manager.get_user_searches(prefs.user_email)
+                user_searches = self._search_manager.get_all_searches()
                 relevant_drops = []
                 for d in user_drops:
                     prop = d["property"]
@@ -340,16 +329,17 @@ class NotificationScheduler:
                         # This requires history check.
                         if am.send_price_drop_alert(prefs.user_email, drop, send_email=True):
                             sent += 1
-                            self._history.record_notification(
+                            record = self._history.record_notification(
                                 user_email=prefs.user_email,
                                 notification_type=NotificationType.PRICE_DROP,
                                 subject=f"Price Drop: {drop['property'].city}",
-                                status=NotificationStatus.SENT
+                                metadata={"property_id": str(drop["property"].id)},
                             )
+                            self._history.mark_sent(record.id)
 
             # --- New Properties ---
             if AlertType.NEW_PROPERTY in prefs.enabled_alerts and new_props:
-                user_searches = self._search_manager.get_user_searches(prefs.user_email)
+                user_searches = self._search_manager.get_all_searches()
                 # Group by search
                 matches = am.check_new_property_matches(
                     PropertyCollection(properties=new_props, total_count=len(new_props)),
@@ -383,11 +373,58 @@ class NotificationScheduler:
                             send_email=True
                         ):
                             sent += 1
-                            self._history.record_notification(
+                            record = self._history.record_notification(
                                 user_email=prefs.user_email,
                                 notification_type=NotificationType.NEW_PROPERTY,
                                 subject=f"New Matches: {search.name}",
-                                status=NotificationStatus.SENT
+                                metadata={"search_id": search_id},
                             )
+                            self._history.mark_sent(record.id)
 
         return {"sent": sent, "queued": queued}
+
+    def _process_queued_alerts(self, now: datetime) -> Dict[str, int]:
+        am = AlertManager(email_service=self._email_service, storage_path=self._storage_path_alerts)
+
+        pending_before = am.list_pending_alerts()
+
+        def should_send(alert: Alert) -> bool:
+            try:
+                prefs = self._prefs_manager.get_preferences(alert.user_email)
+                if not prefs.enabled:
+                    return False
+                return not prefs.is_in_quiet_hours(now)
+            except Exception:
+                return False
+
+        deferred = 0
+        for alert in pending_before:
+            if not should_send(alert):
+                deferred += 1
+
+        sent, sent_alerts = am.process_pending_alerts_with_result(should_send=should_send)
+        remaining = len(am.list_pending_alerts())
+
+        for alert in sent_alerts:
+            if alert.alert_type == AlertType.PRICE_DROP:
+                data = alert.data or {}
+                prop = data.get("property") or {}
+                prop_city = prop.get("city") if isinstance(prop, dict) else getattr(prop, "city", "")
+                prop_id = alert.property_id or getattr(prop, "id", None)
+                record = self._history.record_notification(
+                    user_email=alert.user_email,
+                    notification_type=NotificationType.PRICE_DROP,
+                    subject=f"Price Drop: {prop_city}",
+                    metadata={"property_id": str(prop_id)} if prop_id is not None else {},
+                )
+                self._history.mark_sent(record.id)
+            elif alert.alert_type == AlertType.NEW_PROPERTY:
+                record = self._history.record_notification(
+                    user_email=alert.user_email,
+                    notification_type=NotificationType.NEW_PROPERTY,
+                    subject=f"New Matches: {alert.data.get('search_name', '')}",
+                    metadata={"search_id": alert.data.get("search_id")},
+                )
+                self._history.mark_sent(record.id)
+
+        return {"sent": sent, "deferred": deferred, "remaining": remaining}

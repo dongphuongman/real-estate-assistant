@@ -14,7 +14,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Callable, Dict, List, Optional, Set, cast
 
 from data.schemas import Property, PropertyCollection
 from notifications.email_service import EmailService
@@ -92,39 +92,45 @@ class AlertManager:
         Args:
             alert: Alert object to queue
         """
-        self._pending_alerts.append(alert)
+        self._pending_alerts.append(self._normalize_alert_for_storage(alert))
         self._save_pending_alerts()
         logger.info(f"Queued alert {alert.alert_type} for {alert.user_email}")
 
-    def process_pending_alerts(self) -> int:
-        """
-        Process pending alerts.
+    def list_pending_alerts(self) -> List[Alert]:
+        return self._load_pending_alerts()
 
-        Returns:
-            Number of alerts sent
-        """
+    def process_pending_alerts(self, should_send: Optional[Callable[[Alert], bool]] = None) -> int:
+        sent_count, _sent_alerts = self.process_pending_alerts_with_result(should_send=should_send)
+        return sent_count
+
+    def process_pending_alerts_with_result(
+        self, *, should_send: Optional[Callable[[Alert], bool]] = None
+    ) -> tuple[int, List[Alert]]:
         sent_count = 0
-        remaining_alerts = []
-        
-        # Load latest pending in case changed by other process
+        sent_alerts: List[Alert] = []
+        remaining_alerts: List[Alert] = []
+        should_send_fn = should_send or (lambda _alert: True)
+
         self._pending_alerts = self._load_pending_alerts()
 
         for alert in self._pending_alerts:
             success = False
             try:
-                # Re-check quiet hours handled by scheduler, or we check here?
-                # Better to let the scheduler control WHEN to call this, 
-                # OR pass a preferences manager here.
-                # For now, we assume if this is called, we should try to send.
-                
+                if not should_send_fn(alert):
+                    remaining_alerts.append(alert)
+                    continue
+
+                if self._is_alert_already_sent(alert):
+                    continue
+
                 if alert.alert_type == AlertType.PRICE_DROP:
+                    price_drop_data = self._normalize_price_drop_data_for_send(alert.data)
                     success = self.send_price_drop_alert(
-                        alert.user_email, 
-                        alert.data, 
-                        send_email=True
+                        alert.user_email,
+                        price_drop_data,
+                        send_email=True,
                     )
                 elif alert.alert_type == AlertType.NEW_PROPERTY:
-                    # Reconstruct properties from data
                     props_data = alert.data.get("properties", [])
                     props = [Property(**p) for p in props_data]
                     success = self.send_new_property_alerts(
@@ -132,32 +138,87 @@ class AlertManager:
                         alert.data.get("search_id"),
                         alert.data.get("search_name"),
                         props,
-                        send_email=True
+                        send_email=True,
                     )
                 elif alert.alert_type == AlertType.DIGEST:
                     success = self.send_digest(
                         alert.user_email,
                         alert.data.get("digest_type"),
                         alert.data.get("content"),
-                        send_email=True
+                        send_email=True,
                     )
-                
+
                 if success:
                     sent_count += 1
+                    sent_alerts.append(alert)
                 else:
-                    # Keep if failed (maybe transient error)
-                    # But if it failed because it was already sent, we should drop it?
-                    # send_... returns False if already sent.
-                    # So we should probably drop it to avoid infinite loop.
-                    pass 
-
+                    remaining_alerts.append(alert)
             except Exception as e:
                 logger.error(f"Error processing pending alert: {e}")
                 remaining_alerts.append(alert)
-        
+
         self._pending_alerts = remaining_alerts
         self._save_pending_alerts()
-        return sent_count
+        return sent_count, sent_alerts
+
+    def _normalize_alert_for_storage(self, alert: Alert) -> Alert:
+        if alert.alert_type != AlertType.PRICE_DROP:
+            return alert
+
+        data = dict(alert.data or {})
+        prop = data.get("property")
+        if isinstance(prop, Property):
+            try:
+                prop_dict = cast(Any, prop).model_dump(mode="json")
+            except Exception:
+                try:
+                    prop_dict = json.loads(cast(Any, prop).json())
+                except Exception:
+                    prop_dict = prop.dict()
+            data["property"] = prop_dict
+            if alert.property_id is None:
+                alert.property_id = str(prop_dict.get("id")) if prop_dict.get("id") is not None else None
+        return Alert(
+            alert_type=alert.alert_type,
+            user_email=alert.user_email,
+            property_id=alert.property_id,
+            subject=alert.subject,
+            message=alert.message,
+            data=data,
+            created_at=alert.created_at,
+            sent_at=alert.sent_at,
+            priority=alert.priority,
+        )
+
+    def _normalize_price_drop_data_for_send(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        normalized = dict(data or {})
+        prop = normalized.get("property")
+        if isinstance(prop, dict):
+            normalized["property"] = Property(**prop)
+        return normalized
+
+    def _is_alert_already_sent(self, alert: Alert) -> bool:
+        if alert.alert_type == AlertType.PRICE_DROP:
+            data = self._normalize_price_drop_data_for_send(alert.data)
+            prop = data.get("property")
+            if prop is None:
+                return False
+            key = f"price_drop_{self._get_property_key(prop)}_{alert.user_email}"
+            return key in self._sent_alerts
+
+        if alert.alert_type == AlertType.NEW_PROPERTY:
+            search_id = alert.data.get("search_id")
+            props = alert.data.get("properties") or []
+            key = f"new_match_{search_id}_{len(props)}_{alert.user_email}"
+            return key in self._sent_alerts
+
+        if alert.alert_type == AlertType.DIGEST:
+            digest_type = alert.data.get("digest_type")
+            date_key = datetime.now().strftime("%Y-%m-%d")
+            key = f"digest_{digest_type}_{date_key}_{alert.user_email}"
+            return key in self._sent_alerts
+
+        return False
 
     def _load_pending_alerts(self) -> List[Alert]:
         """Load pending alerts from disk."""
@@ -199,7 +260,7 @@ class AlertManager:
                 json.dump({
                     'alerts': alerts_data,
                     'last_updated': datetime.now().isoformat()
-                }, f, indent=2)
+                }, f, indent=2, default=str)
         except Exception as e:
             logger.error(f"Error saving pending alerts: {e}")
 
@@ -300,6 +361,10 @@ class AlertManager:
             True if sent successfully
         """
         prop = property_info['property']
+        if isinstance(prop, dict):
+            prop = Property(**prop)
+            property_info = dict(property_info)
+            property_info["property"] = prop
 
         # Check if already alerted
         alert_key = f"price_drop_{self._get_property_key(prop)}_{user_email}"

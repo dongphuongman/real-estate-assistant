@@ -22,6 +22,9 @@ All notification settings and labels follow your selected app language.
 Email delivery requires SMTP configuration on the backend. If SMTP is not configured, preferences
 are still saved but no emails will be sent.
 
+### Quiet Hours
+If you enable quiet hours, instant alerts that would normally be emailed immediately are queued and delivered after quiet hours end.
+
 ### Consumer Digest
 Designed for homebuyers and renters, the Consumer Digest highlights:
 - **New Matches**: Properties matching your saved searches that were added since your last update.

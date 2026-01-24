@@ -45,6 +45,12 @@ Cross-Origin Resource Sharing (CORS) is controlled via environment:
 - `ENVIRONMENT=production` pins allowed origins from `CORS_ALLOW_ORIGINS` (comma‑separated).
 - `ENVIRONMENT` not `production` allows all origins (`*`) for local development.
 
+### Notifications (Email)
+
+- Notification settings are managed via `GET/PUT /api/v1/settings/notifications`.
+- If SMTP is configured, the backend scheduler sends digests and (optional) instant alerts.
+- When quiet hours are enabled, instant alerts are queued and delivered after quiet hours end.
+
 ### Search & Mapping
 
 - `POST /api/v1/search` returns `SearchResponse.results[].property.latitude` and `SearchResponse.results[].property.longitude` when available.

@@ -75,7 +75,11 @@ The digest system bridges raw property data and user notifications.
     - Gathers data for email digests from `VectorStore` (new matches) and `MarketInsights`.
     - Iterates through `SavedSearch` objects to find relevant updates.
 - **AlertManager (`notifications/alert_manager.py`)**:
-    - Orchestrates digest generation based on schedules.
+    - Sends emails for price drops, new property matches, and digests with deduplication.
+    - Persists queued alerts (`pending_alerts.json`) and dedupe keys (`sent_alerts.json`) under `.alerts/`.
+- **NotificationScheduler (`notifications/scheduler.py`)**:
+    - Runs periodic digest + instant alert checks and enforces quiet hours by queuing alerts.
+    - Processes queued alerts after quiet hours end.
 - **EmailService**:
     - Renders responsive HTML templates (`DigestTemplate`) and sends via SMTP/SendGrid.
 
