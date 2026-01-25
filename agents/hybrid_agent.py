@@ -21,8 +21,8 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.retrievers import BaseRetriever
 
 from agents.query_analyzer import Complexity, QueryAnalysis, QueryAnalyzer, QueryIntent, Tool
+from agents.web_research_agent import WebResearchAgent, WebResearchConfig
 from tools.property_tools import create_property_tools
-from utils.web_fetch import fetch_url_text, searxng_search
 
 logger = logging.getLogger(__name__)
 
@@ -128,21 +128,30 @@ Context from property database will be provided when relevant."""),
             MessagesPlaceholder(variable_name="agent_scratchpad"),
         ])
 
-        # Create agent
-        agent = create_openai_tools_agent(
-            llm=self.llm,
-            tools=self.tools,
-            prompt=prompt
-        )
+        try:
+            agent = create_openai_tools_agent(
+                llm=self.llm,
+                tools=self.tools,
+                prompt=prompt
+            )
+            return AgentExecutor(
+                agent=agent,
+                tools=self.tools,
+                memory=self.memory,
+                verbose=self.verbose,
+                return_intermediate_steps=True
+            )
+        except Exception:
+            from langchain.agents import AgentType, initialize_agent
 
-        # Create executor
-        return AgentExecutor(
-            agent=agent,
-            tools=self.tools,
-            memory=self.memory,
-            verbose=self.verbose,
-            return_intermediate_steps=True
-        )
+            return initialize_agent(
+                tools=self.tools,
+                llm=self.llm,
+                agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+                memory=self.memory,
+                verbose=self.verbose,
+                return_intermediate_steps=True,
+            )
 
     def process_query(
         self,
@@ -331,60 +340,23 @@ Context from property database will be provided when relevant."""),
         query: str,
         analysis: QueryAnalysis,
     ) -> Dict[str, Any]:
-        results = []
-        provider = "searxng"
-        if self.searxng_url:
-            results = searxng_search(
-                searxng_url=self.searxng_url,
-                query=query,
-                max_results=self.web_search_max_results,
-                timeout_seconds=self.web_fetch_timeout_seconds,
-            )
-        if not results:
-            return {
-                "answer": (
-                    "I couldn't retrieve web search results. If you're running via Docker, "
-                    "start the internet profile (docker compose --profile internet up -d) "
-                    "and ensure SEARXNG_URL is set."
-                ),
-                "source_documents": [],
-                "sources": [],
-                "method": "web_search",
-                "intent": analysis.intent.value,
-            }
-
-        sources: list[dict[str, Any]] = []
-        context_lines: list[str] = []
-        for i, r in enumerate(results, start=1):
-            sources.append({"title": r.title, "url": r.url, "snippet": r.snippet, "provider": provider})
-            context_lines.append(f"[{i}] {r.title}\nURL: {r.url}\nSnippet: {r.snippet}")
-
-        fetched_texts: list[str] = []
-        for i, r in enumerate(results[:2], start=1):
-            text = fetch_url_text(
-                r.url,
-                timeout_seconds=self.web_fetch_timeout_seconds,
-                max_bytes=self.web_fetch_max_bytes,
-                allowlist_domains=self.web_allowlist_domains,
-            )
-            if text:
-                fetched_texts.append(f"[{i}] {text[:2000]}")
-
-        web_context = "\n\n".join(context_lines)
-        page_context = "\n\n".join(fetched_texts)
-        prompt = (
-            "Answer the user's question using only the following web search results and fetched page text.\n"
-            "If the answer cannot be verified from the context, say you don't know.\n"
-            "When you use a specific fact, cite it as [n] with the corresponding URL.\n\n"
-            f"Web results:\n{web_context}\n\n"
-            f"Fetched pages:\n{page_context}\n\n"
-            f"Question: {query}"
-        )
         try:
-            msg = self.llm.invoke(prompt)
-            content = msg.content if hasattr(msg, "content") else str(msg)
+            cfg = WebResearchConfig(
+                searxng_url=self.searxng_url,
+                web_search_max_results=self.web_search_max_results,
+                web_fetch_timeout_seconds=self.web_fetch_timeout_seconds,
+                web_fetch_max_bytes=self.web_fetch_max_bytes,
+                web_allowlist_domains=self.web_allowlist_domains,
+            )
+            agent = WebResearchAgent(llm=self.llm, config=cfg)
+            result = agent.research(query)
+            content = str(result.get("answer") or "")
+            sources = list(result.get("sources") or [])
+            intermediate_steps = list(result.get("intermediate_steps") or [])
         except Exception as e:
             content = f"Error processing query with web search: {str(e)}"
+            sources = []
+            intermediate_steps = []
 
         try:
             self.memory.save_context({"input": query}, {"answer": content})
@@ -397,6 +369,7 @@ Context from property database will be provided when relevant."""),
             "sources": sources,
             "method": "web_search",
             "intent": analysis.intent.value,
+            "intermediate_steps": intermediate_steps,
         }
 
     def _process_with_agent(
