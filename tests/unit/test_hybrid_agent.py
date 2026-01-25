@@ -92,6 +92,21 @@ class TestHybridPropertyAgent:
         mock_retriever.get_relevant_documents.assert_called_once_with(query)
         assert docs[0].metadata["id"] == "1"
 
+    def test_retrieve_documents_respects_k_without_filters(self, agent, mock_retriever):
+        query = "nice apartment"
+        analysis = QueryAnalysis(
+            query=query,
+            intent=QueryIntent.SIMPLE_RETRIEVAL,
+            complexity=Complexity.SIMPLE,
+            extracted_filters={},
+        )
+
+        docs = agent._retrieve_documents(query, analysis, k=1)
+
+        mock_retriever.get_relevant_documents.assert_called_once_with(query)
+        assert len(docs) == 1
+        assert docs[0].metadata["id"] == "1"
+
     @pytest.mark.asyncio
     async def test_aretrieve_documents_with_filters(self, agent, mock_retriever):
         query = "apartment in Krakow under 500k"
@@ -124,6 +139,22 @@ class TestHybridPropertyAgent:
 
         mock_retriever.asearch_with_filters.assert_not_called()
         mock_retriever.aget_relevant_documents.assert_called_once_with(query)
+        assert docs[0].metadata["id"] == "a1"
+
+    @pytest.mark.asyncio
+    async def test_aretrieve_documents_respects_k_without_filters(self, agent, mock_retriever):
+        query = "nice apartment"
+        analysis = QueryAnalysis(
+            query=query,
+            intent=QueryIntent.SIMPLE_RETRIEVAL,
+            complexity=Complexity.SIMPLE,
+            extracted_filters={},
+        )
+
+        docs = await agent._aretrieve_documents(query, analysis, k=1)
+
+        mock_retriever.aget_relevant_documents.assert_called_once_with(query)
+        assert len(docs) == 1
         assert docs[0].metadata["id"] == "a1"
 
     @pytest.mark.asyncio
@@ -192,9 +223,11 @@ class TestHybridPropertyAgent:
 
         agent.process_query = MagicMock(return_value={"answer": "Fallback"})
 
-        with patch.object(agent, "_astream_with_agent", new=failing_stream):
-            chunks = [chunk async for chunk in agent.astream_query("q")]
-            assert chunks == ['{"content": "Fallback"}']
+        with patch("agents.hybrid_agent.logger") as mock_logger:
+            with patch.object(agent, "_astream_with_agent", new=failing_stream):
+                chunks = [chunk async for chunk in agent.astream_query("q")]
+                assert chunks == ['{"content": "Fallback"}']
+            mock_logger.error.assert_called()
 
     @pytest.mark.asyncio
     async def test_astream_query_hybrid_path(self, agent):
@@ -230,9 +263,11 @@ class TestHybridPropertyAgent:
 
         agent.process_query = MagicMock(side_effect=RuntimeError("fallback failed"))
 
-        with patch.object(agent, "_astream_with_agent", new=failing_stream):
-            chunks = [chunk async for chunk in agent.astream_query("q")]
-            assert chunks == ['{"error": "boom"}']
+        with patch("agents.hybrid_agent.logger") as mock_logger:
+            with patch.object(agent, "_astream_with_agent", new=failing_stream):
+                chunks = [chunk async for chunk in agent.astream_query("q")]
+                assert chunks == ['{"error": "boom"}']
+            assert mock_logger.error.call_count >= 2
 
     @pytest.mark.asyncio
     async def test_astream_with_rag_emits_chunks(self, agent):
@@ -288,9 +323,11 @@ class TestHybridPropertyAgent:
             extracted_filters={"city": "Warsaw"},
         )
 
-        with patch.object(agent, "_aretrieve_documents", new=AsyncMock(side_effect=RuntimeError("fail"))):
-            chunks = [chunk async for chunk in agent._astream_with_agent("q", analysis)]
-            assert chunks == ['{"content": "Chunk"}']
+        with patch("agents.hybrid_agent.logger") as mock_logger:
+            with patch.object(agent, "_aretrieve_documents", new=AsyncMock(side_effect=RuntimeError("fail"))):
+                chunks = [chunk async for chunk in agent._astream_with_agent("q", analysis)]
+                assert chunks == ['{"content": "Chunk"}']
+            mock_logger.warning.assert_called()
 
     @pytest.mark.asyncio
     async def test_astream_hybrid_returns_rag_answer_for_simple(self, agent):

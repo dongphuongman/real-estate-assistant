@@ -198,6 +198,7 @@ describe("SettingsPage", () => {
   });
 
   it("shows retry on catalog load failure", async () => {
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
     mockGetModelsCatalog.mockRejectedValueOnce(new Error("API Error"));
 
     render(<SettingsPage />);
@@ -205,6 +206,8 @@ describe("SettingsPage", () => {
     await waitFor(() => {
       expect(screen.getByText("Failed to load model catalog. Please try again.")).toBeInTheDocument();
     });
+    expect(errorSpy).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
 
     mockGetModelsCatalog.mockResolvedValueOnce([]);
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));

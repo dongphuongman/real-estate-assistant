@@ -203,7 +203,8 @@ Context from property database will be provided when relevant."""),
         # Fallback to standard retrieval
         if self.verbose:
             logger.info("Using standard retrieval")
-        return self.retriever.get_relevant_documents(query)
+        docs = self.retriever.get_relevant_documents(query)
+        return docs[:k]
 
     async def _aretrieve_documents(
         self,
@@ -220,7 +221,8 @@ Context from property database will be provided when relevant."""),
 
         if self.verbose:
             logger.info("Using async standard retrieval")
-        return await self.retriever.aget_relevant_documents(query)
+        docs = await self.retriever.aget_relevant_documents(query)
+        return docs[:k]
 
     def _process_with_rag(
         self,

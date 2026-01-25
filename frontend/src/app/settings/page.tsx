@@ -217,8 +217,7 @@ export default function SettingsPage() {
     try {
       const data = await getModelsCatalog();
       setCatalog(data);
-    } catch (err) {
-      console.error("Failed to load model catalog:", err);
+    } catch {
       if (mode === "initial") {
         setCatalog(null);
       }

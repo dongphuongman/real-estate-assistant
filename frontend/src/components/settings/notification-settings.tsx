@@ -23,8 +23,7 @@ export function NotificationSettings() {
       const data = await getNotificationSettings();
       setSettings(data);
       setError(null);
-    } catch (err) {
-      console.error("Failed to load settings:", err);
+    } catch {
       setError("Failed to load settings. Please try again.");
     } finally {
       setLoading(false);
@@ -53,8 +52,7 @@ export function NotificationSettings() {
       const updated = await updateNotificationSettings(settings);
       setSettings(updated);
       setSuccess("Settings saved successfully.");
-    } catch (err) {
-      console.error("Failed to save settings:", err);
+    } catch {
       setError("Failed to save settings. Please try again.");
     } finally {
       setSaving(false);

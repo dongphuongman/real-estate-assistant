@@ -107,7 +107,6 @@ export default function ChatPage() {
       );
 
     } catch (error) {
-      console.warn("Chat error:", error);
       applyStreamError(error);
     } finally {
       setIsLoading(false);
@@ -214,7 +213,6 @@ export default function ChatPage() {
                       });
                     }
                   ).catch(err => {
-                    console.warn("Chat retry error:", err);
                     applyStreamError(err);
                   }).finally(() => setIsLoading(false));
                 }}

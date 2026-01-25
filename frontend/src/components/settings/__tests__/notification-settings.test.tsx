@@ -48,6 +48,7 @@ describe("NotificationSettings Component", () => {
   });
 
   it("handles error when loading fails", async () => {
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
     (getNotificationSettings as jest.Mock).mockRejectedValue(new Error("API Error"));
     render(<NotificationSettings />);
 
@@ -55,6 +56,8 @@ describe("NotificationSettings Component", () => {
       expect(screen.getByText("Failed to load settings. Please try again.")).toBeInTheDocument();
     });
     expect(screen.getByRole("button", { name: /Retry/i })).toBeInTheDocument();
+    expect(errorSpy).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
   });
 
   it("toggles checkboxes", async () => {
@@ -114,6 +117,7 @@ describe("NotificationSettings Component", () => {
   });
 
   it("handles save error", async () => {
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
     (getNotificationSettings as jest.Mock).mockResolvedValue(mockSettings);
     (updateNotificationSettings as jest.Mock).mockRejectedValue(new Error("Save failed"));
 
@@ -129,5 +133,7 @@ describe("NotificationSettings Component", () => {
     await waitFor(() => {
       expect(screen.getByText("Failed to save settings. Please try again.")).toBeInTheDocument();
     });
+    expect(errorSpy).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
   });
 });

@@ -5,7 +5,7 @@
         "id": 1,
         "title": "Integration with Real Estate APIs",
         "description": "Develop adapters for real estate APIs to fetch property data dynamically.",
-        "status": "completed",
+        "status": "done",
         "priority": "high",
         "subtasks": [],
         "dependencies": []
@@ -56,7 +56,7 @@
           {
             "id": 5,
             "title": "Add API provider integration tests",
-            "status": "completed",
+            "status": "done",
             "parentId": "undefined"
           }
         ],
@@ -255,7 +255,7 @@
         "id": 11,
         "title": "Remove legacy Streamlit UI",
         "description": "Delete Streamlit app and UI helpers; refactor Python to drop streamlit dependencies.",
-        "status": "completed",
+        "status": "done",
         "priority": "high",
         "subtasks": [],
         "dependencies": []
@@ -264,7 +264,7 @@
         "id": 12,
         "title": "Next.js accessibility improvements",
         "description": "Add ARIA roles/labels, error feedback, focus indicators in search page.",
-        "status": "completed",
+        "status": "done",
         "priority": "high",
         "subtasks": [],
         "dependencies": []
@@ -273,7 +273,7 @@
         "id": 13,
         "title": "Frontend API error correlation",
         "description": "Propagate X-Request-ID from API responses in frontend error handling.",
-        "status": "completed",
+        "status": "done",
         "priority": "medium",
         "subtasks": [],
         "dependencies": []
@@ -282,7 +282,7 @@
         "id": 14,
         "title": "CI/CD pipeline",
         "description": "Add GitHub Actions for lint, typecheck, unit/integration tests (frontend/backend).",
-        "status": "completed",
+        "status": "done",
         "priority": "high",
         "subtasks": [],
         "dependencies": []
@@ -291,7 +291,7 @@
         "id": 15,
         "title": "Documentation update (PRD & Architecture)",
         "description": "Revise PRD and Architecture to reflect V4 Next.js/FastAPI migration.",
-        "status": "completed",
+        "status": "done",
         "priority": "medium",
         "subtasks": [],
         "dependencies": []
@@ -300,7 +300,16 @@
         "id": 16,
         "title": "QA verification",
         "description": "Run backend unit/integration tests and frontend tests; fix failures.",
-        "status": "completed",
+        "status": "done",
+        "priority": "high",
+        "subtasks": [],
+        "dependencies": []
+      },
+      {
+        "id": 17,
+        "title": "Fix console noise and add dev scripts",
+        "description": "Remove frontend console noise, cap hybrid retriever k, add regression tests, and provide uv-based dev scripts/docs for Windows/Linux.",
+        "status": "done",
         "priority": "high",
         "subtasks": [],
         "dependencies": []
@@ -308,9 +317,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-18T21:28:01.996Z",
-      "taskCount": 10,
-      "completedCount": 0,
+      "lastModified": "2026-01-25T00:00:00.000Z",
+      "taskCount": 18,
+      "completedCount": 8,
       "tags": [
         "master"
       ]

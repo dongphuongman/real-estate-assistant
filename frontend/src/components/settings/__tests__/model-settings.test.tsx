@@ -146,4 +146,40 @@ describe("ModelSettings", () => {
       screen.getByText("Ollama is installed but not running. Start it with 'ollama serve'")
     ).toBeInTheDocument();
   });
+
+  it("shows error message when loading preferences fails", async () => {
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    (getModelPreferences as jest.Mock).mockRejectedValueOnce(new Error("API Error"));
+
+    render(<ModelSettings catalog={catalog} userEmail={"u1@example.com"} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Failed to load model preferences. Using local preferences.")).toBeInTheDocument();
+    });
+    expect(errorSpy).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
+  });
+
+  it("shows error message when saving preferences fails", async () => {
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    (getModelPreferences as jest.Mock).mockResolvedValue({ preferred_provider: "openai", preferred_model: "model-a" });
+    (updateModelPreferences as jest.Mock).mockRejectedValueOnce(new Error("Save failed"));
+
+    render(<ModelSettings catalog={catalog} userEmail={"u1@example.com"} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Provider")).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "ollama" } });
+    fireEvent.change(screen.getByLabelText("Model"), { target: { value: "model-c" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save Default Model" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Failed to save default model. Please try again.")).toBeInTheDocument();
+    });
+
+    expect(errorSpy).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
+  });
 });

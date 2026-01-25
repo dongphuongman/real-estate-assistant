@@ -51,6 +51,7 @@ describe("MortgageCalculator", () => {
   });
 
   it("handles errors", async () => {
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
     (calculateMortgage as jest.Mock).mockRejectedValueOnce(new Error("API Error"));
 
     render(<MortgageCalculator />);
@@ -60,6 +61,8 @@ describe("MortgageCalculator", () => {
     await waitFor(() => {
       expect(screen.getByText("Failed to calculate mortgage. Please check your inputs.")).toBeInTheDocument();
     });
+    expect(errorSpy).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
   });
 
   it("updates inputs", () => {

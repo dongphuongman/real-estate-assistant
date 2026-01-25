@@ -75,8 +75,8 @@ export function ModelSettings({ catalog, userEmail }: { catalog: ModelProviderCa
         setPreferredProvider(remote.preferred_provider);
         setPreferredModel(remote.preferred_model);
         persistLocalPreferences(userEmail, remote);
-      } catch (err) {
-        console.error("Failed to load model preferences:", err);
+      } catch {
+        setError("Failed to load model preferences. Using local preferences.");
       } finally {
         setLoading(false);
       }
@@ -143,8 +143,7 @@ export function ModelSettings({ catalog, userEmail }: { catalog: ModelProviderCa
       setPreferredModel(saved.preferred_model);
       persistLocalPreferences(userEmail, saved);
       setSuccess("Default model saved.");
-    } catch (err) {
-      console.error("Failed to save model preferences:", err);
+    } catch {
       setError("Failed to save default model. Please try again.");
     } finally {
       setSaving(false);

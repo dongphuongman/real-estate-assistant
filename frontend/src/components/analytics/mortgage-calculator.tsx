@@ -37,8 +37,7 @@ export function MortgageCalculator() {
     try {
       const data = await calculateMortgage(formData);
       setResult(data);
-    } catch (err) {
-      console.error("Mortgage calculation failed:", err);
+    } catch {
       setError("Failed to calculate mortgage. Please check your inputs.");
     } finally {
       setLoading(false);

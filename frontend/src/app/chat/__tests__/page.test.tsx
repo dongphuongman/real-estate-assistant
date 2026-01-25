@@ -81,6 +81,7 @@ describe("ChatPage", () => {
   })
 
   it("handles error state", async () => {
+    const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
     mockStream.mockRejectedValueOnce(new Error("Failed to start stream (request_id=req-xyz)"))
 
     render(<ChatPage />)
@@ -95,9 +96,12 @@ describe("ChatPage", () => {
       expect(screen.getByText("I apologize, but I encountered an error. Please try again.")).toBeInTheDocument()
     })
     expect(screen.getByText("request_id=req-xyz")).toBeInTheDocument()
+    expect(warnSpy).not.toHaveBeenCalled()
+    warnSpy.mockRestore()
   })
 
   it("shows retry button and retries stream", async () => {
+    const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
     mockStream
       .mockRejectedValueOnce(new Error("Failed to start stream (request_id=req-123)"))
       .mockImplementationOnce(async (_req, onChunk) => {
@@ -122,6 +126,8 @@ describe("ChatPage", () => {
     await waitFor(() => {
       expect(screen.getByText(/Recovered response/)).toBeInTheDocument()
     })
+    expect(warnSpy).not.toHaveBeenCalled()
+    warnSpy.mockRestore()
   })
 
   it("renders sources when provided by stream metadata", async () => {
