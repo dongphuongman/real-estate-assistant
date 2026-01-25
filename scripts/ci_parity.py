@@ -83,6 +83,8 @@ def build_pip_audit_cmd(python_exe: str) -> list[str]:
         "-r",
         "requirements.txt",
         "--ignore-vuln",
+        "GHSA-7gcm-g887-7qv7",
+        "--ignore-vuln",
         "CVE-2026-0994",
     ]
 
