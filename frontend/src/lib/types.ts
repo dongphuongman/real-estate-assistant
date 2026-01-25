@@ -155,6 +155,14 @@ export interface ModelProviderCatalog {
   runtime_error?: string | null;
 }
 
+export interface ModelRuntimeTestResponse {
+  provider: string;
+  is_local: boolean;
+  runtime_available?: boolean | null;
+  available_models?: string[] | null;
+  runtime_error?: string | null;
+}
+
 export interface ModelPreferences {
   preferred_provider: string | null;
   preferred_model: string | null;

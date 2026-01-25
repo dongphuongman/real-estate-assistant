@@ -907,6 +907,60 @@
         "title": "ModelProviderCatalog",
         "type": "object"
       },
+      "ModelRuntimeTestResponse": {
+        "properties": {
+          "available_models": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Available Models"
+          },
+          "is_local": {
+            "title": "Is Local",
+            "type": "boolean"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "runtime_available": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Runtime Available"
+          },
+          "runtime_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Runtime Error"
+          }
+        },
+        "required": [
+          "provider",
+          "is_local"
+        ],
+        "title": "ModelRuntimeTestResponse",
+        "type": "object"
+      },
       "MortgageInput": {
         "description": "Input for mortgage calculator.",
         "properties": {
@@ -3572,6 +3626,54 @@
           }
         ],
         "summary": "Update Notification Settings",
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/api/v1/settings/test-runtime": {
+      "get": {
+        "description": "Test connection/runtime status for a specific provider.",
+        "operationId": "test_runtime_api_v1_settings_test_runtime_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "provider",
+            "required": true,
+            "schema": {
+              "title": "Provider",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelRuntimeTestResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Test Runtime",
         "tags": [
           "Settings"
         ]

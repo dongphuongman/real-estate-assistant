@@ -3,6 +3,7 @@ import {
   ChatResponse,
   ModelProviderCatalog,
   ModelPreferences,
+  ModelRuntimeTestResponse,
   MortgageInput,
   MortgageResult,
   NotificationSettings,
@@ -113,6 +114,16 @@ export async function getModelsCatalog(): Promise<ModelProviderCatalog[]> {
     },
   });
   return handleResponse<ModelProviderCatalog[]>(response);
+}
+
+export async function testModelRuntime(provider: string): Promise<ModelRuntimeTestResponse> {
+  const response = await fetch(`${getApiUrl()}/settings/test-runtime?provider=${encodeURIComponent(provider)}`, {
+    method: "GET",
+    headers: {
+      ...buildHeaders(),
+    },
+  });
+  return handleResponse<ModelRuntimeTestResponse>(response);
 }
 
 export async function getModelPreferences(): Promise<ModelPreferences> {

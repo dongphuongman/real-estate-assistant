@@ -175,6 +175,7 @@ in V4.
 - Endpoints:
   - `GET/PUT /api/v1/settings/notifications` (requires `X-User-Email` or `?user_email=`)
   - `GET /api/v1/settings/models` (catalog only; local providers include `runtime_available`, `available_models`, and `runtime_error` derived from `validate_connection()`). The Settings UI exposes a **Refresh Catalog** action that re-fetches this endpoint to update local runtime diagnostics.
+  - `GET /api/v1/settings/test-runtime?provider=<provider_name>` (local providers only; runs a targeted runtime check without reloading the entire catalog)
   - `GET/PUT /api/v1/settings/model-preferences` (requires `X-User-Email` or `?user_email=`)
 - LLM selection:
   - [get_llm](file:///c:/Projects/ai-real-estate-assistant/api/dependencies.py) loads per-user model preferences

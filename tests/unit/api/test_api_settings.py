@@ -313,6 +313,116 @@ def test_list_model_catalog_returns_500_on_error(mock_get_settings, mock_factory
     assert response.json()["detail"] == "boom"
 
 
+@patch("api.routers.settings.ModelProviderFactory")
+@patch("api.auth.get_settings")
+def test_test_runtime_unknown_provider_returns_400_unknown_value(mock_get_settings, mock_factory):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+    mock_factory.list_providers.return_value = ["ollama"]
+
+    response = client.get("/api/v1/settings/test-runtime?provider=nope", headers=HEADERS_NO_USER)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Unknown provider: nope"
+
+
+@patch("api.routers.settings.ModelProviderFactory")
+@patch("api.auth.get_settings")
+def test_test_runtime_non_local_provider_returns_400(mock_get_settings, mock_factory):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+    mock_factory.list_providers.return_value = ["openai"]
+
+    provider = MagicMock()
+    provider.is_local = False
+    mock_factory.get_provider.return_value = provider
+
+    response = client.get("/api/v1/settings/test-runtime?provider=openai", headers=HEADERS_NO_USER)
+    assert response.status_code == 400
+    assert "is not a local runtime provider" in response.json()["detail"]
+
+
+@patch("api.routers.settings.ModelProviderFactory")
+@patch("api.auth.get_settings")
+def test_test_runtime_returns_status_and_available_models(mock_get_settings, mock_factory):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+    mock_factory.list_providers.return_value = ["ollama"]
+
+    provider = MagicMock()
+    provider.is_local = True
+    provider.validate_connection.return_value = (True, None)
+    provider.list_available_models.return_value = ["llama3.3:8b", "mistral:7b"]
+    mock_factory.get_provider.return_value = provider
+
+    response = client.get("/api/v1/settings/test-runtime?provider=ollama", headers=HEADERS_NO_USER)
+    assert response.status_code == 200
+    assert response.json() == {
+        "provider": "ollama",
+        "is_local": True,
+        "runtime_available": True,
+        "available_models": ["llama3.3:8b", "mistral:7b"],
+        "runtime_error": None,
+    }
+
+
+@patch("api.routers.settings.ModelProviderFactory")
+@patch("api.auth.get_settings")
+def test_test_runtime_unknown_provider_returns_400(mock_get_settings, mock_factory):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+
+    mock_factory.list_providers.return_value = ["ollama"]
+
+    response = client.get("/api/v1/settings/test-runtime?provider=unknown", headers=HEADERS_NO_USER)
+    assert response.status_code == 400
+    assert "Unknown provider" in response.json()["detail"]
+
+
+@patch("api.routers.settings.ModelProviderFactory")
+@patch("api.auth.get_settings")
+def test_test_runtime_remote_provider_returns_400(mock_get_settings, mock_factory):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+
+    mock_factory.list_providers.return_value = ["openai"]
+    openai_provider = MagicMock()
+    openai_provider.is_local = False
+    mock_factory.get_provider.return_value = openai_provider
+
+    response = client.get("/api/v1/settings/test-runtime?provider=openai", headers=HEADERS_NO_USER)
+    assert response.status_code == 400
+    assert "is not a local runtime provider" in response.json()["detail"]
+
+
+@patch("api.routers.settings.ModelProviderFactory")
+@patch("api.auth.get_settings")
+def test_test_runtime_local_provider_returns_runtime_fields(mock_get_settings, mock_factory):
+    mock_settings = MagicMock()
+    mock_settings.api_access_key = "test-key"
+    mock_get_settings.return_value = mock_settings
+
+    mock_factory.list_providers.return_value = ["ollama"]
+    ollama_provider = MagicMock()
+    ollama_provider.is_local = True
+    ollama_provider.validate_connection.return_value = (True, None)
+    ollama_provider.list_available_models.return_value = ["llama3.3:8b"]
+    mock_factory.get_provider.return_value = ollama_provider
+
+    response = client.get("/api/v1/settings/test-runtime?provider=ollama", headers=HEADERS_NO_USER)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["provider"] == "ollama"
+    assert data["is_local"] is True
+    assert data["runtime_available"] is True
+    assert data["available_models"] == ["llama3.3:8b"]
+    assert data["runtime_error"] is None
+
+
 @patch("api.routers.settings.user_model_preferences.MODEL_PREFS_MANAGER")
 @patch("api.auth.get_settings")
 def test_get_model_preferences(mock_get_settings, mock_model_prefs_manager):

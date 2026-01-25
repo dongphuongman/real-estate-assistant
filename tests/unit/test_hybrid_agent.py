@@ -1,11 +1,11 @@
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from langchain_core.documents import Document
 
 from agents.hybrid_agent import HybridPropertyAgent, SimpleRAGAgent
-from agents.query_analyzer import Complexity, QueryAnalysis, QueryIntent
+from agents.query_analyzer import Complexity, QueryAnalysis, QueryIntent, Tool
 
 
 class TestHybridPropertyAgent:
@@ -23,9 +23,14 @@ class TestHybridPropertyAgent:
             Document(page_content="Doc 1", metadata={"id": "1"}),
             Document(page_content="Doc 2", metadata={"id": "2"})
         ]
-        # Add search_with_filters method
         retriever.search_with_filters = MagicMock(return_value=[
             Document(page_content="Filtered Doc 1", metadata={"id": "f1"})
+        ])
+        retriever.asearch_with_filters = AsyncMock(return_value=[
+            Document(page_content="Async Filtered Doc 1", metadata={"id": "af1"})
+        ])
+        retriever.aget_relevant_documents = AsyncMock(return_value=[
+            Document(page_content="Async Doc 1", metadata={"id": "a1"})
         ])
         return retriever
         
@@ -87,6 +92,236 @@ class TestHybridPropertyAgent:
         mock_retriever.get_relevant_documents.assert_called_once_with(query)
         assert docs[0].metadata["id"] == "1"
 
+    @pytest.mark.asyncio
+    async def test_aretrieve_documents_with_filters(self, agent, mock_retriever):
+        query = "apartment in Krakow under 500k"
+        analysis = QueryAnalysis(
+            query=query,
+            intent=QueryIntent.FILTERED_SEARCH,
+            complexity=Complexity.MEDIUM,
+            extracted_filters={"city": "Krakow", "max_price": 500000}
+        )
+
+        docs = await agent._aretrieve_documents(query, analysis)
+
+        mock_retriever.asearch_with_filters.assert_called_once()
+        args, kwargs = mock_retriever.asearch_with_filters.call_args
+        assert args[0] == query
+        assert args[1] == {"city": "Krakow", "max_price": 500000}
+        assert docs[0].metadata["id"] == "af1"
+
+    @pytest.mark.asyncio
+    async def test_aretrieve_documents_without_filters(self, agent, mock_retriever):
+        query = "nice apartment"
+        analysis = QueryAnalysis(
+            query=query,
+            intent=QueryIntent.SIMPLE_RETRIEVAL,
+            complexity=Complexity.SIMPLE,
+            extracted_filters={}
+        )
+
+        docs = await agent._aretrieve_documents(query, analysis)
+
+        mock_retriever.asearch_with_filters.assert_not_called()
+        mock_retriever.aget_relevant_documents.assert_called_once_with(query)
+        assert docs[0].metadata["id"] == "a1"
+
+    @pytest.mark.asyncio
+    async def test_astream_with_agent_uses_async_retrieval(self, agent):
+        query = "complex query with filters"
+        analysis = QueryAnalysis(
+            query=query,
+            intent=QueryIntent.ANALYSIS,
+            complexity=Complexity.COMPLEX,
+            extracted_filters={"city": "Warsaw"}
+        )
+
+        async def fake_astream_events(inputs, version="v1"):
+            assert "Relevant properties" in inputs["input"]
+            assert "Filtered Context" in inputs["input"]
+            yield {
+                "event": "on_chat_model_stream",
+                "data": {"chunk": MagicMock(content="Chunk")}
+            }
+
+        with patch.object(
+            agent,
+            "_aretrieve_documents",
+            new=AsyncMock(return_value=[Document(page_content="Filtered Context", metadata={})])
+        ) as mock_retrieve:
+            agent.tool_agent.astream_events = fake_astream_events
+            chunks = [chunk async for chunk in agent._astream_with_agent(query, analysis)]
+            assert chunks == ['{"content": "Chunk"}']
+            mock_retrieve.assert_called_once_with(query, analysis, k=3)
+
+    @pytest.mark.asyncio
+    async def test_astream_query_rag_only_path(self, agent):
+        analysis = QueryAnalysis(
+            query="q",
+            intent=QueryIntent.SIMPLE_RETRIEVAL,
+            complexity=Complexity.SIMPLE,
+            tools_needed=[Tool.RAG_RETRIEVAL],
+            extracted_filters={},
+        )
+        agent.analyzer.analyze = MagicMock(return_value=analysis)
+
+        stream_calls = MagicMock()
+
+        async def fake_stream(_query, _analysis):
+            stream_calls()
+            yield '{"content": "RAG"}'
+
+        with patch.object(agent, "_astream_with_rag", new=fake_stream):
+            chunks = [chunk async for chunk in agent.astream_query("q")]
+            assert chunks == ['{"content": "RAG"}']
+            stream_calls.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_astream_query_fallbacks_to_sync_result(self, agent):
+        analysis = QueryAnalysis(
+            query="q",
+            intent=QueryIntent.ANALYSIS,
+            complexity=Complexity.COMPLEX,
+            extracted_filters={},
+        )
+        agent.analyzer.analyze = MagicMock(return_value=analysis)
+
+        async def failing_stream(*_args, **_kwargs):
+            raise RuntimeError("boom")
+            yield '{"content": "never"}'
+
+        agent.process_query = MagicMock(return_value={"answer": "Fallback"})
+
+        with patch.object(agent, "_astream_with_agent", new=failing_stream):
+            chunks = [chunk async for chunk in agent.astream_query("q")]
+            assert chunks == ['{"content": "Fallback"}']
+
+    @pytest.mark.asyncio
+    async def test_astream_query_hybrid_path(self, agent):
+        analysis = QueryAnalysis(
+            query="q",
+            intent=QueryIntent.FILTERED_SEARCH,
+            complexity=Complexity.MEDIUM,
+            tools_needed=[Tool.RAG_RETRIEVAL],
+            extracted_filters={},
+        )
+        agent.analyzer.analyze = MagicMock(return_value=analysis)
+
+        async def fake_stream(_query, _analysis):
+            yield '{"content": "HYBRID"}'
+
+        with patch.object(agent, "_astream_hybrid", new=fake_stream):
+            chunks = [chunk async for chunk in agent.astream_query("q")]
+            assert chunks == ['{"content": "HYBRID"}']
+
+    @pytest.mark.asyncio
+    async def test_astream_query_yields_error_when_fallback_fails(self, agent):
+        analysis = QueryAnalysis(
+            query="q",
+            intent=QueryIntent.ANALYSIS,
+            complexity=Complexity.COMPLEX,
+            extracted_filters={},
+        )
+        agent.analyzer.analyze = MagicMock(return_value=analysis)
+
+        async def failing_stream(*_args, **_kwargs):
+            raise RuntimeError("boom")
+            yield '{"content": "never"}'
+
+        agent.process_query = MagicMock(side_effect=RuntimeError("fallback failed"))
+
+        with patch.object(agent, "_astream_with_agent", new=failing_stream):
+            chunks = [chunk async for chunk in agent.astream_query("q")]
+            assert chunks == ['{"error": "boom"}']
+
+    @pytest.mark.asyncio
+    async def test_astream_with_rag_emits_chunks(self, agent):
+        async def fake_astream_events(_inputs, version="v1"):
+            yield {
+                "event": "on_chat_model_stream",
+                "data": {"chunk": MagicMock(content="RAG Chunk")},
+            }
+
+        agent.rag_chain.astream_events = fake_astream_events
+        analysis = QueryAnalysis(
+            query="q",
+            intent=QueryIntent.SIMPLE_RETRIEVAL,
+            complexity=Complexity.SIMPLE,
+            extracted_filters={},
+        )
+        chunks = [chunk async for chunk in agent._astream_with_rag("q", analysis)]
+        assert chunks == ['{"content": "RAG Chunk"}']
+
+    @pytest.mark.asyncio
+    async def test_astream_with_agent_uses_rag_context(self, agent):
+        async def fake_astream_events(inputs, version="v1"):
+            assert "Based on this information about properties" in inputs["input"]
+            assert "RAG context" in inputs["input"]
+            yield {
+                "event": "on_chat_model_stream",
+                "data": {"chunk": MagicMock(content="Chunk")},
+            }
+
+        agent.tool_agent.astream_events = fake_astream_events
+        analysis = QueryAnalysis(
+            query="q",
+            intent=QueryIntent.SIMPLE_RETRIEVAL,
+            complexity=Complexity.SIMPLE,
+            extracted_filters={},
+        )
+        chunks = [chunk async for chunk in agent._astream_with_agent("q", analysis, rag_context="RAG context")]
+        assert chunks == ['{"content": "Chunk"}']
+
+    @pytest.mark.asyncio
+    async def test_astream_with_agent_logs_on_retrieval_error(self, agent):
+        async def fake_astream_events(_inputs, version="v1"):
+            yield {
+                "event": "on_chat_model_stream",
+                "data": {"chunk": MagicMock(content="Chunk")},
+            }
+
+        agent.tool_agent.astream_events = fake_astream_events
+        analysis = QueryAnalysis(
+            query="q",
+            intent=QueryIntent.FILTERED_SEARCH,
+            complexity=Complexity.MEDIUM,
+            extracted_filters={"city": "Warsaw"},
+        )
+
+        with patch.object(agent, "_aretrieve_documents", new=AsyncMock(side_effect=RuntimeError("fail"))):
+            chunks = [chunk async for chunk in agent._astream_with_agent("q", analysis)]
+            assert chunks == ['{"content": "Chunk"}']
+
+    @pytest.mark.asyncio
+    async def test_astream_hybrid_returns_rag_answer_for_simple(self, agent):
+        analysis = QueryAnalysis(
+            query="q",
+            intent=QueryIntent.SIMPLE_RETRIEVAL,
+            complexity=Complexity.SIMPLE,
+            extracted_filters={},
+        )
+        agent.rag_chain.ainvoke = AsyncMock(return_value={"answer": "RAG Answer"})
+        chunks = [chunk async for chunk in agent._astream_hybrid("q", analysis)]
+        assert chunks == ['{"content": "RAG Answer"}']
+
+    @pytest.mark.asyncio
+    async def test_aretrieve_documents_with_filters_falls_back_without_async_filter(self, agent):
+        analysis = QueryAnalysis(
+            query="q",
+            intent=QueryIntent.FILTERED_SEARCH,
+            complexity=Complexity.MEDIUM,
+            extracted_filters={"city": "Krakow"},
+        )
+        retriever = MagicMock(spec_set=["aget_relevant_documents"])
+        retriever.aget_relevant_documents = AsyncMock(return_value=[
+            Document(page_content="Async Doc 1", metadata={"id": "fallback"})
+        ])
+        agent.retriever = retriever
+
+        docs = await agent._aretrieve_documents("q", analysis)
+
+        retriever.aget_relevant_documents.assert_called_once_with("q")
+        assert docs[0].metadata["id"] == "fallback"
     def test_process_with_agent_uses_filtered_retrieval(self, agent, mock_retriever):
         """Test _process_with_agent calls _retrieve_documents."""
         query = "complex query with filters"

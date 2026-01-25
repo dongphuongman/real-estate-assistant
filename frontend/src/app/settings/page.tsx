@@ -6,7 +6,7 @@ import { ModelSettings } from "@/components/settings/model-settings";
 import { NotificationSettings } from "@/components/settings/notification-settings";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getModelsCatalog } from "@/lib/api";
+import { getModelsCatalog, testModelRuntime } from "@/lib/api";
 import type { ModelProviderCatalog } from "@/lib/types";
 
 function formatMoneyPer1m(value: number, currency: string): string {
@@ -15,6 +15,50 @@ function formatMoneyPer1m(value: number, currency: string): string {
 }
 
 function ModelCatalogComparisonTable({ catalog }: { catalog: ModelProviderCatalog[] }) {
+  const [runtimeTests, setRuntimeTests] = useState<
+    Record<string, { loading: boolean; status: "success" | "error"; message: string; availableModels: string[] }>
+  >({});
+
+  const runRuntimeTest = async (providerName: string) => {
+    setRuntimeTests((prev) => ({
+      ...prev,
+      [providerName]: {
+        loading: true,
+        status: "success",
+        message: "Testing connection...",
+        availableModels: prev[providerName]?.availableModels ?? [],
+      },
+    }));
+
+    try {
+      const result = await testModelRuntime(providerName);
+      const ok = result.runtime_available === true;
+      const models = Array.isArray(result.available_models) ? result.available_models : [];
+      const message = ok ? "Connection successful." : result.runtime_error || "Connection failed.";
+      setRuntimeTests((prev) => ({
+        ...prev,
+        [providerName]: {
+          loading: false,
+          status: ok ? "success" : "error",
+          message,
+          availableModels: models,
+        },
+      }));
+    } catch (err) {
+      const msg =
+        err instanceof Error && err.message && err.message.trim() ? err.message.trim() : "Connection failed.";
+      setRuntimeTests((prev) => ({
+        ...prev,
+        [providerName]: {
+          loading: false,
+          status: "error",
+          message: msg,
+          availableModels: prev[providerName]?.availableModels ?? [],
+        },
+      }));
+    }
+  };
+
   return (
     <div className="grid gap-6">
       {catalog.map((provider) => (
@@ -28,6 +72,33 @@ function ModelCatalogComparisonTable({ catalog }: { catalog: ModelProviderCatalo
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {provider.is_local ? (
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card px-4 py-3 text-sm">
+                <div className="flex-1">
+                  <div className="font-medium">Runtime check</div>
+                  {runtimeTests[provider.name] ? (
+                    <div
+                      className={
+                        runtimeTests[provider.name].status === "success"
+                          ? "text-xs text-emerald-600"
+                          : "text-xs text-red-600"
+                      }
+                    >
+                      {runtimeTests[provider.name].message}
+                    </div>
+                  ) : (
+                    <div className="text-xs text-muted-foreground">Run a targeted runtime check for this provider.</div>
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => runRuntimeTest(provider.name)}
+                  disabled={runtimeTests[provider.name]?.loading === true}
+                >
+                  {runtimeTests[provider.name]?.loading ? "Testing..." : "Test Connection"}
+                </Button>
+              </div>
+            ) : null}
             <div className="w-full overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -74,6 +145,11 @@ function ModelCatalogComparisonTable({ catalog }: { catalog: ModelProviderCatalo
                 </p>
                 <div className="rounded-lg border bg-card p-4 text-sm">
                   <div className="font-medium">Local models & offline usage</div>
+                  {runtimeTests[provider.name] && runtimeTests[provider.name].availableModels.length ? (
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      Runtime check detected models: {runtimeTests[provider.name].availableModels.join(", ")}
+                    </div>
+                  ) : null}
                   <div className="mt-1 text-muted-foreground">
                     {provider.runtime_available === false
                       ? "Local runtime not detected. Start your local runtime and ensure the API can reach it."

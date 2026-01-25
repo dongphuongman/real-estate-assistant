@@ -205,6 +205,14 @@ class ModelProviderCatalog(BaseModel):
     runtime_error: Optional[str] = None
 
 
+class ModelRuntimeTestResponse(BaseModel):
+    provider: str
+    is_local: bool
+    runtime_available: Optional[bool] = None
+    available_models: Optional[List[str]] = None
+    runtime_error: Optional[str] = None
+
+
 class ModelPreferences(BaseModel):
     preferred_provider: Optional[str] = None
     preferred_model: Optional[str] = None

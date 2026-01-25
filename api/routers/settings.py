@@ -9,6 +9,7 @@ from api.models import (
     ModelPreferencesUpdate,
     ModelPricing,
     ModelProviderCatalog,
+    ModelRuntimeTestResponse,
     NotificationSettings,
 )
 from models.provider_factory import ModelProviderFactory
@@ -158,6 +159,40 @@ async def list_model_catalog():
         return providers
     except Exception as e:
         logger.error(f"Error listing model catalog: {e}")
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.get("/settings/test-runtime", response_model=ModelRuntimeTestResponse)
+async def test_runtime(provider: str = Query(...)):
+    """
+    Test connection/runtime status for a specific provider.
+    """
+    try:
+        allowed_providers = set(ModelProviderFactory.list_providers())
+        if provider not in allowed_providers:
+            raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
+
+        p = ModelProviderFactory.get_provider(provider)
+        if not p.is_local:
+            raise HTTPException(status_code=400, detail=f"Provider '{provider}' is not a local runtime provider")
+
+        runtime_available, runtime_error = p.validate_connection()
+        available_models = []
+        if runtime_available and hasattr(p, "list_available_models"):
+            maybe_models = p.list_available_models()
+            available_models = list(maybe_models) if maybe_models else []
+
+        return ModelRuntimeTestResponse(
+            provider=provider,
+            is_local=True,
+            runtime_available=runtime_available,
+            available_models=available_models,
+            runtime_error=runtime_error,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error testing runtime: {e}")
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 

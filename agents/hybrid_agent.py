@@ -205,6 +205,23 @@ Context from property database will be provided when relevant."""),
             logger.info("Using standard retrieval")
         return self.retriever.get_relevant_documents(query)
 
+    async def _aretrieve_documents(
+        self,
+        query: str,
+        analysis: QueryAnalysis,
+        k: int = 5
+    ) -> List[Document]:
+        filters = analysis.extracted_filters
+
+        if filters and hasattr(self.retriever, "asearch_with_filters"):
+            if self.verbose:
+                logger.info("Using async hybrid search with filters: %s", filters)
+            return cast(List[Document], await self.retriever.asearch_with_filters(query, filters, k=k))
+
+        if self.verbose:
+            logger.info("Using async standard retrieval")
+        return await self.retriever.aget_relevant_documents(query)
+
     def _process_with_rag(
         self,
         query: str,
@@ -358,10 +375,7 @@ Context from property database will be provided when relevant."""),
             JSON string chunks containing 'content' or 'error'.
         """
         try:
-            # Analyze query
             analysis = self.analyzer.analyze(query)
-            
-            # Route to appropriate processor
             if analysis.should_use_rag_only():
                 async for chunk in self._astream_with_rag(query, analysis):
                     yield chunk
@@ -369,12 +383,18 @@ Context from property database will be provided when relevant."""),
                 async for chunk in self._astream_with_agent(query, analysis):
                     yield chunk
             else:
-                # Hybrid
                 async for chunk in self._astream_hybrid(query, analysis):
                     yield chunk
-                    
         except Exception as e:
             logger.error(f"Streaming failed: {e}")
+            try:
+                result = self.process_query(query)
+                answer = result.get("answer", "")
+                if answer:
+                    yield json.dumps({"content": answer})
+                    return
+            except Exception as fallback_error:
+                logger.error(f"Streaming fallback failed: {fallback_error}")
             yield json.dumps({"error": str(e)})
 
     async def _astream_with_rag(
@@ -383,18 +403,15 @@ Context from property database will be provided when relevant."""),
         analysis: QueryAnalysis
     ) -> AsyncIterator[str]:
         """Stream RAG response."""
-        try:
-            async for event in self.rag_chain.astream_events(
-                {"question": query},
-                version="v1"
-            ):
-                kind = event["event"]
-                if kind == "on_chat_model_stream":
-                    content = event["data"]["chunk"].content
-                    if content:
-                        yield json.dumps({"content": content})
-        except Exception as e:
-             yield json.dumps({"error": str(e)})
+        async for event in self.rag_chain.astream_events(
+            {"question": query},
+            version="v1"
+        ):
+            kind = event["event"]
+            if kind == "on_chat_model_stream":
+                content = event["data"]["chunk"].content
+                if content:
+                    yield json.dumps({"content": content})
 
     async def _astream_with_agent(
         self,
@@ -409,20 +426,16 @@ Context from property database will be provided when relevant."""),
         if rag_context:
             input_text = f"Based on this information about properties:\n\n{rag_context}\n\nNow answer this: {query}"
         elif analysis.intent not in [QueryIntent.CALCULATION, QueryIntent.GENERAL_QUESTION]:
-             # Async fetch docs
-             try:
-                 # We use sync retrieval here for now to support filters
-                 context_docs = self._retrieve_documents(query, analysis, k=3)
-                 if context_docs:
+            try:
+                context_docs = await self._aretrieve_documents(query, analysis, k=3)
+                if context_docs:
                     context_text = "\n\n".join([
                         f"Property {i+1}: {doc.page_content[:200]}..."
                         for i, doc in enumerate(context_docs)
                     ])
                     input_text = f"{query}\n\nRelevant properties:\n{context_text}"
-             except Exception as e:
-                 logger.warning(f"Retrieval failed in stream: {e}")
-                 # If retrieval fails, fallback to no context
-                 pass
+            except Exception as e:
+                logger.warning(f"Retrieval failed in stream: {e}")
 
         async for event in self.tool_agent.astream_events(
             {"input": input_text},
@@ -440,22 +453,14 @@ Context from property database will be provided when relevant."""),
         analysis: QueryAnalysis
     ) -> AsyncIterator[str]:
         """Stream Hybrid response."""
-        try:
-            # 1. Run RAG silently
-            rag_response = await self.rag_chain.ainvoke({"question": query})
-            answer = rag_response["answer"]
-            
-            if analysis.requires_computation or analysis.complexity == Complexity.COMPLEX:
-                # We need agent. Stream agent.
-                async for chunk in self._astream_with_agent(query, analysis, rag_context=answer):
-                    yield chunk
-            else:
-                # RAG is enough. Yield as single chunk (simulating stream end)
-                yield json.dumps({"content": answer})
-        except Exception:
-            # Fallback to streaming RAG
-            async for chunk in self._astream_with_rag(query, analysis):
+        rag_response = await self.rag_chain.ainvoke({"question": query})
+        answer = rag_response["answer"]
+
+        if analysis.requires_computation or analysis.complexity == Complexity.COMPLEX:
+            async for chunk in self._astream_with_agent(query, analysis, rag_context=answer):
                 yield chunk
+        else:
+            yield json.dumps({"content": answer})
 
     def clear_memory(self) -> None:
         """Clear conversation memory."""

@@ -1,12 +1,13 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import SettingsPage from "../page";
-import { getModelsCatalog } from "@/lib/api";
+import { getModelsCatalog, testModelRuntime } from "@/lib/api";
 
 // Mock API
 jest.mock("@/lib/api", () => ({
   getNotificationSettings: jest.fn(),
   updateNotificationSettings: jest.fn(),
   getModelsCatalog: jest.fn(),
+  testModelRuntime: jest.fn(),
   getModelPreferences: jest.fn(),
   updateModelPreferences: jest.fn(),
 }));
@@ -26,6 +27,7 @@ jest.mock("@/components/settings/model-settings", () => ({
 
 describe("SettingsPage", () => {
   const mockGetModelsCatalog = getModelsCatalog as jest.Mock;
+  const mockTestModelRuntime = testModelRuntime as jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -86,6 +88,51 @@ describe("SettingsPage", () => {
     expect(screen.getByText("USD 2.50")).toBeInTheDocument();
     expect(screen.getByText("USD 10.00")).toBeInTheDocument();
     expect(screen.getByText("streaming, vision")).toBeInTheDocument();
+  });
+
+  it("runs targeted runtime test for a local provider", async () => {
+    mockGetModelsCatalog.mockResolvedValueOnce([
+      {
+        name: "ollama",
+        display_name: "Ollama",
+        is_local: true,
+        requires_api_key: false,
+        runtime_available: false,
+        available_models: [],
+        models: [
+          {
+            id: "llama3.3:8b",
+            display_name: "Llama 3.3 8B",
+            provider_name: "Ollama",
+            context_window: 128000,
+            pricing: null,
+            capabilities: [],
+            description: null,
+            recommended_for: [],
+          },
+        ],
+      },
+    ]);
+    mockTestModelRuntime.mockResolvedValueOnce({
+      provider: "ollama",
+      is_local: true,
+      runtime_available: true,
+      available_models: ["llama3.3:8b"],
+      runtime_error: null,
+    });
+
+    render(<SettingsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Test Connection" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Test Connection" }));
+
+    await waitFor(() => {
+      expect(mockTestModelRuntime).toHaveBeenCalledWith("ollama");
+      expect(screen.getByText(/Connection successful/i)).toBeInTheDocument();
+    });
   });
 
   it("refreshes catalog without clearing existing table", async () => {

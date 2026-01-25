@@ -78,6 +78,9 @@ Cross-Origin Resource Sharing (CORS) is controlled via environment:
 - `available_models`: models detected as installed/available on the runtime (may be empty)
 - `runtime_error`: a human-readable hint when `runtime_available=false`
 
+For targeted troubleshooting (without reloading the full catalog), use:
+- `GET /api/v1/settings/test-runtime?provider=<provider_name>` (local providers only)
+
 Example (local runtime unavailable):
 
 ```json
@@ -662,6 +665,27 @@ Update notification settings for the current user.
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | NotificationSettings |
+| 422 | Validation Error | HTTPValidationError |
+
+## GET /api/v1/settings/test-runtime
+
+**Summary**: Test Runtime
+
+**Tags**: Settings
+
+Test connection/runtime status for a specific provider.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| provider | query | string | yes |  |
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | ModelRuntimeTestResponse |
 | 422 | Validation Error | HTTPValidationError |
 
 ## GET /api/v1/tools

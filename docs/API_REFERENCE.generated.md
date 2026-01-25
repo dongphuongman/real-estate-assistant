@@ -426,6 +426,27 @@ Update notification settings for the current user.
 | 200 | Successful Response | NotificationSettings |
 | 422 | Validation Error | HTTPValidationError |
 
+## GET /api/v1/settings/test-runtime
+
+**Summary**: Test Runtime
+
+**Tags**: Settings
+
+Test connection/runtime status for a specific provider.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| provider | query | string | yes |  |
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | ModelRuntimeTestResponse |
+| 422 | Validation Error | HTTPValidationError |
+
 ## GET /api/v1/tools
 
 **Summary**: List Tools
