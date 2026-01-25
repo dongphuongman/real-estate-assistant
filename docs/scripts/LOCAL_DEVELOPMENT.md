@@ -30,6 +30,11 @@ The helper script supports two modes:
 
 If you run with `--mode auto` (default), it uses Docker if available, otherwise falls back to local mode.
 
+Extra flags:
+- `--dry-run`: prints the commands and key env defaults (secrets redacted) without starting anything
+- `--service backend|frontend|all`: start only the backend or only the frontend (default: `all`)
+- `--no-bootstrap`: skip `uv` environment bootstrap in local backend mode (assumes deps already installed)
+
 ### Windows (PowerShell)
 
 ```powershell
@@ -41,6 +46,8 @@ Force a specific mode:
 ```powershell
 .\scripts\dev\start.ps1 --mode docker
 .\scripts\dev\start.ps1 --mode local
+.\scripts\dev\start.ps1 --mode local --service backend
+.\scripts\dev\start.ps1 --mode local --dry-run
 ```
 
 ### Linux

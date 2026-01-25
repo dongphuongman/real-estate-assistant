@@ -9,6 +9,7 @@ The V4 API is built with FastAPI and provides a RESTful interface for the AI Rea
 ### Base URLs (Docker Compose)
 - Backend: `http://localhost:8000`
 - Frontend: `http://localhost:3000`
+- One-command dev start (auto Docker/local): `.\scripts\dev\start.ps1` (details: `docs/scripts/LOCAL_DEVELOPMENT.md`)
 
 ### OpenAPI & Interactive Docs
 - Swagger UI: `http://localhost:8000/docs`

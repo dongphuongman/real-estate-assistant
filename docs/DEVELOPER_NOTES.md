@@ -129,6 +129,15 @@ in V4.
 
 ## Frontend (Next.js)
 - Directory: `frontend/`
+- One-command dev start (backend + frontend):
+  ```powershell
+  .\scripts\dev\start.ps1
+  ```
+- Useful flags:
+  - `--mode local --service backend` (backend only)
+  - `--mode local --dry-run` (prints commands; secrets redacted)
+  - `--mode local --no-bootstrap` (skip uv bootstrap)
+- More: `docs/scripts/LOCAL_DEVELOPMENT.md`
 - Dev:
   ```powershell
   cd frontend
