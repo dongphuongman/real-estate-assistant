@@ -133,13 +133,7 @@ class AppSettings(BaseModel):
 
     # Dataset URLs
     default_datasets: list[str] = Field(
-        default_factory=lambda: [
-            "dataset/pl/apartments_rent_pl_2024_01.csv",
-            "dataset/pl/apartments_rent_pl_2024_02.csv",
-            "dataset/pl/apartments_rent_pl_2024_03.csv",
-            "dataset/pl/apartments_rent_pl_2024_04.csv",
-            "dataset/pl/apartments_rent_pl_2024_05.csv",
-        ]
+        default_factory=lambda: _parse_csv_list(os.getenv("DEFAULT_DATASETS"))
     )
 
     class Config:
