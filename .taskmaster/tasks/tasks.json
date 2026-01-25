@@ -313,13 +313,22 @@
         "priority": "high",
         "subtasks": [],
         "dependencies": []
+      },
+      {
+        "id": 18,
+        "title": "Fix LLM initialization error and add local fallback",
+        "description": "Fix provider_name kwarg leaking into OpenAI calls; add Ollama low-resource fallback model for local/dev usage; add regression tests.",
+        "status": "done",
+        "priority": "high",
+        "subtasks": [],
+        "dependencies": []
       }
     ],
     "metadata": {
       "version": "1.0.0",
       "lastModified": "2026-01-25T00:00:00.000Z",
-      "taskCount": 18,
-      "completedCount": 8,
+      "taskCount": 19,
+      "completedCount": 9,
       "tags": [
         "master"
       ]

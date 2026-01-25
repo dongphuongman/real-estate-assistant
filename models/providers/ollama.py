@@ -32,7 +32,11 @@ class OllamaProvider(LocalModelProvider):
         super().__init__(config)
         # Default to local Ollama instance
         if "base_url" not in self.config:
-            self.config["base_url"] = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+            self.config["base_url"] = (
+                os.getenv("OLLAMA_BASE_URL")
+                or os.getenv("OLLAMA_API_BASE")
+                or "http://localhost:11434"
+            )
 
     def list_models(self) -> List[ModelInfo]:
         """List popular Ollama models."""

@@ -22,7 +22,7 @@ class FakeProvider:
 
     def create_model(self, model_id, temperature, max_tokens, **kwargs):
         self.created.append(
-            dict(model_id=model_id, temperature=temperature, max_tokens=max_tokens)
+            dict(model_id=model_id, temperature=temperature, max_tokens=max_tokens, kwargs=kwargs)
         )
         return types.SimpleNamespace(stream=True, model_id=model_id)
 
@@ -43,6 +43,7 @@ def test_get_llm_uses_default_provider_and_first_model(monkeypatch):
     llm = deps.get_llm()
     assert getattr(llm, "model_id", None) == "model-a"
     assert fake.created and fake.created[0]["model_id"] == "model-a"
+    assert "provider_name" not in fake.created[0]["kwargs"]
 
 
 def test_get_llm_raises_when_no_models(monkeypatch):

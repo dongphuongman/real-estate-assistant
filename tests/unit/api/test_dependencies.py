@@ -5,6 +5,7 @@ import pytest
 
 import api.dependencies as dep_mod
 from api.dependencies import get_agent, get_llm, get_vector_store
+from models.provider_factory import ModelProviderFactory
 
 
 class _StubDocRetriever:
@@ -15,6 +16,13 @@ class _StubDocRetriever:
 class _StubStore:
     def get_retriever(self):
         return _StubDocRetriever()
+
+
+@pytest.fixture(autouse=True)
+def _clear_factory_cache():
+    ModelProviderFactory.clear_cache()
+    yield
+    ModelProviderFactory.clear_cache()
 
 
 def test_get_vector_store_returns_none_on_exception(monkeypatch):
@@ -41,6 +49,9 @@ def test_get_vector_store_caches_success(monkeypatch):
 
 
 def test_get_llm_chooses_first_model_when_default_missing(monkeypatch):
+    dep_mod.settings.default_provider = "openai"
+    dep_mod.settings.default_model = None
+
     class _ModelInfo(SimpleNamespace):
         pass
 
@@ -48,16 +59,20 @@ def test_get_llm_chooses_first_model_when_default_missing(monkeypatch):
         def list_models(self):
             return [_ModelInfo(id="m1")]
 
-        def create_model(self, model_id, provider_name, temperature, max_tokens):
-            return SimpleNamespace(id=model_id, provider=provider_name, t=temperature, max_tokens=max_tokens)
+        def create_model(self, model_id, temperature, max_tokens, **kwargs):
+            return SimpleNamespace(id=model_id, kwargs=kwargs, t=temperature, max_tokens=max_tokens)
 
     import models.provider_factory as pf_mod
     monkeypatch.setattr(pf_mod.ModelProviderFactory, "get_provider", lambda name: _Provider())
     llm = get_llm()
     assert getattr(llm, "id", "") == "m1"
+    assert "provider_name" not in getattr(llm, "kwargs", {})
 
 
 def test_get_llm_raises_when_no_models(monkeypatch):
+    dep_mod.settings.default_provider = "openai"
+    dep_mod.settings.default_model = None
+
     class _Provider:
         def list_models(self):
             return []

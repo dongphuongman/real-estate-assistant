@@ -39,11 +39,19 @@ def _ensure_uv_dev_env(root: Path) -> None:
     _run_checked([sys.executable, str(root / "scripts" / "dev" / "bootstrap_uv.py"), "--dev"], cwd=root)
 
 
-def _run_docker(root: Path) -> int:
+def _run_docker(root: Path, *, profiles: list[str]) -> int:
     if not _has_docker_compose():
         print("Docker Compose is not available. Run with --mode local.", file=sys.stderr)
         return 2
-    subprocess.run(["docker", "compose", "up", "--build"], cwd=str(root))
+    env = os.environ.copy()
+    if "gpu" in profiles:
+        env.setdefault("OLLAMA_API_BASE", "http://ollama-gpu:11434")
+        env.setdefault("OLLAMA_HOST", "http://ollama-gpu:11434")
+    cmd = ["docker", "compose"]
+    for profile in profiles:
+        cmd.extend(["--profile", profile])
+    cmd.extend(["up", "--build"])
+    subprocess.run(cmd, cwd=str(root), env=env)
     return 0
 
 
@@ -136,6 +144,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=["auto", "docker", "local"], default="auto")
     parser.add_argument("--service", choices=["all", "backend", "frontend"], default="all")
+    parser.add_argument("--docker-profile", action="append", default=[])
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--no-bootstrap", action="store_true")
     args = parser.parse_args(argv)
@@ -145,15 +154,23 @@ def main(argv: list[str] | None = None) -> int:
     if args.mode == "auto":
         if _has_docker_compose():
             if args.dry_run:
-                print("DOCKER_CMD: docker compose up --build")
+                prefix = "docker compose"
+                profiles = " ".join(f"--profile {p}" for p in args.docker_profile)
+                cmd = f"{prefix} {profiles} up --build".strip()
+                cmd = " ".join(cmd.split())
+                print(f"DOCKER_CMD: {cmd}")
                 return 0
-            return _run_docker(root)
+            return _run_docker(root, profiles=list(args.docker_profile))
         return _run_local(root, service=args.service, no_bootstrap=bool(args.no_bootstrap), dry_run=bool(args.dry_run))
     if args.mode == "docker":
         if args.dry_run:
-            print("DOCKER_CMD: docker compose up --build")
+            prefix = "docker compose"
+            profiles = " ".join(f"--profile {p}" for p in args.docker_profile)
+            cmd = f"{prefix} {profiles} up --build".strip()
+            cmd = " ".join(cmd.split())
+            print(f"DOCKER_CMD: {cmd}")
             return 0
-        return _run_docker(root)
+        return _run_docker(root, profiles=list(args.docker_profile))
     return _run_local(root, service=args.service, no_bootstrap=bool(args.no_bootstrap), dry_run=bool(args.dry_run))
 
 

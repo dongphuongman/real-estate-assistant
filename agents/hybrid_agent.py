@@ -60,7 +60,7 @@ class HybridPropertyAgent:
         self.memory = memory or ConversationBufferMemory(
             memory_key="chat_history",
             return_messages=True,
-            output_key="output"
+            output_key="answer"
         )
         
         # Try to extract vector_store from retriever to enable tool actions

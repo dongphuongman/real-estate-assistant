@@ -81,13 +81,20 @@ class AppSettings(BaseModel):
     auth_storage_dir: str = Field(default_factory=lambda: os.getenv("AUTH_STORAGE_DIR", ".auth"))
 
     # Model Defaults
-    default_provider: str = Field(default="openai", description="Default LLM provider")
+    default_provider: str = Field(
+        default_factory=lambda: os.getenv("DEFAULT_PROVIDER", "openai").strip() or "openai",
+        description="Default LLM provider",
+    )
     default_model: Optional[str] = Field(
-        default=None, description="Default model ID (overrides provider default)"
+        default_factory=lambda: (os.getenv("DEFAULT_MODEL") or None),
+        description="Default model ID (overrides provider default)",
     )
     default_temperature: float = 0.0
     default_max_tokens: int = 4096
     default_k_results: int = 5
+    ollama_default_model: str = Field(
+        default_factory=lambda: os.getenv("OLLAMA_DEFAULT_MODEL", "llama3.2:3b")
+    )
 
     # Chat (SSE sources payload safety)
     chat_sources_max_items: int = Field(

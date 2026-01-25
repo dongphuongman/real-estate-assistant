@@ -46,14 +46,16 @@ def _create_llm_with_resolved_model_id(provider_name: str, model_id: Optional[st
     resolved_model_id = model_id
 
     if not resolved_model_id:
-        models = factory_provider.list_models()
-        if not models:
-            raise RuntimeError(f"No models available for provider '{provider_name}'")
-        resolved_model_id = models[0].id
+        if provider_name == "ollama" and getattr(settings, "ollama_default_model", None):
+            resolved_model_id = settings.ollama_default_model
+        else:
+            models = factory_provider.list_models()
+            if not models:
+                raise RuntimeError(f"No models available for provider '{provider_name}'")
+            resolved_model_id = models[0].id
 
     llm = factory_provider.create_model(
         model_id=resolved_model_id,
-        provider_name=provider_name,
         temperature=settings.default_temperature,
         max_tokens=settings.default_max_tokens,
     )
@@ -89,6 +91,14 @@ def get_llm(
         if preferred_provider or preferred_model:
             try:
                 return _create_llm(default_provider_name, default_model_id)
+            except Exception:
+                pass
+        if primary_provider != "ollama":
+            try:
+                ollama_provider = ModelProviderFactory.get_provider("ollama")
+                runtime_ok, _runtime_error = ollama_provider.validate_connection()
+                if runtime_ok:
+                    return _create_llm("ollama", settings.ollama_default_model)
             except Exception:
                 pass
         raise RuntimeError(f"Could not initialize LLM with provider '{primary_provider}': {e}") from e
@@ -157,6 +167,18 @@ def get_optional_llm_with_details(
                     default_model_id,
                 )
                 return llm, default_provider_name, resolved_model_id
+            except Exception:
+                pass
+        if primary_provider != "ollama":
+            try:
+                ollama_provider = ModelProviderFactory.get_provider("ollama")
+                runtime_ok, _runtime_error = ollama_provider.validate_connection()
+                if runtime_ok:
+                    llm, resolved_model_id = _create_llm_with_resolved_model_id(
+                        "ollama",
+                        settings.ollama_default_model,
+                    )
+                    return llm, "ollama", resolved_model_id
             except Exception:
                 pass
 

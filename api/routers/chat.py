@@ -53,7 +53,7 @@ async def chat_endpoint(
             chat_memory=chat_history,
             memory_key="chat_history",
             return_messages=True,
-            output_key="output" 
+            output_key="answer"
         )
         
         # Create Agent
