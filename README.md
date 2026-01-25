@@ -8,6 +8,8 @@
 [![CI](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
+![AI Real Estate Assistant (Docker Run)](assets/image.png)
+
 > **Status**
 > - **V4 (Active)**: FastAPI backend (`api/`) + Next.js frontend (`frontend/`)
 > - **V3 (Frozen)**: Streamlit legacy code has been removed.
