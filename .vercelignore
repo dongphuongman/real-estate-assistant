@@ -9,3 +9,31 @@ dist
 .figma
 dataset
 *.csv
+
+# Python virtualenvs / caches
+venv
+.venv
+**/__pycache__
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.coverage
+coverage.xml
+htmlcov
+.tox
+.nox
+
+# Local app/runtime data
+chroma_db
+data
+.preferences
+.notifications
+.sessions
+.alerts
+.test_alerts
+.app_cache
+
+# Frontend build artifacts
+frontend/.next
+frontend/out
+frontend/coverage
