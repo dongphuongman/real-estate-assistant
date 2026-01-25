@@ -20,6 +20,15 @@
         "dependencies": []
       },
       {
+        "id": 9,
+        "title": "Vercel Deployment Automation",
+        "description": "Configure Vercel Git Integration for automatic deployments to solve file upload limits.",
+        "status": "pending",
+        "priority": "high",
+        "subtasks": [],
+        "dependencies": []
+      },
+      {
         "id": 3,
         "title": "International Market Support",
         "description": "Enhance data processing to handle different market formats, currencies, and address standards.",

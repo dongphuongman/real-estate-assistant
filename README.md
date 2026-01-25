@@ -66,7 +66,25 @@ flowchart TB
 
 ## 🚀 Quick Start
 
-### 1. Backend (FastAPI)
+### 🐳 Docker (Fastest Way)
+The easiest way to run the full stack (Frontend + Backend + Database) locally.
+
+```powershell
+# 1. Prepare environment
+Copy-Item .env.example .env
+# Edit .env to add your API keys (e.g., OPENAI_API_KEY)
+
+# 2. Run with Docker Compose
+docker-compose up --build
+
+# 3. Access
+# Frontend: http://localhost:3000
+# Backend API: http://localhost:8000/docs
+```
+
+### 🐍 Manual Setup
+
+#### 1. Backend (FastAPI)
 
 #### Windows (PowerShell)
 ```powershell

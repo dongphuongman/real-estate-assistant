@@ -48,6 +48,33 @@ The easiest way to run the full stack (Backend + Frontend + Services).
 
 ---
 
+## ⚡ Option 3: Vercel Deployment (Best for Frontend)
+
+**Note:** Do not use "Deploy" from IDE directly to avoid `api-upload-free` limits (too many files). Use Git Integration.
+
+### Steps
+1. **Push Code to GitHub**
+   ```powershell
+   git add .
+   git commit -m "chore: ready for deploy"
+   git push origin ver4
+   ```
+
+2. **Connect Vercel to GitHub**
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard) → **Add New...** → **Project**.
+   - Select **Import Git Repository**.
+   - Choose `ai-real-estate-assistant`.
+
+3. **Configure Build**
+   - **Framework Preset**: Next.js
+   - **Root Directory**: `frontend` (Edit → Select `frontend` folder).
+   - **Environment Variables**: Add keys from `.env` (e.g., `OPENAI_API_KEY`, `API_ACCESS_KEY`).
+
+4. **Deploy**
+   - Click **Deploy**. Vercel will clone, build, and deploy automatically on every push.
+
+---
+
 ## ☁️ Option 2: VPS / OVH Cloud Deployment
 
 For deploying on a Linux server (Ubuntu/Debian recommended).
