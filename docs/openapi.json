@@ -1,6 +1,39 @@
 {
   "components": {
     "schemas": {
+      "AdminVersionInfo": {
+        "properties": {
+          "app_title": {
+            "title": "App Title",
+            "type": "string"
+          },
+          "environment": {
+            "title": "Environment",
+            "type": "string"
+          },
+          "platform": {
+            "title": "Platform",
+            "type": "string"
+          },
+          "python_version": {
+            "title": "Python Version",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "version",
+          "environment",
+          "app_title",
+          "python_version",
+          "platform"
+        ],
+        "title": "AdminVersionInfo",
+        "type": "object"
+      },
       "Body_upload_documents_api_v1_rag_upload_post": {
         "properties": {
           "files": {
@@ -2614,6 +2647,32 @@
           }
         ],
         "summary": "Reindex Data",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/api/v1/admin/version": {
+      "get": {
+        "operationId": "admin_version_info_api_v1_admin_version_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminVersionInfo"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Admin Version Info",
         "tags": [
           "Admin"
         ]

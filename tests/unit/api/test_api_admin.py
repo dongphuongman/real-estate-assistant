@@ -246,6 +246,34 @@ def test_admin_metrics_returns_app_state_metrics(mock_get_settings):
         app.state.metrics = old_metrics if old_metrics is not None else {}
 
 
+@patch("api.routers.admin.platform.platform")
+@patch("api.routers.admin._format_python_version")
+@patch("api.routers.admin.settings")
+@patch("api.auth.get_settings")
+def test_admin_version_returns_expected_fields(
+    mock_get_settings,
+    mock_settings,
+    mock_python_version,
+    mock_platform,
+):
+    mock_get_settings.return_value = MagicMock(api_access_key="test-key")
+    mock_settings.version = "9.9.9"
+    mock_settings.environment = "test"
+    mock_settings.app_title = "AI REA Test"
+    mock_python_version.return_value = "3.12.3"
+    mock_platform.return_value = "TestOS-1.0"
+
+    resp = client.get("/api/v1/admin/version", headers=HEADERS)
+    assert resp.status_code == 200
+    assert resp.json() == {
+        "version": "9.9.9",
+        "environment": "test",
+        "app_title": "AI REA Test",
+        "python_version": "3.12.3",
+        "platform": "TestOS-1.0",
+    }
+
+
 @patch("api.auth.get_settings")
 def test_admin_metrics_returns_500_on_invalid_metrics(mock_get_settings):
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")

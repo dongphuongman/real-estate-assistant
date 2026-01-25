@@ -225,6 +225,14 @@ Invoke-RestMethod `
   -Headers @{ "X-API-Key" = $env:API_ACCESS_KEY }
 ```
 
+Example (Admin version/build info):
+```powershell
+Invoke-RestMethod `
+  -Uri "http://localhost:8000/api/v1/admin/version" `
+  -Method Get `
+  -Headers @{ "X-API-Key" = $env:API_ACCESS_KEY }
+```
+
 Example response:
 ```json
 {
@@ -322,6 +330,18 @@ Reindex data from cache to vector store.
 |---|---|---|
 | 200 | Successful Response | ReindexResponse |
 | 422 | Validation Error | HTTPValidationError |
+
+## GET /api/v1/admin/version
+
+**Summary**: Admin Version Info
+
+**Tags**: Admin
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | AdminVersionInfo |
 
 ## POST /api/v1/auth/request-code
 

@@ -225,6 +225,7 @@ in V4.
 - Health endpoints:
   - `/health` (system)
   - `/api/v1/admin/health` (admin with cache/store indicators)
+  - `/api/v1/admin/version` (admin runtime/build info)
 - Uptime monitor:
   - Module: `notifications/uptime_monitor.py`
   - Periodically runs a checker and sends alert emails on consecutive failures

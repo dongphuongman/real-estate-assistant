@@ -28,6 +28,14 @@ class HealthCheck(BaseModel):
     version: str
 
 
+class AdminVersionInfo(BaseModel):
+    version: str
+    environment: str
+    app_title: str
+    python_version: str
+    platform: str
+
+
 class NotificationsAdminStats(BaseModel):
     scheduler_running: bool
     alerts_storage_path: str

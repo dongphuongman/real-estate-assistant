@@ -1,10 +1,13 @@
 import logging
+import platform
+import sys
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from api.dependencies import get_vector_store
 from api.models import (
+    AdminVersionInfo,
     HealthCheck,
     IngestRequest,
     IngestResponse,
@@ -22,6 +25,22 @@ from vector_store.chroma_store import ChromaPropertyStore
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Admin"])
+
+
+def _format_python_version() -> str:
+    return f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+
+
+@router.get("/admin/version", response_model=AdminVersionInfo)
+async def admin_version_info() -> AdminVersionInfo:
+    return AdminVersionInfo(
+        version=settings.version,
+        environment=settings.environment,
+        app_title=settings.app_title,
+        python_version=_format_python_version(),
+        platform=platform.platform(),
+    )
+
 
 @router.post("/admin/ingest", response_model=IngestResponse)
 async def ingest_data(request: IngestRequest):

@@ -1,4 +1,5 @@
 import json
+import re
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
@@ -34,6 +35,18 @@ def test_admin_health_check(valid_headers, mock_vector_store):
         assert data["status"] == "healthy"
     
     app.dependency_overrides = {}
+
+
+def test_admin_version_endpoint_returns_runtime_build_info(valid_headers):
+    response = client.get("/api/v1/admin/version", headers=valid_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["version"]
+    assert data["environment"]
+    assert data["app_title"]
+    assert re.match(r"^\d+\.\d+\.\d+$", data["python_version"])
+    assert data["platform"]
+
 
 def test_admin_ingest(valid_headers):
     # Mock DataLoaderCsv
@@ -86,6 +99,9 @@ def test_admin_reindex(valid_headers, mock_vector_store):
 
 def test_admin_endpoints_unauthorized():
     response = client.get("/api/v1/admin/health")
+    assert response.status_code == 401
+
+    response = client.get("/api/v1/admin/version")
     assert response.status_code == 401
     
     response = client.post("/api/v1/admin/ingest", json={})
