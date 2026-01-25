@@ -18,13 +18,13 @@ langchain-google-genai==2.0.8
 # Provider SDKs
 openai==1.55.3
 anthropic==0.70.0
-google-generativeai==0.8.0
+google-generativeai==0.8.6
 
 # Tokenization / compression
 tiktoken==0.7.0
 zstandard==0.23.0
 grpcio==1.66.2
-protobuf==4.25.8
+protobuf==5.29.5
 
 aiohttp==3.13.3
 

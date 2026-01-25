@@ -16,5 +16,7 @@ def test_ci_parity_script_dry_run_prints_expected_steps() -> None:
     assert "RUN:" in out
     assert "ruff check" in out
     assert "mypy" in out
+    assert "bandit" in out
+    assert "pip_audit" in out
     assert "pytest" in out
     assert "coverage_gate.py" in out

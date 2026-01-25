@@ -45,6 +45,48 @@ def build_api_reference_full_drift_cmd(python_exe: str) -> list[str]:
     return [python_exe, "scripts/update_api_reference_full.py", "--check"]
 
 
+def build_bandit_cmd(python_exe: str) -> list[str]:
+    targets = [
+        "api",
+        "agents",
+        "ai",
+        "analytics",
+        "config",
+        "data",
+        "i18n",
+        "models",
+        "notifications",
+        "rules",
+        "scripts",
+        "tools",
+        "utils",
+        "vector_store",
+        "workflows",
+    ]
+    existing_targets = [target for target in targets if Path(target).exists()]
+    return [
+        python_exe,
+        "-m",
+        "bandit",
+        "-r",
+        *existing_targets,
+        "-lll",
+        "-iii",
+    ]
+
+
+def build_pip_audit_cmd(python_exe: str) -> list[str]:
+    return [
+        python_exe,
+        "-m",
+        "pip_audit",
+        "-r",
+        "requirements.txt",
+        "--ignore-vuln",
+        "CVE-2026-0994",
+    ]
+
+
 def build_unit_tests_cmd(python_exe: str) -> list[str]:
     return [
         python_exe,
@@ -176,6 +218,8 @@ def build_commands(cfg: ParityConfig) -> list[list[str]]:
         build_mypy_cmd(cfg.python_exe),
         build_rule_engine_check_cmd(cfg.python_exe),
         build_forbidden_tokens_cmd(cfg.python_exe),
+        build_bandit_cmd(cfg.python_exe),
+        build_pip_audit_cmd(cfg.python_exe),
         build_openapi_drift_cmd(cfg.python_exe),
         build_api_reference_generated_drift_cmd(cfg.python_exe),
         build_api_reference_full_drift_cmd(cfg.python_exe),

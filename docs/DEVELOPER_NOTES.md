@@ -199,8 +199,10 @@ in V4.
   - If `API_ACCESS_KEY` or `API_ACCESS_KEYS` is set, the smoke script also verifies `GET /api/v1/verify-auth` using `X-API-Key`.
   - Local equivalent: `python scripts\compose_smoke.py --ci`
 - Security:
-  - Static analysis: Bandit (fail on high severity/high confidence)
-  - Dependency audit: pip-audit (fail on vulnerabilities)
+  - CI job: `security` in `.github/workflows/ci.yml`
+  - Static analysis: Bandit (fail on high severity/high confidence): `python -m bandit -r api agents ai analytics config data i18n models notifications rules scripts tools utils vector_store workflows -lll -iii`
+  - Dependency audit: pip-audit (fail on vulnerabilities): `python -m pip_audit -r requirements.txt --ignore-vuln CVE-2026-0994`
+  - Temporary exception: `CVE-2026-0994` is ignored until an upstream protobuf patch is available within the `google-ai-generativelanguage` dependency constraint.
 
 ## Branch Protection
 - Protect `main` and `ver4` branches with required CI checks:

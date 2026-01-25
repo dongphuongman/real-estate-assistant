@@ -17,6 +17,14 @@ The V4 API is built with FastAPI and provides a RESTful interface for the AI Rea
 - OpenAPI JSON (repo snapshot): `docs/openapi.json` (regenerate with `python scripts\export_openapi.py`)
 - Generated endpoint index (repo): `docs/API_REFERENCE.generated.md` (regenerate with `python scripts\generate_api_reference.py`)
 
+### Quality & Security Gates
+- Lint: `python -m ruff check .`
+- Type check: `python -m mypy`
+- RuleEngine (custom rules): `python -m pytest -q tests\integration\test_rule_engine_clean.py`
+- Forbidden token scan (no public client secrets): `python scripts\forbidden_tokens_check.py`
+- Static security scan (Bandit; high severity/high confidence): `python -m bandit -r api agents ai analytics config data i18n models notifications rules scripts tools utils vector_store workflows -lll -iii`
+- Dependency audit (pip-audit): `python -m pip_audit -r requirements.txt --ignore-vuln CVE-2026-0994`
+
 ### Authentication
 
 The API uses API Key authentication via the `X-API-Key` header.

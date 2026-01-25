@@ -55,6 +55,47 @@ def test_format_command_returns_string() -> None:
     assert isinstance(format_command([sys.executable, "-c", "print('x')"]), str)
 
 
+def test_build_commands_includes_security_audits() -> None:
+    cfg = ParityConfig(
+        python_exe=sys.executable,
+        base_ref=None,
+        run_unit=False,
+        run_integration=False,
+        dry_run=True,
+    )
+    cmds = build_commands(cfg)
+    flat = " ".join(" ".join(cmd) for cmd in cmds)
+    assert "bandit" in flat
+    assert "pip_audit" in flat
+
+
+def test_main_dry_run_prints_security_steps(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    from scripts import ci_parity
+
+    monkeypatch.setattr(ci_parity.Path, "exists", lambda _self: True)
+    rc = ci_parity.main(["--dry-run", "--unit-only"])
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "RUN:" in out
+    assert "bandit" in out
+    assert "pip_audit" in out
+
+
+def test_main_raises_when_not_run_from_repo_root(monkeypatch: pytest.MonkeyPatch) -> None:
+    from scripts import ci_parity
+
+    original_exists = ci_parity.Path.exists
+
+    def fake_exists(self: ci_parity.Path) -> bool:
+        if str(self).replace("\\", "/") == "scripts/coverage_gate.py":
+            return False
+        return original_exists(self)
+
+    monkeypatch.setattr(ci_parity.Path, "exists", fake_exists)
+    with pytest.raises(FileNotFoundError, match="coverage_gate.py"):
+        ci_parity.main([])
+
+
 @pytest.mark.parametrize(
     ("run_unit", "run_integration", "expected_contains"),
     [
