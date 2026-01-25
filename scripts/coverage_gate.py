@@ -58,8 +58,15 @@ def run_git_diff(base_ref: str | None) -> str:
             cmd = ["git", "diff", "--unified=0", "HEAD~1...HEAD"]
         else:
             cmd = ["git", "diff", "--unified=0", "HEAD"]
-    result = subprocess.run(cmd, capture_output=True, text=True, check=False)
-    return result.stdout
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        check=False,
+        encoding="utf-8",
+        errors="replace",
+    )
+    return result.stdout or ""
 
 
 def parse_changed_lines_from_diff(diff_text: str) -> Dict[str, Set[int]]:

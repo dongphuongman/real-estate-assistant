@@ -115,6 +115,51 @@ def test_get_llm_falls_back_when_preferred_model_fails(monkeypatch):
     assert created and created[0]["model_id"] == "model-a"
 
 
+def test_get_llm_falls_back_to_ollama_when_primary_provider_fails_and_ollama_running(monkeypatch):
+    settings.default_provider = "openai"
+    settings.default_model = None
+    settings.ollama_default_model = "llama3.2:3b"
+
+    class PrimaryProvider(FakeProvider):
+        def create_model(self, model_id, temperature, max_tokens, **kwargs):
+            raise RuntimeError("primary down")
+
+    class OllamaProvider(FakeProvider):
+        def validate_connection(self):
+            return True, None
+
+    primary = PrimaryProvider()
+    ollama = OllamaProvider()
+
+    def _get_provider(name, config=None, use_cache=True):
+        if name == "ollama":
+            return ollama
+        return primary
+
+    monkeypatch.setattr(ModelProviderFactory, "get_provider", _get_provider)
+
+    llm = deps.get_llm()
+    assert getattr(llm, "model_id", None) == "llama3.2:3b"
+    assert ollama.created and ollama.created[0]["model_id"] == "llama3.2:3b"
+
+
+def test_create_llm_with_resolved_model_id_uses_ollama_default_model_when_missing(monkeypatch):
+    settings.default_temperature = 0.0
+    settings.default_max_tokens = 4096
+    settings.ollama_default_model = "llama3.2:3b"
+
+    class OllamaProvider(FakeProvider):
+        def list_models(self):
+            raise AssertionError("list_models should not be called when ollama_default_model is set")
+
+    ollama = OllamaProvider()
+    monkeypatch.setattr(ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: ollama)
+
+    llm, resolved_model = deps._create_llm_with_resolved_model_id("ollama", None)
+    assert resolved_model == "llama3.2:3b"
+    assert getattr(llm, "model_id", None) == "llama3.2:3b"
+
+
 def test_get_optional_llm_returns_none_on_error(monkeypatch):
     monkeypatch.setattr(deps, "get_llm", lambda x_user_email=None: (_ for _ in ()).throw(RuntimeError("no llm")))
     assert deps.get_optional_llm() is None

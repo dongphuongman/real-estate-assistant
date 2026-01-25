@@ -14,18 +14,28 @@ from agents.services.valuation import SimpleValuationProvider, ValuationProvider
 from api.models import RagQaRequest
 from config.settings import settings
 from models.provider_factory import ModelProviderFactory
-from vector_store.chroma_store import ChromaPropertyStore
-from vector_store.knowledge_store import KnowledgeStore
 
 logger = logging.getLogger(__name__)
 
+try:
+    from vector_store.chroma_store import ChromaPropertyStore  # type: ignore
+except Exception:
+    ChromaPropertyStore = None  # type: ignore
+
+try:
+    from vector_store.knowledge_store import KnowledgeStore  # type: ignore
+except Exception:
+    KnowledgeStore = None  # type: ignore
+
 
 @lru_cache()
-def get_vector_store() -> Optional[ChromaPropertyStore]:
+def get_vector_store() -> Optional["ChromaPropertyStore"]:
     """
     Get cached vector store instance for API.
     Returns None if embeddings are not available.
     """
+    if ChromaPropertyStore is None:
+        return None
     try:
         store = ChromaPropertyStore(
             persist_directory=str(settings.chroma_dir),
@@ -229,11 +239,13 @@ def get_crm_connector() -> Optional[CRMConnector]:
     return WebhookCRMConnector(url)
 
 @lru_cache()
-def get_knowledge_store() -> Optional[KnowledgeStore]:
+def get_knowledge_store() -> Optional["KnowledgeStore"]:
     """
     Get cached knowledge store instance for RAG uploads (CE-safe).
     Returns None if embeddings are not available.
     """
+    if KnowledgeStore is None:
+        return None
     try:
         store = KnowledgeStore(
             persist_directory=str(settings.chroma_dir),
@@ -254,7 +266,7 @@ def get_legal_check_service() -> Optional[LegalCheckService]:
     return BasicLegalCheckService()
 
 def get_agent(
-    store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
+    store: Annotated[Optional["ChromaPropertyStore"], Depends(get_vector_store)],
     llm: Annotated[BaseChatModel, Depends(get_llm)]
 ) -> Any:
     """

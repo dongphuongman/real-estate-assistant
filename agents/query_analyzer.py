@@ -364,7 +364,23 @@ class QueryAnalyzer:
             tools.extend([Tool.RAG_RETRIEVAL, Tool.PYTHON_CODE])
 
         # Web search for external data
-        if 'current' in query_lower or 'latest' in query_lower or 'market' in query_lower:
+        if any(
+            kw in query_lower
+            for kw in [
+                "current",
+                "latest",
+                "market",
+                "today",
+                "news",
+                "сейчас",
+                "сегодня",
+                "актуал",
+                "новост",
+                "текущ",
+                "рынок",
+                "ставк",
+            ]
+        ):
             tools.append(Tool.WEB_SEARCH)
 
         # Default to RAG if no tools determined
@@ -386,8 +402,21 @@ class QueryAnalyzer:
     def _requires_external_data(self, query_lower: str) -> bool:
         """Check if query needs external/current data."""
         return any(word in query_lower for word in [
-            'current', 'latest', 'recent', 'today',
-            'market rate', 'interest rate', 'news'
+            "current",
+            "latest",
+            "recent",
+            "today",
+            "market rate",
+            "interest rate",
+            "news",
+            "сейчас",
+            "сегодня",
+            "последн",
+            "актуал",
+            "новост",
+            "текущ",
+            "рынок",
+            "ставк",
         ])
 
     def _generate_reasoning(

@@ -39,6 +39,42 @@ def _ensure_uv_dev_env(root: Path) -> None:
     _run_checked([sys.executable, str(root / "scripts" / "dev" / "bootstrap_uv.py"), "--dev"], cwd=root)
 
 
+def _docker_gpu_available() -> bool:
+    if shutil.which("docker") is None:
+        return False
+    try:
+        subprocess.run(
+            ["docker", "run", "--rm", "--gpus", "all", "alpine:3.20", "true"],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        return True
+    except Exception:
+        return False
+
+
+def _choose_docker_mode_interactively(*, default_mode: str) -> str:
+    if not sys.stdin or not sys.stdin.isatty():
+        return default_mode
+    print("Select Docker mode:")
+    print("  1) auto (GPU if available, else CPU)")
+    print("  2) cpu")
+    print("  3) gpu")
+    raw = input(f"Choice [default: {default_mode}]: ").strip()
+    if not raw:
+        return default_mode
+    if raw == "1":
+        return "auto"
+    if raw == "2":
+        return "cpu"
+    if raw == "3":
+        return "gpu"
+    if raw.lower() in {"auto", "cpu", "gpu"}:
+        return raw.lower()
+    return default_mode
+
+
 def _run_docker(root: Path, *, profiles: list[str]) -> int:
     if not _has_docker_compose():
         print("Docker Compose is not available. Run with --mode local.", file=sys.stderr)
@@ -144,33 +180,46 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=["auto", "docker", "local"], default="auto")
     parser.add_argument("--service", choices=["all", "backend", "frontend"], default="all")
+    parser.add_argument("--docker-mode", choices=["auto", "cpu", "gpu", "ask"], default="auto")
     parser.add_argument("--docker-profile", action="append", default=[])
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--no-bootstrap", action="store_true")
     args = parser.parse_args(argv)
 
     root = _project_root()
+    docker_mode = str(args.docker_mode)
+    if docker_mode == "ask":
+        docker_mode = _choose_docker_mode_interactively(default_mode="auto")
+
+    requested_profiles = [p for p in args.docker_profile if p and p.strip()]
+    effective_profiles = list(requested_profiles)
+    if docker_mode == "gpu":
+        if "gpu" not in effective_profiles:
+            effective_profiles.append("gpu")
+    elif docker_mode == "auto":
+        if "gpu" not in effective_profiles and _docker_gpu_available():
+            effective_profiles.append("gpu")
 
     if args.mode == "auto":
         if _has_docker_compose():
             if args.dry_run:
                 prefix = "docker compose"
-                profiles = " ".join(f"--profile {p}" for p in args.docker_profile)
+                profiles = " ".join(f"--profile {p}" for p in effective_profiles)
                 cmd = f"{prefix} {profiles} up --build".strip()
                 cmd = " ".join(cmd.split())
                 print(f"DOCKER_CMD: {cmd}")
                 return 0
-            return _run_docker(root, profiles=list(args.docker_profile))
+            return _run_docker(root, profiles=effective_profiles)
         return _run_local(root, service=args.service, no_bootstrap=bool(args.no_bootstrap), dry_run=bool(args.dry_run))
     if args.mode == "docker":
         if args.dry_run:
             prefix = "docker compose"
-            profiles = " ".join(f"--profile {p}" for p in args.docker_profile)
+            profiles = " ".join(f"--profile {p}" for p in effective_profiles)
             cmd = f"{prefix} {profiles} up --build".strip()
             cmd = " ".join(cmd.split())
             print(f"DOCKER_CMD: {cmd}")
             return 0
-        return _run_docker(root, profiles=list(args.docker_profile))
+        return _run_docker(root, profiles=effective_profiles)
     return _run_local(root, service=args.service, no_bootstrap=bool(args.no_bootstrap), dry_run=bool(args.dry_run))
 
 

@@ -1,5 +1,6 @@
 import json
 import logging
+import inspect
 import uuid
 from typing import Annotated, Optional
 
@@ -14,7 +15,6 @@ from api.chat_sources import serialize_chat_sources
 from api.dependencies import get_llm, get_vector_store
 from api.models import ChatRequest, ChatResponse
 from config.settings import get_settings
-from vector_store.chroma_store import ChromaPropertyStore
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ router = APIRouter()
 async def chat_endpoint(
     request: ChatRequest,
     llm: Annotated[BaseChatModel, Depends(get_llm)],
-    store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
+    store: Annotated[Optional["ChromaPropertyStore"], Depends(get_vector_store)],
 ):
     """
     Process a chat message using the hybrid agent with session persistence.
@@ -57,11 +57,23 @@ async def chat_endpoint(
         )
         
         # Create Agent
-        agent = create_hybrid_agent(
-            llm=llm, 
-            retriever=store.get_retriever(), 
-            memory=memory
-        )
+        agent_kwargs = {
+            "llm": llm,
+            "retriever": store.get_retriever(),
+            "memory": memory,
+            "internet_enabled": bool(getattr(settings, "internet_enabled", False)),
+            "searxng_url": getattr(settings, "searxng_url", None),
+            "web_search_max_results": int(getattr(settings, "web_search_max_results", 5)),
+            "web_fetch_timeout_seconds": float(getattr(settings, "web_fetch_timeout_seconds", 10)),
+            "web_fetch_max_bytes": int(getattr(settings, "web_fetch_max_bytes", 300_000)),
+            "web_allowlist_domains": list(getattr(settings, "web_allowlist_domains", []) or []),
+        }
+        sig = inspect.signature(create_hybrid_agent)
+        if any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()):
+            filtered_kwargs = agent_kwargs
+        else:
+            filtered_kwargs = {k: v for k, v in agent_kwargs.items() if k in sig.parameters}
+        agent = create_hybrid_agent(**filtered_kwargs)
 
         if request.stream:
             async def event_generator():
@@ -93,14 +105,17 @@ async def chat_endpoint(
 
         result = agent.process_query(request.message)
         
-        # HybridPropertyAgent returns dict with 'answer', 'source_documents', etc.
         answer = result.get("answer", "")
-        sources, sources_truncated = serialize_chat_sources(
-            result.get("source_documents") or [],
-            max_items=sources_max_items,
-            max_content_chars=sources_max_content_chars,
-            max_total_bytes=sources_max_total_bytes,
-        )
+        if "sources" in result and isinstance(result.get("sources"), list):
+            sources = result.get("sources") or []
+            sources_truncated = False
+        else:
+            sources, sources_truncated = serialize_chat_sources(
+                result.get("source_documents") or [],
+                max_items=sources_max_items,
+                max_content_chars=sources_max_content_chars,
+                max_total_bytes=sources_max_total_bytes,
+            )
         
         return ChatResponse(
             response=answer,

@@ -20,8 +20,9 @@ from langchain_core.documents import Document
 from langchain_core.language_models import BaseChatModel
 from langchain_core.retrievers import BaseRetriever
 
-from agents.query_analyzer import Complexity, QueryAnalysis, QueryAnalyzer, QueryIntent
+from agents.query_analyzer import Complexity, QueryAnalysis, QueryAnalyzer, QueryIntent, Tool
 from tools.property_tools import create_property_tools
+from utils.web_fetch import fetch_url_text, searxng_search
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +44,12 @@ class HybridPropertyAgent:
         retriever: BaseRetriever,
         memory: Optional[ConversationBufferMemory] = None,
         tools: Optional[List[BaseTool]] = None,
+        internet_enabled: bool = False,
+        searxng_url: Optional[str] = None,
+        web_search_max_results: int = 5,
+        web_fetch_timeout_seconds: float = 10.0,
+        web_fetch_max_bytes: int = 300_000,
+        web_allowlist_domains: Optional[List[str]] = None,
         verbose: bool = False
     ):
         """
@@ -68,6 +75,12 @@ class HybridPropertyAgent:
         self.tools = tools or create_property_tools(vector_store=vector_store)
         
         self.verbose = verbose
+        self.internet_enabled = bool(internet_enabled)
+        self.searxng_url = str(searxng_url).strip() if searxng_url else None
+        self.web_search_max_results = int(web_search_max_results)
+        self.web_fetch_timeout_seconds = float(web_fetch_timeout_seconds)
+        self.web_fetch_max_bytes = int(web_fetch_max_bytes)
+        self.web_allowlist_domains = list(web_allowlist_domains) if web_allowlist_domains else []
 
         # Initialize query analyzer
         self.analyzer = QueryAnalyzer()
@@ -148,6 +161,27 @@ Context from property database will be provided when relevant."""),
         """
         # Analyze query
         analysis = self.analyzer.analyze(query)
+
+        if self.internet_enabled and (
+            analysis.requires_external_data or Tool.WEB_SEARCH in analysis.tools_needed
+        ):
+            result = self._process_with_web_search(query, analysis)
+            if return_analysis:
+                result["analysis"] = analysis.dict()
+            return result
+        if (analysis.requires_external_data or Tool.WEB_SEARCH in analysis.tools_needed) and not self.internet_enabled:
+            result = {
+                "answer": (
+                    "This question likely requires up-to-date web data, but internet tools are disabled. "
+                    "Enable INTERNET_ENABLED and start the search service profile to use web search."
+                ),
+                "source_documents": [],
+                "method": "web_search_disabled",
+                "intent": analysis.intent.value,
+            }
+            if return_analysis:
+                result["analysis"] = analysis.dict()
+            return result
 
         if self.verbose:
             logger.info("Query Analysis: %s", analysis.reasoning)
@@ -261,10 +295,25 @@ Context from property database will be provided when relevant."""),
 
             # Standard RAG chain
             response = self.rag_chain({"question": query})
+            source_documents = response.get("source_documents", [])
+            if not source_documents and analysis.intent in {
+                QueryIntent.SIMPLE_RETRIEVAL,
+                QueryIntent.FILTERED_SEARCH,
+                QueryIntent.RECOMMENDATION,
+            }:
+                return {
+                    "answer": (
+                        "I don't have any local listings/data to answer this yet. "
+                        "Enable internet tools or ingest property data first."
+                    ),
+                    "source_documents": [],
+                    "method": "rag",
+                    "intent": analysis.intent.value,
+                }
 
             return {
                 "answer": response["answer"],
-                "source_documents": response.get("source_documents", []),
+                "source_documents": source_documents,
                 "method": "rag",
                 "intent": analysis.intent.value
             }
@@ -276,6 +325,79 @@ Context from property database will be provided when relevant."""),
                 "method": "rag",
                 "error": str(e)
             }
+
+    def _process_with_web_search(
+        self,
+        query: str,
+        analysis: QueryAnalysis,
+    ) -> Dict[str, Any]:
+        results = []
+        provider = "searxng"
+        if self.searxng_url:
+            results = searxng_search(
+                searxng_url=self.searxng_url,
+                query=query,
+                max_results=self.web_search_max_results,
+                timeout_seconds=self.web_fetch_timeout_seconds,
+            )
+        if not results:
+            return {
+                "answer": (
+                    "I couldn't retrieve web search results. If you're running via Docker, "
+                    "start the internet profile (docker compose --profile internet up -d) "
+                    "and ensure SEARXNG_URL is set."
+                ),
+                "source_documents": [],
+                "sources": [],
+                "method": "web_search",
+                "intent": analysis.intent.value,
+            }
+
+        sources: list[dict[str, Any]] = []
+        context_lines: list[str] = []
+        for i, r in enumerate(results, start=1):
+            sources.append({"title": r.title, "url": r.url, "snippet": r.snippet, "provider": provider})
+            context_lines.append(f"[{i}] {r.title}\nURL: {r.url}\nSnippet: {r.snippet}")
+
+        fetched_texts: list[str] = []
+        for i, r in enumerate(results[:2], start=1):
+            text = fetch_url_text(
+                r.url,
+                timeout_seconds=self.web_fetch_timeout_seconds,
+                max_bytes=self.web_fetch_max_bytes,
+                allowlist_domains=self.web_allowlist_domains,
+            )
+            if text:
+                fetched_texts.append(f"[{i}] {text[:2000]}")
+
+        web_context = "\n\n".join(context_lines)
+        page_context = "\n\n".join(fetched_texts)
+        prompt = (
+            "Answer the user's question using only the following web search results and fetched page text.\n"
+            "If the answer cannot be verified from the context, say you don't know.\n"
+            "When you use a specific fact, cite it as [n] with the corresponding URL.\n\n"
+            f"Web results:\n{web_context}\n\n"
+            f"Fetched pages:\n{page_context}\n\n"
+            f"Question: {query}"
+        )
+        try:
+            msg = self.llm.invoke(prompt)
+            content = msg.content if hasattr(msg, "content") else str(msg)
+        except Exception as e:
+            content = f"Error processing query with web search: {str(e)}"
+
+        try:
+            self.memory.save_context({"input": query}, {"answer": content})
+        except Exception:
+            pass
+
+        return {
+            "answer": content,
+            "source_documents": [],
+            "sources": sources,
+            "method": "web_search",
+            "intent": analysis.intent.value,
+        }
 
     def _process_with_agent(
         self,
@@ -540,6 +662,12 @@ def create_hybrid_agent(
     retriever: BaseRetriever,
     memory: Optional[ConversationBufferMemory] = None,
     use_tools: bool = True,
+    internet_enabled: bool = False,
+    searxng_url: Optional[str] = None,
+    web_search_max_results: int = 5,
+    web_fetch_timeout_seconds: float = 10.0,
+    web_fetch_max_bytes: int = 300_000,
+    web_allowlist_domains: Optional[List[str]] = None,
     verbose: bool = False
 ) -> Any:
     """
@@ -560,6 +688,12 @@ def create_hybrid_agent(
             llm=llm,
             retriever=retriever,
             memory=memory,
+            internet_enabled=internet_enabled,
+            searxng_url=searxng_url,
+            web_search_max_results=web_search_max_results,
+            web_fetch_timeout_seconds=web_fetch_timeout_seconds,
+            web_fetch_max_bytes=web_fetch_max_bytes,
+            web_allowlist_domains=web_allowlist_domains,
             verbose=verbose
         )
     else:

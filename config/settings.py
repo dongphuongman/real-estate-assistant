@@ -96,6 +96,25 @@ class AppSettings(BaseModel):
         default_factory=lambda: os.getenv("OLLAMA_DEFAULT_MODEL", "llama3.2:3b")
     )
 
+    # Internet tools (optional, for demo/research)
+    internet_enabled: bool = Field(
+        default_factory=lambda: os.getenv("INTERNET_ENABLED", "false").strip().lower()
+        in {"1", "true", "yes", "on"}
+    )
+    searxng_url: Optional[str] = Field(default_factory=lambda: os.getenv("SEARXNG_URL"))
+    web_search_max_results: int = Field(
+        default_factory=lambda: int(os.getenv("WEB_SEARCH_MAX_RESULTS", "5"))
+    )
+    web_fetch_timeout_seconds: float = Field(
+        default_factory=lambda: float(os.getenv("WEB_FETCH_TIMEOUT_SECONDS", "10"))
+    )
+    web_fetch_max_bytes: int = Field(
+        default_factory=lambda: int(os.getenv("WEB_FETCH_MAX_BYTES", str(300_000)))
+    )
+    web_allowlist_domains: list[str] = Field(
+        default_factory=lambda: _parse_csv_list(os.getenv("WEB_ALLOWLIST_DOMAINS"))
+    )
+
     # Chat (SSE sources payload safety)
     chat_sources_max_items: int = Field(
         default_factory=lambda: int(os.getenv("CHAT_SOURCES_MAX_ITEMS", "5"))

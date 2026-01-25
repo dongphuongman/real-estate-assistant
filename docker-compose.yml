@@ -11,6 +11,8 @@ services:
       - API_ACCESS_KEY=${API_ACCESS_KEY:-dev-secret-key}
       - DEFAULT_PROVIDER=${DEFAULT_PROVIDER:-ollama}
       - OLLAMA_DEFAULT_MODEL=${OLLAMA_DEFAULT_MODEL:-llama3.2:3b}
+      - INTERNET_ENABLED=${INTERNET_ENABLED:-false}
+      - SEARXNG_URL=${SEARXNG_URL:-http://searxng:8080}
       - API_RATE_LIMIT_ENABLED=${API_RATE_LIMIT_ENABLED:-true}
       - API_RATE_LIMIT_RPM=${API_RATE_LIMIT_RPM:-600}
       - CORS_ALLOW_ORIGINS=${CORS_ALLOW_ORIGINS}
@@ -115,6 +117,25 @@ services:
       interval: 30s
       timeout: 10s
       retries: 60
+      start_period: 20s
+
+  searxng:
+    image: searxng/searxng:latest
+    container_name: searxng
+    profiles: ["internet"]
+    ports:
+      - "8081:8080"
+    restart: unless-stopped
+    environment:
+      - SEARXNG_BASE_URL=${SEARXNG_BASE_URL:-http://localhost:8081/}
+      - SEARXNG_SECRET_KEY=${SEARXNG_SECRET_KEY:-demo-secret-key}
+    volumes:
+      - ./config/searxng:/etc/searxng:rw
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- --header='X-Forwarded-For: 1.1.1.1' --header='X-Real-IP: 1.1.1.1' http://localhost:8080/ >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
       start_period: 20s
 
   redis:

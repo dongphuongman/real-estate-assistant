@@ -1,0 +1,6 @@
+use_default_settings: true
+
+server:
+  secret_key: "demo-secret-key"
+  limiter: false
+  public_instance: false

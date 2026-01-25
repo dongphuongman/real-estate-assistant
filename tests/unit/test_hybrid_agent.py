@@ -58,6 +58,9 @@ class TestHybridPropertyAgent:
             
             return agent
 
+    def test_default_memory_output_key_is_answer(self, agent):
+        assert getattr(agent.memory, "output_key", None) == "answer"
+
     def test_retrieve_documents_with_filters(self, agent, mock_retriever):
         """Test retrieval uses search_with_filters when filters are present."""
         query = "apartment in Krakow under 500k"
