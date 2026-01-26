@@ -202,6 +202,28 @@ See `docs/TESTING_GUIDE.md` for details.
 
 ---
 
+## 🚀 One-Command Start (Docker)
+
+```powershell
+# CPU
+.\scripts\dev\run-docker-cpu.ps1
+
+# GPU (if available)
+.\scripts\dev\run-docker-gpu.ps1
+
+# GPU + Internet web research (starts the `internet` compose profile)
+.\scripts\dev\run-docker-gpu-internet.ps1
+```
+
+If you prefer a single entrypoint:
+
+```powershell
+.\scripts\dev\start.ps1 --mode docker --docker-mode auto
+.\scripts\dev\start.ps1 --mode docker --docker-mode gpu --internet
+```
+
+---
+
 ## 🗄️ Optional Redis (MCP/Caching)
 
 For MCP tooling or future caching/session features, a local Redis service is included in Docker Compose.

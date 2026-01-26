@@ -12,7 +12,7 @@ import json
 from datetime import datetime
 from enum import Enum
 from io import BytesIO, StringIO
-from typing import List, Optional
+from typing import Any, List, Optional
 
 import pandas as pd
 from reportlab.lib import colors
@@ -40,7 +40,7 @@ class PropertyExporter:
     and Markdown formats with optional filtering and customization.
     """
 
-    def __init__(self, properties):
+    def __init__(self, properties: Any) -> None:
         """
         Initialize exporter with property data.
 
@@ -147,12 +147,14 @@ class PropertyExporter:
         if len(decimal) != 1 or decimal in ("\n", "\r"):
             raise ValueError("decimal must be a single non-newline character")
         df = self._filtered_df(columns)
-        return df.to_csv(
-            index=False,
-            header=include_header,
-            sep=delimiter,
-            decimal=decimal,
-            lineterminator="\n",
+        return str(
+            df.to_csv(
+                index=False,
+                header=include_header,
+                sep=delimiter,
+                decimal=decimal,
+                lineterminator="\n",
+            )
         )
 
     def export_to_excel(
@@ -230,7 +232,7 @@ class PropertyExporter:
             if include_statistics:
                 # Statistics by city
                 if {"city", "price"}.issubset(stats_df.columns):
-                    city_aggs = {"price": ["count", "mean", "median", "min", "max"]}
+                    city_aggs: dict[str, object] = {"price": ["count", "mean", "median", "min", "max"]}
                     if "rooms" in stats_df.columns:
                         city_aggs["rooms"] = "mean"
                     if "has_parking" in stats_df.columns:
@@ -240,7 +242,7 @@ class PropertyExporter:
 
                 # Statistics by property type
                 if {"property_type", "price"}.issubset(stats_df.columns):
-                    type_aggs = {"price": ["count", "mean", "median"]}
+                    type_aggs: dict[str, object] = {"price": ["count", "mean", "median"]}
                     if "rooms" in stats_df.columns:
                         type_aggs["rooms"] = "mean"
                     if "area_sqm" in stats_df.columns:
@@ -312,11 +314,11 @@ class PropertyExporter:
             # But the code below uses dot access (prop.city).
             # Let's use a simple wrapper class
             class DictObj:
-                def __init__(self, d):
+                def __init__(self, d: dict[str, Any]) -> None:
                     for k, v in d.items():
                         setattr(self, k, v)
-                def __getattr__(self, name):
-                    return None # Default to None for missing attributes
+                def __getattr__(self, name: str) -> Any:
+                    return None
             
             properties_list = [DictObj(p) if isinstance(p, dict) else p for p in self.properties]
             total_count = len(self.properties)
@@ -445,7 +447,11 @@ class PropertyExporter:
                         "distance_meters",
                         poi_dict.get("distance_meters") if poi_dict else 0,
                     )
-                    lines.append(f"  - {name} ({category}): {int(distance)}m")
+                    try:
+                        distance_int = int(distance or 0)
+                    except Exception:
+                        distance_int = 0
+                    lines.append(f"  - {name} ({category}): {distance_int}m")
 
             desc = getattr(prop, 'description', None)
             if desc:
@@ -539,7 +545,7 @@ class PropertyExporter:
     def export(
         self,
         format: ExportFormat,
-        **kwargs
+        **kwargs: Any
     ) -> str | BytesIO:
         """
         Export properties to specified format.
@@ -560,7 +566,7 @@ class PropertyExporter:
         elif format == ExportFormat.MARKDOWN:
             return self.export_to_markdown(**kwargs)
         elif format == ExportFormat.PDF:
-            return self.export_to_pdf(**kwargs)
+            return self.export_to_pdf()
         else:
             raise ValueError(f"Unsupported export format: {format}")
 
@@ -586,7 +592,7 @@ class InsightsExporter:
 
     def export_city_indices_csv(self, cities: List[str] | None = None) -> str:
         df = self.insights.get_city_price_indices(cities)
-        return df.to_csv(index=False)
+        return str(df.to_csv(index=False))
 
     def export_city_indices_json(self, cities: List[str] | None = None, pretty: bool = True) -> str:
         df = self.insights.get_city_price_indices(cities)
@@ -613,7 +619,7 @@ class InsightsExporter:
         df = df.copy()
         if 'month' in df.columns:
             df['month'] = df['month'].astype(str)
-        return df.to_csv(index=False)
+        return str(df.to_csv(index=False))
 
     def export_monthly_index_json(self, city: str | None = None, pretty: bool = True) -> str:
         df = self.insights.get_monthly_price_index(city)

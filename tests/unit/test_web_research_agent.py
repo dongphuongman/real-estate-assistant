@@ -1,6 +1,7 @@
-import json
 from types import SimpleNamespace
 
+import tools.web_tools as web_tools
+from agents.web_research_agent import WebResearchAgent, WebResearchConfig
 from utils.web_fetch import WebSearchResult
 
 
@@ -18,9 +19,6 @@ class _LLMSequence:
 
 
 def test_web_research_agent_happy_path(monkeypatch):
-    from agents.web_research_agent import WebResearchAgent, WebResearchConfig
-    import tools.web_tools as web_tools
-
     llm = _LLMSequence(["[1]", "Answer using source [1]."])
     cfg = WebResearchConfig(
         searxng_url="http://searx",
@@ -54,9 +52,6 @@ def test_web_research_agent_happy_path(monkeypatch):
 
 
 def test_web_research_agent_parses_json_array_from_wrapped_text(monkeypatch):
-    from agents.web_research_agent import WebResearchAgent, WebResearchConfig
-    import tools.web_tools as web_tools
-
     llm = _LLMSequence(["Selected: [2, 1]", "Answer [1]."])
     cfg = WebResearchConfig(
         searxng_url=None,

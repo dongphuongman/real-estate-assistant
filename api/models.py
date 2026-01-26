@@ -101,6 +101,7 @@ class ChatRequest(BaseModel):
     message: str
     session_id: Optional[str] = None
     stream: bool = False
+    include_intermediate_steps: bool = False
 
 
 class ChatResponse(BaseModel):
@@ -110,6 +111,7 @@ class ChatResponse(BaseModel):
     sources: List[Dict[str, Any]] = []
     sources_truncated: bool = False
     session_id: Optional[str] = None
+    intermediate_steps: Optional[List[Dict[str, Any]]] = None
 
 
 class RagCitation(BaseModel):

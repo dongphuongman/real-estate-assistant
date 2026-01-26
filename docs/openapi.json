@@ -102,6 +102,11 @@
       "ChatRequest": {
         "description": "Chat request model.",
         "properties": {
+          "include_intermediate_steps": {
+            "default": false,
+            "title": "Include Intermediate Steps",
+            "type": "boolean"
+          },
           "message": {
             "title": "Message",
             "type": "string"
@@ -132,6 +137,21 @@
       "ChatResponse": {
         "description": "Chat response model.",
         "properties": {
+          "intermediate_steps": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intermediate Steps"
+          },
           "response": {
             "title": "Response",
             "type": "string"

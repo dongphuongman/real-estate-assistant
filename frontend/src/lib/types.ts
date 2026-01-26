@@ -60,6 +60,7 @@ export interface ChatRequest {
   message: string;
   session_id?: string;
   stream?: boolean;
+  include_intermediate_steps?: boolean;
 }
 
 export interface ChatResponse {
@@ -70,6 +71,7 @@ export interface ChatResponse {
   }>;
   sources_truncated?: boolean;
   session_id?: string;
+  intermediate_steps?: Array<Record<string, unknown>>;
 }
 
 export interface RagUploadResponse {

@@ -1,8 +1,8 @@
+import inspect
 import json
 import logging
-import inspect
 import uuid
-from typing import Annotated, Optional
+from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
@@ -11,12 +11,11 @@ from langchain_core.language_models import BaseChatModel
 
 from agents.hybrid_agent import create_hybrid_agent
 from ai.memory import get_session_history
-from api.chat_sources import serialize_chat_sources
+from api.chat_sources import serialize_chat_sources, serialize_web_sources
 from api.dependencies import get_llm, get_vector_store
 from api.models import ChatRequest, ChatResponse
 from config.settings import get_settings
 
-# Configure logger
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
@@ -25,7 +24,7 @@ router = APIRouter()
 async def chat_endpoint(
     request: ChatRequest,
     llm: Annotated[BaseChatModel, Depends(get_llm)],
-    store: Annotated[Optional["ChromaPropertyStore"], Depends(get_vector_store)],
+    store: Annotated[Optional[Any], Depends(get_vector_store)],
 ):
     """
     Process a chat message using the hybrid agent with session persistence.
@@ -76,24 +75,73 @@ async def chat_endpoint(
         agent = create_hybrid_agent(**filtered_kwargs)
 
         if request.stream:
+            analysis = getattr(getattr(agent, "analyzer", None), "analyze", None)
+            analyzed = analysis(request.message) if callable(analysis) else None
+            requires_web = False
+            if analyzed is not None:
+                from agents.query_analyzer import QueryAnalysis
+
+                if not isinstance(analyzed, QueryAnalysis):
+                    analyzed = None
+            if analyzed is not None:
+                requires_web = bool(
+                    getattr(analyzed, "requires_external_data", False)
+                    or any(getattr(t, "value", str(t)) == "web_search" for t in getattr(analyzed, "tools_needed", []) or [])
+                )
+
             async def event_generator():
-                async for chunk in agent.astream_query(request.message):
-                    yield f"data: {chunk}\n\n"
-                sources_payload = {"sources": [], "sources_truncated": False, "session_id": session_id}
-                if hasattr(agent, "get_sources_for_query"):
-                    try:
-                        docs = agent.get_sources_for_query(request.message)
-                        sources, sources_truncated = serialize_chat_sources(
-                            docs,
+                sources_payload: dict[str, object] = {
+                    "sources": [],
+                    "sources_truncated": False,
+                    "session_id": session_id,
+                }
+
+                if requires_web:
+                    result = agent.process_query(request.message)
+                    raw_answer = result.get("answer", "")
+                    answer_text = raw_answer if isinstance(raw_answer, str) else str(raw_answer)
+                    if answer_text:
+                        yield f"data: {json.dumps({'content': answer_text}, ensure_ascii=False, default=str)}\n\n"
+
+                    raw_sources = result.get("sources") if isinstance(result.get("sources"), list) else []
+                    if raw_sources and isinstance(raw_sources, list) and isinstance(raw_sources[0], dict) and "content" in raw_sources[0] and "metadata" in raw_sources[0]:
+                        sources = raw_sources
+                        sources_truncated = False
+                    else:
+                        sources, sources_truncated = serialize_web_sources(
+                            raw_sources or [],
                             max_items=sources_max_items,
                             max_content_chars=sources_max_content_chars,
                             max_total_bytes=sources_max_total_bytes,
                         )
-                        sources_payload["sources"] = sources
-                        sources_payload["sources_truncated"] = sources_truncated
-                    except Exception:
-                        sources_payload["sources"] = []
-                        sources_payload["sources_truncated"] = False
+                    sources_payload["sources"] = sources
+                    sources_payload["sources_truncated"] = sources_truncated
+
+                    if request.include_intermediate_steps:
+                        raw_steps = result.get("intermediate_steps") or []
+                        try:
+                            safe_steps = json.loads(json.dumps(raw_steps, ensure_ascii=False, default=str))
+                        except Exception:
+                            safe_steps = []
+                        sources_payload["intermediate_steps"] = safe_steps
+                else:
+                    async for chunk in agent.astream_query(request.message):
+                        yield f"data: {chunk}\n\n"
+                    if hasattr(agent, "get_sources_for_query"):
+                        try:
+                            docs = agent.get_sources_for_query(request.message)
+                            sources, sources_truncated = serialize_chat_sources(
+                                docs,
+                                max_items=sources_max_items,
+                                max_content_chars=sources_max_content_chars,
+                                max_total_bytes=sources_max_total_bytes,
+                            )
+                            sources_payload["sources"] = sources
+                            sources_payload["sources_truncated"] = sources_truncated
+                        except Exception:
+                            sources_payload["sources"] = []
+                            sources_payload["sources_truncated"] = False
+
                 yield "event: meta\n"
                 yield f"data: {json.dumps(sources_payload)}\n\n"
                 yield "data: [DONE]\n\n"
@@ -107,8 +155,17 @@ async def chat_endpoint(
         
         answer = result.get("answer", "")
         if "sources" in result and isinstance(result.get("sources"), list):
-            sources = result.get("sources") or []
-            sources_truncated = False
+            raw_sources = result.get("sources") or []
+            if raw_sources and isinstance(raw_sources, list) and isinstance(raw_sources[0], dict) and "content" in raw_sources[0] and "metadata" in raw_sources[0]:
+                sources = raw_sources
+                sources_truncated = False
+            else:
+                sources, sources_truncated = serialize_web_sources(
+                    raw_sources,
+                    max_items=sources_max_items,
+                    max_content_chars=sources_max_content_chars,
+                    max_total_bytes=sources_max_total_bytes,
+                )
         else:
             sources, sources_truncated = serialize_chat_sources(
                 result.get("source_documents") or [],
@@ -121,7 +178,8 @@ async def chat_endpoint(
             response=answer,
             sources=sources,
             sources_truncated=sources_truncated,
-            session_id=session_id
+            session_id=session_id,
+            intermediate_steps=(result.get("intermediate_steps") or None) if request.include_intermediate_steps else None,
         )
 
     except Exception as e:

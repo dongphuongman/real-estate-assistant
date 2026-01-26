@@ -7,7 +7,6 @@ from langchain_core.language_models import BaseChatModel
 
 from tools.web_tools import OpenUrlTool, WebSearchTool
 
-
 _JSON_ARRAY_RE = re.compile(r"(\[[\s\S]*?\])")
 
 
@@ -138,11 +137,12 @@ class WebResearchAgent:
     def _select_result_ids(self, *, select_prompt: str, max_id: int) -> list[int]:
         try:
             msg = self.llm.invoke(select_prompt)
-            content = msg.content if hasattr(msg, "content") else str(msg)
+            raw = msg.content if hasattr(msg, "content") else str(msg)
         except Exception:
             return []
 
-        content = (content or "").strip()
+        content = raw if isinstance(raw, str) else str(raw)
+        content = content.strip()
         parsed = self._parse_json_array(content)
         out: list[int] = []
         for item in parsed:

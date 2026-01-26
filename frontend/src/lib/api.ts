@@ -323,7 +323,12 @@ export async function streamChatMessage(
   request: ChatRequest,
   onChunk: (chunk: string) => void,
   onStart?: (meta: { requestId?: string }) => void,
-  onMeta?: (meta: { sources?: ChatResponse["sources"]; sourcesTruncated?: boolean; sessionId?: string }) => void
+  onMeta?: (meta: {
+    sources?: ChatResponse["sources"];
+    sourcesTruncated?: boolean;
+    sessionId?: string;
+    intermediateSteps?: ChatResponse["intermediate_steps"];
+  }) => void
 ): Promise<void> {
   const response = await fetch(`${getApiUrl()}/chat`, {
     method: "POST",
@@ -399,10 +404,14 @@ export async function streamChatMessage(
             const sources = (parsed as { sources?: unknown }).sources;
             const sourcesTruncated = (parsed as { sources_truncated?: unknown }).sources_truncated;
             const sessionId = (parsed as { session_id?: unknown }).session_id;
+            const intermediateSteps = (parsed as { intermediate_steps?: unknown }).intermediate_steps;
             onMeta({
               sources: Array.isArray(sources) ? (sources as ChatResponse["sources"]) : undefined,
               sourcesTruncated: typeof sourcesTruncated === "boolean" ? sourcesTruncated : undefined,
               sessionId: typeof sessionId === "string" && sessionId.trim() ? sessionId : undefined,
+              intermediateSteps: Array.isArray(intermediateSteps)
+                ? (intermediateSteps as ChatResponse["intermediate_steps"])
+                : undefined,
             });
           }
           continue;

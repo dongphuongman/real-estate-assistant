@@ -33,6 +33,8 @@ If you run with `--mode auto` (default), it uses Docker if available, otherwise 
 Extra flags:
 - `--dry-run`: prints the commands and key env defaults (secrets redacted) without starting anything
 - `--service backend|frontend|all`: start only the backend or only the frontend (default: `all`)
+- `--docker-mode auto|cpu|gpu|ask`: choose Docker runtime mode (default: `auto`)
+- `--internet`: enable web research and start the `internet` Docker profile (SearxNG)
 - `--no-bootstrap`: skip `uv` environment bootstrap in local backend mode (assumes deps already installed)
 
 ### Windows (PowerShell)
@@ -45,9 +47,19 @@ Force a specific mode:
 
 ```powershell
 .\scripts\dev\start.ps1 --mode docker
+.\scripts\dev\start.ps1 --mode docker --docker-mode gpu
+.\scripts\dev\start.ps1 --mode docker --docker-mode gpu --internet
 .\scripts\dev\start.ps1 --mode local
 .\scripts\dev\start.ps1 --mode local --service backend
 .\scripts\dev\start.ps1 --mode local --dry-run
+```
+
+Convenience commands:
+
+```powershell
+.\scripts\dev\run-docker-cpu.ps1
+.\scripts\dev\run-docker-gpu.ps1
+.\scripts\dev\run-docker-gpu-internet.ps1
 ```
 
 ### Linux

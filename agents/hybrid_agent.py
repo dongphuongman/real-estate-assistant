@@ -106,7 +106,11 @@ class HybridPropertyAgent:
 
         # Create prompt template for tool agent
         prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are an intelligent real estate assistant with access to specialized tools.
+            ("system", """You are a specialized Real Estate Assistant.
+
+Scope:
+- Answer questions about properties, real estate markets, mortgages, financing, negotiation, neighborhood/location insights, and related decision support.
+- If the user asks for something unrelated to real estate (e.g. cooking, medical, legal outside real estate context), refuse briefly and steer back to real estate.
 
 Your capabilities:
 - Search property database for listings
@@ -153,6 +157,71 @@ Context from property database will be provided when relevant."""),
                 return_intermediate_steps=True,
             )
 
+    def _domain_guard(self, query: str) -> Optional[Dict[str, Any]]:
+        q = (query or "").strip()
+        ql = q.lower()
+        if not q:
+            return None
+
+        capability_markers = [
+            "what can you do",
+            "how can you help",
+            "what are your capabilities",
+            "what are the possibilities",
+            "help me",
+            "what can i ask",
+            "что ты умеешь",
+            "как ты можешь помочь",
+            "какие возможности",
+            "что ты можешь",
+        ]
+        if any(m in ql for m in capability_markers):
+            internet_hint = (
+                "Web research is enabled: I can search the web and cite sources."
+                if self.internet_enabled
+                else "Web research is currently disabled: I won't use the internet unless it is enabled."
+            )
+            answer = (
+                "I'm a specialized Real Estate Assistant. I can help with:\n"
+                "- Finding and filtering listings (city, price, rooms, amenities)\n"
+                "- Comparing properties and explaining tradeoffs\n"
+                "- Mortgage calculations and affordability scenarios\n"
+                "- Market questions (pricing, trends) using either your data or web sources when enabled\n"
+                "- Drafting messages to agents/landlords and negotiation checklists\n\n"
+                f"{internet_hint}"
+            )
+            try:
+                self.memory.save_context({"input": q}, {"answer": answer})
+            except Exception:
+                pass
+            return {"answer": answer, "source_documents": [], "method": "capabilities", "intent": QueryIntent.GENERAL_QUESTION.value}
+
+        out_of_domain_markers = [
+            "recipe",
+            "cook",
+            "cooking",
+            "bake",
+            "cookie",
+            "cake",
+            "pizza",
+            "пирож",
+            "рецепт",
+            "готов",
+            "печь",
+        ]
+        if any(m in ql for m in out_of_domain_markers):
+            answer = (
+                "I can't help with that because I'm specialized in real estate.\n"
+                "Ask me about finding a property, comparing options, mortgages, locations, or market conditions."
+            )
+            try:
+                self.memory.save_context({"input": q}, {"answer": answer})
+            except Exception:
+                pass
+            return {"answer": answer, "source_documents": [], "method": "out_of_domain", "intent": QueryIntent.GENERAL_QUESTION.value}
+
+        return None
+
     def process_query(
         self,
         query: str,
@@ -168,7 +237,12 @@ Context from property database will be provided when relevant."""),
         Returns:
             Dictionary with answer, sources, and optional analysis
         """
-        # Analyze query
+        guard = self._domain_guard(query)
+        if guard:
+            if return_analysis:
+                guard["analysis"] = self.analyzer.analyze(query).dict()
+            return guard
+
         analysis = self.analyzer.analyze(query)
 
         if self.internet_enabled and (
@@ -472,6 +546,12 @@ Context from property database will be provided when relevant."""),
             JSON string chunks containing 'content' or 'error'.
         """
         try:
+            guard = self._domain_guard(query)
+            if guard:
+                content = str(guard.get("answer") or "")
+                if content:
+                    yield json.dumps({"content": content})
+                    return
             analysis = self.analyzer.analyze(query)
             if analysis.should_use_rag_only():
                 async for chunk in self._astream_with_rag(query, analysis):

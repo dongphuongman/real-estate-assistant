@@ -131,15 +131,17 @@ class SavedSearch(BaseModel):
         if self.city:
             parts.append(f"in {self.city}")
 
-        if self.min_rooms or self.max_rooms:
-            if self.min_rooms == self.max_rooms:
-                parts.append(f"with {int(self.min_rooms)} rooms")
-            elif self.min_rooms and self.max_rooms:
-                parts.append(f"with {int(self.min_rooms)}-{int(self.max_rooms)} rooms")
-            elif self.min_rooms:
-                parts.append(f"with at least {int(self.min_rooms)} rooms")
-            else:
-                parts.append(f"with up to {int(self.max_rooms)} rooms")
+        if self.min_rooms is not None or self.max_rooms is not None:
+            min_rooms = self.min_rooms
+            max_rooms = self.max_rooms
+            if min_rooms is not None and max_rooms is not None and min_rooms == max_rooms:
+                parts.append(f"with {int(min_rooms)} rooms")
+            elif min_rooms is not None and max_rooms is not None:
+                parts.append(f"with {int(min_rooms)}-{int(max_rooms)} rooms")
+            elif min_rooms is not None:
+                parts.append(f"with at least {int(min_rooms)} rooms")
+            elif max_rooms is not None:
+                parts.append(f"with up to {int(max_rooms)} rooms")
 
         if self.min_price or self.max_price:
             if self.min_price and self.max_price:
@@ -168,12 +170,14 @@ class SavedSearch(BaseModel):
             parts.append(f"({', '.join(self.property_types)})")
 
         if self.year_built_min is not None or self.year_built_max is not None:
-            if self.year_built_min is not None and self.year_built_max is not None:
-                parts.append(f"built between {int(self.year_built_min)}-{int(self.year_built_max)}")
-            elif self.year_built_min is not None:
-                parts.append(f"built after {int(self.year_built_min)}")
-            else:
-                parts.append(f"built before {int(self.year_built_max)}")
+            year_min = self.year_built_min
+            year_max = self.year_built_max
+            if year_min is not None and year_max is not None:
+                parts.append(f"built between {int(year_min)}-{int(year_max)}")
+            elif year_min is not None:
+                parts.append(f"built after {int(year_min)}")
+            elif year_max is not None:
+                parts.append(f"built before {int(year_max)}")
 
         if self.energy_certs:
             parts.append(f"energy cert: {', '.join(self.energy_certs)}")
@@ -274,7 +278,7 @@ class SavedSearchManager:
         except Exception:
             return []
 
-    def _save_searches(self):
+    def _save_searches(self) -> None:
         """Save searches to disk."""
         with open(self.searches_file, 'w') as f:
             json.dump(
@@ -284,7 +288,7 @@ class SavedSearchManager:
                 default=str
             )
 
-    def _save_preferences(self):
+    def _save_preferences(self) -> None:
         """Save preferences to disk."""
         with open(self.preferences_file, 'w') as f:
             json.dump(
@@ -294,7 +298,7 @@ class SavedSearchManager:
                 default=str
             )
 
-    def _save_favorites(self):
+    def _save_favorites(self) -> None:
         """Save favorites to disk."""
         with open(self.favorites_file, 'w') as f:
             json.dump(
@@ -372,7 +376,7 @@ class SavedSearchManager:
                 return True
         return False
 
-    def increment_search_usage(self, search_id: str):
+    def increment_search_usage(self, search_id: str) -> None:
         """
         Increment usage count for a search.
 
@@ -385,7 +389,7 @@ class SavedSearchManager:
             search.last_used = datetime.now()
             self.save_search(search)
 
-    def update_preferences(self, preferences: UserPreferences):
+    def update_preferences(self, preferences: UserPreferences) -> None:
         """
         Update user preferences.
 

@@ -83,6 +83,8 @@ def _run_docker(root: Path, *, profiles: list[str]) -> int:
     if "gpu" in profiles:
         env.setdefault("OLLAMA_API_BASE", "http://ollama-gpu:11434")
         env.setdefault("OLLAMA_HOST", "http://ollama-gpu:11434")
+    if "internet" in profiles:
+        env.setdefault("INTERNET_ENABLED", "true")
     cmd = ["docker", "compose"]
     for profile in profiles:
         cmd.extend(["--profile", profile])
@@ -182,9 +184,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--service", choices=["all", "backend", "frontend"], default="all")
     parser.add_argument("--docker-mode", choices=["auto", "cpu", "gpu", "ask"], default="auto")
     parser.add_argument("--docker-profile", action="append", default=[])
+    parser.add_argument("--internet", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--no-bootstrap", action="store_true")
     args = parser.parse_args(argv)
+    if bool(args.internet):
+        os.environ.setdefault("INTERNET_ENABLED", "true")
 
     root = _project_root()
     docker_mode = str(args.docker_mode)
@@ -193,6 +198,8 @@ def main(argv: list[str] | None = None) -> int:
 
     requested_profiles = [p for p in args.docker_profile if p and p.strip()]
     effective_profiles = list(requested_profiles)
+    if bool(args.internet) and "internet" not in effective_profiles:
+        effective_profiles.append("internet")
     if docker_mode == "gpu":
         if "gpu" not in effective_profiles:
             effective_profiles.append("gpu")

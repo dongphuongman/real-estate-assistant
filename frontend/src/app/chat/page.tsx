@@ -12,6 +12,7 @@ interface Message {
   content: string;
   sources?: ChatResponse["sources"];
   sourcesTruncated?: boolean;
+  intermediateSteps?: ChatResponse["intermediate_steps"];
 }
 
 export default function ChatPage() {
@@ -24,6 +25,7 @@ export default function ChatPage() {
   const [requestId, setRequestId] = useState<string | undefined>(undefined);
   const [lastUserMessage, setLastUserMessage] = useState<string | undefined>(undefined);
   const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
+  const [debugMode, setDebugMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -58,6 +60,12 @@ export default function ChatPage() {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    setDebugMode(params.get("debug") === "1");
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
@@ -78,7 +86,7 @@ export default function ChatPage() {
       setMessages(prev => [...prev, { role: "assistant", content: "" }]);
 
       await streamChatMessage(
-        { message: userMessage, session_id: sid },
+        { message: userMessage, session_id: sid, include_intermediate_steps: debugMode },
         (chunk) => {
           setMessages(prev => {
             const updated = [...prev];
@@ -92,14 +100,18 @@ export default function ChatPage() {
         ({ requestId }) => {
           if (requestId) setRequestId(requestId);
         },
-        ({ sources, sourcesTruncated, sessionId: returnedSessionId }) => {
+        ({ sources, sourcesTruncated, sessionId: returnedSessionId, intermediateSteps }) => {
           if (returnedSessionId && !sessionId) setSessionId(returnedSessionId);
-          if (!sources || sources.length === 0) return;
           setMessages(prev => {
             const updated = [...prev];
             const lastIdx = updated.length - 1;
             if (lastIdx >= 0 && updated[lastIdx].role === "assistant") {
-              updated[lastIdx] = { ...updated[lastIdx], sources, sourcesTruncated };
+              updated[lastIdx] = {
+                ...updated[lastIdx],
+                sources: sources && sources.length ? sources : updated[lastIdx].sources,
+                sourcesTruncated: typeof sourcesTruncated === "boolean" ? sourcesTruncated : updated[lastIdx].sourcesTruncated,
+                intermediateSteps: intermediateSteps && intermediateSteps.length ? intermediateSteps : updated[lastIdx].intermediateSteps,
+              };
             }
             return updated;
           });
@@ -158,6 +170,16 @@ export default function ChatPage() {
                   </ol>
                 </details>
               )}
+              {debugMode && message.role === "assistant" && message.intermediateSteps && message.intermediateSteps.length > 0 && (
+                <details className="rounded-md border bg-muted/30 px-3 py-2 text-xs">
+                  <summary className="cursor-pointer select-none font-medium">
+                    Debug trace ({message.intermediateSteps.length})
+                  </summary>
+                  <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-[11px] leading-snug">
+                    {JSON.stringify(message.intermediateSteps, null, 2)}
+                  </pre>
+                </details>
+              )}
             </div>
           </div>
         ))}
@@ -187,7 +209,7 @@ export default function ChatPage() {
                   setIsLoading(true);
                   setMessages(prev => [...prev, { role: "assistant", content: "" }]);
                   streamChatMessage(
-                    { message: lastUserMessage, session_id: sessionId },
+                    { message: lastUserMessage, session_id: sessionId, include_intermediate_steps: debugMode },
                     (chunk) => {
                       setMessages(prev => {
                         const updated = [...prev];
@@ -201,13 +223,17 @@ export default function ChatPage() {
                     ({ requestId }) => {
                       if (requestId) setRequestId(requestId);
                     },
-                    ({ sources, sourcesTruncated }) => {
-                      if (!sources || sources.length === 0) return;
+                    ({ sources, sourcesTruncated, intermediateSteps }) => {
                       setMessages(prev => {
                         const updated = [...prev];
                         const lastIdx = updated.length - 1;
                         if (lastIdx >= 0 && updated[lastIdx].role === "assistant") {
-                          updated[lastIdx] = { ...updated[lastIdx], sources, sourcesTruncated };
+                          updated[lastIdx] = {
+                            ...updated[lastIdx],
+                            sources: sources && sources.length ? sources : updated[lastIdx].sources,
+                            sourcesTruncated: typeof sourcesTruncated === "boolean" ? sourcesTruncated : updated[lastIdx].sourcesTruncated,
+                            intermediateSteps: intermediateSteps && intermediateSteps.length ? intermediateSteps : updated[lastIdx].intermediateSteps,
+                          };
                         }
                         return updated;
                       });

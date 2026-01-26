@@ -11,9 +11,21 @@
    Copy-Item .env.example .env
    ```
 2. Set keys and DB options in `.env`.
-3. Start services:
+3. Start services (recommended one-command scripts):
    ```powershell
-   docker compose up -d --build
+   # CPU (no GPU required)
+   .\scripts\dev\run-docker-cpu.ps1
+
+   # GPU (if Docker GPU is available)
+   .\scripts\dev\run-docker-gpu.ps1
+
+   # GPU + Internet web research (starts the `internet` compose profile)
+   .\scripts\dev\run-docker-gpu-internet.ps1
+   ```
+   Or run directly:
+   ```powershell
+   .\scripts\dev\start.ps1 --mode docker --docker-mode auto
+   .\scripts\dev\start.ps1 --mode docker --docker-mode gpu --internet
    ```
    Optional: start only Redis for MCP/caching
    ```powershell

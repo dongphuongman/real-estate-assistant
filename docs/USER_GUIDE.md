@@ -112,6 +112,7 @@ Operator note:
 ### Streaming Responses (SSE)
 For real-time streaming from the assistant:
 - In API mode, set `"stream": true` in `POST /api/v1/chat`
+- Optional debug trace: set `"include_intermediate_steps": true` to receive a tool trace in the final `event: meta` payload.
 - The response uses `text/event-stream` with message deltas as JSON lines: `data: {"content":"<text-delta>"}`
 - After the assistant finishes streaming text, the server emits a final metadata event: `event: meta` with `data: {"sources":[...],"sources_truncated":false,"session_id":"..."}`
 - The stream finishes with `data: [DONE]`
@@ -122,6 +123,7 @@ For real-time streaming from the assistant:
 - The UI displays `request_id` on both success and error paths (when available) to help correlate with server logs (derived from `X-Request-ID`)
 - When reporting a bug to operators, include the `request_id` from the UI whenever possible.
 - Sources may be truncated (count and per-item content length) to keep payloads safe for clients
+- UI debug mode: open `/chat?debug=1` to render the server-provided intermediate tool trace (useful for troubleshooting web research).
 
 ## Search Filters
 

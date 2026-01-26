@@ -1,10 +1,10 @@
+import langchain.agents as lc_agents
 from langchain.memory import ConversationBufferMemory
+
+import agents.hybrid_agent as hybrid_agent
 
 
 def test_tool_agent_falls_back_when_openai_tools_agent_fails(monkeypatch):
-    import langchain.agents as lc_agents
-    import agents.hybrid_agent as hybrid_agent
-
     monkeypatch.setattr(
         hybrid_agent,
         "create_openai_tools_agent",
@@ -20,4 +20,3 @@ def test_tool_agent_falls_back_when_openai_tools_agent_fails(monkeypatch):
     inst.verbose = False
 
     assert inst._create_tool_agent() == "fallback_executor"
-
