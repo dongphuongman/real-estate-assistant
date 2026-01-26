@@ -32,13 +32,21 @@ def test_app_settings_uses_api_access_keys_and_sets_primary_to_first():
 
 
 def test_app_settings_defaults_to_dev_secret_in_nonproduction_when_unset():
+    # SECURITY: No default API key fallback. All environments require explicit key.
+    # This prevents accidental deployment without proper authentication.
     s = AppSettings(environment="development", api_access_key=None, api_access_keys=[])
-    assert s.api_access_keys == ["dev-secret-key"]
-    assert s.api_access_key == "dev-secret-key"
+    assert s.api_access_keys == []
+    assert s.api_access_key is None
 
 
 def test_app_settings_does_not_default_to_dev_secret_in_production_when_unset():
-    s = AppSettings(environment="production", api_access_key=None, api_access_keys=[])
+    # SECURITY: Production requires explicit API keys and valid CORS origins.
+    s = AppSettings(
+        environment="production",
+        api_access_key=None,
+        api_access_keys=[],
+        cors_allow_origins=["https://example.com"],
+    )
     assert s.api_access_keys == []
     assert s.api_access_key is None
 

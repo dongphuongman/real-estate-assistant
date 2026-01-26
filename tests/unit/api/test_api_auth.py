@@ -74,7 +74,9 @@ async def test_get_api_key_missing():
 async def test_get_api_key_rejects_invalid_prod_configuration_with_default_key():
     with patch("api.auth.get_settings") as mock_settings:
         mock_settings.return_value = AppSettings(
-            environment="production", api_access_keys=["dev-secret-key"]
+            environment="production",
+            api_access_keys=["dev-secret-key"],
+            cors_allow_origins=["https://example.com"],
         )
         with pytest.raises(HTTPException) as exc:
             await get_api_key(api_key_header="dev-secret-key")
@@ -86,7 +88,10 @@ async def test_get_api_key_rejects_invalid_prod_configuration_with_default_key()
 async def test_get_api_key_rejects_invalid_prod_configuration_with_no_keys():
     with patch("api.auth.get_settings") as mock_settings:
         mock_settings.return_value = AppSettings(
-            environment="production", api_access_keys=[], api_access_key=None
+            environment="production",
+            api_access_keys=[],
+            api_access_key=None,
+            cors_allow_origins=["https://example.com"],
         )
         with pytest.raises(HTTPException) as exc:
             await get_api_key(api_key_header="any")
