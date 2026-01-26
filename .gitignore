@@ -16,6 +16,11 @@ trae_config.yaml
 trae_config.yml
 .trae/documents/
 
+# Claude Code local configuration (never commit secrets)
+.claude/settings.local.json
+.claude/CLAUDE.local.md
+.claude/memory*.json
+
 # Streamlit secrets
 .streamlit/secrets.toml
 
@@ -255,12 +260,22 @@ desktop.ini
 # Assets cache (keep source files, ignore compiled/minified)
 # assets/**/*.min.*
 #
-# Keep important directories but ignore their contents
+# AI tooling local config (never commit)
+.mcp.json
 .claude/
-
+.cursor/
+.continue/
+.windsurf/
+.codeium/
+.supermaven/
+.tabnine/
+.aider*
+.clinerules
+.cursorrules
+CLAUDE.md
+CLAUDE.local.md
 
 # Local test artifacts and snapshots
-.claude/settings.local.json
 artifacts/
 resp.html
 tmp

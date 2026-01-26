@@ -164,9 +164,9 @@ Core configuration is controlled via environment variables and `.env`:
 
 ```bash
 # Required (at least one provider)
-OPENAI_API_KEY="sk-..."
-ANTHROPIC_API_KEY="sk-ant-..."
-GOOGLE_API_KEY="AI..."
+OPENAI_API_KEY="<OPENAI_API_KEY>"
+ANTHROPIC_API_KEY="<ANTHROPIC_API_KEY>"
+GOOGLE_API_KEY="<GOOGLE_API_KEY>"
 
 # Backend
 ENVIRONMENT="local"
