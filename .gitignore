@@ -257,9 +257,10 @@ desktop.ini
 #
 # Keep important directories but ignore their contents
 .claude/
-!.claude/settings.local.json
+
 
 # Local test artifacts and snapshots
+.claude/settings.local.json
 artifacts/
 resp.html
 tmp
