@@ -21,13 +21,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Cache pip
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v1
+        with:
+          version: "latest"
+
+      - name: Cache uv
         uses: actions/cache@v4
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt', 'pyproject.toml') }}
+          path: ~/.local/share/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('requirements.txt', 'pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-uv-
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -36,9 +41,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-          python -m pip install pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout ruff mypy httpx types-requests
+          uv pip install --system -r requirements.txt
+          uv pip install --system pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout ruff mypy httpx types-requests
 
       - name: Lint (ruff)
         run: |
@@ -224,14 +228,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v1
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
       - name: Install bandit
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install bandit
+          uv pip install --system bandit
       - name: Run Bandit (exclude tests, fail on high severity)
         run: |
           mkdir -p artifacts
@@ -250,14 +257,18 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v1
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
       - name: Install pip-audit
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install pip-audit
+          uv pip install --system pip-audit
+
       - name: Run pip-audit (fail on vulnerabilities)
         run: |
           mkdir -p artifacts
