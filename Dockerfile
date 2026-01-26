@@ -11,16 +11,15 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
+# Install uv for faster Python package management
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
 # Copy requirements first for better caching
 COPY requirements.txt .
 
-# Install Python dependencies in stages for better compatibility
-# Install critical packages with C extensions first
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir "numpy>=1.26.4,<2.0.0" && \
-    pip install --no-cache-dir "pydantic-core>=2.14.0,<3.0.0" && \
-    pip install --no-cache-dir "pandas>=2.2.3,<2.3.0" && \
-    pip install --no-cache-dir -r requirements.txt
+# Use uv to install dependencies (much faster than pip)
+RUN uv pip install --system -r requirements.txt && \
+    uv cache clean
 
 # Copy application code
 COPY . .

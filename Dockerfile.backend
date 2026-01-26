@@ -2,15 +2,14 @@ FROM python:3.12-slim-bookworm
 WORKDIR /app
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y build-essential curl git && \
-    (apt-get purge -y python3-wheel python3-wheel-whl || true) && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
+# Install uv for faster Python package management
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel==0.46.3 && \
-    pip install --no-cache-dir -r requirements.txt && \
-    rm -f /usr/local/lib/python3.12/ensurepip/_bundled/wheel-*.whl && \
-    (find /usr -type f -name "wheel-0.45.1*" -delete || true) && \
-    (find /usr -type d -name "wheel-0.45.1.dist-info" -exec rm -rf {} + || true)
+# Use uv to install dependencies (much faster than pip)
+RUN uv pip install --system -r requirements.txt && \
+    uv cache clean
 COPY . .
 ENV PYTHONUNBUFFERED=1
 EXPOSE 8000
