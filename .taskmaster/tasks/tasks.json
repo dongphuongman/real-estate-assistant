@@ -2,333 +2,151 @@
   "master": {
     "tasks": [
       {
-        "id": 1,
-        "title": "Integration with Real Estate APIs",
-        "description": "Develop adapters for real estate APIs to fetch property data dynamically.",
-        "status": "done",
-        "priority": "high",
-        "subtasks": [],
-        "dependencies": []
-      },
-      {
-        "id": 2,
-        "title": "Geographical Mapping",
-        "description": "Integrate with mapping services (e.g., Mapbox, Folium) to visualize property locations in the UI.",
-        "status": "pending",
-        "priority": "medium",
-        "subtasks": [],
-        "dependencies": []
-      },
-      {
-        "id": 9,
-        "title": "Vercel Deployment Automation",
-        "description": "Configure Vercel Git Integration for automatic deployments to solve file upload limits.",
-        "status": "pending",
-        "priority": "high",
-        "subtasks": [],
-        "dependencies": []
-      },
-      {
-        "id": 3,
-        "title": "International Market Support",
-        "description": "Enhance data processing to handle different market formats, currencies, and address standards.",
-        "status": "pending",
-        "priority": "medium",
-        "subtasks": [],
-        "dependencies": []
-      },
-      {
-        "id": 4,
-        "title": "Sentiment Analysis",
-        "description": "Add sentiment analysis module using specialized LLM fine-tuning for property descriptions.",
-        "status": "pending",
-        "priority": "low",
-        "subtasks": [],
-        "dependencies": []
-      },
-      {
-        "id": 5,
-        "title": "Automated Test Suite",
-        "description": "Develop comprehensive automated test suite and perform user testing to address limited testing constraint.",
+        "id": "1",
+        "title": "[TASK-001] API Platform & Security",
+        "description": "Definition: Provide a secure, observable, versioned API surface where every response is traceable via X-Request-ID and secrets never reach the browser.\n\nSUBTASK [TASK-001.1] Settings and environment wiring\n- STEP [TASK-001.1.1] Normalize API access keys (rotation) and enforce dev/prod defaults.\n- STEP [TASK-001.1.2] Enforce production CORS allowlist and reject unsafe wildcard origins.\n- STEP [TASK-001.1.3] Bound risky inputs via settings (RAG sizes, sources truncation, timeouts).\n\nSUBTASK [TASK-001.2] Auth middleware and rate limiting\n- STEP [TASK-001.2.1] Validate X-API-Key against rotated keys and return 403 with safe detail.\n- STEP [TASK-001.2.2] Apply per-client RPM rate limiting with deterministic client ID derivation.\n- STEP [TASK-001.2.3] Ensure health and docs endpoints behave correctly under auth + rate limits.\n\nSUBTASK [TASK-001.3] Request correlation and error envelope\n- STEP [TASK-001.3.1] Generate/normalize X-Request-ID for every request and response.\n- STEP [TASK-001.3.2] Standardize error responses as { detail: string } with X-Request-ID.\n- STEP [TASK-001.3.3] Prevent logging of secrets; redact sensitive headers and tokens.\n\nSUBTASK [TASK-001.4] Next.js server proxy contract for /api/v1/*\n- STEP [TASK-001.4.1] Proxy requests to backend and inject server-side X-API-Key.\n- STEP [TASK-001.4.2] Strip client-supplied X-API-Key and cookies; forward only allowlisted headers.\n- STEP [TASK-001.4.3] Propagate X-Request-ID and preserve SSE streaming bodies end-to-end.",
         "status": "in-progress",
         "priority": "high",
         "subtasks": [
           {
-            "id": 5,
-            "title": "Add API provider integration tests",
-            "status": "done",
-            "parentId": "undefined"
+            "id": 1.1,
+            "title": "[TASK-001.1] Settings and environment wiring",
+            "status": "pending",
+            "parentId": "1"
+          },
+          {
+            "id": 1.2,
+            "title": "[TASK-001.2] Auth middleware and rate limiting",
+            "status": "pending",
+            "parentId": "1"
+          },
+          {
+            "id": 1.3,
+            "title": "[TASK-001.3] Request correlation and error envelope",
+            "status": "pending",
+            "parentId": "1"
+          },
+          {
+            "id": 1.4,
+            "title": "[TASK-001.4] Next.js server proxy contract",
+            "status": "pending",
+            "parentId": "1"
           }
         ],
-        "dependencies": []
+        "dependencies": [],
+        "updatedAt": "2026-01-26T01:33:57.660Z"
       },
       {
-        "id": 6,
-        "title": "NDP MVP Launch",
-        "description": "Finalize and ship the public free-tier MVP per PRD for maximum attraction.",
-        "status": "in-progress",
-        "priority": "high",
-        "subtasks": [
-          {
-            "id": 6,
-            "title": "Finalize MVP scope per PRD",
-            "status": "done",
-            "parentId": "undefined"
-          },
-          {
-            "id": 6,
-            "title": "Implement chat, search, settings pages (frontend)",
-            "status": "done",
-            "parentId": "undefined"
-          },
-          {
-            "id": 6,
-            "title": "Verify backend endpoints (chat, search, tools, settings, admin)",
-            "status": "done",
-            "parentId": "undefined"
-          },
-          {
-            "id": 6,
-            "title": "Apply rate limiting and request IDs",
-            "status": "done",
-            "parentId": "undefined"
-          },
-          {
-            "id": 6,
-            "title": "Ensure CORS pinned in production",
-            "status": "done",
-            "parentId": "undefined"
-          }
-        ],
-        "dependencies": []
-      },
-      {
-        "id": 7,
-        "title": "Free-tier Deployment",
-        "description": "Deploy frontend (Vercel) and backend (Render/Railway) with Neon/Supabase Postgres.",
+        "id": "2",
+        "title": "[TASK-002] Retrieval, Data, and Local RAG",
+        "description": "Definition: Enable ingest/index/search of property and document data with deterministic results, bounded resource usage, and reliable citations.\n\nSUBTASK [TASK-002.1] Property data ingestion and normalization\n- STEP [TASK-002.1.1] Validate and normalize property schema (geo fields, currency, listing type).\n- STEP [TASK-002.1.2] Deduplicate records deterministically and enforce maximum dataset size.\n- STEP [TASK-002.1.3] Run ingest/reindex via admin endpoints with safe operational feedback.\n\nSUBTASK [TASK-002.2] Vector store abstraction and indexing\n- STEP [TASK-002.2.1] Index properties into Chroma with hybrid fields and metadata filters.\n- STEP [TASK-002.2.2] Provide managed option wiring (pgvector) without changing API contract.\n- STEP [TASK-002.2.3] Degrade gracefully when vector store is unavailable (predictable errors).\n\nSUBTASK [TASK-002.3] Search endpoint behavior (hybrid + geo + sort)\n- STEP [TASK-002.3.1] Implement POST /api/v1/search request/response models and validation.\n- STEP [TASK-002.3.2] Implement filters + geo (radius/bbox) + stable sort with clear tie-breakers.\n- STEP [TASK-002.3.3] Return explainability fields (match signals) without leaking prompts.\n\nSUBTASK [TASK-002.4] Local RAG knowledge base\n- STEP [TASK-002.4.1] Upload documents with per-file and total byte bounds.\n- STEP [TASK-002.4.2] Answer questions with citations and bounded top_k.\n- STEP [TASK-002.4.3] Reset knowledge base safely and idempotently.",
         "status": "pending",
         "priority": "high",
         "subtasks": [
           {
-            "id": 7,
-            "title": "Deploy frontend to Vercel",
+            "id": 2.1,
+            "title": "[TASK-002.1] Property ingestion and normalization",
             "status": "pending",
-            "parentId": "undefined"
+            "parentId": "2"
           },
           {
-            "id": 7,
-            "title": "Deploy backend to Render/Railway",
+            "id": 2.2,
+            "title": "[TASK-002.2] Vector store abstraction and indexing",
             "status": "pending",
-            "parentId": "undefined"
+            "parentId": "2"
           },
           {
-            "id": 7,
-            "title": "Configure environment vars and CORS",
+            "id": 2.3,
+            "title": "[TASK-002.3] Search endpoint behavior",
             "status": "pending",
-            "parentId": "undefined"
+            "parentId": "2"
           },
           {
-            "id": 7,
-            "title": "Provision Neon/Supabase Postgres",
+            "id": 2.4,
+            "title": "[TASK-002.4] Local RAG knowledge base",
             "status": "pending",
-            "parentId": "undefined"
-          },
-          {
-            "id": 7,
-            "title": "Run health checks and smoke tests",
-            "status": "pending",
-            "parentId": "undefined"
+            "parentId": "2"
           }
         ],
-        "dependencies": []
+        "dependencies": [
+          "1"
+        ]
       },
       {
-        "id": 8,
-        "title": "Testing & Monitoring",
-        "description": "Establish robust tests (unit/integration/e2e) and observability for NDP.",
-        "status": "in-progress",
-        "priority": "high",
-        "subtasks": [
-          {
-            "id": 8,
-            "title": "Run unit/integration/e2e suites",
-            "status": "done",
-            "parentId": "undefined"
-          },
-          {
-            "id": 8,
-            "title": "Set up structured logs & metrics",
-            "status": "done",
-            "parentId": "undefined"
-          },
-          {
-            "id": 8,
-            "title": "Add uptime monitoring & alerts",
-            "status": "done",
-            "parentId": "undefined"
-          },
-          {
-            "id": 8,
-            "title": "Enforce coverage gates in CI (backend 90/70, frontend 85)",
-            "status": "done",
-            "parentId": "undefined"
-          },
-          {
-            "id": 8,
-            "title": "Add security audits (Bandit + pip-audit) to CI",
-            "status": "done",
-            "parentId": "undefined"
-          },
-          {
-            "id": 8,
-            "title": "Wire uptime monitor via env config",
-            "status": "done",
-            "parentId": "undefined"
-          }
-        ],
-        "updatedAt": "2026-01-18T21:28:01.994Z",
-        "dependencies": []
-      },
-      {
-        "id": 9,
-        "title": "Community Building",
-        "description": "Create channels and capture interest to build early user community.",
+        "id": "3",
+        "title": "[TASK-003] Chat & Tool Orchestration",
+        "description": "Definition: Provide a streaming chat experience backed by tools and retrieval, with deterministic testing and safe fallbacks across LLM providers.\n\nSUBTASK [TASK-003.1] SSE chat contract and streaming reliability\n- STEP [TASK-003.1.1] Define typed SSE events and finalize response meta payload (sources, truncation flags).\n- STEP [TASK-003.1.2] Implement server-side streaming with timeouts and safe termination behavior.\n- STEP [TASK-003.1.3] Ensure the client can recover from stream errors with request correlation.\n\nSUBTASK [TASK-003.2] Tool registry and execution safety\n- STEP [TASK-003.2.1] Validate tool inputs and outputs with strict schemas (Python/Pydantic).\n- STEP [TASK-003.2.2] Stream intermediate tool steps without leaking sensitive data.\n- STEP [TASK-003.2.3] Implement deterministic tool stubs for Pro-only integrations.\n\nSUBTASK [TASK-003.3] Provider routing and per-user preferences\n- STEP [TASK-003.3.1] Route providers via provider factory with consistent config defaults.\n- STEP [TASK-003.3.2] Implement per-user model preferences and apply during chat/tool execution.\n- STEP [TASK-003.3.3] Surface local runtime availability and runtime errors safely.",
         "status": "pending",
-        "priority": "medium",
+        "priority": "high",
         "subtasks": [
           {
-            "id": 9,
-            "title": "Add landing page CTA for email capture",
+            "id": 3.1,
+            "title": "[TASK-003.1] SSE contract and streaming reliability",
             "status": "pending",
-            "parentId": "undefined"
+            "parentId": "3"
           },
           {
-            "id": 9,
-            "title": "Create Discord/Telegram channels",
+            "id": 3.2,
+            "title": "[TASK-003.2] Tool registry and execution safety",
             "status": "pending",
-            "parentId": "undefined"
+            "parentId": "3"
           },
           {
-            "id": 9,
-            "title": "Implement feedback form",
+            "id": 3.3,
+            "title": "[TASK-003.3] Provider routing and preferences",
             "status": "pending",
-            "parentId": "undefined"
+            "parentId": "3"
           }
         ],
-        "dependencies": []
+        "dependencies": [
+          "1",
+          "2"
+        ]
       },
       {
-        "id": 10,
-        "title": "Paid Version Foundation",
-        "description": "Lay groundwork for closed paid offering with auth, subscriptions, and pgvector.",
+        "id": "4",
+        "title": "[TASK-004] Frontend UI System (State-First)",
+        "description": "Definition: Deliver a resilient Next.js UI that never blocks on missing data, always communicates loading, and provides recovery paths with request IDs.\n\nSUBTASK [TASK-004.1] Typed API client + uniform error handling\n- STEP [TASK-004.1.1] Keep TypeScript API contracts centralized and consistent across features.\n- STEP [TASK-004.1.2] Attach request_id to thrown errors when X-Request-ID exists.\n- STEP [TASK-004.1.3] Add unit tests for error parsing and header behavior.\n\nSUBTASK [TASK-004.2] Search page UI (4 mandated states)\n- STEP [TASK-004.2.1] Empty state (zero-data): onboarding copy + example queries + disabled export.\n- STEP [TASK-004.2.2] Loading state: skeleton results + disabled controls + map placeholder.\n- STEP [TASK-004.2.3] Error state: retry action + human-readable error + request_id=....\n- STEP [TASK-004.2.4] Populated state: results list + filters + sorting + map clustering.\n\nSUBTASK [TASK-004.3] Chat page UI (4 mandated states)\n- STEP [TASK-004.3.1] Empty state (zero-data): suggested prompts and explanation of tools/sources.\n- STEP [TASK-004.3.2] Loading state: streaming placeholder + thinking indicator.\n- STEP [TASK-004.3.3] Error state: inline assistant apology + retry + request_id=....\n- STEP [TASK-004.3.4] Populated state: message list + sources display + intermediate steps toggle.\n\nSUBTASK [TASK-004.4] Settings, Knowledge, Analytics pages (4 mandated states)\n- STEP [TASK-004.4.1] Empty state: clear guidance when settings/models/knowledge are absent.\n- STEP [TASK-004.4.2] Loading state: skeleton sections for model catalog and network calls.\n- STEP [TASK-004.4.3] Error state: retry actions + readable feedback + request_id=....\n- STEP [TASK-004.4.4] Populated state: editable preferences + runtime info + knowledge citations.",
         "status": "pending",
-        "priority": "medium",
+        "priority": "high",
         "subtasks": [
           {
-            "id": 10,
-            "title": "Implement email/OAuth auth skeleton",
+            "id": 4.1,
+            "title": "[TASK-004.1] Typed API client + error handling",
             "status": "pending",
-            "parentId": "undefined"
+            "parentId": "4"
           },
           {
-            "id": 10,
-            "title": "Move notification settings to server DB",
+            "id": 4.2,
+            "title": "[TASK-004.2] Search UI states",
             "status": "pending",
-            "parentId": "undefined"
+            "parentId": "4"
           },
           {
-            "id": 10,
-            "title": "Prepare pgvector migration plan",
+            "id": 4.3,
+            "title": "[TASK-004.3] Chat UI states",
             "status": "pending",
-            "parentId": "undefined"
+            "parentId": "4"
           },
           {
-            "id": 10,
-            "title": "Add subscription plan stubs",
+            "id": 4.4,
+            "title": "[TASK-004.4] Settings/Knowledge/Analytics UI states",
             "status": "pending",
-            "parentId": "undefined"
+            "parentId": "4"
           }
         ],
-        "dependencies": []
-      },
-      {
-        "id": 11,
-        "title": "Remove legacy Streamlit UI",
-        "description": "Delete Streamlit app and UI helpers; refactor Python to drop streamlit dependencies.",
-        "status": "done",
-        "priority": "high",
-        "subtasks": [],
-        "dependencies": []
-      },
-      {
-        "id": 12,
-        "title": "Next.js accessibility improvements",
-        "description": "Add ARIA roles/labels, error feedback, focus indicators in search page.",
-        "status": "done",
-        "priority": "high",
-        "subtasks": [],
-        "dependencies": []
-      },
-      {
-        "id": 13,
-        "title": "Frontend API error correlation",
-        "description": "Propagate X-Request-ID from API responses in frontend error handling.",
-        "status": "done",
-        "priority": "medium",
-        "subtasks": [],
-        "dependencies": []
-      },
-      {
-        "id": 14,
-        "title": "CI/CD pipeline",
-        "description": "Add GitHub Actions for lint, typecheck, unit/integration tests (frontend/backend).",
-        "status": "done",
-        "priority": "high",
-        "subtasks": [],
-        "dependencies": []
-      },
-      {
-        "id": 15,
-        "title": "Documentation update (PRD & Architecture)",
-        "description": "Revise PRD and Architecture to reflect V4 Next.js/FastAPI migration.",
-        "status": "done",
-        "priority": "medium",
-        "subtasks": [],
-        "dependencies": []
-      },
-      {
-        "id": 16,
-        "title": "QA verification",
-        "description": "Run backend unit/integration tests and frontend tests; fix failures.",
-        "status": "done",
-        "priority": "high",
-        "subtasks": [],
-        "dependencies": []
-      },
-      {
-        "id": 17,
-        "title": "Fix console noise and add dev scripts",
-        "description": "Remove frontend console noise, cap hybrid retriever k, add regression tests, and provide uv-based dev scripts/docs for Windows/Linux.",
-        "status": "done",
-        "priority": "high",
-        "subtasks": [],
-        "dependencies": []
-      },
-      {
-        "id": 18,
-        "title": "Fix LLM initialization error and add local fallback",
-        "description": "Fix provider_name kwarg leaking into OpenAI calls; add Ollama low-resource fallback model for local/dev usage; add regression tests.",
-        "status": "done",
-        "priority": "high",
-        "subtasks": [],
-        "dependencies": []
+        "dependencies": [
+          "1",
+          "2",
+          "3"
+        ]
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-01-25T00:00:00.000Z",
-      "taskCount": 19,
-      "completedCount": 9,
+      "lastModified": "2026-01-26T01:33:57.661Z",
+      "taskCount": 4,
+      "completedCount": 0,
       "tags": [
         "master"
       ]
