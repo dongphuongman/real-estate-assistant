@@ -192,6 +192,13 @@ For production, set:
 $env:ENVIRONMENT="production"
 $env:CORS_ALLOW_ORIGINS="https://yourapp.com,https://studio.vercel.app"
 ```
+
+**Production safety:** The backend validates that:
+- `CORS_ALLOW_ORIGINS` is set (not empty)
+- `CORS_ALLOW_ORIGINS` does NOT contain wildcard `*`
+
+If production is configured with wildcard or empty CORS origins, the application will fail to start with a clear error message. This prevents accidental deployment with overly permissive CORS.
+
 The backend will only allow these origins.
 When the API is called cross-origin from a browser, the backend exposes `X-Request-ID` via
 `Access-Control-Expose-Headers` so client code can read it for support and troubleshooting.

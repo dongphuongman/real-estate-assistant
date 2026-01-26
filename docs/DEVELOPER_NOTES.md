@@ -26,6 +26,7 @@ in V4.
 - CORS:
   - Development: `ENVIRONMENT!=production` → `allow_origins=["*"]`
   - Production: `ENVIRONMENT=production` → `CORS_ALLOW_ORIGINS` (comma-separated list)
+  - **Production validation**: Wildcard `*` and empty origins are rejected in production (fail-fast at startup)
   - The API exposes `X-Request-ID` via `Access-Control-Expose-Headers` so browser clients can read it
   - Example:
     ```powershell

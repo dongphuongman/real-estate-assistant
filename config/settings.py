@@ -181,7 +181,6 @@ class AppSettings(BaseModel):
     def _normalize_api_access_keys(
         cls: type["AppSettings"], values: dict[str, Any]
     ) -> dict[str, Any]:
-        environment = (values.get("environment") or "development").strip().lower()
         raw_primary = values.get("api_access_key")
         primary = raw_primary.strip() if isinstance(raw_primary, str) else None
         if not primary:
@@ -205,6 +204,38 @@ class AppSettings(BaseModel):
         # This prevents accidental deployment without proper authentication.
         values["api_access_keys"] = keys
         values["api_access_key"] = keys[0] if keys else None
+        return values
+
+    @root_validator(skip_on_failure=True)
+    def _validate_cors_production_safety(
+        cls: type["AppSettings"], values: dict[str, Any]
+    ) -> dict[str, Any]:
+        """
+        Validate CORS configuration for production safety.
+
+        In production, this validator:
+        - Rejects wildcard '*' origins (too permissive)
+        - Rejects empty origins list (must specify allowed domains)
+
+        This prevents accidental deployment with overly permissive CORS configuration.
+        """
+        environment = (values.get("environment") or "development").strip().lower()
+        cors_origins = values.get("cors_allow_origins") or []
+
+        if environment == "production":
+            # Reject wildcard in production
+            if "*" in cors_origins:
+                raise ValueError(
+                    "CORS_ALLOW_ORIGINS cannot contain wildcard '*' in production. "
+                    "Set specific origins (e.g., 'https://yourapp.com')."
+                )
+            # Reject empty origins in production
+            if not cors_origins:
+                raise ValueError(
+                    "CORS_ALLOW_ORIGINS must be set in production. "
+                    "Set specific origins (e.g., 'CORS_ALLOW_ORIGINS=https://yourapp.com')."
+                )
+
         return values
 
 
