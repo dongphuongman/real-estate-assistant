@@ -15,6 +15,7 @@ from api.chat_sources import serialize_chat_sources, serialize_web_sources
 from api.dependencies import get_llm, get_vector_store
 from api.models import ChatRequest, ChatResponse
 from config.settings import get_settings
+from utils.sanitization import sanitize_chat_message
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,15 @@ async def chat_endpoint(
     """
     Process a chat message using the hybrid agent with session persistence.
     """
+    # Sanitize chat message to prevent injection attacks
+    try:
+        sanitized_message = sanitize_chat_message(request.message)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from None
+
     try:
         if not store:
             raise HTTPException(
@@ -76,7 +86,7 @@ async def chat_endpoint(
 
         if request.stream:
             analysis = getattr(getattr(agent, "analyzer", None), "analyze", None)
-            analyzed = analysis(request.message) if callable(analysis) else None
+            analyzed = analysis(sanitized_message) if callable(analysis) else None
             requires_web = False
             if analyzed is not None:
                 from agents.query_analyzer import QueryAnalysis
@@ -97,7 +107,7 @@ async def chat_endpoint(
                 }
 
                 if requires_web:
-                    result = agent.process_query(request.message)
+                    result = agent.process_query(sanitized_message)
                     raw_answer = result.get("answer", "")
                     answer_text = raw_answer if isinstance(raw_answer, str) else str(raw_answer)
                     if answer_text:
@@ -125,11 +135,11 @@ async def chat_endpoint(
                             safe_steps = []
                         sources_payload["intermediate_steps"] = safe_steps
                 else:
-                    async for chunk in agent.astream_query(request.message):
+                    async for chunk in agent.astream_query(sanitized_message):
                         yield f"data: {chunk}\n\n"
                     if hasattr(agent, "get_sources_for_query"):
                         try:
-                            docs = agent.get_sources_for_query(request.message)
+                            docs = agent.get_sources_for_query(sanitized_message)
                             sources, sources_truncated = serialize_chat_sources(
                                 docs,
                                 max_items=sources_max_items,
@@ -151,7 +161,7 @@ async def chat_endpoint(
                 media_type="text/event-stream"
             )
 
-        result = agent.process_query(request.message)
+        result = agent.process_query(sanitized_message)
         
         answer = result.get("answer", "")
         if "sources" in result and isinstance(result.get("sources"), list):

@@ -140,6 +140,14 @@ class AppSettings(BaseModel):
         default_factory=lambda: int(os.getenv("RAG_MAX_TOTAL_BYTES", str(25 * 1024 * 1024)))
     )
 
+    # Request Size Limits
+    request_max_body_size_mb: int = Field(
+        default_factory=lambda: int(os.getenv("REQUEST_MAX_BODY_SIZE_MB", "10"))
+    )
+    request_max_upload_size_mb: int = Field(
+        default_factory=lambda: int(os.getenv("REQUEST_MAX_UPLOAD_SIZE_MB", "25"))
+    )
+
     # Data Loading
     max_properties: int = 2000
     batch_size: int = 100
@@ -193,9 +201,8 @@ class AppSettings(BaseModel):
         if not keys and primary:
             keys = [primary]
 
-        if not keys and environment != "production":
-            keys = ["dev-secret-key"]
-
+        # SECURITY: No default API key fallback. All environments require explicit key.
+        # This prevents accidental deployment without proper authentication.
         values["api_access_keys"] = keys
         values["api_access_key"] = keys[0] if keys else None
         return values

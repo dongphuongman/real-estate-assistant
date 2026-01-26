@@ -169,3 +169,200 @@ To serve on a domain (e.g., `realestate.ai`) with SSL.
 - Never expose secrets in frontend. All keys are server‑side env variables.
 - For local models, configure Ollama (`OLLAMA_BASE_URL`) and select model (e.g., `llama3`).
 - Feature flags choose providers; Community Edition publishes only safe toggles.
+
+---
+
+## 📋 Production Deployment Checklist
+
+Use this checklist to verify your deployment is production-ready and secure.
+
+### Pre-Deployment Checklist
+
+#### Environment Configuration
+- [ ] `.env` file created from `.env.example`
+- [ ] `ENVIRONMENT=production` set
+- [ ] At least one LLM provider API key configured (OpenAI, Anthropic, or Google)
+- [ ] `API_ACCESS_KEYS` set with strong, unique key(s)
+- [ ] `dev-secret-key` NOT in `API_ACCESS_KEYS` for production
+- [ ] `CORS_ALLOW_ORIGINS` set to your production domain only
+- [ ] `NEXT_PUBLIC_API_URL` set correctly for frontend
+
+#### Security Configuration
+- [ ] HTTPS enabled with valid SSL certificate
+- [ ] HSTS preloaded domain (if using custom domain)
+- [ ] `API_RATE_LIMIT_ENABLED=true`
+- [ ] `API_RATE_LIMIT_RPM` set appropriately (default: 600)
+- [ ] `REQUEST_MAX_BODY_SIZE_MB` configured (default: 10)
+- [ ] `REQUEST_MAX_UPLOAD_SIZE_MB` configured (default: 25)
+- [ ] `SHUTDOWN_DRAIN_SECONDS` configured (default: 30)
+
+#### Services & Dependencies
+- [ ] Vector store (ChromaDB) initialized with data
+- [ ] Redis configured if using distributed rate limiting (`REDIS_URL`)
+- [ ] Database (PostgreSQL) configured for production if using pgvector
+- [ ] Log aggregation configured (e.g., CloudWatch, Datadog, etc.)
+- [ ] Monitoring/alerting configured (e.g., Uptime Monitor enabled)
+
+### Post-Deployment Verification
+
+#### Health & Connectivity
+- [ ] `GET /health` returns 200 with `status: "healthy"`
+- [ ] `GET /health?include_dependencies=true` shows all dependencies healthy
+- [ ] `GET /api/v1/verify-auth` with valid API key returns 200
+- [ ] Invalid API key returns 401/403
+- [ ] `dev-secret-key` returns 403 in production
+
+#### Security Headers Verification
+- [ ] Check security headers: `curl -I https://your-domain.com/health`
+- [ ] Verify `X-Content-Type-Options: nosniff` present
+- [ ] Verify `X-Frame-Options: DENY` present
+- [ ] Verify `X-XSS-Protection: 1; mode=block` present
+- [ ] Verify `Strict-Transport-Security` present (HTTPS only)
+- [ ] Verify `Content-Security-Policy` present
+
+#### CSP Verification (Frontend)
+1. Open browser DevTools Console
+2. Navigate to your production site
+3. Check for CSP violations
+4. Verify no inline scripts are blocked (unless expected)
+
+#### Rate Limiting Verification
+1. Send 600 requests (within your RPM limit) - should all succeed
+2. Send 1 more request - should return 429
+3. Verify response headers:
+   - `X-RateLimit-Limit`
+   - `X-RateLimit-Remaining`
+   - `X-RateLimit-Reset`
+   - `Retry-After` (on 429)
+
+#### Request ID Correlation
+1. Make any API request with valid API key
+2. Verify `X-Request-ID` header is present in response
+3. Check logs - request ID should be logged
+
+#### Input Sanitization
+1. Test search with control characters: `search?query=test%00%01`
+2. Test chat with HTML tags: `<script>alert('xss')</script>`
+3. Both should return 400 with appropriate error
+
+#### Graceful Shutdown
+1. Send SIGTERM to backend process
+2. Verify logs show "Graceful shutdown initiated"
+3. Verify logs show "Waiting Xs drain period"
+4. Verify in-flight requests complete during drain
+5. Verify all services stop cleanly
+
+#### Error Handling
+1. Make request with oversized payload (>10MB)
+2. Verify returns 413 (Payload Too Large)
+3. Check error includes request_id
+
+#### Functionality Tests
+- [ ] Search works: `POST /api/v1/search`
+- [ ] Chat works (non-streaming): `POST /api/v1/search`
+- [ ] Chat works (streaming): `POST /api/v1/search` with `stream=true`
+- [ ] Settings endpoints work
+- [ ] Tools endpoints work (mortgage calculator, comparison, etc.)
+
+### Monitoring & Alerting Setup
+
+#### Metrics to Monitor
+- [ ] Request rate (RPM)
+- [ ] Error rate (4xx, 5xx)
+- [ ] Response time (p50, p95, p99)
+- [ ] Rate limit 429 rate
+- [ ] LLM provider error rate
+- [ ] Circuit breaker state (if using)
+- [ ] Vector store latency
+- [ ] Redis connection status (if using)
+
+#### Alerts to Configure
+- [ ] Error rate > 1%
+- [ ] Response time p95 > 2s
+- [ ] Rate limit 429 rate > 5%
+- [ ] Health check returns 503
+- [ ] LLM provider circuit breaker opens
+- [ ] Vector store unavailable
+
+### Backup & Recovery
+
+#### Backups
+- [ ] Vector store data backup automated
+- [ ] Database backup automated (if using PostgreSQL)
+- [ ] Backup retention policy configured (30+ days)
+- [ ] Backup restoration tested
+
+#### Disaster Recovery
+- [ ] Redundancy configured (multi-region if available)
+- [ ] Failover procedure documented
+- [ ] Recovery time objective (RTO) defined
+- [ ] Recovery point objective (RPO) defined
+
+### Documentation Updates
+
+- [ ] Architecture diagrams updated
+- [ ] Runbooks documented
+- [ ] On-call rotation established
+- [ ] Escalation paths defined
+- [ ] Security contacts documented
+
+---
+
+## 🔄 Rollback Procedure
+
+If a deployment causes issues:
+
+### Quick Rollback (Docker)
+```bash
+# Previous version tag
+git checkout <previous-tag>
+docker compose down
+docker compose up -d --build
+```
+
+### Quick Rollback (Vercel)
+1. Go to Vercel Dashboard
+2. Select your project
+3. Go to Deployments
+4. Find previous successful deployment
+5. Click "Promote to Production"
+
+### Database Rollback (if needed)
+```bash
+# Restore from backup (procedure varies by provider)
+# For PostgreSQL:
+pg_restore -d database_name backup.dump
+```
+
+---
+
+## 📞 Support & Troubleshooting
+
+### Common Issues
+
+**Issue:** Health check returns 503
+- **Cause:** Vector store or other dependency unavailable
+- **Fix:** Check `GET /health?include_dependencies=true` for details
+
+**Issue:** Rate limiting too aggressive
+- **Fix:** Increase `API_RATE_LIMIT_RPM` or add `X-Forwarded-For` header configuration
+
+**Issue:** CORS errors in browser
+- **Fix:** Verify `CORS_ALLOW_ORIGINS` includes your frontend domain
+
+**Issue:** CSP violations in console
+- **Fix:** Update `next.config.ts` CSP directives or review loaded resources
+
+**Issue:** API key rejected
+- **Fix:** Verify key is in `API_ACCESS_KEYS` (comma-separated) and not `dev-secret-key`
+
+### Getting Help
+
+- **Documentation:** [docs/](./)
+- **Issues:** [GitHub Issues](https://github.com/AleksNeStu/ai-real-estate-assistant/issues)
+- **Security Issues:** See [SECURITY.md](./SECURITY.md) for responsible disclosure
+
+---
+
+**Last Updated:** 2026-01-26
+**Version:** 4.0

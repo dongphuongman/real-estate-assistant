@@ -1,10 +1,12 @@
 import hashlib
 import logging
+import os
 import re
 import time
 import uuid
 from collections import defaultdict, deque
 from threading import Lock
+from typing import Any, Optional
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -18,6 +20,159 @@ _RATE_LIMIT_EXCLUDED_PREFIXES = (
     "/redoc",
     "/openapi.json",
 )
+
+
+class RedisRateLimiter:
+    """
+    Redis-backed distributed rate limiter.
+
+    Provides rate limiting across multiple instances using Redis as the backing store.
+    Falls back to in-memory rate limiting if Redis is unavailable.
+    """
+
+    def __init__(
+        self,
+        redis_url: str,
+        max_requests: int = 600,
+        window_seconds: int = 60,
+        fallback_to_in_memory: bool = True,
+    ) -> None:
+        """
+        Initialize Redis rate limiter.
+
+        Args:
+            redis_url: Redis connection URL
+            max_requests: Maximum requests per window
+            window_seconds: Time window in seconds
+            fallback_to_in_memory: Whether to fall back to in-memory if Redis fails
+        """
+        self._redis_url = redis_url
+        self._max_requests = max(1, int(max_requests))
+        self._window_seconds = max(1, int(window_seconds))
+        self._fallback_to_in_memory = fallback_to_in_memory
+        self._fallback_limiter: Optional[RateLimiter] = None
+        self._redis_client: Optional[Any] = None
+        self._use_redis = False
+
+        # Try to initialize Redis connection
+        self._init_redis()
+
+    def _init_redis(self) -> bool:
+        """Initialize Redis connection. Returns True if successful."""
+        try:
+            import redis
+
+            self._redis_client = redis.from_url(
+                self._redis_url,
+                decode_responses=True,
+                socket_timeout=2,
+                socket_connect_timeout=2,
+            )
+            # Test connection
+            self._redis_client.ping()
+            self._use_redis = True
+            logging.info("Redis rate limiter initialized successfully")
+            return True
+
+        except ImportError:
+            logging.warning("Redis Python package not installed, using in-memory rate limiting")
+            if self._fallback_to_in_memory:
+                self._fallback_limiter = RateLimiter(self._max_requests, self._window_seconds)
+            return False
+
+        except Exception as e:
+            logging.warning("Redis connection failed: %s. Using in-memory rate limiting", e)
+            if self._fallback_to_in_memory:
+                self._fallback_limiter = RateLimiter(self._max_requests, self._window_seconds)
+            return False
+
+    def configure(self, max_requests: int, window_seconds: int) -> None:
+        """Update rate limit configuration."""
+        self._max_requests = max(1, int(max_requests))
+        self._window_seconds = max(1, int(window_seconds))
+        if self._fallback_limiter:
+            self._fallback_limiter.configure(max_requests, window_seconds)
+
+    def reset(self) -> None:
+        """Reset rate limiter state."""
+        if self._fallback_limiter:
+            self._fallback_limiter.reset()
+
+    def check(self, key: str, now: float | None = None) -> tuple[bool, int, int, int]:
+        """
+        Check if request is within rate limit.
+
+        Args:
+            key: Client identifier
+            now: Current time (for testing)
+
+        Returns:
+            Tuple of (allowed, limit, remaining, reset_in_seconds)
+        """
+        ts = time.time() if now is None else now
+        key = key or "anonymous"
+
+        # Use Redis if available
+        if self._use_redis and self._redis_client:
+            try:
+                return self._check_redis(key, ts)
+            except Exception as e:
+                logging.warning("Redis rate limit check failed: %s. Falling back to in-memory", e)
+                if self._fallback_limiter:
+                    return self._fallback_limiter.check(key, now)
+
+        # Fall back to in-memory
+        if self._fallback_limiter:
+            return self._fallback_limiter.check(key, now)
+
+        # If no fallback available, allow all requests
+        return True, self._max_requests, self._max_requests, 0
+
+    def _check_redis(self, key: str, ts: float) -> tuple[bool, int, int, int]:
+        """Check rate limit using Redis."""
+
+        redis_key = f"ratelimit:{key}"
+        pipe = self._redis_client.pipeline()
+
+        window_start = ts - self._window_seconds
+
+        # Remove old entries
+        pipe.zremrangebyscore(redis_key, 0, window_start)
+
+        # Count current requests
+        pipe.zcard(redis_key)
+
+        # Add current request
+        pipe.zadd(redis_key, {str(ts): ts})
+
+        # Set expiration
+        pipe.expire(redis_key, self._window_seconds + 10)
+
+        results = pipe.execute()
+        current_count = results[1]
+
+        if current_count >= self._max_requests:
+            # Get oldest timestamp to calculate reset time
+            oldest = self._redis_client.zrange(redis_key, 0, 0, withscores=True)
+            if oldest:
+                oldest_ts = float(oldest[0][1])
+                reset_in = max(1, int((oldest_ts + self._window_seconds) - ts))
+            else:
+                reset_in = self._window_seconds
+
+            return False, self._max_requests, 0, reset_in
+
+        remaining = self._max_requests - current_count
+
+        # Get oldest timestamp for reset time calculation
+        oldest = self._redis_client.zrange(redis_key, 0, 0, withscores=True)
+        if oldest:
+            oldest_ts = float(oldest[0][1])
+            reset_in = max(1, int((oldest_ts + self._window_seconds) - ts))
+        else:
+            reset_in = self._window_seconds
+
+        return True, self._max_requests, remaining, reset_in
 
 
 class RateLimiter:
@@ -82,7 +237,18 @@ def client_id_from_api_key(api_key: str | None) -> str | None:
 
 
 def add_observability(app: FastAPI, logger: logging.Logger) -> None:
-    limiter = RateLimiter()
+    # Initialize rate limiter - use Redis if available, otherwise in-memory
+    redis_url = os.getenv("REDIS_URL")
+    if redis_url:
+        limiter = RedisRateLimiter(
+            redis_url=redis_url,
+            fallback_to_in_memory=True,
+        )
+        logger.info("Using Redis-backed rate limiter")
+    else:
+        limiter = RateLimiter()
+        logger.info("Using in-memory rate limiter")
+
     app.state.rate_limiter = limiter
     app.state.metrics: dict[str, int] = {}
 

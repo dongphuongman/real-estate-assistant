@@ -439,7 +439,10 @@ async function exportProperties(
   });
   if (!response.ok) {
     const errorText = await response.text().catch(() => "");
-    throw new Error(errorText || "Export request failed");
+    const requestId = response.headers.get("X-Request-ID");
+    const errorMsg = errorText || "Export request failed";
+    const composed = requestId ? `${errorMsg} (request_id=${requestId})` : errorMsg;
+    throw new Error(composed);
   }
   const cd = response.headers.get("Content-Disposition") || "";
   let filename = `properties.${request.format}`;

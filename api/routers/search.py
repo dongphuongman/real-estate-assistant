@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from api.dependencies import get_vector_store
 from api.models import SearchRequest, SearchResponse, SearchResultItem
 from data.schemas import Property
+from utils.sanitization import sanitize_search_query
 from vector_store.chroma_store import ChromaPropertyStore
 
 # Configure logger
@@ -27,10 +28,19 @@ async def search_properties(
             detail="Vector store is not available"
         )
 
+    # Sanitize search query to prevent injection attacks
+    try:
+        sanitized_query = sanitize_search_query(request.query)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from None
+
     try:
         # Perform hybrid search (Vector + Keyword)
         results = store.hybrid_search(
-            query=request.query,
+            query=sanitized_query,
             k=request.limit,
             filters=request.filters,
             alpha=request.alpha,

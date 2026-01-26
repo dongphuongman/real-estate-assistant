@@ -1,12 +1,16 @@
+import asyncio
 import logging
 import os
+import signal
 
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.auth import get_api_key
 from api.dependencies import get_vector_store
-from api.models import HealthCheck
+from api.health import get_git_info, get_health_status
+from api.middleware.request_size import add_request_size_limits
+from api.middleware.security import add_security_headers
 from api.observability import REQUEST_ID_HEADER, add_observability
 from api.routers import admin, auth, chat, exports, prompt_templates, search, tools
 from api.routers import rag as rag_router
@@ -41,15 +45,26 @@ app = FastAPI(
 )
 
 add_observability(app, logger)
+add_security_headers(app)
+add_request_size_limits(app)
 
 # Global scheduler instance
 scheduler = None
 
+# Graceful shutdown configuration
+SHUTDOWN_DRAIN_SECONDS = int(os.getenv("SHUTDOWN_DRAIN_SECONDS", "30"))
+SHUTDOWN_MAX_WAIT_SECONDS = int(os.getenv("SHUTDOWN_MAX_WAIT_SECONDS", "60"))
+
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize application services on startup."""
+    """Initialize application services on startup and setup signal handlers."""
     global scheduler
+
+    # Setup signal handlers for graceful shutdown
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        if hasattr(signal, sig.name):
+            signal.signal(sig, lambda s, f: None)  # Let FastAPI handle
 
     # 1. Initialize Vector Store
     logger.info("Initializing Vector Store...")
@@ -59,6 +74,7 @@ async def startup_event():
             "Vector Store could not be initialized. "
             "Notifications relying on vector search will be disabled."
         )
+    app.state.vector_store = vector_store
 
     # 2. Initialize Email Service
     logger.info("Initializing Email Service...")
@@ -121,16 +137,76 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Clean up resources on shutdown."""
-    if scheduler:
-        logger.info("Stopping Notification Scheduler...")
-        scheduler.stop()
-        logger.info("Notification Scheduler stopped.")
+    """
+    Clean up resources on shutdown with graceful drain period.
+
+    This handler:
+    1. Logs the shutdown initiation
+    2. Waits for a drain period to allow in-flight requests to complete
+    3. Stops background services (scheduler, monitors)
+    4. Closes database/vector store connections
+    5. Logs completion of shutdown
+    """
+    logger.info("Graceful shutdown initiated...")
+    shutdown_start_time = asyncio.get_event_loop().time()
+
+    # Step 1: Stop accepting new requests (handled by uvicorn)
+    # We just need to drain in-flight requests during this period
+
+    # Step 2: Stop Uptime Monitor first (doesn't depend on other services)
     mon = getattr(app.state, "uptime_monitor", None)
     if mon:
         logger.info("Stopping Uptime Monitor...")
-        mon.stop()
-        logger.info("Uptime Monitor stopped.")
+        try:
+            mon.stop()
+            logger.info("Uptime Monitor stopped.")
+        except Exception as e:
+            logger.error(f"Error stopping Uptime Monitor: {e}")
+
+    # Step 3: Stop Notification Scheduler
+    if scheduler:
+        logger.info("Stopping Notification Scheduler...")
+        try:
+            scheduler.stop()
+            logger.info("Notification Scheduler stopped.")
+        except Exception as e:
+            logger.error(f"Error stopping Notification Scheduler: {e}")
+
+    # Step 4: Wait for drain period to allow in-flight requests to complete
+    if SHUTDOWN_DRAIN_SECONDS > 0:
+        logger.info(f"Waiting {SHUTDOWN_DRAIN_SECONDS}s drain period for in-flight requests...")
+        try:
+            await asyncio.sleep(SHUTDOWN_DRAIN_SECONDS)
+        except Exception as e:
+            logger.warning(f"Drain period interrupted: {e}")
+
+    # Step 5: Close vector store connection
+    vector_store = getattr(app.state, "vector_store", None)
+    if vector_store:
+        logger.info("Closing Vector Store connection...")
+        try:
+            # ChromaDB doesn't need explicit closing, but if we had
+            # a database connection we would close it here
+            if hasattr(vector_store, "close"):
+                await vector_store.close()
+            logger.info("Vector Store connection closed.")
+        except Exception as e:
+            logger.error(f"Error closing Vector Store: {e}")
+
+    # Step 6: Close rate limiter connections if using Redis
+    rate_limiter = getattr(app.state, "rate_limiter", None)
+    if rate_limiter and hasattr(rate_limiter, "_redis_client"):
+        redis_client = rate_limiter._redis_client
+        if redis_client:
+            logger.info("Closing Redis connection...")
+            try:
+                await redis_client.aclose() if hasattr(redis_client, "aclose") else redis_client.close()
+                logger.info("Redis connection closed.")
+            except Exception as e:
+                logger.error(f"Error closing Redis connection: {e}")
+
+    shutdown_elapsed = asyncio.get_event_loop().time() - shutdown_start_time
+    logger.info(f"Graceful shutdown completed in {shutdown_elapsed:.2f}s")
 
 
 # CORS configuration
@@ -159,12 +235,54 @@ app.include_router(
 app.include_router(auth.router, prefix="/api/v1")
 
 
-@app.get("/health", response_model=HealthCheck, tags=["System"])
-async def health_check():
+@app.get("/health", tags=["System"])
+async def health_check(include_dependencies: bool = True):
     """
     Health check endpoint to verify API status.
+
+    Args:
+        include_dependencies: Whether to check dependency health (vector store, Redis, LLM providers)
+
+    Returns:
+        Comprehensive health status including dependencies
     """
-    return HealthCheck(status="healthy", version=settings.version)
+    health = await get_health_status(include_dependencies=include_dependencies)
+
+    # Convert to dict for JSON response
+    response = {
+        "status": health.status.value,
+        "version": health.version,
+        "timestamp": health.timestamp,
+        "uptime_seconds": health.uptime_seconds,
+    }
+
+    if health.dependencies:
+        response["dependencies"] = {
+            name: {
+                "status": dep.status.value,
+                "message": dep.message,
+                "latency_ms": dep.latency_ms,
+            }
+            for name, dep in health.dependencies.items()
+        }
+
+    # Add git info for production deployments
+    git_info = get_git_info()
+    if git_info.get("commit") != "unknown":
+        response["git"] = git_info
+
+    # Return appropriate HTTP status based on health
+    from fastapi import status as http_status
+
+    status_code = http_status.HTTP_200_OK
+    if health.status.value == "unhealthy":
+        status_code = http_status.HTTP_503_SERVICE_UNAVAILABLE
+    elif health.status.value == "degraded":
+        status_code = http_status.HTTP_200_OK  # Degraded is still 200, with info
+
+    from fastapi.responses import JSONResponse
+
+    return JSONResponse(content=response, status_code=status_code)
 
 
 @app.get("/api/v1/verify-auth", dependencies=[Depends(get_api_key)], tags=["Auth"])
