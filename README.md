@@ -93,11 +93,13 @@ docker-compose up --build
 git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
 cd ai-real-estate-assistant
 
-py -3.12 -m venv .venv
-.\.venv\Scripts\Activate.ps1
+# Install uv (fast Python package manager)
+pip install uv
 
-python -m pip install --upgrade pip
-python -m pip install -e .[dev]
+# Create virtual environment and install dependencies
+uv venv .venv
+.\.venv\Scripts\Activate.ps1
+uv pip install -e .[dev]
 
 Copy-Item .env.example .env
 # Edit .env and set provider API keys and ENVIRONMENT
@@ -111,11 +113,13 @@ python -m uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
 git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
 cd ai-real-estate-assistant
 
-python3 -m venv .venv
-source .venv/bin/activate
+# Install uv (fast Python package manager)
+pip install uv
 
-python -m pip install --upgrade pip
-python -m pip install -e .[dev]
+# Create virtual environment and install dependencies
+uv venv .venv
+source .venv/bin/activate
+uv pip install -e .[dev]
 
 cp .env.example .env
 # Edit .env and set provider API keys and ENVIRONMENT

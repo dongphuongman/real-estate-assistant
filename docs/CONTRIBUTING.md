@@ -40,13 +40,16 @@ Thank you for your interest in contributing to the AI Real Estate Assistant! Thi
 
 2. **Backend Setup (FastAPI)**
    ```bash
-   python -m venv venv
+   # Install uv (fast Python package manager)
+   pip install uv
+
+   uv venv venv
    # Windows:
    .\venv\Scripts\Activate.ps1
    # Linux/Mac:
    source venv/bin/activate
-   
-   pip install -r requirements.txt
+
+   uv pip install -r requirements.txt
    ```
 
 3. **Frontend Setup (Next.js)**

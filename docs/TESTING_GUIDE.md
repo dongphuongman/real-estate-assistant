@@ -33,8 +33,10 @@ This section mirrors the CI workflow in [.github/workflows/ci.yml](file:///c:/Pr
 
 ### Backend (Python)
 ```powershell
-python -m pip install --upgrade pip
-python -m pip install -e .[dev]
+# Install uv (fast Python package manager)
+pip install uv
+
+uv pip install -e .[dev]
 
 python -m ruff check .
 python -m mypy
@@ -77,7 +79,7 @@ npm run test -- --ci --coverage
 
 ### Security & Audit
 ```powershell
-python -m pip install bandit pip-audit
+uv pip install bandit pip-audit
 python -m bandit -r api agents ai analytics data models notifications rules scripts utils workflows -x tests,node_modules,.history --severity-level high --confidence-level high -f json -o artifacts/bandit.json
 python -m pip_audit -r requirements.txt -f json -o artifacts/pip-audit.json
 ```
@@ -99,11 +101,13 @@ If `npm ci` fails with `EPERM: operation not permitted, unlink ...tailwindcss-ox
 
 ### Backend Prerequisites (V4)
 ```powershell
+# Install uv (fast Python package manager)
+pip install uv
+
 py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 
-python -m pip install --upgrade pip
-python -m pip install -e .[dev]
+uv pip install -e .[dev]
 
 Copy-Item .env.example .env
 # Edit .env as needed (do not commit secrets)
