@@ -54,6 +54,9 @@ class AppSettings(BaseModel):
     api_access_keys: list[str] = Field(
         default_factory=lambda: _parse_csv_list(os.getenv("API_ACCESS_KEYS"))
     )
+    api_access_key_secondary: Optional[str] = Field(
+        default_factory=lambda: os.getenv("API_ACCESS_KEY_SECONDARY")
+    )
     api_rate_limit_enabled: bool = Field(
         default_factory=lambda: os.getenv("API_RATE_LIMIT_ENABLED", "true").strip().lower()
         in {"1", "true", "yes", "on"}
@@ -195,10 +198,22 @@ class AppSettings(BaseModel):
                 continue
             normalized_keys.append(key)
 
+        # Include secondary key for rotation support
+        raw_secondary = values.get("api_access_key_secondary")
+        secondary = raw_secondary.strip() if isinstance(raw_secondary, str) else None
+        if secondary:
+            normalized_keys.append(secondary)
+
         keys = _dedupe_preserve_order(normalized_keys)
 
+        # If no keys from api_access_keys list, use primary as first key
         if not keys and primary:
             keys = [primary]
+        # If we only have secondary key but also have primary, prepend primary
+        if keys and primary and primary not in keys:
+            keys = [primary] + keys
+
+        keys = _dedupe_preserve_order(keys)
 
         # SECURITY: No default API key fallback. All environments require explicit key.
         # This prevents accidental deployment without proper authentication.

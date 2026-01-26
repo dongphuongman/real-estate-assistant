@@ -5,7 +5,7 @@ description = "AI-powered real estate assistant with FastAPI backend and Next.js
 authors = [
     {name = "Alex Nesterovich", email = "alex@example.com"}
 ]
-license = {text = "MIT License"}
+license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -39,6 +39,10 @@ dev = [
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["api*", "agents*", "analytics*", "config*", "models*", "notifications*", "workflows*"]
+exclude = ["frontend*", "tests*", "data*", "assets*", "artifacts*", "vector_store*", "node_modules*"]
 
 [tool.ruff]
 line-length = 100

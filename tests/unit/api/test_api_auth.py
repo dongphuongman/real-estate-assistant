@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import HTTPException
@@ -13,22 +13,33 @@ from api.observability import (
 from config.settings import AppSettings
 
 
+def _mock_request(request_id: str = "test-request-id") -> MagicMock:
+    """Create a mock Request object with request_id in state."""
+    request = MagicMock()
+    request.state.request_id = request_id
+    request.url.path = "/api/v1/test"
+    request.method = "GET"
+    return request
+
+
 @pytest.mark.asyncio
 async def test_get_api_key_valid():
     """Test valid API key acceptance."""
     key = "test-key"
+    request = _mock_request()
     with patch("api.auth.get_settings") as mock_settings:
         mock_settings.return_value = AppSettings(api_access_key=key)
-        result = await get_api_key(api_key_header=key)
+        result = await get_api_key(request, api_key_header=key)
         assert result == key
 
 
 @pytest.mark.asyncio
 async def test_get_api_key_strips_header_whitespace():
     key = "test-key"
+    request = _mock_request()
     with patch("api.auth.get_settings") as mock_settings:
         mock_settings.return_value = AppSettings(api_access_key=key)
-        result = await get_api_key(api_key_header=f"  {key}  ")
+        result = await get_api_key(request, api_key_header=f"  {key}  ")
         assert result == key
 
 
@@ -36,42 +47,71 @@ async def test_get_api_key_strips_header_whitespace():
 async def test_get_api_key_valid_with_rotated_keys():
     key1 = "key-1"
     key2 = "key-2"
+    request = _mock_request()
     with patch("api.auth.get_settings") as mock_settings:
         mock_settings.return_value = AppSettings(api_access_keys=[key1, key2])
-        result = await get_api_key(api_key_header=key2)
+        result = await get_api_key(request, api_key_header=key2)
         assert result == key2
+
+
+@pytest.mark.asyncio
+async def test_get_api_key_valid_with_secondary_key():
+    """Test secondary API key is accepted for rotation support."""
+    primary = "primary-key-xyz"
+    secondary = "secondary-key-abc"
+    request = _mock_request()
+    with patch("api.auth.get_settings") as mock_settings:
+        mock_settings.return_value = AppSettings(
+            api_access_key=primary,
+            api_access_key_secondary=secondary,
+        )
+        # Both keys should be valid
+        result1 = await get_api_key(request, api_key_header=primary)
+        result2 = await get_api_key(request, api_key_header=secondary)
+        assert result1 == primary
+        assert result2 == secondary
 
 
 @pytest.mark.asyncio
 async def test_get_api_key_invalid():
     """Test invalid API key rejection."""
     key = "test-key"
+    request = _mock_request()
     with patch("api.auth.get_settings") as mock_settings:
         mock_settings.return_value = AppSettings(api_access_key=key)
         with pytest.raises(HTTPException) as exc:
-            await get_api_key(api_key_header="wrong-key")
+            await get_api_key(request, api_key_header="wrong-key")
         assert exc.value.status_code == 403
+        # Verify safe error message (doesn't reveal if key exists)
+        assert exc.value.detail == "Invalid credentials"
 
 
 @pytest.mark.asyncio
 async def test_get_api_key_invalid_when_not_in_rotated_set():
+    request = _mock_request()
     with patch("api.auth.get_settings") as mock_settings:
         mock_settings.return_value = AppSettings(api_access_keys=["a", "b"])
         with pytest.raises(HTTPException) as exc:
-            await get_api_key(api_key_header="c")
+            await get_api_key(request, api_key_header="c")
         assert exc.value.status_code == 403
+        # Verify safe error message
+        assert exc.value.detail == "Invalid credentials"
 
 
 @pytest.mark.asyncio
 async def test_get_api_key_missing():
     """Test missing API key handling."""
+    request = _mock_request()
     with pytest.raises(HTTPException) as exc:
-        await get_api_key(api_key_header=None)
+        await get_api_key(request, api_key_header=None)
     assert exc.value.status_code == 401
+    # Verify safe error message
+    assert exc.value.detail == "Invalid credentials"
 
 
 @pytest.mark.asyncio
 async def test_get_api_key_rejects_invalid_prod_configuration_with_default_key():
+    request = _mock_request()
     with patch("api.auth.get_settings") as mock_settings:
         mock_settings.return_value = AppSettings(
             environment="production",
@@ -79,13 +119,15 @@ async def test_get_api_key_rejects_invalid_prod_configuration_with_default_key()
             cors_allow_origins=["https://example.com"],
         )
         with pytest.raises(HTTPException) as exc:
-            await get_api_key(api_key_header="dev-secret-key")
+            await get_api_key(request, api_key_header="dev-secret-key")
         assert exc.value.status_code == 403
-        assert exc.value.detail == "Invalid configuration"
+        # Production misconfiguration error should be safe too
+        assert exc.value.detail == "Invalid credentials"
 
 
 @pytest.mark.asyncio
 async def test_get_api_key_rejects_invalid_prod_configuration_with_no_keys():
+    request = _mock_request()
     with patch("api.auth.get_settings") as mock_settings:
         mock_settings.return_value = AppSettings(
             environment="production",
@@ -94,9 +136,9 @@ async def test_get_api_key_rejects_invalid_prod_configuration_with_no_keys():
             cors_allow_origins=["https://example.com"],
         )
         with pytest.raises(HTTPException) as exc:
-            await get_api_key(api_key_header="any")
+            await get_api_key(request, api_key_header="any")
         assert exc.value.status_code == 403
-        assert exc.value.detail == "Invalid configuration"
+        assert exc.value.detail == "Invalid credentials"
 
 
 def test_normalize_request_id_accepts_valid_values():
