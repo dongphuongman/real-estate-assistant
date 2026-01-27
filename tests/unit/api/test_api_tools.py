@@ -57,8 +57,10 @@ def test_mortgage_calculator_invalid_input(valid_headers):
     response = client.post(
         "/api/v1/tools/mortgage-calculator", json=payload, headers=valid_headers
     )
-    assert response.status_code == 400
-    assert "positive" in response.json()["detail"]
+    assert response.status_code == 422
+    # Pydantic validation error returns a detail list
+    detail = response.json()["detail"]
+    assert any("property_price" in str(err).lower() for err in detail)
 
 
 def test_tools_unauthorized():
