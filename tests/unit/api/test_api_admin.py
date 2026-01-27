@@ -24,10 +24,11 @@ def test_admin_ingest_uses_defaults_and_returns_success(
 ):
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
     mock_settings.default_datasets = ["http://example.com/test.csv"]
+    mock_settings.max_properties = 100
 
     loader = MagicMock()
     loader.load_df.return_value = pd.DataFrame([{"city": "Warsaw"}, {"bad": "row"}])
-    loader.load_format_df.side_effect = lambda df: df
+    loader.load_format_df.side_effect = lambda df, rows_count=None: df
     mock_loader_cls.return_value = loader
 
     resp = client.post("/api/v1/admin/ingest", json={}, headers=HEADERS)
@@ -66,10 +67,11 @@ def test_admin_ingest_returns_500_when_no_properties_loaded(
 ):
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
     mock_settings.default_datasets = ["http://example.com/empty.csv"]
+    mock_settings.max_properties = 100
 
     loader = MagicMock()
     loader.load_df.return_value = pd.DataFrame([{"bad": "row"}])
-    loader.load_format_df.side_effect = lambda df: df
+    loader.load_format_df.side_effect = lambda df, rows_count=None: df
     mock_loader_cls.return_value = loader
 
     resp = client.post("/api/v1/admin/ingest", json={}, headers=HEADERS)
@@ -91,10 +93,11 @@ def test_admin_ingest_returns_errors_when_some_urls_fail(
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
     urls = ["http://example.com/ok.csv", "http://example.com/bad.csv"]
     mock_settings.default_datasets = urls
+    mock_settings.max_properties = 100
 
     ok_loader = MagicMock()
     ok_loader.load_df.return_value = pd.DataFrame([{"city": "Warsaw"}])
-    ok_loader.load_format_df.side_effect = lambda df: df
+    ok_loader.load_format_df.side_effect = lambda df, rows_count=None: df
 
     def _loader(url: str):
         if url.endswith("bad.csv"):
@@ -167,10 +170,11 @@ def test_admin_ingest_returns_500_on_unhandled_exception(
 ):
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
     mock_settings.default_datasets = ["http://example.com/test.csv"]
+    mock_settings.max_properties = 100
 
     loader = MagicMock()
     loader.load_df.return_value = pd.DataFrame([{"city": "Warsaw"}])
-    loader.load_format_df.side_effect = lambda df: df
+    loader.load_format_df.side_effect = lambda df, rows_count=None: df
     mock_loader_cls.return_value = loader
     mock_save_collection.side_effect = RuntimeError("disk full")
 
