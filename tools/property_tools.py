@@ -18,16 +18,42 @@ from pydantic import BaseModel, Field, PrivateAttr
 
 class MortgageInput(BaseModel):
     """Input for mortgage calculator."""
-    property_price: float = Field(description="Total property price")
+    property_price: float = Field(description="Total property price", gt=0)
     down_payment_percent: float = Field(
         default=20.0,
-        description="Down payment as percentage (e.g., 20 for 20%)"
+        description="Down payment as percentage (e.g., 20 for 20%)",
+        ge=0, le=100
     )
     interest_rate: float = Field(
         default=4.5,
-        description="Annual interest rate as percentage (e.g., 4.5 for 4.5%)"
+        description="Annual interest rate as percentage (e.g., 4.5 for 4.5%)",
+        ge=0
     )
-    loan_years: int = Field(default=30, description="Loan term in years")
+    loan_years: int = Field(default=30, description="Loan term in years", gt=0, le=50)
+
+
+class PropertyComparisonInput(BaseModel):
+    """Input for property comparison tool."""
+    property_ids: str = Field(
+        description="Comma-separated list of property IDs to compare",
+        min_length=1
+    )
+
+
+class PriceAnalysisInput(BaseModel):
+    """Input for price analysis tool."""
+    query: str = Field(
+        description="Search query for price analysis (e.g., 'apartments in Madrid')",
+        min_length=1
+    )
+
+
+class LocationAnalysisInput(BaseModel):
+    """Input for location analysis tool."""
+    property_id: str = Field(
+        description="Property ID to analyze",
+        min_length=1
+    )
 
 
 class MortgageResult(BaseModel):
@@ -160,7 +186,8 @@ class PropertyComparisonTool(BaseTool):
         "Input should be a comma-separated list of property IDs (e.g., 'prop1, prop2'). "
         "Returns a detailed comparison table."
     )
-    
+    args_schema: type[PropertyComparisonInput] = PropertyComparisonInput
+
     _vector_store: Any = PrivateAttr()
 
     def __init__(self, vector_store: Any = None, **kwargs: Any) -> None:
@@ -254,7 +281,8 @@ class PriceAnalysisTool(BaseTool):
         "Input should be a search query (e.g., 'apartments in Madrid'). "
         "Returns statistical analysis of prices."
     )
-    
+    args_schema: type[PriceAnalysisInput] = PriceAnalysisInput
+
     _vector_store: Any = PrivateAttr()
 
     def __init__(self, vector_store: Any = None, **kwargs: Any) -> None:
@@ -354,7 +382,8 @@ class LocationAnalysisTool(BaseTool):
         "Input should be a property ID. "
         "Returns location details and nearby properties info."
     )
-    
+    args_schema: type[LocationAnalysisInput] = LocationAnalysisInput
+
     _vector_store: Any = PrivateAttr()
 
     def __init__(self, vector_store: Any = None, **kwargs: Any) -> None:

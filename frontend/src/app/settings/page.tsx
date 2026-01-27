@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { RefreshCw, AlertCircle, Loader2, Settings as SettingsIcon, Database, Sparkles } from "lucide-react";
 import { IdentitySettings } from "@/components/settings/identity-settings";
 import { ModelSettings } from "@/components/settings/model-settings";
 import { NotificationSettings } from "@/components/settings/notification-settings";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getModelsCatalog, testModelRuntime } from "@/lib/api";
+import { getModelsCatalog, testModelRuntime, ApiError } from "@/lib/api";
 import type { ModelProviderCatalog } from "@/lib/types";
 
 function formatMoneyPer1m(value: number, currency: string): string {
@@ -14,51 +15,33 @@ function formatMoneyPer1m(value: number, currency: string): string {
   return `${currency} ${value.toFixed(2)}`;
 }
 
-function ModelCatalogComparisonTable({ catalog }: { catalog: ModelProviderCatalog[] }) {
-  const [runtimeTests, setRuntimeTests] = useState<
-    Record<string, { loading: boolean; status: "success" | "error"; message: string; availableModels: string[] }>
-  >({});
+// Skeleton component for loading state
+function CatalogSkeleton() {
+  return (
+    <div className="grid gap-6">
+      {[1, 2, 3].map((i) => (
+        <Card key={i} className="animate-pulse">
+          <CardHeader>
+            <div className="h-6 bg-muted rounded w-1/3 mb-2" />
+            <div className="h-4 bg-muted rounded w-2/3" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="h-10 bg-muted rounded" />
+              <div className="h-32 bg-muted rounded" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
 
-  const runRuntimeTest = async (providerName: string) => {
-    setRuntimeTests((prev) => ({
-      ...prev,
-      [providerName]: {
-        loading: true,
-        status: "success",
-        message: "Testing connection...",
-        availableModels: prev[providerName]?.availableModels ?? [],
-      },
-    }));
-
-    try {
-      const result = await testModelRuntime(providerName);
-      const ok = result.runtime_available === true;
-      const models = Array.isArray(result.available_models) ? result.available_models : [];
-      const message = ok ? "Connection successful." : result.runtime_error || "Connection failed.";
-      setRuntimeTests((prev) => ({
-        ...prev,
-        [providerName]: {
-          loading: false,
-          status: ok ? "success" : "error",
-          message,
-          availableModels: models,
-        },
-      }));
-    } catch (err) {
-      const msg =
-        err instanceof Error && err.message && err.message.trim() ? err.message.trim() : "Connection failed.";
-      setRuntimeTests((prev) => ({
-        ...prev,
-        [providerName]: {
-          loading: false,
-          status: "error",
-          message: msg,
-          availableModels: prev[providerName]?.availableModels ?? [],
-        },
-      }));
-    }
-  };
-
+function ModelCatalogComparisonTable({ catalog, onRuntimeTest, runtimeTests }: {
+  catalog: ModelProviderCatalog[];
+  onRuntimeTest: (providerName: string) => void;
+  runtimeTests: Record<string, { loading: boolean; status: "success" | "error"; message: string; availableModels: string[] }>;
+}) {
   return (
     <div className="grid gap-6">
       {catalog.map((provider) => (
@@ -92,7 +75,7 @@ function ModelCatalogComparisonTable({ catalog }: { catalog: ModelProviderCatalo
                 </div>
                 <Button
                   variant="outline"
-                  onClick={() => runRuntimeTest(provider.name)}
+                  onClick={() => onRuntimeTest(provider.name)}
                   disabled={runtimeTests[provider.name]?.loading === true}
                 >
                   {runtimeTests[provider.name]?.loading ? "Testing..." : "Test Connection"}
@@ -206,6 +189,59 @@ export default function SettingsPage() {
   const [catalogLoading, setCatalogLoading] = useState(true);
   const [catalogRefreshing, setCatalogRefreshing] = useState(false);
   const [catalogError, setCatalogError] = useState<string | null>(null);
+  const [requestId, setRequestId] = useState<string | undefined>(undefined);
+
+  const [runtimeTests, setRuntimeTests] = useState<
+    Record<string, { loading: boolean; status: "success" | "error"; message: string; availableModels: string[] }>
+  >({});
+
+  const runRuntimeTest = async (providerName: string) => {
+    setRuntimeTests((prev) => ({
+      ...prev,
+      [providerName]: {
+        loading: true,
+        status: "success",
+        message: "Testing connection...",
+        availableModels: prev[providerName]?.availableModels ?? [],
+      },
+    }));
+
+    try {
+      const result = await testModelRuntime(providerName);
+      const ok = result.runtime_available === true;
+      const models = Array.isArray(result.available_models) ? result.available_models : [];
+      const message = ok ? "Connection successful." : result.runtime_error || "Connection failed.";
+      setRuntimeTests((prev) => ({
+        ...prev,
+        [providerName]: {
+          loading: false,
+          status: ok ? "success" : "error",
+          message,
+          availableModels: models,
+        },
+      }));
+    } catch (err) {
+      let msg = "Connection failed.";
+      let reqId: string | undefined = undefined;
+
+      if (err instanceof ApiError) {
+        msg = err.message;
+        reqId = err.request_id;
+      } else if (err instanceof Error) {
+        msg = err.message;
+      }
+
+      setRuntimeTests((prev) => ({
+        ...prev,
+        [providerName]: {
+          loading: false,
+          status: "error",
+          message: msg,
+          availableModels: prev[providerName]?.availableModels ?? [],
+        },
+      }));
+    }
+  };
 
   const fetchCatalog = async (mode: "initial" | "refresh" = "initial") => {
     if (mode === "initial") {
@@ -214,14 +250,26 @@ export default function SettingsPage() {
       setCatalogRefreshing(true);
     }
     setCatalogError(null);
+    setRequestId(undefined);
     try {
       const data = await getModelsCatalog();
       setCatalog(data);
-    } catch {
+    } catch (err) {
+      let msg = "Failed to load model catalog. Please try again.";
+      let reqId: string | undefined = undefined;
+
+      if (err instanceof ApiError) {
+        msg = err.message;
+        reqId = err.request_id;
+      } else if (err instanceof Error) {
+        msg = err.message;
+      }
+
       if (mode === "initial") {
         setCatalog(null);
       }
-      setCatalogError("Failed to load model catalog. Please try again.");
+      setCatalogError(msg);
+      setRequestId(reqId);
     } finally {
       if (mode === "initial") {
         setCatalogLoading(false);
@@ -245,20 +293,23 @@ export default function SettingsPage() {
           Manage your account settings and notification preferences.
         </p>
       </div>
-      
+
       <div className="grid gap-8">
+        {/* Identity Section - Always populated */}
         <section>
           <h2 className="text-lg font-semibold mb-4">Identity</h2>
           <IdentitySettings onChange={(email) => setUserEmail(email)} />
         </section>
 
+        {/* Notifications Section - Always populated */}
         <section>
           <h2 className="text-lg font-semibold mb-4">Notifications</h2>
           <NotificationSettings />
         </section>
 
+        {/* Models Section - 4 Mandated States */}
         <section>
-          <div className="flex items-start justify-between gap-4 mb-2">
+          <div className="flex items-start justify-between gap-4 mb-4">
             <div>
               <h2 className="text-lg font-semibold">Models</h2>
               <p className="text-sm text-muted-foreground mt-1">
@@ -270,26 +321,100 @@ export default function SettingsPage() {
               onClick={() => fetchCatalog(catalog ? "refresh" : "initial")}
               disabled={catalogLoading || catalogRefreshing}
             >
-              {catalogRefreshing ? "Refreshing..." : "Refresh Catalog"}
+              {catalogRefreshing ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Refreshing...
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-2">
+                  <RefreshCw className="h-4 w-4" />
+                  Refresh Catalog
+                </span>
+              )}
             </Button>
           </div>
+
           <div className="grid gap-6">
+            {/* Always show model settings component */}
             <ModelSettings catalog={catalogLoading ? null : catalog} userEmail={userEmail} />
-            {catalogLoading ? (
-              <div className="p-4 text-center">Loading model catalog...</div>
-            ) : !catalog ? (
-              <div className="p-4 text-center text-red-500">
-                {catalogError || "Something went wrong."}
-                <Button onClick={() => fetchCatalog("initial")} className="ml-4">
+
+            {/* STATE 1: Empty state (no catalog loaded yet) */}
+            {!catalogLoading && !catalog && !catalogError && (
+              <div
+                className="flex flex-col items-center justify-center h-64 text-center border rounded-lg border-dashed bg-muted/20"
+                role="status"
+                aria-live="polite"
+              >
+                <Database className="h-10 w-10 text-muted-foreground mb-3" aria-hidden="true" />
+                <h3 className="text-base font-semibold text-foreground mb-2">Model Catalog</h3>
+                <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-4">
+                  No models are currently configured. Add your API keys in the Identity section above to get started.
+                </p>
+                <div className="text-xs text-muted-foreground max-w-md">
+                  <p className="font-medium mb-1">Supported providers:</p>
+                  <p>OpenAI, Anthropic, Google, Grok, DeepSeek, and Ollama (local).</p>
+                </div>
+              </div>
+            )}
+
+            {/* STATE 2: Loading state */}
+            {catalogLoading && (
+              <div
+                role="status"
+                aria-live="polite"
+                aria-label="Loading model catalog"
+              >
+                <CatalogSkeleton />
+              </div>
+            )}
+
+            {/* STATE 3: Error state */}
+            {catalogError && (
+              <div
+                className="flex flex-col items-center justify-center h-64 text-center border rounded-lg bg-destructive/10"
+                role="alert"
+                aria-live="assertive"
+              >
+                <AlertCircle className="h-10 w-10 text-destructive mb-3" aria-hidden="true" />
+                <h3 className="text-base font-semibold text-destructive mb-2">Failed to Load Catalog</h3>
+                <p className="text-sm text-destructive/90 max-w-md mb-4">
+                  {catalogError}
+                </p>
+                {requestId && (
+                  <p className="text-xs text-muted-foreground mb-4 font-mono">
+                    request_id={requestId}
+                  </p>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={() => fetchCatalog("initial")}
+                  className="gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
                   Retry
                 </Button>
               </div>
-            ) : catalog.length === 0 ? (
-              <div className="rounded-lg border bg-card p-6 text-center text-sm text-muted-foreground">
-                No models available.
+            )}
+
+            {/* STATE 4: Populated state */}
+            {catalog && !catalogError && catalog.length === 0 && (
+              <div
+                className="rounded-lg border bg-card p-6 text-center"
+                role="status"
+                aria-live="polite"
+              >
+                <Sparkles className="h-8 w-8 text-muted-foreground mx-auto mb-3" aria-hidden="true" />
+                <p className="text-sm text-muted-foreground">No models available.</p>
               </div>
-            ) : (
-              <ModelCatalogComparisonTable catalog={catalog} />
+            )}
+
+            {catalog && !catalogError && catalog.length > 0 && (
+              <ModelCatalogComparisonTable
+                catalog={catalog}
+                onRuntimeTest={runRuntimeTest}
+                runtimeTests={runtimeTests}
+              />
             )}
           </div>
         </section>

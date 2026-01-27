@@ -1,4 +1,4 @@
-import { streamChatMessage } from "../api";
+import { streamChatMessage, ApiError } from "../api";
 import type { ChatRequest } from "../types";
 
 describe("streamChatMessage", () => {
@@ -97,16 +97,25 @@ describe("streamChatMessage", () => {
     expect(Array.isArray((metas[0] as { sources?: unknown[] }).sources)).toBe(true);
   });
 
-  it("propagates errors with request_id if present", async () => {
-    g.fetch = jest.fn().mockResolvedValue({
+  it("propagates ApiError with request_id if present", async () => {
+    const mockResponse = {
       ok: false,
+      status: 500,
       text: () => Promise.resolve("Stream error"),
       headers: { get: (name: string) => (name === "X-Request-ID" ? "req-999" : null) },
-    }) as unknown as typeof fetch;
+    };
+    g.fetch = jest.fn().mockResolvedValue(mockResponse as unknown as typeof fetch);
 
-    await expect(
-      streamChatMessage({ message: "x" } as ChatRequest, () => {})
-    ).rejects.toThrow(/request_id=req-999/);
+    try {
+      await streamChatMessage({ message: "x" } as ChatRequest, () => {});
+    } catch (e) {
+      expect(e).toBeInstanceOf(ApiError);
+      if (e instanceof ApiError) {
+        expect(e.message).toBe("Stream error");
+        expect(e.status).toBe(500);
+        expect(e.request_id).toBe("req-999");
+      }
+    }
   });
 
   it("throws when the stream yields an error JSON payload", async () => {

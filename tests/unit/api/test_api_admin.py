@@ -116,6 +116,49 @@ def test_admin_ingest_returns_errors_when_some_urls_fail(
 @patch("api.routers.admin.save_collection")
 @patch("api.routers.admin.settings")
 @patch("api.auth.get_settings")
+def test_admin_ingest_enforces_max_properties_limit(
+    mock_get_settings,
+    mock_settings,
+    mock_save_collection,
+    mock_loader_cls,
+):
+    mock_get_settings.return_value = MagicMock(api_access_key="test-key")
+    mock_settings.max_properties = 2
+    mock_settings.default_datasets = ["http://example.com/test.csv"]
+
+    loader = MagicMock()
+    # Create a DataFrame with 5 rows, but max_properties is 2
+    loader.load_df.return_value = pd.DataFrame([
+        {"city": "Warsaw"},
+        {"city": "Krakow"},
+        {"city": "Gdansk"},
+        {"city": "Poznan"},
+        {"city": "Wroclaw"}
+    ])
+    # Track rows_count passed to format_df
+    format_df_calls = []
+    def _format_df(df, rows_count=None):
+        format_df_calls.append(rows_count)
+        return df.head(rows_count) if rows_count else df
+    loader.load_format_df.side_effect = _format_df
+    mock_loader_cls.return_value = loader
+
+    resp = client.post("/api/v1/admin/ingest", json={}, headers=HEADERS)
+    assert resp.status_code == 200
+    data = resp.json()
+    # Should only process 2 properties (max_properties limit)
+    assert data["properties_processed"] == 2
+    # Message should indicate limit was reached
+    assert "maximum property limit" in data["message"]
+    # Verify rows_count was passed correctly (remaining capacity = 2 - 0 = 2)
+    assert format_df_calls[0] == 2
+    assert mock_save_collection.called
+
+
+@patch("api.routers.admin.DataLoaderCsv")
+@patch("api.routers.admin.save_collection")
+@patch("api.routers.admin.settings")
+@patch("api.auth.get_settings")
 def test_admin_ingest_returns_500_on_unhandled_exception(
     mock_get_settings,
     mock_settings,

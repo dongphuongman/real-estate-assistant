@@ -4,7 +4,8 @@ import logging
 import uuid
 from typing import Annotated, Any, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+import anyio
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
 from langchain.memory import ConversationBufferMemory
 from langchain_core.language_models import BaseChatModel
@@ -15,7 +16,7 @@ from api.chat_sources import serialize_chat_sources, serialize_web_sources
 from api.dependencies import get_llm, get_vector_store
 from api.models import ChatRequest, ChatResponse
 from config.settings import get_settings
-from utils.sanitization import sanitize_chat_message
+from utils.sanitization import sanitize_chat_message, sanitize_intermediate_steps
 
 logger = logging.getLogger(__name__)
 
@@ -24,12 +25,15 @@ router = APIRouter()
 @router.post("/chat", response_model=ChatResponse, tags=["Chat"])
 async def chat_endpoint(
     request: ChatRequest,
+    req: Request,
     llm: Annotated[BaseChatModel, Depends(get_llm)],
     store: Annotated[Optional[Any], Depends(get_vector_store)],
 ):
     """
     Process a chat message using the hybrid agent with session persistence.
     """
+    # Get request_id from middleware for correlation
+    request_id = getattr(req.state, "request_id", None) or str(uuid.uuid4())
     # Sanitize chat message to prevent injection attacks
     try:
         sanitized_message = sanitize_chat_message(request.message)
@@ -104,57 +108,81 @@ async def chat_endpoint(
                     "sources": [],
                     "sources_truncated": False,
                     "session_id": session_id,
+                    "request_id": request_id,
                 }
 
-                if requires_web:
-                    result = agent.process_query(sanitized_message)
-                    raw_answer = result.get("answer", "")
-                    answer_text = raw_answer if isinstance(raw_answer, str) else str(raw_answer)
-                    if answer_text:
-                        yield f"data: {json.dumps({'content': answer_text}, ensure_ascii=False, default=str)}\n\n"
+                try:
+                    # Add timeout protection for streaming (5 minutes)
+                    with anyio.fail_after(300):
+                        if requires_web:
+                            result = agent.process_query(sanitized_message)
+                            raw_answer = result.get("answer", "")
+                            answer_text = raw_answer if isinstance(raw_answer, str) else str(raw_answer)
+                            if answer_text:
+                                yield f"data: {json.dumps({'content': answer_text}, ensure_ascii=False, default=str)}\n\n"
 
-                    raw_sources = result.get("sources") if isinstance(result.get("sources"), list) else []
-                    if raw_sources and isinstance(raw_sources, list) and isinstance(raw_sources[0], dict) and "content" in raw_sources[0] and "metadata" in raw_sources[0]:
-                        sources = raw_sources
-                        sources_truncated = False
-                    else:
-                        sources, sources_truncated = serialize_web_sources(
-                            raw_sources or [],
-                            max_items=sources_max_items,
-                            max_content_chars=sources_max_content_chars,
-                            max_total_bytes=sources_max_total_bytes,
-                        )
-                    sources_payload["sources"] = sources
-                    sources_payload["sources_truncated"] = sources_truncated
-
-                    if request.include_intermediate_steps:
-                        raw_steps = result.get("intermediate_steps") or []
-                        try:
-                            safe_steps = json.loads(json.dumps(raw_steps, ensure_ascii=False, default=str))
-                        except Exception:
-                            safe_steps = []
-                        sources_payload["intermediate_steps"] = safe_steps
-                else:
-                    async for chunk in agent.astream_query(sanitized_message):
-                        yield f"data: {chunk}\n\n"
-                    if hasattr(agent, "get_sources_for_query"):
-                        try:
-                            docs = agent.get_sources_for_query(sanitized_message)
-                            sources, sources_truncated = serialize_chat_sources(
-                                docs,
-                                max_items=sources_max_items,
-                                max_content_chars=sources_max_content_chars,
-                                max_total_bytes=sources_max_total_bytes,
-                            )
+                            raw_sources = result.get("sources") if isinstance(result.get("sources"), list) else []
+                            if raw_sources and isinstance(raw_sources, list) and isinstance(raw_sources[0], dict) and "content" in raw_sources[0] and "metadata" in raw_sources[0]:
+                                sources = raw_sources
+                                sources_truncated = False
+                            else:
+                                sources, sources_truncated = serialize_web_sources(
+                                    raw_sources or [],
+                                    max_items=sources_max_items,
+                                    max_content_chars=sources_max_content_chars,
+                                    max_total_bytes=sources_max_total_bytes,
+                                )
                             sources_payload["sources"] = sources
                             sources_payload["sources_truncated"] = sources_truncated
-                        except Exception:
-                            sources_payload["sources"] = []
-                            sources_payload["sources_truncated"] = False
 
-                yield "event: meta\n"
-                yield f"data: {json.dumps(sources_payload)}\n\n"
-                yield "data: [DONE]\n\n"
+                            if request.include_intermediate_steps:
+                                raw_steps = result.get("intermediate_steps") or []
+                                # Sanitize steps to redact sensitive data (API keys, tokens, passwords)
+                                safe_steps = sanitize_intermediate_steps(raw_steps)
+                                sources_payload["intermediate_steps"] = safe_steps
+                        else:
+                            async for chunk in agent.astream_query(sanitized_message):
+                                yield f"data: {chunk}\n\n"
+                            if hasattr(agent, "get_sources_for_query"):
+                                try:
+                                    docs = agent.get_sources_for_query(sanitized_message)
+                                    sources, sources_truncated = serialize_chat_sources(
+                                        docs,
+                                        max_items=sources_max_items,
+                                        max_content_chars=sources_max_content_chars,
+                                        max_total_bytes=sources_max_total_bytes,
+                                    )
+                                    sources_payload["sources"] = sources
+                                    sources_payload["sources_truncated"] = sources_truncated
+                                except Exception:
+                                    sources_payload["sources"] = []
+                                    sources_payload["sources_truncated"] = False
+
+                        yield "event: meta\n"
+                        yield f"data: {json.dumps(sources_payload)}\n\n"
+                        yield "data: [DONE]\n\n"
+                except TimeoutError:
+                    # Send timeout error event
+                    error_payload = {
+                        "error": "Stream timeout exceeded",
+                        "request_id": request_id
+                    }
+                    yield "event: error\n"
+                    yield f"data: {json.dumps(error_payload)}\n\n"
+                    yield "data: [DONE]\n\n"
+                except Exception as e:
+                    # Log error and send error event for client recovery
+                    logger.error(f"Stream error (request_id={request_id}): {e}")
+                    error_payload = {
+                        "error": str(e),
+                        "request_id": request_id
+                    }
+                    yield "event: error\n"
+                    yield f"data: {json.dumps(error_payload)}\n\n"
+                    yield "data: [DONE]\n\n"
+                finally:
+                    # Always ensure stream terminates
+                    pass
 
             return StreamingResponse(
                 event_generator(),
@@ -184,12 +212,18 @@ async def chat_endpoint(
                 max_total_bytes=sources_max_total_bytes,
             )
         
+        # Sanitize intermediate steps if requested
+        intermediate_steps = None
+        if request.include_intermediate_steps:
+            raw_steps = result.get("intermediate_steps") or []
+            intermediate_steps = sanitize_intermediate_steps(raw_steps) if raw_steps else None
+
         return ChatResponse(
             response=answer,
             sources=sources,
             sources_truncated=sources_truncated,
             session_id=session_id,
-            intermediate_steps=(result.get("intermediate_steps") or None) if request.include_intermediate_steps else None,
+            intermediate_steps=intermediate_steps,
         )
 
     except Exception as e:

@@ -50,6 +50,31 @@ function buildMultipartHeaders(extra?: Record<string, string>): Record<string, s
   return { ...buildAuthHeaders(), ...(extra || {}) };
 }
 
+/**
+ * Custom error class for API errors that includes request_id for correlation.
+ *
+ * @example
+ * ```ts
+ * try {
+ *   await searchProperties({ query: "test" });
+ * } catch (e) {
+ *   if (e instanceof ApiError) {
+ *     console.error(e.message, e.request_id, e.status);
+ *   }
+ * }
+ * ```
+ */
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly request_id?: string
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const errorText = await response.text().catch(() => "");
@@ -78,9 +103,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
         message = errorText;
       }
     }
-    const statusPart = `status=${response.status}`;
-    const composed = requestId ? `${message} (${statusPart}, request_id=${requestId})` : `${message} (${statusPart})`;
-    throw new Error(composed);
+    throw new ApiError(message, response.status, requestId || undefined);
   }
   return response.json();
 }
@@ -344,8 +367,7 @@ export async function streamChatMessage(
     const requestId =
       headers && typeof headers.get === "function" ? headers.get("X-Request-ID") || undefined : undefined;
     const message = errorText || "Failed to start stream";
-    const composed = requestId ? `${message} (request_id=${requestId})` : message;
-    throw new Error(composed);
+    throw new ApiError(message, response.status, requestId || undefined);
   }
 
   const requestId = response.headers.get("X-Request-ID") || undefined;
@@ -439,10 +461,9 @@ async function exportProperties(
   });
   if (!response.ok) {
     const errorText = await response.text().catch(() => "");
-    const requestId = response.headers.get("X-Request-ID");
+    const requestId = response.headers.get("X-Request-ID") || undefined;
     const errorMsg = errorText || "Export request failed";
-    const composed = requestId ? `${errorMsg} (request_id=${requestId})` : errorMsg;
-    throw new Error(composed);
+    throw new ApiError(errorMsg, response.status, requestId || undefined);
   }
   const cd = response.headers.get("Content-Disposition") || "";
   let filename = `properties.${request.format}`;

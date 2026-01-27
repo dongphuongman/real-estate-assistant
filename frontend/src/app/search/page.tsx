@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Search as SearchIcon, MapPin, Filter, Download } from "lucide-react";
-import { searchProperties, exportPropertiesBySearch } from "@/lib/api";
+import { Search as SearchIcon, MapPin, Filter, Download, RefreshCw, AlertCircle } from "lucide-react";
+import { searchProperties, exportPropertiesBySearch, ApiError } from "@/lib/api";
 import { SearchResultItem } from "@/lib/types";
 import { extractMapPoints } from "@/components/search/property-map-utils";
 import dynamic from "next/dynamic";
@@ -12,11 +12,20 @@ const PropertyMap = dynamic(() => import("@/components/search/property-map"), {
   loading: () => <div className="h-[420px] w-full bg-muted animate-pulse rounded-lg" />,
 });
 
+// Example queries for empty state
+const EXAMPLE_QUERIES = [
+  "2-bedroom apartment under $500,000 in Madrid",
+  "House with garden in Krakow",
+  "Studio apartment near city center",
+  "Luxury apartment with parking in Warsaw",
+];
+
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResultItem[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [requestId, setRequestId] = useState<string | undefined>();
   const [hasSearched, setHasSearched] = useState(false);
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
@@ -62,6 +71,7 @@ export default function SearchPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setRequestId(undefined);
     setHasSearched(true);
     try {
       if (!query.trim()) {
@@ -85,9 +95,14 @@ export default function SearchPage() {
       });
       setResults(response.results);
       setViewMode("list");
-    } catch {
+    } catch (err) {
       setResults([]);
-      setError("Failed to perform search. Please try again.");
+      if (err instanceof ApiError) {
+        setError(err.message);
+        setRequestId(err.request_id);
+      } else {
+        setError("Failed to perform search. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -137,11 +152,23 @@ export default function SearchPage() {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-    } catch {
-      setExportError("Failed to export. Please try again.");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setExportError(`${err.message}${err.request_id ? ` (request_id=${err.request_id})` : ""}`);
+      } else {
+        setExportError("Failed to export. Please try again.");
+      }
     } finally {
       setExporting(false);
     }
+  };
+
+  const handleExampleQuery = (exampleQuery: string) => {
+    setQuery(exampleQuery);
+    setTimeout(() => {
+      const form = document.querySelector('form[role="search"]') as HTMLFormElement;
+      form?.requestSubmit();
+    }, 100);
   };
 
   return (
@@ -173,6 +200,7 @@ export default function SearchPage() {
               onChange={(e) => setQuery(e.target.value)}
               aria-label="Search query"
               required
+              disabled={loading}
             />
           </div>
           <button
@@ -212,6 +240,7 @@ export default function SearchPage() {
                         value={sortBy}
                         onChange={(e) => setSortBy(e.target.value)}
                         aria-label="Sort by"
+                        disabled={loading}
                       >
                         <option value="relevance">Relevance</option>
                         <option value="price">Price</option>
@@ -230,6 +259,7 @@ export default function SearchPage() {
                         value={sortOrder}
                         onChange={(e) => setSortOrder(e.target.value)}
                         aria-label="Sort order"
+                        disabled={loading}
                       >
                         <option value="desc">Descending</option>
                         <option value="asc">Ascending</option>
@@ -249,6 +279,7 @@ export default function SearchPage() {
                       value={minPrice}
                       onChange={(e) => setMinPrice(e.target.value)}
                       aria-label="Minimum price"
+                      disabled={loading}
                     />
                   </div>
                   <div>
@@ -264,6 +295,7 @@ export default function SearchPage() {
                       value={maxPrice}
                       onChange={(e) => setMaxPrice(e.target.value)}
                       aria-label="Maximum price"
+                      disabled={loading}
                     />
                   </div>
                   <div>
@@ -279,6 +311,7 @@ export default function SearchPage() {
                       value={rooms}
                       onChange={(e) => setRooms(e.target.value)}
                       aria-label="Minimum rooms"
+                      disabled={loading}
                     />
                   </div>
                   <div>
@@ -291,6 +324,7 @@ export default function SearchPage() {
                       value={propertyType}
                       onChange={(e) => setPropertyType(e.target.value)}
                       aria-label="Property type"
+                      disabled={loading}
                     >
                       <option value="">Any</option>
                       <option value="apartment">Apartment</option>
@@ -314,8 +348,10 @@ export default function SearchPage() {
                     className={[
                       "inline-flex items-center justify-center rounded-md border",
                       "px-3 py-2 text-sm hover:bg-muted",
+                      "disabled:opacity-50",
                     ].join(" ")}
                     aria-label="Clear filters"
+                    disabled={loading}
                   >
                     Clear Filters
                   </button>
@@ -330,6 +366,7 @@ export default function SearchPage() {
                         value={exportFormat}
                         onChange={(e) => setExportFormat(e.target.value)}
                         aria-label="Export format"
+                        disabled={loading || results.length === 0}
                       >
                         <option value="csv">CSV</option>
                         <option value="xlsx">Excel</option>
@@ -349,6 +386,7 @@ export default function SearchPage() {
                         onChange={(e) => setExportColumns(e.target.value)}
                         placeholder="e.g., id, city, price"
                         aria-label="Export columns"
+                        disabled={loading}
                       />
                     </div>
                     {exportFormat === "csv" ? (
@@ -363,6 +401,7 @@ export default function SearchPage() {
                             value={csvDelimiter}
                             onChange={(e) => setCsvDelimiter(e.target.value)}
                             aria-label="CSV delimiter"
+                            disabled={loading}
                           >
                             <option value=",">Comma (,)</option>
                             <option value=";">Semicolon (;)</option>
@@ -378,6 +417,7 @@ export default function SearchPage() {
                             value={csvDecimal}
                             onChange={(e) => setCsvDecimal(e.target.value)}
                             aria-label="CSV decimal separator"
+                            disabled={loading}
                           >
                             <option value=".">Dot (.)</option>
                             <option value=",">Comma (,)</option>
@@ -389,6 +429,7 @@ export default function SearchPage() {
                             checked={exportIncludeHeader}
                             onChange={(e) => setExportIncludeHeader(e.target.checked)}
                             aria-label="Include CSV header"
+                            disabled={loading}
                           />
                           Include header row
                         </label>
@@ -398,7 +439,7 @@ export default function SearchPage() {
                       <button
                         type="button"
                         onClick={handleExport}
-                        disabled={exporting || !query.trim()}
+                        disabled={exporting || !query.trim() || results.length === 0}
                         className={[
                           "inline-flex items-center justify-center rounded-md bg-primary px-3 py-2",
                           "text-sm font-medium text-primary-foreground shadow transition-colors",
@@ -419,122 +460,213 @@ export default function SearchPage() {
             </div>
           </div>
 
-          {/* Results Grid */}
+          {/* Results Grid - 4 Mandated States */}
           <div className="md:col-span-3">
-            {results.length === 0 ? (
+            {/* STATE 1: Empty state (zero-data) */}
+            {!hasSearched && !loading && !error && (
               <div
-                className="flex flex-col items-center justify-center h-64 text-center border rounded-lg border-dashed"
+                className="flex flex-col items-center justify-center h-full min-h-[400px] text-center border rounded-lg border-dashed bg-muted/30"
                 role="status"
                 aria-live="polite"
               >
-                <div className="p-4 rounded-full bg-muted/50 mb-4">
-                  <MapPin className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
+                <div className="p-4 rounded-full bg-primary/10 mb-4">
+                  <SearchIcon className="h-12 w-12 text-primary" aria-hidden="true" />
                 </div>
-                <h3 className="text-lg font-semibold">
-                  {loading
-                    ? "Searching..."
-                    : error
-                      ? "Error"
-                      : hasSearched
-                        ? "No results found"
-                        : "Start searching"}
-                </h3>
-                <p className="text-sm text-muted-foreground max-w-sm mt-2">
-                  {error ||
-                    (loading
-                      ? "Searching for matching properties."
-                      : hasSearched
-                        ? "Try adjusting your search terms or filters to find what you're looking for."
-                        : "Enter a query, adjust filters if needed, and run a search to see results here.")}
+                <h2 className="text-2xl font-bold mb-2">Start Your Property Search</h2>
+                <p className="text-muted-foreground max-w-md mb-6">
+                  Enter a search query to explore thousands of property listings. Use natural language to describe what you're looking for.
+                </p>
+                <div className="space-y-2 mb-6">
+                  <p className="text-sm font-medium text-foreground">Try these examples:</p>
+                  <div className="flex flex-col gap-2">
+                    {EXAMPLE_QUERIES.map((example, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleExampleQuery(example)}
+                        className="text-left text-sm text-primary hover:underline disabled:opacity-50 text-left w-full text-left"
+                        disabled={loading}
+                      >
+                          "{example}"
+                        </button>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Export will be available once you have search results.
                 </p>
               </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="inline-flex rounded-md border bg-background p-1">
-                    <button
-                      type="button"
-                      onClick={() => setViewMode("list")}
-                      className={[
-                        "px-3 py-1.5 text-sm rounded-md",
-                        viewMode === "list" ? "bg-muted font-medium" : "hover:bg-muted/50",
-                      ].join(" ")}
-                      aria-pressed={viewMode === "list"}
-                    >
-                      List
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setViewMode("map")}
-                      className={[
-                        "px-3 py-1.5 text-sm rounded-md",
-                        viewMode === "map" ? "bg-muted font-medium" : "hover:bg-muted/50",
-                      ].join(" ")}
-                      aria-pressed={viewMode === "map"}
-                    >
-                      Map
-                    </button>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {mapPoints.length} / {results.length} mappable
-                  </div>
-                </div>
+            )}
 
-                {viewMode === "map" ? (
-                  mapPoints.length ? (
-                    <PropertyMap points={mapPoints} />
-                  ) : (
-                    <div className="flex items-center justify-center h-64 text-center border rounded-lg border-dashed">
-                      <div>
-                        <div className="font-semibold">No mappable results</div>
-                        <div className="text-sm text-muted-foreground mt-1">
-                          These listings do not include latitude/longitude coordinates.
-                        </div>
+            {/* STATE 2: Loading state */}
+            {loading && !hasSearched && (
+              <div
+                className="space-y-4"
+                role="status"
+                aria-live="polite"
+                aria-label="Loading search results"
+              >
+                {/* Skeleton results */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div key={i} className="rounded-lg border bg-card overflow-hidden">
+                      <div className="h-48 bg-muted animate-pulse" aria-hidden="true" />
+                      <div className="p-6 space-y-4">
+                        <div className="h-6 bg-muted animate-pulse rounded" aria-hidden="true" />
+                        <div className="h-4 bg-muted animate-pulse rounded w-3/4" aria-hidden="true" />
+                        <div className="h-4 bg-muted animate-pulse rounded w-1/2" aria-hidden="true" />
                       </div>
                     </div>
-                  )
+                  ))}
+                </div>
+                {/* Map placeholder */}
+                <div className="h-[420px] w-full bg-muted animate-pulse rounded-lg border border-dashed" aria-hidden="true" />
+              </div>
+            )}
+
+            {/* STATE 3: Error state */}
+            {error && !loading && (
+              <div
+                className="flex flex-col items-center justify-center h-full min-h-[400px] text-center border rounded-lg bg-destructive/10"
+                role="alert"
+                aria-live="assertive"
+              >
+                <div className="p-4 rounded-full bg-destructive/20 mb-4">
+                  <AlertCircle className="h-12 w-12 text-destructive" aria-hidden="true" />
+                </div>
+                <h2 className="text-2xl font-bold mb-2 text-destructive">Search Failed</h2>
+                <p className="text-destructive/90 max-w-md mb-4">
+                  {error}
+                </p>
+                {requestId && (
+                  <p className="text-xs text-muted-foreground mb-6 font-mono">
+                    Request ID: {requestId}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleSearch(new Event("submit") as any)}
+                  className={[
+                    "inline-flex items-center gap-2 rounded-md bg-primary px-6 py-2",
+                    "text-sm font-medium text-primary-foreground shadow transition-colors",
+                    "hover:bg-primary/90",
+                  ].join(" ")}
+                  aria-label="Retry search"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Retry
+                </button>
+              </div>
+            )}
+
+            {/* STATE 4: Populated state */}
+            {!loading && hasSearched && !error && (
+              <div className="space-y-4">
+                {results.length === 0 ? (
+                  /* No results sub-state of Populated */
+                  <div
+                    className="flex flex-col items-center justify-center h-64 text-center border rounded-lg border-dashed"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <div className="p-4 rounded-full bg-muted/50 mb-4">
+                      <MapPin className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
+                    </div>
+                    <h3 className="text-lg font-semibold">No Results Found</h3>
+                    <p className="text-sm text-muted-foreground max-w-sm mt-2">
+                      Try adjusting your search terms, filters, or sorting options to find more properties.
+                    </p>
+                  </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {results.map((item, index) => {
-                      const prop = item.property;
-                      return (
-                        <div
-                          key={`${prop.id ?? "unknown"}-${index}`}
-                          className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden"
+                  <>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="inline-flex rounded-md border bg-background p-1">
+                        <button
+                          type="button"
+                          onClick={() => setViewMode("list")}
+                          className={[
+                            "px-3 py-1.5 text-sm rounded-md",
+                            viewMode === "list" ? "bg-muted font-medium" : "hover:bg-muted/50",
+                            "disabled:opacity-50",
+                          ].join(" ")}
+                          aria-pressed={viewMode === "list"}
                         >
-                          <div className="aspect-video w-full bg-muted relative">
-                            {/* Placeholder for image */}
-                            <div
-                              className="absolute inset-0 flex items-center justify-center text-muted-foreground"
-                              aria-label="Property image placeholder"
-                            >
-                              Property image
+                          List
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setViewMode("map")}
+                          className={[
+                            "px-3 py-1.5 text-sm rounded-md",
+                            viewMode === "map" ? "bg-muted font-medium" : "hover:bg-muted/50",
+                            "disabled:opacity-50",
+                          ].join(" ")}
+                          aria-pressed={viewMode === "map"}
+                        >
+                          Map
+                        </button>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {mapPoints.length} / {results.length} mappable
+                      </div>
+                    </div>
+
+                    {viewMode === "map" ? (
+                      mapPoints.length ? (
+                        <PropertyMap points={mapPoints} />
+                      ) : (
+                        <div className="flex items-center justify-center h-64 text-center border rounded-lg border-dashed">
+                          <div>
+                            <div className="font-semibold">No mappable results</div>
+                            <div className="text-sm text-muted-foreground mt-1">
+                              These listings do not include latitude/longitude coordinates.
                             </div>
-                          </div>
-                          <div className="p-6 space-y-2">
-                            <h3 className="text-2xl font-semibold leading-none tracking-tight">
-                              {prop.title || "Untitled Property"}
-                            </h3>
-                            <p className="text-sm text-muted-foreground">
-                              {prop.city}, {prop.country}
-                            </p>
-                            <div className="font-bold text-lg">
-                              {prop.price ? `$${prop.price.toLocaleString()}` : "Price on request"}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              {[
-                                prop.rooms ? `${prop.rooms} beds` : null,
-                                prop.bathrooms ? `${prop.bathrooms} baths` : null,
-                                prop.area_sqm ? `${prop.area_sqm} m²` : null,
-                              ]
-                                .filter(Boolean)
-                                .join(" • ")}
-                            </p>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
+                      )
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {results.map((item, index) => {
+                          const prop = item.property;
+                          return (
+                            <div
+                              key={`${prop.id ?? "unknown"}-${index}`}
+                              className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden"
+                            >
+                              <div className="aspect-video w-full bg-muted relative">
+                                <div
+                                  className="absolute inset-0 flex items-center justify-center text-muted-foreground"
+                                  aria-label="Property image placeholder"
+                                >
+                                  Property image
+                                </div>
+                              </div>
+                              <div className="p-6 space-y-2">
+                                <h3 className="text-2xl font-semibold leading-none tracking-tight">
+                                  {prop.title || "Untitled Property"}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {prop.city}, {prop.country}
+                                </p>
+                                <div className="font-bold text-lg">
+                                  {prop.price ? `$${prop.price.toLocaleString()}` : "Price on request"}
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  {[
+                                    prop.rooms ? `${prop.rooms} beds` : null,
+                                    prop.bathrooms ? `${prop.bathrooms} baths` : null,
+                                    prop.area_sqm ? `${prop.area_sqm} m²` : null,
+                                  ]
+                                    .filter(Boolean)
+                                    .join(" • ")}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}

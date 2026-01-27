@@ -9,6 +9,7 @@ Provides functions to sanitize and validate user input to prevent:
 """
 
 import re
+from typing import Any, Dict, List
 
 # Control characters (excluding common whitespace)
 CONTROL_CHARS = bytearray(range(0x00, 0x20)) + bytearray(range(0x7F, 0xA0))
@@ -259,3 +260,102 @@ def truncate_for_logging(value: str, max_length: int = 200) -> str:
     if len(value) <= max_length:
         return value
     return value[: max_length - 3] + "..."
+
+
+# Patterns for detecting sensitive data that should not be exposed
+SENSITIVE_PATTERNS = [
+    # API keys and tokens
+    (r'(api[_-]?key|apikey|token|bearer|auth[_-]?token)["\']?\s*[:=]\s*["\']?([a-zA-Z0-9_\-]{20,})', '***'),
+    (r'Bearer\s+([a-zA-Z0-9_\-\.]{20,})', 'Bearer ***'),
+    (r'sk-[a-zA-Z0-9]{20,}', 'sk-***'),
+    (r'ghp_[a-zA-Z0-9]{36,}', 'ghp_***'),
+    (r'gho_[a-zA-Z0-9]{36,}', 'gho_***'),
+    (r'ghu_[a-zA-Z0-9]{36,}', 'ghu_***'),
+    (r'ghs_[a-zA-Z0-9]{36,}', 'ghs_***'),
+    (r'ghr_[a-zA-Z0-9]{36,}', 'ghr_***'),
+    # Passwords
+    (r'(password|passwd|pwd)["\']?\s*[:=]\s*["\']?([^\s"\'`,<>]{6,})', '***'),
+    # Email addresses (partial redaction)
+    (r'\b([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b', r'\1@***'),
+    # URLs (redact query params which may contain sensitive data)
+    (r'(https?://[^\s?]+)\?[^<>\s]*', r'\1?***'),
+]
+
+
+def redact_sensitive_data(data: Any) -> Any:
+    """
+    Redact sensitive data from tool intermediate steps and outputs.
+
+    This prevents leaking:
+    - API keys and tokens
+    - Passwords
+    - Email addresses (partially)
+    - URLs with query parameters
+
+    Args:
+        data: Data to sanitize (can be dict, list, str, or other types)
+
+    Returns:
+        Sanitized data with sensitive values redacted
+    """
+    if isinstance(data, str):
+        redacted = data
+        for pattern, replacement in SENSITIVE_PATTERNS:
+            redacted = re.sub(pattern, replacement, redacted, flags=re.IGNORECASE)
+        return redacted
+    elif isinstance(data, dict):
+        return {k: redact_sensitive_data(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [redact_sensitive_data(item) for item in data]
+    else:
+        return data
+
+
+def sanitize_intermediate_steps(steps: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Sanitize intermediate tool steps to prevent leaking sensitive data.
+
+    This function:
+    1. Redacts API keys, tokens, passwords
+    2. Redacts email addresses and URLs with query params
+    3. Ensures all data is JSON-serializable
+    4. Limits output size to prevent excessive memory usage
+
+    Args:
+        steps: List of intermediate step dictionaries from agent execution
+
+    Returns:
+        Sanitized list of intermediate steps safe for client transmission
+    """
+    if not steps:
+        return []
+
+    sanitized = []
+    max_steps = 50  # Limit number of steps to prevent excessive output
+    max_output_size = 1000  # Truncate long outputs
+
+    for step in steps[:max_steps]:
+        try:
+            # Redact sensitive data
+            safe_step = redact_sensitive_data(step)
+
+            # Truncate long outputs
+            if isinstance(safe_step, dict):
+                for key, value in safe_step.items():
+                    if isinstance(value, str) and len(value) > max_output_size:
+                        safe_step[key] = value[:max_output_size] + "... (truncated)"
+                    elif isinstance(value, (list, dict)):
+                        # Convert complex objects to string representation
+                        try:
+                            serialized = str(value)
+                            if len(serialized) > max_output_size:
+                                safe_step[key] = serialized[:max_output_size] + "... (truncated)"
+                        except Exception:
+                            safe_step[key] = "... (unserializable)"
+
+            sanitized.append(safe_step)
+        except Exception:
+            # If sanitization fails, include a placeholder instead of failing
+            sanitized.append({"error": "Step sanitization failed"})
+
+    return sanitized

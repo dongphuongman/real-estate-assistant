@@ -367,3 +367,24 @@ class PromptTemplateApplyRequest(BaseModel):
 class PromptTemplateApplyResponse(BaseModel):
     template_id: str
     rendered_text: str
+
+
+# SSE Event Models for TASK-003.1
+class SSEContentEvent(BaseModel):
+    """SSE content chunk event."""
+    content: str
+
+
+class SSEErrorEvent(BaseModel):
+    """SSE error event for streaming failures."""
+    error: str
+    request_id: Optional[str] = None
+
+
+class SSEMetaEvent(BaseModel):
+    """SSE meta event with sources and session info."""
+    sources: List[Dict[str, Any]] = Field(default_factory=list)
+    sources_truncated: bool = False
+    session_id: str
+    request_id: Optional[str] = None
+    intermediate_steps: Optional[List[Dict[str, Any]]] = None

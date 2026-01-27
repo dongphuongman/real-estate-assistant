@@ -4,6 +4,7 @@ import {
   NotificationSettings,
 } from "../types";
 import {
+  ApiError,
   calculateMortgage,
   chatMessage,
   getModelsCatalog,
@@ -214,37 +215,96 @@ describe("API Client", () => {
       );
     });
 
-    it("throws error on failure", async () => {
-        (global.fetch as jest.Mock).mockResolvedValueOnce({
+    it("throws ApiError with detail, status, and request_id on failure", async () => {
+        const mockResponse = {
             ok: false,
+            status: 400,
             statusText: "Bad Request",
             text: async () => JSON.stringify({ detail: "Invalid query" }),
             json: async () => ({ detail: "Invalid query" }),
-        });
+            headers: { get: (name: string) => (name === "X-Request-ID" ? "req-abc-123" : null) },
+        };
+        (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse as unknown as Response);
 
-        await expect(searchProperties({ query: "" })).rejects.toThrow("Invalid query");
+        try {
+          await searchProperties({ query: "" });
+        } catch (e) {
+          expect(e).toBeInstanceOf(ApiError);
+          if (e instanceof ApiError) {
+            expect(e.message).toBe("Invalid query");
+            expect(e.status).toBe(400);
+            expect(e.request_id).toBe("req-abc-123");
+          }
+        }
     });
-    
-    it("throws default error if no detail", async () => {
-        (global.fetch as jest.Mock).mockResolvedValueOnce({
+
+    it("throws ApiError with status and request_id when detail parsing fails", async () => {
+        const mockResponse = {
             ok: false,
+            status: 500,
             statusText: "Server Error",
             text: async () => "Server Error",
-            json: async () => { throw new Error() },
-        });
+            json: async () => { throw new Error("JSON parse error"); },
+            headers: { get: (name: string) => (name === "X-Request-ID" ? "req-xyz-789" : null) },
+        };
+        (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse as unknown as Response);
 
-        await expect(searchProperties({ query: "" })).rejects.toThrow("Server Error");
+        try {
+          await searchProperties({ query: "" });
+        } catch (e) {
+          expect(e).toBeInstanceOf(ApiError);
+          if (e instanceof ApiError) {
+            expect(e.message).toBe("Server Error");
+            expect(e.status).toBe(500);
+            expect(e.request_id).toBe("req-xyz-789");
+          }
+        }
     });
 
-    it("throws fallback error if text is empty", async () => {
-        (global.fetch as jest.Mock).mockResolvedValueOnce({
+    it("throws ApiError with default message if text is empty", async () => {
+        const mockResponse = {
             ok: false,
-            statusText: "Server Error",
+            status: 503,
+            statusText: "Service Unavailable",
             text: async () => "",
-            json: async () => { throw new Error() },
-        });
+            json: async () => { throw new Error(); },
+            headers: { get: () => null },
+        };
+        (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse as unknown as Response);
 
-        await expect(searchProperties({ query: "" })).rejects.toThrow("API request failed");
+        try {
+          await searchProperties({ query: "" });
+        } catch (e) {
+          expect(e).toBeInstanceOf(ApiError);
+          if (e instanceof ApiError) {
+            expect(e.message).toBe("API request failed");
+            expect(e.status).toBe(503);
+            expect(e.request_id).toBeUndefined();
+          }
+        }
+    });
+
+    it("throws ApiError without request_id when X-Request-ID header missing", async () => {
+        const mockResponse = {
+            ok: false,
+            status: 404,
+            statusText: "Not Found",
+            text: async () => JSON.stringify({ detail: "Resource not found" }),
+            json: async () => ({ detail: "Resource not found" }),
+            headers: { get: () => null },
+        };
+        (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse as unknown as Response);
+
+        try {
+          await searchProperties({ query: "" });
+        } catch (e) {
+          expect(e).toBeInstanceOf(ApiError);
+          if (e instanceof ApiError) {
+            expect(e.message).toBe("Resource not found");
+            expect(e.status).toBe(404);
+            expect(e.request_id).toBeUndefined();
+          }
+        }
     });
   });
 

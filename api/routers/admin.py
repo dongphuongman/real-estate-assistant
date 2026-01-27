@@ -48,21 +48,26 @@ async def ingest_data(request: IngestRequest):
     Trigger data ingestion from URLs.
     Downloads CSVs, processes them, and saves to local cache.
     Does NOT automatically reindex vector store (call /reindex for that).
+    Enforces max_properties limit from settings.
     """
     urls = request.file_urls or settings.default_datasets
     if not urls:
         raise HTTPException(status_code=400, detail="No URLs provided and no defaults configured")
-    
+
     try:
         all_properties = []
         errors = []
-        
+        max_props = settings.max_properties
+
         for url in urls:
             try:
                 loader = DataLoaderCsv(url)
                 df = loader.load_df()
-                df_formatted = loader.load_format_df(df)
-                
+                # Enforce max_properties limit via rows_count parameter
+                # Calculate remaining capacity to stay within limit
+                remaining_capacity = max(0, max_props - len(all_properties))
+                df_formatted = loader.load_format_df(df, rows_count=remaining_capacity)
+
                 # Convert to Property objects
                 # We use to_dict('records') and validate with Pydantic
                 records = df_formatted.to_dict(orient="records")
@@ -73,22 +78,31 @@ async def ingest_data(request: IngestRequest):
                     except Exception:
                         # Skip invalid records but log?
                         pass
-                        
+
                 all_properties.extend(props)
                 logger.info(f"Loaded {len(props)} properties from {url}")
+
+                # Stop if we've reached the limit
+                if len(all_properties) >= max_props:
+                    logger.warning(f"Reached maximum property limit ({max_props}), stopping ingestion")
+                    break
             except Exception as e:
                 msg = f"Failed to load {url}: {str(e)}"
                 logger.error(msg)
                 errors.append(msg)
-            
+
         if not all_properties:
             raise HTTPException(status_code=500, detail="No properties could be loaded")
-            
+
         collection = PropertyCollection(properties=all_properties, total_count=len(all_properties))
         save_collection(collection)
-        
+
+        message = "Ingestion successful"
+        if len(all_properties) >= max_props:
+            message += f" (reached maximum property limit of {max_props})"
+
         return IngestResponse(
-            message="Ingestion successful",
+            message=message,
             properties_processed=len(all_properties),
             errors=errors
         )

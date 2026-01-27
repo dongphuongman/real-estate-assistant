@@ -5,14 +5,36 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { calculateMortgage } from "@/lib/api";
+import { calculateMortgage, ApiError } from "@/lib/api";
 import { MortgageResult } from "@/lib/types";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle, RefreshCw, Calculator } from "lucide-react";
+
+interface ErrorState {
+  message: string;
+  requestId?: string;
+}
+
+const extractErrorState = (err: unknown): ErrorState => {
+  let message = "Unknown error";
+  let requestId: string | undefined = undefined;
+
+  if (err instanceof ApiError) {
+    message = err.message;
+    requestId = err.request_id;
+  } else if (err instanceof Error) {
+    message = err.message;
+  } else {
+    message = String(err);
+  }
+
+  return { message, requestId };
+};
 
 export function MortgageCalculator() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errorState, setErrorState] = useState<ErrorState | null>(null);
   const [result, setResult] = useState<MortgageResult | null>(null);
+  const [lastFormData, setLastFormData] = useState<typeof formData | null>(null);
 
   const [formData, setFormData] = useState({
     property_price: 500000,
@@ -32,13 +54,29 @@ export function MortgageCalculator() {
   const handleCalculate = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
+    setErrorState(null);
+    setLastFormData(formData);
 
     try {
       const data = await calculateMortgage(formData);
       setResult(data);
-    } catch {
-      setError("Failed to calculate mortgage. Please check your inputs.");
+    } catch (err: unknown) {
+      setErrorState(extractErrorState(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRetry = async () => {
+    if (!lastFormData || loading) return;
+    setLoading(true);
+    setErrorState(null);
+
+    try {
+      const data = await calculateMortgage(lastFormData);
+      setResult(data);
+    } catch (err: unknown) {
+      setErrorState(extractErrorState(err));
     } finally {
       setLoading(false);
     }
@@ -46,6 +84,29 @@ export function MortgageCalculator() {
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
+      {/* STATE 1: Empty state - guidance before calculation */}
+      {!result && !errorState && !loading && (
+        <div
+          className="col-span-full md:col-span-2 rounded-lg border bg-muted/30 p-6 text-center"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="flex justify-center mb-3">
+            <div className="p-3 rounded-full bg-primary/10">
+              <Calculator className="h-8 w-8 text-primary" aria-hidden="true" />
+            </div>
+          </div>
+          <h3 className="text-lg font-semibold mb-2">Mortgage Calculator</h3>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto mb-3">
+            Enter your property details below to estimate monthly payments, total interest, and complete loan breakdown.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Adjust the default values and click Calculate to see your personalized mortgage analysis.
+          </p>
+        </div>
+      )}
+
+      {/* Calculator Form */}
       <Card>
         <CardHeader>
           <CardTitle>Mortgage Calculator</CardTitle>
@@ -111,7 +172,41 @@ export function MortgageCalculator() {
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Calculate
             </Button>
-            {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
+
+            {/* STATE 3: Error state with request_id and retry */}
+            {errorState && (
+              <div
+                className="flex flex-col items-start gap-3 rounded-lg border border-destructive/20 bg-destructive/10 p-4"
+                role="alert"
+                aria-live="assertive"
+              >
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" aria-hidden="true" />
+                  <div className="flex-1">
+                    <p className="text-sm text-destructive font-medium">Calculation failed</p>
+                    <p className="text-sm text-destructive/90 mt-1">{errorState.message}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 w-full">
+                  {errorState.requestId && (
+                    <p className="text-xs text-muted-foreground font-mono">
+                      request_id={errorState.requestId}
+                    </p>
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRetry}
+                    disabled={loading}
+                    className="gap-2 ml-auto"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                    Retry
+                  </Button>
+                </div>
+              </div>
+            )}
           </form>
         </CardContent>
       </Card>
