@@ -67,8 +67,8 @@ export default function SearchPage() {
     return { filters: Object.keys(filters).length ? filters : undefined };
   };
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearch = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     setLoading(true);
     setError(null);
     setRequestId(undefined);
@@ -545,7 +545,7 @@ export default function SearchPage() {
                 )}
                 <button
                   type="button"
-                  onClick={() => handleSearch(new SubmitEvent("submit"))}
+                  onClick={() => handleSearch()}
                   className={[
                     "inline-flex items-center gap-2 rounded-md bg-primary px-6 py-2",
                     "text-sm font-medium text-primary-foreground shadow transition-colors",

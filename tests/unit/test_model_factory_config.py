@@ -268,3 +268,82 @@ def test_get_model_display_info_formats_pricing_and_capabilities():
     assert "$" in info["cost"]
     assert info["description"] == "desc"
     assert info["recommended_for"] == ["general"]
+
+
+def test_get_provider_injects_anthropic_api_key(mock_settings):
+    provider = ModelProviderFactory.get_provider("anthropic", use_cache=False)
+    assert provider.config.get("api_key") == "test-anthropic-key"
+
+
+def test_get_provider_injects_google_api_key(mock_settings):
+    mock_settings.google_api_key = "test-google-key"
+    provider = ModelProviderFactory.get_provider("google", use_cache=False)
+    assert provider.config.get("api_key") == "test-google-key"
+
+
+def test_get_provider_injects_grok_api_key(mock_settings):
+    mock_settings.grok_api_key = "test-grok-key"
+    provider = ModelProviderFactory.get_provider("grok", use_cache=False)
+    assert provider.config.get("api_key") == "test-grok-key"
+
+
+def test_get_provider_injects_deepseek_api_key(mock_settings):
+    mock_settings.deepseek_api_key = "test-deepseek-key"
+    provider = ModelProviderFactory.get_provider("deepseek", use_cache=False)
+    assert provider.config.get("api_key") == "test-deepseek-key"
+
+
+def test_list_all_models_handles_provider_exception(mock_settings):
+    ModelProviderFactory.clear_cache()
+    provider_ok = _StubProvider(name="ok")
+    provider_ok._models = [
+        ModelInfo(
+            id="m1",
+            display_name="Model 1",
+            provider_name="ok",
+            context_window=1000,
+            capabilities=[ModelCapability.STREAMING],
+        )
+    ]
+    provider_ok._validate_result = (True, None)
+
+    provider_bad = _StubProvider(name="bad")
+    provider_bad._models = [
+        ModelInfo(id="m2", display_name="Model 2", provider_name="bad", context_window=1000)
+    ]
+
+    def _get_provider(name: str, *args, **kwargs):
+        if name == "ok":
+            return provider_ok
+        raise RuntimeError("Provider load failed")
+
+    with patch.object(ModelProviderFactory, "list_providers", return_value=["ok", "bad"]):
+        with patch.object(ModelProviderFactory, "get_provider", side_effect=_get_provider):
+            models = ModelProviderFactory.list_all_models(include_unavailable=True)
+    assert [m.id for m in models] == ["m1"]
+
+
+def test_get_model_by_id_handles_provider_exception(mock_settings):
+    ModelProviderFactory.clear_cache()
+
+    def _get_provider(name: str, *args, **kwargs):
+        raise RuntimeError("Provider init failed")
+
+    with patch.object(ModelProviderFactory, "list_providers", return_value=["p1"]):
+        with patch.object(ModelProviderFactory, "get_provider", side_effect=_get_provider):
+            result = ModelProviderFactory.get_model_by_id("m1")
+    assert result is None
+
+
+def test_get_model_display_info_without_pricing():
+    model_info = ModelInfo(
+        id="local-model",
+        display_name="Local Model",
+        provider_name="ollama",
+        context_window=4000,
+        pricing=None,
+        capabilities=[ModelCapability.STREAMING],
+    )
+    info = get_model_display_info(model_info)
+    assert info["id"] == "local-model"
+    assert info["cost"] == "Free (local)"

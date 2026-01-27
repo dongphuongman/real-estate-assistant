@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 from langchain_core.documents import Document
 
-from api.chat_sources import serialize_chat_sources
+from api.chat_sources import serialize_chat_sources, serialize_web_sources
 
 
 def test_serialize_chat_sources_truncates_items():
@@ -61,3 +61,133 @@ def test_serialize_chat_sources_sanitizes_non_dict_metadata():
     )
     assert sources == [{"content": "a", "metadata": {"value": "['not', 'a', 'dict']"}}]
     assert truncated is False
+
+
+def test_serialize_chat_sources_converts_non_string_content():
+    docs = [SimpleNamespace(page_content=123, metadata={"id": "1"})]
+    sources, truncated = serialize_chat_sources(
+        docs,
+        max_items=10,
+        max_content_chars=100,
+        max_total_bytes=10_000,
+    )
+    assert sources[0]["content"] == "123"
+    assert truncated is False
+
+
+def test_serialize_chat_sources_handles_non_serializable_metadata():
+    class CustomObj:
+        def __str__(self):
+            return "custom"
+
+    docs = [Document(page_content="a", metadata={"obj": CustomObj()})]
+    sources, truncated = serialize_chat_sources(
+        docs,
+        max_items=10,
+        max_content_chars=100,
+        max_total_bytes=10_000,
+    )
+    assert sources[0]["metadata"]["obj"] == "custom"
+    assert truncated is False
+
+
+def test_serialize_web_sources_basic():
+    web_sources = [
+        {"url": "https://example.com/1", "snippet": "Content 1", "title": "Title 1"},
+        {"url": "https://example.com/2", "snippet": "Content 2", "title": "Title 2"},
+    ]
+    sources, truncated = serialize_web_sources(
+        web_sources,
+        max_items=10,
+        max_content_chars=100,
+        max_total_bytes=10_000,
+    )
+    assert len(sources) == 2
+    assert sources[0]["content"] == "Content 1"
+    assert sources[0]["metadata"]["url"] == "https://example.com/1"
+    assert sources[0]["metadata"]["title"] == "Title 1"
+    assert truncated is False
+
+
+def test_serialize_web_sources_truncates_items():
+    web_sources = [
+        {"url": "https://example.com/1", "snippet": "A"},
+        {"url": "https://example.com/2", "snippet": "B"},
+        {"url": "https://example.com/3", "snippet": "C"},
+    ]
+    sources, truncated = serialize_web_sources(
+        web_sources,
+        max_items=2,
+        max_content_chars=100,
+        max_total_bytes=10_000,
+    )
+    assert len(sources) == 2
+    assert truncated is True
+
+
+def test_serialize_web_sources_truncates_content():
+    web_sources = [{"url": "https://example.com", "snippet": "A" * 100}]
+    sources, truncated = serialize_web_sources(
+        web_sources,
+        max_items=10,
+        max_content_chars=10,
+        max_total_bytes=10_000,
+    )
+    assert len(sources[0]["content"]) == 10
+    assert truncated is True
+
+
+def test_serialize_web_sources_respects_total_bytes():
+    web_sources = [
+        {"url": "https://example.com/1", "snippet": "A" * 50},
+        {"url": "https://example.com/2", "snippet": "B" * 50},
+    ]
+    sources, truncated = serialize_web_sources(
+        web_sources,
+        max_items=10,
+        max_content_chars=100,
+        max_total_bytes=150,
+    )
+    assert len(sources) == 1
+    assert truncated is True
+
+
+def test_serialize_web_sources_handles_non_dict_source():
+    web_sources = ["not a dict", {"url": "https://example.com", "snippet": "A"}]
+    sources, truncated = serialize_web_sources(
+        web_sources,
+        max_items=10,
+        max_content_chars=100,
+        max_total_bytes=10_000,
+    )
+    assert len(sources) == 2
+    assert sources[0]["metadata"]["value"] == "not a dict"
+    assert sources[1]["content"] == "A"
+
+
+def test_serialize_web_sources_handles_non_serializable_metadata():
+    class CustomObj:
+        pass
+
+    web_sources = [
+        {"url": "https://example.com", "snippet": "A", "custom": CustomObj()}
+    ]
+    sources, truncated = serialize_web_sources(
+        web_sources,
+        max_items=10,
+        max_content_chars=100,
+        max_total_bytes=10_000,
+    )
+    assert sources[0]["content"] == "A"
+    assert "custom" in sources[0]["metadata"]
+
+
+def test_serialize_web_sources_uses_content_when_snippet_missing():
+    web_sources = [{"url": "https://example.com", "content": "From content field"}]
+    sources, truncated = serialize_web_sources(
+        web_sources,
+        max_items=10,
+        max_content_chars=100,
+        max_total_bytes=10_000,
+    )
+    assert sources[0]["content"] == "From content field"

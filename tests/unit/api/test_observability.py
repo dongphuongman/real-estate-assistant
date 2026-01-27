@@ -91,3 +91,79 @@ def test_request_id_is_present_on_unhandled_exception_response():
     assert r.headers.get("x-request-id") == request_id
     assert r.json()["detail"] == "Internal server error"
 
+
+def test_rate_limiter_configure_updates_limits():
+    rl = RateLimiter(max_requests=1, window_seconds=60)
+    rl.configure(max_requests=5, window_seconds=120)
+
+    ok1, limit1, _, _ = rl.check("c1", now=0.0)
+    ok2, limit2, _, _ = rl.check("c1", now=0.0)
+    ok3, limit3, _, _ = rl.check("c1", now=0.0)
+
+    assert ok1 is True and ok2 is True and ok3 is True
+    assert limit1 == 5 and limit2 == 5 and limit3 == 5
+
+
+def test_rate_limiter_reset_clears_history():
+    rl = RateLimiter(max_requests=1, window_seconds=60)
+    rl.check("c1", now=0.0)
+    ok2, _, _, _ = rl.check("c1", now=0.0)
+    assert ok2 is False
+
+    rl.reset()
+    ok3, _, _, _ = rl.check("c1", now=0.0)
+    assert ok3 is True
+
+
+def test_rate_limiter_allows_anonymous_key():
+    rl = RateLimiter(max_requests=1, window_seconds=60)
+    ok, limit, remaining, reset = rl.check("", now=0.0)
+    assert ok is True
+    assert limit == 1
+    assert remaining == 0
+    assert reset == 60
+
+
+def test_normalize_request_id_handles_none():
+    assert normalize_request_id(None) is None
+
+
+def test_client_id_from_api_key_handles_none():
+    assert client_id_from_api_key(None) is None
+    assert client_id_from_api_key("") is None
+    # Whitespace-only keys still get hashed (function doesn't strip)
+    result = client_id_from_api_key("  ")
+    assert result is not None
+    assert len(result) == 12
+
+
+def test_add_observability_rate_limit_disabled_when_setting_false(monkeypatch):
+    import os
+
+    monkeypatch.setenv("API_RATE_LIMIT_ENABLED", "false")
+    app = FastAPI()
+    logger = logging.getLogger("test")
+    add_observability(app, logger)
+
+    @app.get("/ping")
+    def _ping():
+        return {"ok": True}
+
+    client = TestClient(app)
+    r = client.get("/ping")
+    assert r.status_code == 200
+
+
+def test_add_observability_sets_request_id_header():
+    app = FastAPI()
+    logger = logging.getLogger("test")
+    add_observability(app, logger)
+
+    @app.get("/ping")
+    def _ping():
+        return {"ok": True}
+
+    client = TestClient(app)
+    r = client.get("/ping")
+    assert "x-request-id" in r.headers
+
