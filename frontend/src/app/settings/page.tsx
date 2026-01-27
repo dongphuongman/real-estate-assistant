@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { RefreshCw, AlertCircle, Loader2, Settings as SettingsIcon, Database, Sparkles } from "lucide-react";
+import { RefreshCw, AlertCircle, Loader2, Database, Sparkles } from "lucide-react";
 import { IdentitySettings } from "@/components/settings/identity-settings";
 import { ModelSettings } from "@/components/settings/model-settings";
 import { NotificationSettings } from "@/components/settings/notification-settings";
@@ -222,11 +222,9 @@ export default function SettingsPage() {
       }));
     } catch (err) {
       let msg = "Connection failed.";
-      let reqId: string | undefined = undefined;
 
       if (err instanceof ApiError) {
         msg = err.message;
-        reqId = err.request_id;
       } else if (err instanceof Error) {
         msg = err.message;
       }

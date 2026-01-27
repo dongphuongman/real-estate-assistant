@@ -34,7 +34,6 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
-  const [currentRequestId, setCurrentRequestId] = useState<string | undefined>(undefined);
   const [lastUserMessage, setLastUserMessage] = useState<string | undefined>(undefined);
   const [debugMode, setDebugMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -60,7 +59,6 @@ export default function ChatPage() {
       }
     }
 
-    setCurrentRequestId(requestId);
     setMessages(prev => {
       const updated = [...prev];
       const lastIdx = updated.length - 1;
@@ -246,7 +244,7 @@ export default function ChatPage() {
                     className="text-left text-sm text-primary hover:underline disabled:opacity-50 p-2 rounded-md hover:bg-muted/50 transition-colors"
                     disabled={isLoading}
                   >
-                    "{prompt}"
+                    &ldquo;{prompt}&rdquo;
                   </button>
                 ))}
               </div>

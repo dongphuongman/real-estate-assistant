@@ -474,7 +474,7 @@ export default function SearchPage() {
                 </div>
                 <h2 className="text-2xl font-bold mb-2">Start Your Property Search</h2>
                 <p className="text-muted-foreground max-w-md mb-6">
-                  Enter a search query to explore thousands of property listings. Use natural language to describe what you're looking for.
+                  Enter a search query to explore thousands of property listings. Use natural language to describe what you&apos;re looking for.
                 </p>
                 <div className="space-y-2 mb-6">
                   <p className="text-sm font-medium text-foreground">Try these examples:</p>
@@ -487,7 +487,7 @@ export default function SearchPage() {
                         className="text-left text-sm text-primary hover:underline disabled:opacity-50 text-left w-full text-left"
                         disabled={loading}
                       >
-                          "{example}"
+                          &ldquo;{example}&rdquo;
                         </button>
                     ))}
                   </div>
@@ -545,7 +545,7 @@ export default function SearchPage() {
                 )}
                 <button
                   type="button"
-                  onClick={() => handleSearch(new Event("submit") as any)}
+                  onClick={() => handleSearch(new SubmitEvent("submit"))}
                   className={[
                     "inline-flex items-center gap-2 rounded-md bg-primary px-6 py-2",
                     "text-sm font-medium text-primary-foreground shadow transition-colors",

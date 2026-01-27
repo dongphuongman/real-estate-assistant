@@ -987,23 +987,29 @@
           "down_payment_percent": {
             "default": 20.0,
             "description": "Down payment as percentage (e.g., 20 for 20%)",
+            "maximum": 100.0,
+            "minimum": 0.0,
             "title": "Down Payment Percent",
             "type": "number"
           },
           "interest_rate": {
             "default": 4.5,
             "description": "Annual interest rate as percentage (e.g., 4.5 for 4.5%)",
+            "minimum": 0.0,
             "title": "Interest Rate",
             "type": "number"
           },
           "loan_years": {
             "default": 30,
             "description": "Loan term in years",
+            "exclusiveMinimum": 0.0,
+            "maximum": 50.0,
             "title": "Loan Years",
             "type": "integer"
           },
           "property_price": {
             "description": "Total property price",
+            "exclusiveMinimum": 0.0,
             "title": "Property Price",
             "type": "number"
           }
@@ -2579,7 +2585,7 @@
     },
     "/api/v1/admin/ingest": {
       "post": {
-        "description": "Trigger data ingestion from URLs.\nDownloads CSVs, processes them, and saves to local cache.\nDoes NOT automatically reindex vector store (call /reindex for that).",
+        "description": "Trigger data ingestion from URLs.\nDownloads CSVs, processes them, and saves to local cache.\nDoes NOT automatically reindex vector store (call /reindex for that).\nEnforces max_properties limit from settings.",
         "operationId": "ingest_data_api_v1_admin_ingest_post",
         "requestBody": {
           "content": {
@@ -4126,18 +4132,38 @@
     },
     "/health": {
       "get": {
-        "description": "Health check endpoint to verify API status.",
+        "description": "Health check endpoint to verify API status.\n\nArgs:\n    include_dependencies: Whether to check dependency health (vector store, Redis, LLM providers)\n\nReturns:\n    Comprehensive health status including dependencies",
         "operationId": "health_check_health_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "include_dependencies",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Include Dependencies",
+              "type": "boolean"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HealthCheck"
-                }
+                "schema": {}
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "summary": "Health Check",

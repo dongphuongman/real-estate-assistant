@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileUp, Loader2, MessageSquareText, Trash2, Upload, AlertCircle, RefreshCw, FileText, Sparkles, Database } from "lucide-react";
+import { FileUp, Loader2, MessageSquareText, Trash2, Upload, AlertCircle, FileText, Sparkles, Database } from "lucide-react";
 import { ragQa, resetRagKnowledge, uploadRagDocuments, ApiError } from "@/lib/api";
 import type { RagQaResponse, RagResetResponse, RagUploadResponse } from "@/lib/types";
 
