@@ -61,10 +61,12 @@ async def startup_event():
     """Initialize application services on startup and setup signal handlers."""
     global scheduler
 
-    # Setup signal handlers for graceful shutdown
-    for sig in (signal.SIGTERM, signal.SIGINT):
-        if hasattr(signal, sig.name):
-            signal.signal(sig, lambda s, f: None)  # Let FastAPI handle
+    # Setup signal handlers for graceful shutdown (only in main thread)
+    import threading
+    if threading.current_thread() is threading.main_thread():
+        for sig in (signal.SIGTERM, signal.SIGINT):
+            if hasattr(signal, sig.name):
+                signal.signal(sig, lambda s, f: None)  # Let FastAPI handle
 
     # 1. Initialize Vector Store
     logger.info("Initializing Vector Store...")
