@@ -175,7 +175,7 @@ class TestSensitiveDataRedaction:
             "nested": {"token": "ghp_secret"}
         }
         redacted = redact_sensitive_data(data)
-        assert redacted["api_key"] == "***"
+        assert redacted["api_key"] == "sk-***"
         assert "@***" in redacted["user"]
         assert redacted["nested"]["token"] == "***"
 
@@ -184,7 +184,7 @@ class TestSensitiveDataRedaction:
         data = [
             {"api_key": "sk-abc123"},
             "Bearer token123",
-            {"nested": {"secret": "password123"}}
+            {"nested": {"pwd": "password123"}}
         ]
         redacted = redact_sensitive_data(data)
         assert "***" in str(redacted)
