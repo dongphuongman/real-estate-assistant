@@ -35,7 +35,6 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const [lastUserMessage, setLastUserMessage] = useState<string | undefined>(undefined);
-  const [currentRequestId, setCurrentRequestId] = useState<string | undefined>(undefined);
   const [debugMode, setDebugMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -115,7 +114,6 @@ export default function ChatPage() {
     setHasStarted(true);
     setMessages(prev => [...prev, { role: "user", content: userMessage }]);
     setIsLoading(true);
-    setCurrentRequestId(undefined);
     setLastUserMessage(userMessage);
 
     try {
@@ -139,8 +137,8 @@ export default function ChatPage() {
             return updated;
           });
         },
-        ({ requestId }) => {
-          if (requestId) setCurrentRequestId(requestId);
+        () => {
+          // requestId is available but not currently displayed
         },
         ({ sources, sourcesTruncated, sessionId: returnedSessionId, intermediateSteps }) => {
           if (returnedSessionId && !sessionId) setSessionId(returnedSessionId);
@@ -170,7 +168,6 @@ export default function ChatPage() {
   const handleRetry = async () => {
     if (!lastUserMessage || isLoading) return;
     setIsLoading(true);
-    setCurrentRequestId(undefined);
     setMessages(prev => [...prev, { role: "assistant", content: "" }]);
 
     try {
@@ -186,8 +183,8 @@ export default function ChatPage() {
             return updated;
           });
         },
-        ({ requestId }) => {
-          if (requestId) setCurrentRequestId(requestId);
+        () => {
+          // requestId is available but not currently displayed
         },
         ({ sources, sourcesTruncated, intermediateSteps }) => {
           setMessages(prev => {

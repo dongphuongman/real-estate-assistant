@@ -1,6 +1,6 @@
-import { render, screen, fireEvent, waitFor, act, waitForElementToBeRemoved } from "@testing-library/react"
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
 import ChatPage from "../page"
-import { streamChatMessage } from "@/lib/api"
+import { streamChatMessage, ApiError } from "@/lib/api"
 
 // Mock the API module
 jest.mock("@/lib/api", () => {
@@ -17,12 +17,7 @@ jest.mock("@/lib/api", () => {
 })
 
 const mockStream = streamChatMessage as jest.Mock
-// Import ApiError for use in tests
-let ApiError: typeof import("@/lib/api").ApiError
 beforeEach(() => {
-  // Get the actual ApiError class from the mock
-  const apiModule = require("@/lib/api")
-  ApiError = apiModule.ApiError
   jest.clearAllMocks()
 })
 
@@ -108,8 +103,7 @@ describe("ChatPage", () => {
 
   it("handles error state", async () => {
     const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
-    const apiModule = require("@/lib/api")
-    mockStream.mockRejectedValueOnce(new apiModule.ApiError("Failed to start stream", 500, "req-xyz"))
+    mockStream.mockRejectedValueOnce(new ApiError("Failed to start stream", 500, "req-xyz"))
 
     render(<ChatPage />)
 
@@ -129,9 +123,8 @@ describe("ChatPage", () => {
 
   it("shows retry button and retries stream", async () => {
     const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
-    const apiModule = require("@/lib/api")
     mockStream
-      .mockRejectedValueOnce(new apiModule.ApiError("Failed to start stream", 500, "req-123"))
+      .mockRejectedValueOnce(new ApiError("Failed to start stream", 500, "req-123"))
       .mockImplementationOnce(async (_req, onChunk, _onStart, onMeta) => {
         await new Promise(resolve => setTimeout(resolve, 0))
         onChunk("Recovered response")
