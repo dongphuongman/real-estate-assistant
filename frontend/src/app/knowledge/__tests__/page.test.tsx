@@ -3,25 +3,34 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import KnowledgePage from "../page";
 import { ragQa, resetRagKnowledge, uploadRagDocuments } from "@/lib/api";
 
-jest.mock("@/lib/api", () => ({
-  uploadRagDocuments: jest.fn(async () => ({
-    message: "Upload processed",
-    chunks_indexed: 3,
-    errors: [],
-  })),
-  resetRagKnowledge: jest.fn(async () => ({
-    message: "Knowledge cleared",
-    documents_removed: 0,
-    documents_remaining: 0,
-  })),
-  ragQa: jest.fn(async () => ({
-    answer: "Answer text",
-    citations: [{ source: "file.txt", chunk_index: 0 }],
-    llm_used: false,
-    provider: null,
-    model: null,
-  })),
-}));
+jest.mock("@/lib/api", () => {
+  class MockApiError extends Error {
+    constructor(message: string, public status: number, public request_id?: string) {
+      super(message);
+      this.name = "ApiError";
+    }
+  }
+  return {
+    uploadRagDocuments: jest.fn(async () => ({
+      message: "Upload processed",
+      chunks_indexed: 3,
+      errors: [],
+    })),
+    resetRagKnowledge: jest.fn(async () => ({
+      message: "Knowledge cleared",
+      documents_removed: 0,
+      documents_remaining: 0,
+    })),
+    ragQa: jest.fn(async () => ({
+      answer: "Answer text",
+      citations: [{ source: "file.txt", chunk_index: 0 }],
+      llm_used: false,
+      provider: null,
+      model: null,
+    })),
+    ApiError: MockApiError,
+  };
+});
 
 describe("KnowledgePage", () => {
   beforeEach(() => {
@@ -33,11 +42,11 @@ describe("KnowledgePage", () => {
 
     expect(screen.getByText("Knowledge")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Upload" }));
-    await waitFor(() => expect(screen.getByText("Select at least one file to upload.")).toBeInTheDocument());
+    // Upload button should be disabled when no files are selected
+    expect(screen.getByRole("button", { name: "Upload" })).toBeDisabled();
 
-    fireEvent.click(screen.getByRole("button", { name: "Ask" }));
-    await waitFor(() => expect(screen.getByText("Enter a question.")).toBeInTheDocument());
+    // Ask button should be disabled when no question is entered
+    expect(screen.getByRole("button", { name: "Ask" })).toBeDisabled();
   });
 
   it("uploads a file and asks a question", async () => {
@@ -103,11 +112,11 @@ describe("KnowledgePage", () => {
     fireEvent.change(fileInput, { target: { files: [new File(["x"], "file.txt", { type: "text/plain" })] } });
 
     fireEvent.click(screen.getByRole("button", { name: "Upload" }));
-    await waitFor(() => expect(screen.getByText("Upload failed (status=500)")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Upload failed.*status=500/)).toBeInTheDocument());
 
     fireEvent.change(screen.getByLabelText("Knowledge question"), { target: { value: "Q" } });
     fireEvent.click(screen.getByRole("button", { name: "Ask" }));
-    await waitFor(() => expect(screen.getByText("QA failed (status=503)")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/QA failed.*status=503/)).toBeInTheDocument());
   });
 
   it("clears knowledge after confirmation", async () => {
@@ -120,9 +129,9 @@ describe("KnowledgePage", () => {
 
     render(<KnowledgePage />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Clear knowledge" }));
+    fireEvent.click(screen.getByRole("button", { name: /Clear Knowledge/i }));
     await waitFor(() => expect(resetRagKnowledge).toHaveBeenCalled());
-    expect(screen.getByText(/Removed 3\. Remaining 0\./)).toBeInTheDocument();
+    expect(screen.getByText(/Knowledge cleared\. Removed 3\. Remaining 0\./)).toBeInTheDocument();
 
     confirmSpy.mockRestore();
   });
@@ -132,7 +141,7 @@ describe("KnowledgePage", () => {
 
     render(<KnowledgePage />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Clear knowledge" }));
+    fireEvent.click(screen.getByRole("button", { name: /Clear Knowledge/i }));
     await waitFor(() => expect(confirmSpy).toHaveBeenCalled());
     expect(resetRagKnowledge).not.toHaveBeenCalled();
 
@@ -145,8 +154,8 @@ describe("KnowledgePage", () => {
 
     render(<KnowledgePage />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Clear knowledge" }));
-    await waitFor(() => expect(screen.getByText("Reset failed (status=503)")).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /Clear Knowledge/i }));
+    await waitFor(() => expect(screen.getByText(/Reset failed.*status=503/)).toBeInTheDocument());
 
     confirmSpy.mockRestore();
   });

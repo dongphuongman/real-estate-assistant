@@ -59,7 +59,7 @@ describe("MortgageCalculator", () => {
     fireEvent.click(screen.getByRole("button", { name: /Calculate/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("Failed to calculate mortgage. Please check your inputs.")).toBeInTheDocument();
+      expect(screen.getByText("Calculation failed")).toBeInTheDocument();
     });
     expect(errorSpy).not.toHaveBeenCalled();
     errorSpy.mockRestore();

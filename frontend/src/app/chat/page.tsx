@@ -35,6 +35,7 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const [lastUserMessage, setLastUserMessage] = useState<string | undefined>(undefined);
+  const [currentRequestId, setCurrentRequestId] = useState<string | undefined>(undefined);
   const [debugMode, setDebugMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -297,7 +298,7 @@ export default function ChatPage() {
             </div>
             <div className="flex-1 space-y-2 overflow-hidden">
               <div className="prose break-words dark:prose-invert text-sm leading-relaxed">
-                {message.content || (!isLoading && message.role === "assistant" && !message.content) ? (
+                {!message.content ? (
                   <span className="text-muted-foreground italic">Thinking...</span>
                 ) : (
                   message.content

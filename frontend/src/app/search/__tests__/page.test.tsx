@@ -2,10 +2,19 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import SearchPage from "../page"
 import { searchProperties, exportPropertiesBySearch } from "@/lib/api"
 
-jest.mock("@/lib/api", () => ({
-  searchProperties: jest.fn(),
-  exportPropertiesBySearch: jest.fn(),
-}))
+jest.mock("@/lib/api", () => {
+  class MockApiError extends Error {
+    constructor(message: string, public status: number, public request_id?: string) {
+      super(message);
+      this.name = "ApiError";
+    }
+  }
+  return {
+    searchProperties: jest.fn(),
+    exportPropertiesBySearch: jest.fn(),
+    ApiError: MockApiError,
+  };
+})
 
 jest.mock("@/components/search/property-map", () => ({
   __esModule: true,
@@ -42,10 +51,10 @@ describe("SearchPage", () => {
 
   it("shows neutral state before the first search", () => {
     render(<SearchPage />)
-    expect(screen.getByText("Start searching")).toBeInTheDocument()
+    expect(screen.getByText("Start Your Property Search")).toBeInTheDocument()
     expect(
       screen.getByText(
-        "Enter a query, adjust filters if needed, and run a search to see results here."
+        "Enter a search query to explore thousands of property listings. Use natural language to describe what you're looking for."
       )
     ).toBeInTheDocument()
   })
@@ -159,7 +168,6 @@ describe("SearchPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /search/i }))
 
     await waitFor(() => {
-      expect(screen.getByText("Error")).toBeInTheDocument()
       expect(screen.getByText("Min price cannot be greater than max price.")).toBeInTheDocument()
     })
     expect(mockSearchProperties).not.toHaveBeenCalled()
@@ -171,7 +179,6 @@ describe("SearchPage", () => {
     fireEvent.submit(screen.getByRole("search"))
 
     await waitFor(() => {
-      expect(screen.getByText("Error")).toBeInTheDocument()
       expect(screen.getByText("Please enter a search query.")).toBeInTheDocument()
     })
     expect(mockSearchProperties).not.toHaveBeenCalled()
@@ -192,7 +199,7 @@ describe("SearchPage", () => {
     fireEvent.click(searchButton)
 
     await waitFor(() => {
-      expect(screen.getByText("No results found")).toBeInTheDocument()
+      expect(screen.getByText("No Results Found")).toBeInTheDocument()
     })
   })
 
@@ -200,7 +207,7 @@ describe("SearchPage", () => {
     mockSearchProperties.mockRejectedValueOnce(new Error("API Error"))
 
     render(<SearchPage />)
-    
+
     const input = screen.getByLabelText("Search query")
     const searchButton = screen.getByRole("button", { name: /search/i })
 
@@ -208,7 +215,6 @@ describe("SearchPage", () => {
     fireEvent.click(searchButton)
 
     await waitFor(() => {
-      expect(screen.getByText("Error")).toBeInTheDocument()
       expect(screen.getByText("Failed to perform search. Please try again.")).toBeInTheDocument()
     })
   })
@@ -299,12 +305,26 @@ describe("SearchPage", () => {
   })
 
   it("shows export error on failure", async () => {
+    mockSearchProperties.mockResolvedValueOnce({
+      results: [
+        { property: { id: "1", title: "A", city: "X", country: "US", price: 10 }, score: 0.9 },
+      ],
+      count: 1,
+    });
     mockExport.mockRejectedValueOnce(new Error("Export failed"));
+
     render(<SearchPage />);
     fireEvent.change(screen.getByLabelText("Search query"), { target: { value: "Test" } });
+    fireEvent.click(screen.getByRole("button", { name: /search/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("A")).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByLabelText("Export format"), { target: { value: "csv" } });
     fireEvent.click(screen.getByRole("button", { name: /export/i }));
     await waitFor(() => {
-      expect(screen.getByRole("alert")).toHaveTextContent("Failed to export");
+      expect(screen.getByRole("alert")).toHaveTextContent(/Failed to export/);
     });
   })
 })

@@ -33,7 +33,7 @@ Detailed health check for admin.
 
 **Tags**: Admin
 
-Trigger data ingestion from URLs. Downloads CSVs, processes them, and saves to local cache. Does NOT automatically reindex vector store (call /reindex for that).
+Trigger data ingestion from URLs. Downloads CSVs, processes them, and saves to local cache. Does NOT automatically reindex vector store (call /reindex for that). Enforces max_properties limit from settings.
 
 **Request Body**
 
@@ -627,10 +627,17 @@ Verify API key authentication.
 
 **Tags**: System
 
-Health check endpoint to verify API status.
+Health check endpoint to verify API status. Args: include_dependencies: Whether to check dependency health (vector store, Redis, LLM providers) Returns: Comprehensive health status including dependencies
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| include_dependencies | query | boolean | no |  |
 
 **Responses**
 
 | Status | Description | Body (application/json) |
 |---|---|---|
-| 200 | Successful Response | HealthCheck |
+| 200 | Successful Response | object |
+| 422 | Validation Error | HTTPValidationError |

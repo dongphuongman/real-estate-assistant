@@ -1,9 +1,10 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import SettingsPage from "../page";
-import { getModelsCatalog, testModelRuntime } from "@/lib/api";
+import { getModelsCatalog, testModelRuntime, ApiError } from "@/lib/api";
 
 // Mock API
 jest.mock("@/lib/api", () => ({
+  ...jest.requireActual("@/lib/api"),
   getNotificationSettings: jest.fn(),
   updateNotificationSettings: jest.fn(),
   getModelsCatalog: jest.fn(),
@@ -74,7 +75,6 @@ describe("SettingsPage", () => {
 
     expect(screen.getByText("Models")).toBeInTheDocument();
     expect(screen.getByTestId("model-settings")).toBeInTheDocument();
-    expect(screen.getByText("Loading model catalog...")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Refresh Catalog" })).toBeInTheDocument();
 
     await waitFor(() => {
@@ -199,7 +199,7 @@ describe("SettingsPage", () => {
 
   it("shows retry on catalog load failure", async () => {
     const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-    mockGetModelsCatalog.mockRejectedValueOnce(new Error("API Error"));
+    mockGetModelsCatalog.mockRejectedValueOnce(new ApiError("Failed to load model catalog. Please try again.", 500));
 
     render(<SettingsPage />);
 

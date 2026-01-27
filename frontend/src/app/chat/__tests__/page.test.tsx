@@ -1,13 +1,30 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import { render, screen, fireEvent, waitFor, act, waitForElementToBeRemoved } from "@testing-library/react"
 import ChatPage from "../page"
 import { streamChatMessage } from "@/lib/api"
 
 // Mock the API module
-jest.mock("@/lib/api", () => ({
-  streamChatMessage: jest.fn(),
-}))
+jest.mock("@/lib/api", () => {
+  class MockApiError extends Error {
+    constructor(message: string, public status: number, public request_id?: string) {
+      super(message);
+      this.name = "ApiError";
+    }
+  }
+  return {
+    streamChatMessage: jest.fn(),
+    ApiError: MockApiError,
+  }
+})
 
 const mockStream = streamChatMessage as jest.Mock
+// Import ApiError for use in tests
+let ApiError: typeof import("@/lib/api").ApiError
+beforeEach(() => {
+  // Get the actual ApiError class from the mock
+  const apiModule = require("@/lib/api")
+  ApiError = apiModule.ApiError
+  jest.clearAllMocks()
+})
 
 // Mock scrollIntoView
 window.HTMLElement.prototype.scrollIntoView = jest.fn()
@@ -19,32 +36,41 @@ describe("ChatPage", () => {
 
   it("renders chat interface", () => {
     render(<ChatPage />)
-    expect(screen.getByPlaceholderText("Ask about properties, market trends, or investment advice...")).toBeInTheDocument()
+    expect(screen.getByPlaceholderText("Type your question here to get started...")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /send message/i })).toBeInTheDocument()
   })
 
   it("displays initial greeting", () => {
     render(<ChatPage />)
-    expect(screen.getByText("Hello! I'm your AI Real Estate Assistant. How can I help you find your dream property today?")).toBeInTheDocument()
+    expect(screen.getByText("AI Real Estate Assistant")).toBeInTheDocument()
+    expect(screen.getByText(/Ask me anything about properties/)).toBeInTheDocument()
   })
 
   it("handles message submission", async () => {
-    mockStream.mockImplementation(async (_req, onChunk, onStart) => {
+    mockStream.mockImplementation(async (_req, onChunk, onStart, onMeta) => {
       onStart?.({ requestId: "req-1" })
+      await new Promise(resolve => setTimeout(resolve, 0))
       onChunk("This is a real API response")
+      await new Promise(resolve => setTimeout(resolve, 0))
+      onMeta?.({})
+      return Promise.resolve()
     })
 
     render(<ChatPage />)
-    
-    const input = screen.getByPlaceholderText("Ask about properties, market trends, or investment advice...")
+
+    const input = screen.getByPlaceholderText("Type your question here to get started...")
     const sendButton = screen.getByRole("button", { name: /send message/i })
 
-    fireEvent.change(input, { target: { value: "Find me a house" } })
-    fireEvent.click(sendButton)
+    await act(async () => {
+      fireEvent.change(input, { target: { value: "Find me a house" } })
+      fireEvent.click(sendButton)
+    })
 
-    // User message should appear immediately
-    expect(screen.getByText("Find me a house")).toBeInTheDocument()
-    
+    // Wait for user message to appear (state update may be batched)
+    await waitFor(() => {
+      expect(screen.getByText("Find me a house")).toBeInTheDocument()
+    })
+
     // Input should be cleared
     expect(input).toHaveValue("")
 
@@ -65,35 +91,36 @@ describe("ChatPage", () => {
     )
 
     render(<ChatPage />)
-    
-    const input = screen.getByPlaceholderText("Ask about properties, market trends, or investment advice...")
+
+    const input = screen.getByPlaceholderText("Type your question here to get started...")
     const sendButton = screen.getByRole("button", { name: /send message/i })
 
     fireEvent.change(input, { target: { value: "Hello" } })
     fireEvent.click(sendButton)
 
-    expect(screen.getByLabelText("Loading")).toBeInTheDocument()
+    expect(screen.getByLabelText("Assistant is thinking")).toBeInTheDocument()
     expect(sendButton).toBeDisabled()
-    
+
     await waitFor(() => {
-      expect(screen.queryByLabelText("Loading")).not.toBeInTheDocument()
+      expect(screen.queryByLabelText("Assistant is thinking")).not.toBeInTheDocument()
     })
   })
 
   it("handles error state", async () => {
     const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
-    mockStream.mockRejectedValueOnce(new Error("Failed to start stream (request_id=req-xyz)"))
+    const apiModule = require("@/lib/api")
+    mockStream.mockRejectedValueOnce(new apiModule.ApiError("Failed to start stream", 500, "req-xyz"))
 
     render(<ChatPage />)
-    
-    const input = screen.getByPlaceholderText("Ask about properties, market trends, or investment advice...")
+
+    const input = screen.getByPlaceholderText("Type your question here to get started...")
     const sendButton = screen.getByRole("button", { name: /send message/i })
 
     fireEvent.change(input, { target: { value: "Error" } })
     fireEvent.click(sendButton)
 
     await waitFor(() => {
-      expect(screen.getByText("I apologize, but I encountered an error. Please try again.")).toBeInTheDocument()
+      expect(screen.getByText("I apologize, but I encountered an error: Failed to start stream. Please try again.")).toBeInTheDocument()
     })
     expect(screen.getByText("request_id=req-xyz")).toBeInTheDocument()
     expect(warnSpy).not.toHaveBeenCalled()
@@ -102,15 +129,20 @@ describe("ChatPage", () => {
 
   it("shows retry button and retries stream", async () => {
     const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+    const apiModule = require("@/lib/api")
     mockStream
-      .mockRejectedValueOnce(new Error("Failed to start stream (request_id=req-123)"))
-      .mockImplementationOnce(async (_req, onChunk) => {
+      .mockRejectedValueOnce(new apiModule.ApiError("Failed to start stream", 500, "req-123"))
+      .mockImplementationOnce(async (_req, onChunk, _onStart, onMeta) => {
+        await new Promise(resolve => setTimeout(resolve, 0))
         onChunk("Recovered response")
+        await new Promise(resolve => setTimeout(resolve, 0))
+        onMeta?.({})
+        return Promise.resolve()
       })
 
     render(<ChatPage />)
 
-    const input = screen.getByPlaceholderText("Ask about properties, market trends, or investment advice...")
+    const input = screen.getByPlaceholderText("Type your question here to get started...")
     const sendButton = screen.getByRole("button", { name: /send message/i })
 
     fireEvent.change(input, { target: { value: "Retry test" } })
@@ -132,17 +164,20 @@ describe("ChatPage", () => {
 
   it("renders sources when provided by stream metadata", async () => {
     mockStream.mockImplementation(async (_req, onChunk, _onStart, onMeta) => {
+      await new Promise(resolve => setTimeout(resolve, 0))
       onChunk("Answer")
+      await new Promise(resolve => setTimeout(resolve, 0))
       onMeta?.({
         sessionId: "sid-1",
         sources: [{ content: "Doc", metadata: { id: "1" } }],
         sourcesTruncated: true,
       })
+      return Promise.resolve()
     })
 
     render(<ChatPage />)
 
-    const input = screen.getByPlaceholderText("Ask about properties, market trends, or investment advice...")
+    const input = screen.getByPlaceholderText("Type your question here to get started...")
     const sendButton = screen.getByRole("button", { name: /send message/i })
 
     fireEvent.change(input, { target: { value: "Show sources" } })
