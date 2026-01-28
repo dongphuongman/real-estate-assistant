@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -68,6 +69,16 @@ def main(argv: list[str] | None = None) -> int:
         default=2_000_000,
         help="Max bytes to read per file (default: 2000000).",
     )
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Scan the entire repository, ignoring any provided file paths.",
+    )
+    parser.add_argument(
+        "paths",
+        nargs="*",
+        help="Optional file paths to scan (relative or absolute). If omitted, scans the repository.",
+    )
     args = parser.parse_args(argv)
 
     root = args.root.resolve()
@@ -92,26 +103,49 @@ def main(argv: list[str] | None = None) -> int:
         "tests/unit/test_forbidden_tokens_check.py",
     }
 
+    scan_all = bool(args.all) or os.environ.get(
+        "FORBIDDEN_TOKENS_SCAN_ALL", ""
+    ).strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+    def scan_file(file_path: Path) -> list[TokenMatch]:
+        try:
+            resolved = file_path.resolve()
+        except OSError:
+            resolved = file_path
+        try:
+            rel = resolved.relative_to(root).as_posix()
+        except ValueError:
+            rel = str(resolved)
+
+        if rel in ignore_paths:
+            return []
+
+        return _scan_file_for_tokens(
+            file_path=resolved,
+            relative_path=rel,
+            tokens=tokens,
+            max_bytes=args.max_bytes,
+        )
+
     all_matches: list[TokenMatch] = []
-    for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = [d for d in dirnames if d not in ignore_dir_names]
-        for filename in filenames:
-            file_path = Path(dirpath) / filename
-            try:
-                rel = file_path.relative_to(root).as_posix()
-            except ValueError:
-                rel = str(file_path)
-
-            if rel in ignore_paths:
+    if scan_all or not args.paths:
+        for dirpath, dirnames, filenames in os.walk(root):
+            dirnames[:] = [d for d in dirnames if d not in ignore_dir_names]
+            for filename in filenames:
+                all_matches.extend(scan_file(Path(dirpath) / filename))
+    else:
+        for raw_path in args.paths:
+            p = Path(raw_path)
+            if not p.is_absolute():
+                p = root / p
+            if not p.exists() or not p.is_file():
                 continue
-
-            matches = _scan_file_for_tokens(
-                file_path=file_path,
-                relative_path=rel,
-                tokens=tokens,
-                max_bytes=args.max_bytes,
-            )
-            all_matches.extend(matches)
+            all_matches.extend(scan_file(p))
 
     if all_matches:
         all_matches_sorted = sorted(
@@ -130,4 +164,4 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(main(sys.argv[1:]))

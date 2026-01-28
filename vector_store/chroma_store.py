@@ -72,7 +72,7 @@ class ChromaPropertyStore:
         self,
         persist_directory: Optional[str] = None,
         collection_name: str = "properties",
-        embedding_model: str = "BAAI/bge-small-en-v1.5"
+        embedding_model: str = "BAAI/bge-small-en-v1.5",
     ):
         """
         Initialize ChromaDB vector store.
@@ -123,8 +123,7 @@ class ChromaPropertyStore:
         try:
             is_windows = platform.system().lower() == "windows"
             force_fastembed = (
-                os.getenv("CHROMA_FORCE_FASTEMBED") == "1"
-                or os.getenv("FORCE_FASTEMBED") == "1"
+                os.getenv("CHROMA_FORCE_FASTEMBED") == "1" or os.getenv("FORCE_FASTEMBED") == "1"
             )
             if _FastEmbedEmbeddings is not None and not is_windows:
                 return cast(Embeddings, _FastEmbedEmbeddings(model_name=model_name))
@@ -140,8 +139,10 @@ class ChromaPropertyStore:
 
         try:
             from config import settings
+
             if settings.openai_api_key:
                 from langchain_openai import OpenAIEmbeddings
+
                 return cast(Embeddings, OpenAIEmbeddings())
         except Exception as e:
             logger.warning(f"OpenAI embeddings unavailable: {e}")
@@ -178,7 +179,7 @@ class ChromaPropertyStore:
                     )
                 except Exception as e:
                     logger.warning(f"Could not get collection stats: {e}")
-                
+
                 # Removed blocking ID loading loop for performance
                 return vector_store
             else:
@@ -188,8 +189,7 @@ class ChromaPropertyStore:
                     embedding_function=self.embeddings,
                 )
                 logger.info(
-                    "Using in-memory Chroma vector store "
-                    "(persistence disabled for this platform)"
+                    "Using in-memory Chroma vector store (persistence disabled for this platform)"
                 )
                 logger.warning("Persistent vector store unavailable; using in-memory store")
                 return vector_store
@@ -295,9 +295,11 @@ class ChromaPropertyStore:
             try:
                 if v is None:
                     return None
-                if isinstance(v, (str, int, float, bool)):
-                    if isinstance(v, float):
-                        return None if (pd.isna(v) or v != v) else float(v)
+                if isinstance(v, float):
+                    if pd.isna(v) or v != v:
+                        return None
+                    return float(v)
+                if isinstance(v, (str, int, bool)):
                     return v
                 if isinstance(v, (datetime, pd.Timestamp)):
                     return v.isoformat()
@@ -317,10 +319,7 @@ class ChromaPropertyStore:
 
         metadata = sanitized
 
-        return Document(
-            page_content=text,
-            metadata=metadata
-        )
+        return Document(page_content=text, metadata=metadata)
 
     def get_properties_by_ids(self, property_ids: List[str]) -> List[Document]:
         """
@@ -337,39 +336,30 @@ class ChromaPropertyStore:
             # Fallback to cache
             with self._cache_lock:
                 return [
-                    doc for doc in self._documents 
-                    if str(doc.metadata.get("id")) in property_ids
+                    doc for doc in self._documents if str(doc.metadata.get("id")) in property_ids
                 ]
 
         try:
             # Fetch from Chroma
             results = vector_store._collection.get(
-                ids=property_ids,
-                include=["documents", "metadatas"]
+                ids=property_ids, include=["documents", "metadatas"]
             )
-            
+
             documents = []
             if results and results["ids"]:
                 for i, _doc_id in enumerate(results["ids"]):
                     # Handle potential missing data
                     content = results["documents"][i] if results["documents"] else ""
                     metadata = results["metadatas"][i] if results["metadatas"] else {}
-                    
-                    documents.append(Document(
-                        page_content=content,
-                        metadata=metadata
-                    ))
-            
+
+                    documents.append(Document(page_content=content, metadata=metadata))
+
             return documents
         except Exception as e:
             logger.error(f"Error retrieving properties by IDs: {e}")
             return []
 
-    def add_properties(
-        self,
-        properties: List[Property],
-        batch_size: int = 100
-    ) -> int:
+    def add_properties(self, properties: List[Property], batch_size: int = 100) -> int:
         """
         Add properties to the vector store.
 
@@ -415,9 +405,9 @@ class ChromaPropertyStore:
         total_cached = 0
         total_indexed = 0
         for i in range(0, len(documents), batch_size):
-            batch = documents[i:i + batch_size]
-            batch_ids = [str(d.metadata.get("id", f"doc-{i+j}")) for j, d in enumerate(batch)]
-            
+            batch = documents[i : i + batch_size]
+            batch_ids = [str(d.metadata.get("id", f"doc-{i + j}")) for j, d in enumerate(batch)]
+
             with self._cache_lock:
                 for doc, doc_id in zip(batch, batch_ids, strict=False):
                     if doc_id and doc_id in self._doc_ids:
@@ -452,11 +442,11 @@ class ChromaPropertyStore:
                 # 2. Generate Embeddings (CPU/Network) - WITHOUT LOCK
                 texts = [d.page_content for d in batch]
                 metadatas = [d.metadata for d in batch]
-                
+
                 embeddings = None
                 if self.embeddings:
                     embeddings = self.embeddings.embed_documents(texts)
-                
+
                 # 3. Write to DB - WITH LOCK
                 with self._vector_lock:
                     if embeddings:
@@ -485,18 +475,18 @@ class ChromaPropertyStore:
                             ids=batch_ids,
                             embeddings=embeddings_for_chroma,
                             metadatas=cast(Any, metadatas_for_chroma),
-                            documents=texts
+                            documents=texts,
                         )
                     else:
                         # Fallback if no embeddings (rare)
                         vector_store.add_documents(batch, ids=batch_ids)
-                
+
                 # Update local cache for fallback search (if we want to keep it sync)
                 # Note: We don't load initial docs, so this cache is partial.
                 # Moved to before embedding to allow search during indexing
                 # with self._cache_lock:
                 #    self._documents.extend(batch)
-                    
+
                 total_indexed += len(batch)
                 logger.info(f"Added batch {i // batch_size + 1}: {len(batch)} properties")
 
@@ -566,47 +556,56 @@ class ChromaPropertyStore:
     def _build_chroma_filter(self, filters: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
         Build ChromaDB filter dictionary from user filters.
-        
+
         Args:
             filters: Dictionary of filters from QueryAnalysis or SearchCriteria
-            
+
         Returns:
             ChromaDB compatible filter dict or None
         """
         if not filters:
             return None
-            
+
         conditions = []
-        
-        # City (Case insensitive handled by query analyzer normalization, 
+
+        # City (Case insensitive handled by query analyzer normalization,
         # but Chroma is exact match. We rely on metadata being normalized)
         if "city" in filters:
             conditions.append({"city": filters["city"]})
-            
+
         # Price Range
         if "min_price" in filters:
             conditions.append({"price": {"$gte": float(filters["min_price"])}})
         if "max_price" in filters:
             conditions.append({"price": {"$lte": float(filters["max_price"])}})
-            
+
         # Rooms (treat as minimum)
         if "rooms" in filters:
             conditions.append({"rooms": {"$gte": float(filters["rooms"])}})
-            
+
         # Year Built
         if "year_built_min" in filters:
             conditions.append({"year_built": {"$gte": int(filters["year_built_min"])}})
         if "year_built_max" in filters:
             conditions.append({"year_built": {"$lte": int(filters["year_built_max"])}})
-            
+
         # Amenities (Booleans)
-        for key in ["has_parking", "has_garden", "has_pool", "has_elevator", 
-                   "has_garage", "has_bike_room", "is_furnished", "pets_allowed", "has_balcony"]:
+        for key in [
+            "has_parking",
+            "has_garden",
+            "has_pool",
+            "has_elevator",
+            "has_garage",
+            "has_bike_room",
+            "is_furnished",
+            "pets_allowed",
+            "has_balcony",
+        ]:
             if filters.get(key) is True:
                 conditions.append({key: True})
             elif filters.get(key) is False:
                 conditions.append({key: False})
-        
+
         # Energy Ratings
         if "energy_ratings" in filters and filters["energy_ratings"]:
             ratings = filters["energy_ratings"]
@@ -614,7 +613,7 @@ class ChromaPropertyStore:
                 conditions.append({"energy_cert": ratings[0]})
             else:
                 conditions.append({"energy_cert": {"$in": ratings}})
-                
+
         # Property Type
         if "property_type" in filters:
             ptype = filters["property_type"]
@@ -623,18 +622,14 @@ class ChromaPropertyStore:
 
         if not conditions:
             return None
-            
+
         if len(conditions) == 1:
             return conditions[0]
-            
+
         return {"$and": conditions}
 
     def search(
-        self,
-        query: str,
-        k: int = 5,
-        filter: Optional[Dict[str, Any]] = None,
-        **kwargs: Any
+        self, query: str, k: int = 5, filter: Optional[Dict[str, Any]] = None, **kwargs: Any
     ) -> List[tuple[Document, float]]:
         """
         Search for properties by semantic similarity.
@@ -659,17 +654,13 @@ class ChromaPropertyStore:
                     # Check if it needs conversion (heuristic)
                     # Keys may be simple fields with simple values; range keys require conversion
                     if any(
-                        k in ["min_price", "max_price", "year_built_min"]
-                        for k in filter.keys()
+                        k in ["min_price", "max_price", "year_built_min"] for k in filter.keys()
                     ):
                         chroma_filter = self._build_chroma_filter(filter)
-                
+
                 with self._vector_lock:
                     results = vector_store.similarity_search_with_score(
-                        query=query,
-                        k=k,
-                        filter=chroma_filter,
-                        **kwargs
+                        query=query, k=k, filter=chroma_filter, **kwargs
                     )
                     return results
             else:
@@ -681,7 +672,7 @@ class ChromaPropertyStore:
                 scored: List[tuple[Document, float]] = []
                 with self._cache_lock:
                     docs = list(self._documents)
-                
+
                 if not docs:
                     # If we have a vector store but search failed, maybe it's empty or locked?
                     # If we have no docs in memory, we can't do anything.
@@ -691,12 +682,10 @@ class ChromaPropertyStore:
                 # Apply filters manually for fallback
                 filtered_docs = docs
                 if filter:
-                     # Basic manual filtering (simplified)
+                    # Basic manual filtering (simplified)
                     if "city" in filter:
                         filtered_docs = [
-                            d
-                            for d in filtered_docs
-                            if d.metadata.get("city") == filter["city"]
+                            d for d in filtered_docs if d.metadata.get("city") == filter["city"]
                         ]
                     # ... add more manual filters if needed, but this is fallback
 
@@ -719,19 +708,19 @@ class ChromaPropertyStore:
         lat_delta = radius_km / 111.32
         min_lat = lat - lat_delta
         max_lat = lat + lat_delta
-        
+
         # 1 deg lon ~ 111.32 * cos(lat) km
         # Clamp lat to -89/89 to avoid division by zero or extreme distortion
         clamped_lat = max(min(lat, 89.0), -89.0)
         lon_delta = radius_km / (111.32 * math.cos(math.radians(clamped_lat)))
         min_lon = lon - lon_delta
         max_lon = lon + lon_delta
-        
+
         return [
             {"lat": {"$gte": min_lat}},
             {"lat": {"$lte": max_lat}},
             {"lon": {"$gte": min_lon}},
-            {"lon": {"$lte": max_lon}}
+            {"lon": {"$lte": max_lon}},
         ]
 
     def _build_bbox_filter(
@@ -757,9 +746,9 @@ class ChromaPropertyStore:
         R = 6371  # Earth radius in km
         dlat = math.radians(lat2 - lat1)
         dlon = math.radians(lon2 - lon1)
-        a = math.sin(dlat / 2) * math.sin(dlat / 2) + \
-            math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * \
-            math.sin(dlon / 2) * math.sin(dlon / 2)
+        a = math.sin(dlat / 2) * math.sin(dlat / 2) + math.cos(math.radians(lat1)) * math.cos(
+            math.radians(lat2)
+        ) * math.sin(dlon / 2) * math.sin(dlon / 2)
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
         return R * c
 
@@ -777,11 +766,11 @@ class ChromaPropertyStore:
         min_lon: Optional[float] = None,
         max_lon: Optional[float] = None,
         sort_by: Optional[str] = None,
-        sort_order: Optional[str] = "desc"
+        sort_order: Optional[str] = "desc",
     ) -> List[tuple[Document, float]]:
         """
         Perform hybrid search (Vector + Keyword Rescoring) with filters, geo, and sorting.
-        
+
         Args:
             query: Search query
             filters: Metadata filters
@@ -792,7 +781,7 @@ class ChromaPropertyStore:
             radius_km: Radius in km
             sort_by: Field to sort by (e.g. 'price', 'price_per_sqm')
             sort_order: 'asc' or 'desc'
-            
+
         Returns:
             List of (Document, combined_score) tuples
         """
@@ -801,7 +790,7 @@ class ChromaPropertyStore:
         # Convert simple dict to Chroma filter if needed
         if filters and not any(key.startswith("$") for key in filters.keys()):
             final_filter = self._build_chroma_filter(filters)
-            
+
         # Add Geo Bounding Box
         if lat is not None and lon is not None and radius_km is not None:
             geo_conditions = self._build_geo_filter(lat, lon, radius_km)
@@ -826,15 +815,15 @@ class ChromaPropertyStore:
         # 1. Get initial results from Vector Store
         # Fetch more if sorting or geo-filtering to allow for post-processing
         fetch_k = k * 5 if (sort_by or radius_km) else k * 3
-        
+
         # If query is empty, we can't use similarity_search efficiently with relevance.
         # But we rely on 'search' method fallback or behavior.
         # If 'search' handles empty query by returning cached docs or random, we use that.
         vector_results = self.search(query, k=fetch_k, filter=final_filter)
-        
+
         if not vector_results:
             return []
-            
+
         # Post-filter for precise Geo Radius (Bounding box is square, we want circle)
         if lat is not None and lon is not None and radius_km is not None:
             filtered_results = []
@@ -846,10 +835,10 @@ class ChromaPropertyStore:
                     if dist <= radius_km:
                         filtered_results.append((doc, score))
             vector_results = filtered_results
-            
+
         if not vector_results:
             return []
-            
+
         if not query.strip():
             # If no query, we just return results (sorted if needed)
             # Assign dummy score if needed, or keep vector score (which might be meaningless)
@@ -860,7 +849,7 @@ class ChromaPropertyStore:
             docs = [doc for doc, _ in vector_results]
             texts = [doc.page_content for doc in docs]
             tokenized_query = query.lower().split()
-            
+
             bm25_scores = []
             if BM25Okapi:
                 try:
@@ -888,34 +877,35 @@ class ChromaPropertyStore:
                 max_s = max(bm25_scores) if bm25_scores else 0
                 if max_s > 0:
                     bm25_scores = [s / max_s for s in bm25_scores]
-                    
+
             # 3. Combine Scores
             combined_results = []
             for i, (doc, vec_score) in enumerate(vector_results):
-                sim_score = 1.0 / (1.0 + vec_score) 
+                sim_score = 1.0 / (1.0 + vec_score)
                 keyword_score = bm25_scores[i] if i < len(bm25_scores) else 0.0
                 final_score = (alpha * sim_score) + ((1 - alpha) * keyword_score)
                 combined_results.append((doc, final_score))
-            
+
         # 4. Sort and return top K
         if sort_by and sort_by != "relevance":
-            reverse = (sort_order == "desc")
+            reverse = sort_order == "desc"
+
             def get_sort_val(item: tuple[Document, float]) -> float:
                 doc = item[0]
                 val = doc.metadata.get(sort_by)
                 # Handle None/Missing: put at end
                 if val is None:
                     # None values are always placed last
-                    return float('-inf') if reverse else float('inf') 
+                    return float("-inf") if reverse else float("inf")
                 try:
                     return float(val)
                 except (TypeError, ValueError):
-                    return float('-inf') if reverse else float('inf')
-            
+                    return float("-inf") if reverse else float("inf")
+
             combined_results.sort(key=get_sort_val, reverse=reverse)
         else:
             combined_results.sort(key=lambda x: x[1], reverse=True)
-            
+
         return combined_results[:k]
 
     def search_by_metadata(
@@ -925,7 +915,7 @@ class ChromaPropertyStore:
         max_price: Optional[float] = None,
         min_rooms: Optional[float] = None,
         has_parking: Optional[bool] = None,
-        k: int = 5
+        k: int = 5,
     ) -> List[Document]:
         """
         Search properties by metadata filters.
@@ -992,7 +982,7 @@ class ChromaPropertyStore:
             results = vector_store.similarity_search(
                 query="",  # Empty query for metadata-only search
                 k=k * 5,  # Retrieve more for filtering
-                filter=filter_dict if filter_dict else None
+                filter=filter_dict if filter_dict else None,
             )
 
         # Apply additional filters
@@ -1003,7 +993,7 @@ class ChromaPropertyStore:
             # Price filters
             if min_price is not None and metadata.get("price", 0) < min_price:
                 continue
-            if max_price is not None and metadata.get("price", float('inf')) > max_price:
+            if max_price is not None and metadata.get("price", float("inf")) > max_price:
                 continue
 
             # Rooms filter
@@ -1018,11 +1008,7 @@ class ChromaPropertyStore:
         return filtered
 
     def get_retriever(
-        self,
-        search_type: str = "mmr",
-        k: int = 5,
-        fetch_k: int = 20,
-        **kwargs: Any
+        self, search_type: str = "mmr", k: int = 5, fetch_k: int = 20, **kwargs: Any
     ) -> BaseRetriever:
         """
         Get a LangChain retriever for this vector store.
@@ -1039,21 +1025,18 @@ class ChromaPropertyStore:
         stats = self.get_stats()
         # Use DB retriever only if we actually have documents in the DB
         db_count = stats.get("db_document_count", 0)
-        
+
         vector_store = self._get_vector_store()
         if vector_store is not None and db_count > 0:
             return vector_store.as_retriever(
-                search_type=search_type,
-                search_kwargs={
-                    "k": k,
-                    "fetch_k": fetch_k,
-                    **kwargs
-                }
+                search_type=search_type, search_kwargs={"k": k, "fetch_k": fetch_k, **kwargs}
             )
         else:
+
             class FallbackRetriever(BaseRetriever):
                 docs: List[Document]
                 kk: int
+
                 class Config:
                     arbitrary_types_allowed = True
 
@@ -1071,7 +1054,8 @@ class ChromaPropertyStore:
                         if s > 0:
                             scored.append((d, s))
                     scored.sort(key=lambda x: x[1], reverse=True)
-                    return [d for d, _s in scored[:self.kk]]
+                    return [d for d, _s in scored[: self.kk]]
+
             with self._cache_lock:
                 docs = list(self._documents)
             return FallbackRetriever(docs=docs, kk=k)
@@ -1106,7 +1090,7 @@ class ChromaPropertyStore:
         try:
             db_count = 0
             cache_count = 0
-            
+
             with self._cache_lock:
                 cache_count = len(self._documents)
 
@@ -1117,7 +1101,7 @@ class ChromaPropertyStore:
                         db_count = vector_store._collection.count()
                     except Exception:
                         pass
-            
+
             count = db_count if db_count > 0 else cache_count
 
             emb_cls = type(self.embeddings).__name__ if self.embeddings is not None else "None"
@@ -1155,9 +1139,7 @@ class ChromaPropertyStore:
             if vector_store is None:
                 return
             with self._vector_lock:
-                vector_store.delete(
-                    filter={"source_url": source_url}
-                )
+                vector_store.delete(filter={"source_url": source_url})
             logger.info(f"Deleted properties from source: {source_url}")
 
         except Exception as e:

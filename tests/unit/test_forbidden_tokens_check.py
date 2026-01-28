@@ -23,3 +23,20 @@ def test_forbidden_tokens_check_ignores_node_modules(tmp_path: Path) -> None:
     node_modules.mkdir(parents=True)
     (node_modules / "c.txt").write_text("NEXT_PUBLIC_API_KEY\n", encoding="utf-8")
     assert forbidden_tokens_main(["--root", str(tmp_path)]) == 0
+
+
+def test_forbidden_tokens_check_scans_only_selected_paths(tmp_path: Path) -> None:
+    ok = tmp_path / "ok.txt"
+    bad = tmp_path / "bad.txt"
+    ok.write_text("hello\n", encoding="utf-8")
+    bad.write_text("NEXT_PUBLIC_API_KEY\n", encoding="utf-8")
+    assert forbidden_tokens_main(["--root", str(tmp_path), str(ok)]) == 0
+
+
+def test_forbidden_tokens_check_all_overrides_paths(tmp_path: Path) -> None:
+    ok = tmp_path / "ok.txt"
+    bad = tmp_path / "bad.txt"
+    ok.write_text("hello\n", encoding="utf-8")
+    bad.write_text("NEXT_PUBLIC_API_KEY\n", encoding="utf-8")
+    with pytest.raises(SystemExit):
+        forbidden_tokens_main(["--root", str(tmp_path), "--all", str(ok)])

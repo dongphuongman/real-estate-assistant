@@ -138,8 +138,6 @@ def test_client_id_from_api_key_handles_none():
 
 
 def test_add_observability_rate_limit_disabled_when_setting_false(monkeypatch):
-    import os
-
     monkeypatch.setenv("API_RATE_LIMIT_ENABLED", "false")
     app = FastAPI()
     logger = logging.getLogger("test")
@@ -166,4 +164,3 @@ def test_add_observability_sets_request_id_header():
     client = TestClient(app)
     r = client.get("/ping")
     assert "x-request-id" in r.headers
-

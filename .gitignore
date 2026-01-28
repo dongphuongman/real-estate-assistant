@@ -86,6 +86,8 @@ coverage.xml
 cover/
 artifacts/bandit.json
 artifacts/pip-audit.json
+artifacts/validation_report.md
+artifacts/logs/
 
 # Translations
 *.mo
@@ -211,7 +213,7 @@ vercel.json
 
 # Temporary files
 tmp/
- 
+
 # Private non-committed materials
 private/
 temp/
