@@ -59,18 +59,18 @@ jobs:
 
       - name: Forbidden token scan
         run: |
-          python scripts/forbidden_tokens_check.py
+          python scripts/security/forbidden_tokens_check.py
 
       - name: OpenAPI schema drift check
         run: |
-          python scripts/export_openapi.py --check
+          python scripts/docs/export_openapi.py --check
 
       - name: API reference (generated) drift check
         run: |
-          python scripts/generate_api_reference.py --check
+          python scripts/docs/generate_api_reference.py --check
       - name: API reference (full) drift check
         run: |
-          python scripts/update_api_reference_full.py --check
+          python scripts/docs/update_api_reference_full.py --check
 
       - name: Run unit tests with coverage (pytest)
         run: |
@@ -97,16 +97,16 @@ jobs:
       - name: "Coverage gate (unit: diff)"
         if: ${{ github.event_name == 'pull_request' }}
         run: |
-          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --base-ref origin/${{ github.base_ref }} --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
+          python scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --base-ref origin/${{ github.base_ref }} --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
       - name: "Coverage gate (unit: diff fallback)"
         if: ${{ github.event_name != 'pull_request' }}
         run: |
-          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
+          python scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
       - name: "Coverage gate (unit: critical)"
         run: |
-          python scripts/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include 'api/*.py' --include 'api/routers/*.py' --include 'rules/*.py' --include 'models/provider_factory.py' --include 'models/user_model_preferences.py' --include 'config/*.py'
+          python scripts/ci/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include 'api/*.py' --include 'api/routers/*.py' --include 'rules/*.py' --include 'models/provider_factory.py' --include 'models/user_model_preferences.py' --include 'config/*.py'
 
       - name: Upload backend coverage (unit)
         uses: actions/upload-artifact@v4
@@ -139,12 +139,12 @@ jobs:
       - name: "Coverage gate (integration: diff)"
         if: ${{ github.event_name == 'pull_request' }}
         run: |
-          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --base-ref origin/${{ github.base_ref }} --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
+          python scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --base-ref origin/${{ github.base_ref }} --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
       - name: "Coverage gate (integration: diff fallback)"
         if: ${{ github.event_name != 'pull_request' }}
         run: |
-          python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
+          python scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
       - name: Upload backend coverage (integration)
         if: always()
@@ -216,7 +216,7 @@ jobs:
           docker compose version
           set -e
           for attempt in 1 2; do
-            python scripts/compose_smoke.py --ci --timeout-seconds 420 && break
+            python scripts/ci/compose_smoke.py --ci --timeout-seconds 420 && break
             if [ $attempt -eq 2 ]; then exit 1; fi
             echo "Compose smoke failed. Retrying..."
           done

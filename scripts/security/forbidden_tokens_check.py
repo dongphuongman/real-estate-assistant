@@ -46,7 +46,7 @@ def _scan_file_for_tokens(
 
 
 def main(argv: list[str] | None = None) -> int:
-    project_root = Path(__file__).resolve().parents[1]
+    project_root = Path(__file__).resolve().parents[2]
 
     parser = argparse.ArgumentParser(
         description="Fail if any forbidden tokens appear in the repository.",
@@ -99,7 +99,7 @@ def main(argv: list[str] | None = None) -> int:
     ignore_paths = {
         "docs/openapi.json",
         "frontend/package-lock.json",
-        "scripts/forbidden_tokens_check.py",
+        "scripts/security/forbidden_tokens_check.py",
         "tests/unit/test_forbidden_tokens_check.py",
     }
 

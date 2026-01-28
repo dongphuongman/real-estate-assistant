@@ -1,6 +1,6 @@
 param(
   [string]$TraeMcpPath = (Join-Path $env:APPDATA "Trae\User\mcp.json"),
-  [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path,
+  [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path,
   [switch]$WhatIf
 )
 

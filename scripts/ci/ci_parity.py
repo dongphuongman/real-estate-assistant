@@ -30,19 +30,19 @@ def build_rule_engine_check_cmd(python_exe: str) -> list[str]:
 
 
 def build_forbidden_tokens_cmd(python_exe: str) -> list[str]:
-    return [python_exe, "scripts/forbidden_tokens_check.py"]
+    return [python_exe, "scripts/security/forbidden_tokens_check.py"]
 
 
 def build_openapi_drift_cmd(python_exe: str) -> list[str]:
-    return [python_exe, "scripts/export_openapi.py", "--check"]
+    return [python_exe, "scripts/docs/export_openapi.py", "--check"]
 
 
 def build_api_reference_generated_drift_cmd(python_exe: str) -> list[str]:
-    return [python_exe, "scripts/generate_api_reference.py", "--check"]
+    return [python_exe, "scripts/docs/generate_api_reference.py", "--check"]
 
 
 def build_api_reference_full_drift_cmd(python_exe: str) -> list[str]:
-    return [python_exe, "scripts/update_api_reference_full.py", "--check"]
+    return [python_exe, "scripts/docs/update_api_reference_full.py", "--check"]
 
 
 def build_bandit_cmd(python_exe: str) -> list[str]:
@@ -118,7 +118,7 @@ def build_integration_tests_cmd(python_exe: str) -> list[str]:
 def build_unit_diff_coverage_gate_cmd(python_exe: str, *, base_ref: str | None) -> list[str]:
     cmd = [
         python_exe,
-        "scripts/coverage_gate.py",
+        "scripts/ci/coverage_gate.py",
         "diff",
         "--coverage-xml",
         "coverage.xml",
@@ -139,7 +139,7 @@ def build_unit_diff_coverage_gate_cmd(python_exe: str, *, base_ref: str | None) 
 def build_unit_critical_coverage_gate_cmd(python_exe: str) -> list[str]:
     return [
         python_exe,
-        "scripts/coverage_gate.py",
+        "scripts/ci/coverage_gate.py",
         "critical",
         "--coverage-xml",
         "coverage.xml",
@@ -163,7 +163,7 @@ def build_unit_critical_coverage_gate_cmd(python_exe: str) -> list[str]:
 def build_integration_diff_coverage_gate_cmd(python_exe: str, *, base_ref: str | None) -> list[str]:
     cmd = [
         python_exe,
-        "scripts/coverage_gate.py",
+        "scripts/ci/coverage_gate.py",
         "diff",
         "--coverage-xml",
         "coverage.xml",
@@ -249,8 +249,10 @@ def build_commands(cfg: ParityConfig) -> list[list[str]]:
 
 def main(argv: Sequence[str]) -> int:
     cfg = parse_args(argv)
-    if not Path("scripts/coverage_gate.py").exists():
-        raise FileNotFoundError("Expected to run from repository root (scripts/coverage_gate.py missing).")
+    if not Path("scripts/ci/coverage_gate.py").exists():
+        raise FileNotFoundError(
+            "Expected to run from repository root (scripts/ci/coverage_gate.py missing)."
+        )
 
     cmds = build_commands(cfg)
 

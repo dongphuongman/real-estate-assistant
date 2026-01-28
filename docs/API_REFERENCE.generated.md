@@ -7,8 +7,8 @@ This file is generated from the committed OpenAPI schema snapshot (`docs/openapi
 To regenerate:
 
 ```powershell
-python scripts\export_openapi.py
-python scripts\generate_api_reference.py
+python scripts\docs\export_openapi.py
+python scripts\docs\generate_api_reference.py
 ```
 
 ---

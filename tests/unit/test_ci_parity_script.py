@@ -4,7 +4,7 @@ import sys
 
 import pytest
 
-from scripts.ci_parity import (
+from scripts.ci.ci_parity import (
     ParityConfig,
     build_commands,
     build_integration_diff_coverage_gate_cmd,
@@ -69,8 +69,10 @@ def test_build_commands_includes_security_audits() -> None:
     assert "pip_audit" in flat
 
 
-def test_main_dry_run_prints_security_steps(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
-    from scripts import ci_parity
+def test_main_dry_run_prints_security_steps(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    from scripts.ci import ci_parity
 
     monkeypatch.setattr(ci_parity.Path, "exists", lambda _self: True)
     rc = ci_parity.main(["--dry-run", "--unit-only"])
@@ -82,12 +84,12 @@ def test_main_dry_run_prints_security_steps(monkeypatch: pytest.MonkeyPatch, cap
 
 
 def test_main_raises_when_not_run_from_repo_root(monkeypatch: pytest.MonkeyPatch) -> None:
-    from scripts import ci_parity
+    from scripts.ci import ci_parity
 
     original_exists = ci_parity.Path.exists
 
     def fake_exists(self: ci_parity.Path) -> bool:
-        if str(self).replace("\\", "/") == "scripts/coverage_gate.py":
+        if str(self).replace("\\", "/") == "scripts/ci/coverage_gate.py":
             return False
         return original_exists(self)
 

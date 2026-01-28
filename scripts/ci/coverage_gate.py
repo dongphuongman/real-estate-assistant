@@ -46,7 +46,9 @@ def load_coverage_xml(path: Path) -> Dict[str, FileCoverage]:
 
     result: Dict[str, FileCoverage] = {}
     for filename, all_lines in files.items():
-        result[filename] = FileCoverage(covered_lines=covered.get(filename, set()), all_lines=all_lines)
+        result[filename] = FileCoverage(
+            covered_lines=covered.get(filename, set()), all_lines=all_lines
+        )
     return result
 
 
@@ -163,7 +165,9 @@ def _print_summary(label: str, covered: int, total: int, percent: float) -> None
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Coverage gates for changed lines and critical paths.")
+    parser = argparse.ArgumentParser(
+        description="Coverage gates for changed lines and critical paths."
+    )
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     diff_parser = sub.add_parser("diff", help="Enforce minimum coverage on changed lines.")
@@ -173,7 +177,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     diff_parser.add_argument("--exclude", action="append", default=[])
     diff_parser.add_argument("--min-coverage", type=float, default=90.0)
 
-    crit_parser = sub.add_parser("critical", help="Enforce minimum coverage on a critical path subset.")
+    crit_parser = sub.add_parser(
+        "critical", help="Enforce minimum coverage on a critical path subset."
+    )
     crit_parser.add_argument("--coverage-xml", type=Path, default=Path("coverage.xml"))
     crit_parser.add_argument("--include", action="append", default=[])
     crit_parser.add_argument("--exclude", action="append", default=[])
@@ -193,7 +199,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         if include_globs or exclude_globs:
             filtered: Dict[str, Set[int]] = {}
             for filename, lines in changed_lines.items():
-                if include_globs and not any(fnmatch.fnmatch(filename, pat) for pat in include_globs):
+                if include_globs and not any(
+                    fnmatch.fnmatch(filename, pat) for pat in include_globs
+                ):
                     continue
                 if exclude_globs and any(fnmatch.fnmatch(filename, pat) for pat in exclude_globs):
                     continue

@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 def main(argv: list[str] | None = None) -> int:
-    project_root = Path(__file__).resolve().parents[1]
+    project_root = Path(__file__).resolve().parents[2]
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
 
@@ -53,7 +53,7 @@ def main(argv: list[str] | None = None) -> int:
         if existing != updated:
             raise SystemExit(
                 "API_REFERENCE.md endpoints drift detected. Regenerate with: "
-                "python scripts\\export_openapi.py && python scripts\\update_api_reference_full.py"
+                "python scripts\\docs\\export_openapi.py && python scripts\\docs\\update_api_reference_full.py"
             )
         return 0
 

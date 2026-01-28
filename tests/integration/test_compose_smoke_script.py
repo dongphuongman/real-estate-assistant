@@ -9,7 +9,7 @@ def test_compose_smoke_script_dry_run(tmp_path: Path):
     compose_file = tmp_path / "docker-compose.yml"
     compose_file.write_text("version: '3.8'\nservices: {}\n", encoding="utf-8")
 
-    script_path = Path(__file__).resolve().parents[2] / "scripts" / "compose_smoke.py"
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "ci" / "compose_smoke.py"
     result = subprocess.run(
         [
             sys.executable,

@@ -33,7 +33,7 @@ def export_api_reference_markdown(
         if existing_text != output_text:
             raise SystemExit(
                 "Generated API reference drift detected. Regenerate with: "
-                "python scripts\\generate_api_reference.py"
+                "python scripts\\docs\\generate_api_reference.py"
             )
         return
 
@@ -55,8 +55,8 @@ def serialize_api_reference_markdown(schema: dict[str, Any]) -> str:
         "To regenerate:",
         "",
         "```powershell",
-        "python scripts\\export_openapi.py",
-        "python scripts\\generate_api_reference.py",
+        "python scripts\\docs\\export_openapi.py",
+        "python scripts\\docs\\generate_api_reference.py",
         "```",
         "",
         "---",

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.forbidden_tokens_check import main as forbidden_tokens_main
+from scripts.security.forbidden_tokens_check import main as forbidden_tokens_main
 
 
 def test_forbidden_tokens_check_passes_when_no_tokens_present(tmp_path: Path) -> None:

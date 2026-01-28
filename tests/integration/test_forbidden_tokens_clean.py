@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts.forbidden_tokens_check import main as forbidden_tokens_main
+from scripts.security.forbidden_tokens_check import main as forbidden_tokens_main
 
 
 def test_no_forbidden_tokens_in_repo() -> None:

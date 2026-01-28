@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from scripts.compose_smoke import (
+from scripts.ci.compose_smoke import (
     SmokeConfig,
     build_compose_base_command,
     build_compose_down_command,
@@ -93,12 +93,16 @@ def test_parse_args_ci_overrides_defaults(tmp_path):
 
 
 def test_get_default_api_access_key_from_env_prefers_primary_key():
-    with patch.dict(os.environ, {"API_ACCESS_KEY": " primary ", "API_ACCESS_KEYS": "rot1,rot2"}, clear=False):
+    with patch.dict(
+        os.environ, {"API_ACCESS_KEY": " primary ", "API_ACCESS_KEYS": "rot1,rot2"}, clear=False
+    ):
         assert get_default_api_access_key_from_env() == "primary"
 
 
 def test_get_default_api_access_key_from_env_falls_back_to_rotated_keys():
-    with patch.dict(os.environ, {"API_ACCESS_KEY": "   ", "API_ACCESS_KEYS": " rot1 , rot2 "}, clear=False):
+    with patch.dict(
+        os.environ, {"API_ACCESS_KEY": "   ", "API_ACCESS_KEYS": " rot1 , rot2 "}, clear=False
+    ):
         assert get_default_api_access_key_from_env() == "rot1"
 
 
@@ -125,9 +129,11 @@ def test_main_ci_runs_up_waits_and_tears_down(tmp_path):
     compose_file = tmp_path / "docker-compose.yml"
     compose_file.write_text("version: '3.8'\nservices: {}\n", encoding="utf-8")
 
-    with patch.dict(os.environ, {"API_ACCESS_KEY": "ci-test-key"}, clear=False), patch(
-        "scripts.compose_smoke.run_command"
-    ) as run_command_mock, patch("scripts.compose_smoke.wait_for_http_ok") as wait_mock:
+    with (
+        patch.dict(os.environ, {"API_ACCESS_KEY": "ci-test-key"}, clear=False),
+        patch("scripts.ci.compose_smoke.run_command") as run_command_mock,
+        patch("scripts.ci.compose_smoke.wait_for_http_ok") as wait_mock,
+    ):
         rc = main(["--compose-file", str(compose_file), "--ci"])
 
     assert rc == 0
@@ -144,9 +150,11 @@ def test_main_ci_skips_verify_auth_when_api_key_missing(tmp_path):
     compose_file = tmp_path / "docker-compose.yml"
     compose_file.write_text("version: '3.8'\nservices: {}\n", encoding="utf-8")
 
-    with patch.dict(os.environ, {"API_ACCESS_KEY": "", "API_ACCESS_KEYS": ""}, clear=False), patch(
-        "scripts.compose_smoke.run_command"
-    ) as run_command_mock, patch("scripts.compose_smoke.wait_for_http_ok") as wait_mock:
+    with (
+        patch.dict(os.environ, {"API_ACCESS_KEY": "", "API_ACCESS_KEYS": ""}, clear=False),
+        patch("scripts.ci.compose_smoke.run_command") as run_command_mock,
+        patch("scripts.ci.compose_smoke.wait_for_http_ok") as wait_mock,
+    ):
         rc = main(["--compose-file", str(compose_file), "--ci"])
 
     assert rc == 0
@@ -158,9 +166,11 @@ def test_main_ci_uses_api_access_keys_when_primary_key_missing(tmp_path):
     compose_file = tmp_path / "docker-compose.yml"
     compose_file.write_text("version: '3.8'\nservices: {}\n", encoding="utf-8")
 
-    with patch.dict(os.environ, {"API_ACCESS_KEY": "", "API_ACCESS_KEYS": "k1,k2"}, clear=False), patch(
-        "scripts.compose_smoke.run_command"
-    ) as run_command_mock, patch("scripts.compose_smoke.wait_for_http_ok") as wait_mock:
+    with (
+        patch.dict(os.environ, {"API_ACCESS_KEY": "", "API_ACCESS_KEYS": "k1,k2"}, clear=False),
+        patch("scripts.ci.compose_smoke.run_command") as run_command_mock,
+        patch("scripts.ci.compose_smoke.wait_for_http_ok") as wait_mock,
+    ):
         rc = main(["--compose-file", str(compose_file), "--ci"])
 
     assert rc == 0
@@ -172,8 +182,9 @@ def test_main_ci_tears_down_on_wait_timeout(tmp_path):
     compose_file = tmp_path / "docker-compose.yml"
     compose_file.write_text("version: '3.8'\nservices: {}\n", encoding="utf-8")
 
-    with patch("scripts.compose_smoke.run_command") as run_command_mock, patch(
-        "scripts.compose_smoke.wait_for_http_ok", side_effect=TimeoutError("boom")
+    with (
+        patch("scripts.ci.compose_smoke.run_command") as run_command_mock,
+        patch("scripts.ci.compose_smoke.wait_for_http_ok", side_effect=TimeoutError("boom")),
     ):
         with pytest.raises(TimeoutError):
             main(["--compose-file", str(compose_file), "--ci"])
@@ -215,4 +226,7 @@ def test_http_get_status_sends_headers():
         return _Resp()
 
     with patch("urllib.request.urlopen", side_effect=_fake_urlopen):
-        assert http_get_status("http://example", timeout_seconds=0.1, headers={"X-API-Key": "k"}) == 200
+        assert (
+            http_get_status("http://example", timeout_seconds=0.1, headers={"X-API-Key": "k"})
+            == 200
+        )

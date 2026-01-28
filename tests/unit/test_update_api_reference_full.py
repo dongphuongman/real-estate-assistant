@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from api.openapi_markdown import serialize_endpoints_markdown
-from scripts.update_api_reference_full import main as update_main
+from scripts.docs.update_api_reference_full import main as update_main
 
 
 def test_serialize_endpoints_markdown_outputs_operations_only() -> None:

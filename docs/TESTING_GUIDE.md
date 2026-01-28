@@ -41,16 +41,16 @@ uv pip install -e .[dev]
 python -m ruff check .
 python -m mypy
 python -m pytest -q tests\integration\test_rule_engine_clean.py
-python scripts\export_openapi.py --check
-python scripts\generate_api_reference.py --check
-python scripts\update_api_reference_full.py --check
+python scripts\docs\export_openapi.py --check
+python scripts\docs\generate_api_reference.py --check
+python scripts\docs\update_api_reference_full.py --check
 
 python -m pytest tests/unit --cov=. --cov-report=xml --cov-report=term -n auto
-python scripts\coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude tests/* --exclude scripts/* --exclude workflows/*
-python scripts\coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include api/*.py --include api/routers/*.py --include rules/*.py --include models/provider_factory.py --include models/user_model_preferences.py --include config/*.py
+python scripts\ci\coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude tests/* --exclude scripts/* --exclude workflows/*
+python scripts\ci\coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include api/*.py --include api/routers/*.py --include rules/*.py --include models/provider_factory.py --include models/user_model_preferences.py --include config/*.py
 
 python -m pytest tests/integration --cov=. --cov-report=xml --cov-report=term -n auto
-python scripts\coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude tests/* --exclude scripts/* --exclude workflows/*
+python scripts\ci\coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude tests/* --exclude scripts/* --exclude workflows/*
 ```
 
 ### CI Reliability Controls
@@ -86,7 +86,7 @@ python -m pip_audit -r requirements.txt -f json -o artifacts/pip-audit.json
 
 ### Docker Compose Smoke (optional)
 ```powershell
-python scripts\compose_smoke.py --ci --timeout-seconds 300
+python scripts\ci\compose_smoke.py --ci --timeout-seconds 300
 ```
 
 ### Windows note (npm EPERM)

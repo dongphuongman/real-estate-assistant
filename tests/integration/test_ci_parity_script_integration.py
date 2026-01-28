@@ -6,7 +6,7 @@ import sys
 
 def test_ci_parity_script_dry_run_prints_expected_steps() -> None:
     result = subprocess.run(
-        [sys.executable, "scripts/ci_parity.py", "--dry-run"],
+        [sys.executable, "scripts/ci/ci_parity.py", "--dry-run"],
         capture_output=True,
         text=True,
         check=False,

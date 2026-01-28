@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from scripts.coverage_gate import (
+from scripts.ci.coverage_gate import (
     critical_coverage_percent,
     diff_coverage_percent,
     load_coverage_xml,
@@ -75,7 +75,7 @@ def test_load_coverage_xml_ignores_incomplete_entries(tmp_path: Path):
             "  <packages>",
             '    <package name="api">',
             "      <classes>",
-            "        <class name=\"no_filename\">",
+            '        <class name="no_filename">',
             "          <lines>",
             '            <line number="1" hits="1" />',
             "          </lines>",
@@ -202,7 +202,7 @@ def test_main_diff_exits_nonzero_when_below_threshold(tmp_path: Path):
     mock_run.return_value.stdout = diff_text
     mock_run.return_value.returncode = 0
 
-    with patch("scripts.coverage_gate.subprocess.run", mock_run):
+    with patch("scripts.ci.coverage_gate.subprocess.run", mock_run):
         rc = main(["diff", "--coverage-xml", str(cov_path), "--min-coverage", "60"])
     assert rc == 2
 
@@ -242,8 +242,18 @@ def test_main_diff_uses_base_ref_when_provided(tmp_path: Path):
     mock_run.return_value.stdout = diff_text
     mock_run.return_value.returncode = 0
 
-    with patch("scripts.coverage_gate.subprocess.run", mock_run):
-        rc = main(["diff", "--coverage-xml", str(cov_path), "--min-coverage", "90", "--base-ref", "origin/ver4"])
+    with patch("scripts.ci.coverage_gate.subprocess.run", mock_run):
+        rc = main(
+            [
+                "diff",
+                "--coverage-xml",
+                str(cov_path),
+                "--min-coverage",
+                "90",
+                "--base-ref",
+                "origin/ver4",
+            ]
+        )
     assert rc == 0
     called_cmd = mock_run.call_args[0][0]
     assert "origin/ver4...HEAD" in called_cmd[-1]
@@ -285,7 +295,7 @@ def test_main_diff_uses_ci_fallback_when_github_actions_true(tmp_path: Path, mon
     mock_run.return_value.returncode = 0
 
     monkeypatch.setenv("GITHUB_ACTIONS", "true")
-    with patch("scripts.coverage_gate.subprocess.run", mock_run):
+    with patch("scripts.ci.coverage_gate.subprocess.run", mock_run):
         rc = main(["diff", "--coverage-xml", str(cov_path), "--min-coverage", "90"])
     assert rc == 0
     called_cmd = mock_run.call_args[0][0]
@@ -313,7 +323,17 @@ def test_main_critical_exits_zero_when_threshold_met(tmp_path: Path):
     )
     cov_path = _write_coverage_xml(tmp_path, coverage_xml)
 
-    rc = main(["critical", "--coverage-xml", str(cov_path), "--include", "api/*.py", "--min-coverage", "90"])
+    rc = main(
+        [
+            "critical",
+            "--coverage-xml",
+            str(cov_path),
+            "--include",
+            "api/*.py",
+            "--min-coverage",
+            "90",
+        ]
+    )
     assert rc == 0
 
 
@@ -329,7 +349,17 @@ def test_main_critical_fails_when_empty_set(tmp_path: Path):
             ]
         ),
     )
-    rc = main(["critical", "--coverage-xml", str(cov_path), "--include", "nope/*.py", "--min-coverage", "90"])
+    rc = main(
+        [
+            "critical",
+            "--coverage-xml",
+            str(cov_path),
+            "--include",
+            "nope/*.py",
+            "--min-coverage",
+            "90",
+        ]
+    )
     assert rc == 2
 
 
@@ -353,7 +383,17 @@ def test_main_critical_fails_when_below_threshold(tmp_path: Path):
         ]
     )
     cov_path = _write_coverage_xml(tmp_path, coverage_xml)
-    rc = main(["critical", "--coverage-xml", str(cov_path), "--include", "api/*.py", "--min-coverage", "90"])
+    rc = main(
+        [
+            "critical",
+            "--coverage-xml",
+            str(cov_path),
+            "--include",
+            "api/*.py",
+            "--min-coverage",
+            "90",
+        ]
+    )
     assert rc == 2
 
 
@@ -380,7 +420,11 @@ def test_module_runs_as_script(tmp_path: Path, monkeypatch):
 
     module_path = Path(__file__).resolve().parents[2] / "scripts" / "coverage_gate.py"
     monkeypatch.setenv("GITHUB_ACTIONS", "")
-    monkeypatch.setattr(sys, "argv", ["coverage_gate.py", "critical", "--coverage-xml", str(cov_path), "--include", "api/*.py"])
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["coverage_gate.py", "critical", "--coverage-xml", str(cov_path), "--include", "api/*.py"],
+    )
     with pytest.raises(SystemExit) as excinfo:
         runpy.run_path(str(module_path), run_name="__main__")
     assert excinfo.value.code == 0

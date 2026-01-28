@@ -42,7 +42,7 @@ Designed for investors and real estate professionals, the Expert Digest includes
 - **City Indices**: Average price data and inventory status for top markets.
 - **YoY Analysis**: Top gaining and declining areas year-over-year.
 
-**How to Enable**: 
+**How to Enable**:
 1. Go to **Settings > Notifications**.
 2. Select your preferred **Digest Frequency** (Daily/Weekly).
 3. Toggle **Expert Mode** to receive advanced market analytics.
@@ -91,7 +91,7 @@ The AI-powered chat interface allows you to search for properties using natural 
 - Ensure Docker Desktop is installed
 - Copy environment: `Copy-Item .env.example .env`
 - Start: `docker compose up -d --build`
-- Optional smoke (build + health checks): `python scripts\compose_smoke.py --ci` (the same smoke test runs in CI; checks `/api/v1/verify-auth` when `API_ACCESS_KEY` or `API_ACCESS_KEYS` is set)
+- Optional smoke (build + health checks): `python scripts\ci\compose_smoke.py --ci` (the same smoke test runs in CI; checks `/api/v1/verify-auth` when `API_ACCESS_KEY` or `API_ACCESS_KEYS` is set)
 - Alternative (auto-detect Docker vs local): `.\scripts\dev\start.ps1` (more options in `docs/scripts/LOCAL_DEVELOPMENT.md`)
 - Open UI: `http://localhost:3000`
 - API docs: `http://localhost:8000/docs`
@@ -108,7 +108,7 @@ Operator note:
 2. Type your request (e.g., "Find me a 2-bedroom apartment in Warsaw under 3000 PLN").
 3. The AI will analyze your request, search the database, and present the best matches.
 4. You can ask follow-up questions or refine your criteria conversationally.
- 
+
 ### Streaming Responses (SSE)
 For real-time streaming from the assistant:
 - In API mode, set `"stream": true` in `POST /api/v1/chat`
@@ -117,7 +117,7 @@ For real-time streaming from the assistant:
 - After the assistant finishes streaming text, the server emits a final metadata event: `event: meta` with `data: {"sources":[...],"sources_truncated":false,"session_id":"..."}`
 - The stream finishes with `data: [DONE]`
 - For direct API calls, include the `X-API-Key` header (see API Reference). The web app proxies API calls server-side, so the browser does not embed the API key (proxy uses `API_ACCESS_KEY` or the first entry in `API_ACCESS_KEYS`; keys are trimmed and empty entries are ignored).
-- Contributors: do not place API keys in public client env vars; the repo enforces this via `python scripts\forbidden_tokens_check.py`.
+- Contributors: do not place API keys in public client env vars; the repo enforces this via `python scripts\security\forbidden_tokens_check.py`.
 - The UI progressively renders assistant messages, shows a Retry button on errors, and displays Sources (when available)
 - Sources are displayed with a human-friendly title (derived from source metadata) plus a compact metadata summary and content preview
 - The UI displays `request_id` on both success and error paths (when available) to help correlate with server logs (derived from `X-Request-ID`)
@@ -137,7 +137,7 @@ Tips:
 - Filters combine with your text query for hybrid ranking
 - Min Price must be less than or equal to Max Price
 - Click “Clear Filters” to reset and broaden results
- 
+
 Neutral/empty states:
 - Before the first search, the page shows a neutral prompt to enter a query
 - After a search with zero matches, the page shows “No results found”

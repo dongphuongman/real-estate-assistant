@@ -139,13 +139,13 @@ python -m pip install pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeo
 python -m ruff check .
 python -m mypy
 python -m pytest -q tests/integration/test_rule_engine_clean.py
-python scripts/export_openapi.py --check
-python scripts/generate_api_reference.py --check
+python scripts/docs/export_openapi.py --check
+python scripts/docs/generate_api_reference.py --check
 python -m pytest tests/unit --cov=. --cov-report=xml --cov-report=term -n auto
-python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude tests/* --exclude scripts/* --exclude workflows/*
-python scripts/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include api/*.py --include api/routers/*.py --include rules/*.py --include models/provider_factory.py --include models/user_model_preferences.py --include config/*.py
+python scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude tests/* --exclude scripts/* --exclude workflows/*
+python scripts/ci/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include api/*.py --include api/routers/*.py --include rules/*.py --include models/provider_factory.py --include models/user_model_preferences.py --include config/*.py
 python -m pytest tests/integration --cov=. --cov-report=xml --cov-report=term -n auto
-python scripts/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude tests/* --exclude scripts/* --exclude workflows/*
+python scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude tests/* --exclude scripts/* --exclude workflows/*
 ```
 
 For frontend parity:
@@ -158,7 +158,7 @@ npm run test -- --ci --coverage
 
 Optional smoke test (requires Docker):
 ```bash
-API_ACCESS_KEY=ci-test-key python scripts/compose_smoke.py --ci --timeout-seconds 300
+API_ACCESS_KEY=ci-test-key python scripts/ci/compose_smoke.py --ci --timeout-seconds 300
 ```
 
 Secrets and env notes:

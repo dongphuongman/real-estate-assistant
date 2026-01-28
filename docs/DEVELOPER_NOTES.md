@@ -12,10 +12,10 @@ in V4.
 - Routers: `api/routers/*` (chat, search, tools, settings, admin, auth)
 - OpenAPI:
   - Runtime schema: `http://localhost:8000/openapi.json`
-  - Repo snapshot: `docs/openapi.json` (regenerate: `python scripts\export_openapi.py`)
-  - Generated endpoint index: `docs/API_REFERENCE.generated.md` (regenerate: `python scripts\generate_api_reference.py`)
-  - Update full API reference Endpoints section: `python scripts\update_api_reference_full.py`
-  - CI drift check (full API Reference): `python scripts\update_api_reference_full.py --check`
+  - Repo snapshot: `docs/openapi.json` (regenerate: `python scripts\docs\export_openapi.py`)
+  - Generated endpoint index: `docs/API_REFERENCE.generated.md` (regenerate: `python scripts\docs\generate_api_reference.py`)
+  - Update full API reference Endpoints section: `python scripts\docs\update_api_reference_full.py`
+  - CI drift check (full API Reference): `python scripts\docs\update_api_reference_full.py --check`
   - CI drift check (when enabled): fails if snapshot differs from the runtime schema generated from `api/main.py`
 - Observability: `api/observability.py` adds:
   - `X-Request-ID` header to all responses (including unexpected `500` errors)
@@ -81,11 +81,11 @@ in V4.
 - Full CI parity commands (Windows): see `docs/TESTING_GUIDE.md`.
 - One-command backend CI parity:
   ```powershell
-  python scripts\ci_parity.py
+  python scripts\ci\ci_parity.py
   ```
 - CI parity (dry run; prints commands only):
   ```powershell
-  python scripts\ci_parity.py --dry-run
+  python scripts\ci\ci_parity.py --dry-run
   ```
 - Run all tests:
   ```powershell
@@ -119,7 +119,7 @@ in V4.
   ```
 - Forbidden token scan (CI-equivalent):
   ```powershell
-  python scripts\forbidden_tokens_check.py
+  python scripts\security\forbidden_tokens_check.py
   ```
 - Run RuleEngine (sample):
   ```powershell
@@ -198,9 +198,9 @@ in V4.
   - Lint: `ruff`
   - Type check: `mypy` (strict fail on errors)
   - Coverage gates:
-    - Diff coverage (unit): `python scripts\\coverage_gate.py diff --min-coverage 90 --exclude tests/* --exclude scripts/*`
-    - Diff coverage (integration): `python scripts\\coverage_gate.py diff --min-coverage 70 --exclude tests/* --exclude scripts/*`
-    - Critical coverage (unit): `python scripts\\coverage_gate.py critical --min-coverage 90`
+    - Diff coverage (unit): `python scripts\\ci\\coverage_gate.py diff --min-coverage 90 --exclude tests/* --exclude scripts/*`
+    - Diff coverage (integration): `python scripts\\ci\\coverage_gate.py diff --min-coverage 70 --exclude tests/* --exclude scripts/*`
+    - Critical coverage (unit): `python scripts\\ci\\coverage_gate.py critical --min-coverage 90`
 - Frontend:
   - Lint: `npm run lint`
   - Tests + coverage: `npm run test -- --ci --coverage` (thresholds enforced in `jest.config.ts`)
@@ -208,7 +208,7 @@ in V4.
 - Docker Compose smoke:
   - CI runs a Compose smoke job that builds backend/frontend images and waits for `/health` + the frontend `/`.
   - If `API_ACCESS_KEY` or `API_ACCESS_KEYS` is set, the smoke script also verifies `GET /api/v1/verify-auth` using `X-API-Key`.
-  - Local equivalent: `python scripts\compose_smoke.py --ci`
+  - Local equivalent: `python scripts\ci\compose_smoke.py --ci`
 - Security:
   - CI jobs: `security` (Bandit) and `audit` (pip-audit) in `.github/workflows/ci.yml`
   - Static analysis: Bandit (fail on high severity/high confidence): `python -m bandit -r api agents ai analytics config data i18n models notifications rules scripts tools utils vector_store workflows -lll -iii`

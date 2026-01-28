@@ -44,10 +44,10 @@ def _run(
 
 
 def _ensure_repo_root() -> Path:
-    root = Path(__file__).resolve().parents[1]
-    if not (root / "scripts" / "ci_parity.py").exists():
+    root = Path(__file__).resolve().parents[2]
+    if not (root / "scripts" / "ci" / "ci_parity.py").exists():
         raise FileNotFoundError(
-            "Expected to run from repository root (scripts/ci_parity.py missing)."
+            "Expected to run from repository root (scripts/ci/ci_parity.py missing)."
         )
     return root
 
@@ -163,7 +163,7 @@ def main(argv: list[str] | None = None) -> int:
 
     def backend_ci():
         log_file = logs_dir / "backend_ci_parity.log"
-        cmd = [sys.executable, "scripts/ci_parity.py"]
+        cmd = [sys.executable, "scripts/ci/ci_parity.py"]
         if ns.base_ref:
             cmd.extend(["--base-ref", str(ns.base_ref)])
         rc = _run(cmd, cwd=root, log_file=log_file)
@@ -203,7 +203,13 @@ def main(argv: list[str] | None = None) -> int:
             return "skipped", "docker not available"
         log_file = logs_dir / "compose_smoke.log"
         rc = _run(
-            [sys.executable, "scripts/compose_smoke.py", "--ci", "--timeout-seconds", "420"],
+            [
+                sys.executable,
+                "scripts/ci/compose_smoke.py",
+                "--ci",
+                "--timeout-seconds",
+                "420",
+            ],
             cwd=root,
             log_file=log_file,
         )
@@ -216,7 +222,11 @@ def main(argv: list[str] | None = None) -> int:
 
     def taskmaster_validate():
         log_file = logs_dir / "taskmaster_validate.log"
-        rc = _run([sys.executable, "scripts/validate_taskmaster.py"], cwd=root, log_file=log_file)
+        rc = _run(
+            [sys.executable, "scripts/validation/validate_taskmaster.py"],
+            cwd=root,
+            log_file=log_file,
+        )
         return ("passed" if rc == 0 else "failed", f"log={log_file.as_posix()}")
 
     def system_validate():
@@ -224,7 +234,12 @@ def main(argv: list[str] | None = None) -> int:
             return "skipped", f"mode={ns.mode}"
         log_file = logs_dir / "system_validate.log"
         rc = _run(
-            [sys.executable, "scripts/system_validate.py", "--environment", "development"],
+            [
+                sys.executable,
+                "scripts/validation/system_validate.py",
+                "--environment",
+                "development",
+            ],
             cwd=root,
             log_file=log_file,
         )
