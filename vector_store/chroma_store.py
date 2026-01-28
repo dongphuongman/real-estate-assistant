@@ -304,7 +304,7 @@ class ChromaPropertyStore:
                 if isinstance(v, (datetime, pd.Timestamp)):
                     return v.isoformat()
                 # numpy types
-                if hasattr(v, "item"):
+                if hasattr(v, "item"):  # type: ignore[unreachable]
                     return _sanitize_val(v.item())
                 # lists/dicts or other complex types are not allowed in Chroma metadata
                 return None

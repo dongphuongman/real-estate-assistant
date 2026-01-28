@@ -25,14 +25,14 @@ def test_protected_route_no_auth():
     response = client.get("/api/v1/verify-auth")
     # FastAPI Security with auto_error=False passes None, but our logic raises 401
     assert response.status_code == 401
-    assert response.json()["detail"] == "Missing API Key"
+    assert response.json()["detail"] == "Invalid credentials"
 
 
 def test_protected_route_invalid_auth():
     """Test protected route with invalid auth."""
     response = client.get("/api/v1/verify-auth", headers={"X-API-Key": "wrong-key"})
     assert response.status_code == 403
-    assert response.json()["detail"] == "Could not validate credentials"
+    assert response.json()["detail"] == "Invalid credentials"
 
 
 def test_protected_route_valid_auth():

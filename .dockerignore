@@ -15,6 +15,7 @@ venv/
 env/
 ENV/
 .venv
+.venv_ci/
 
 # IDE files
 .vscode/
@@ -77,6 +78,16 @@ test_*.sh
 *.sqlite
 *.db
 node_modules/
- 
+
 # Private non-committed materials (exclude from images)
 private/
+
+# Trae + IDE history (exclude from images)
+.history/
+.trae/
+
+# Frontend is built in its own image
+frontend/
+
+# Local artifacts
+artifacts/

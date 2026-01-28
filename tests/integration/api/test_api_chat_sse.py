@@ -16,6 +16,7 @@ def _make_sse_agent(chunks):
             for c in chunks:
                 await asyncio.sleep(0)
                 yield c
+
     return _Agent()
 
 
@@ -29,7 +30,7 @@ def test_chat_sse_stream_success():
     app.dependency_overrides[get_llm] = lambda: mock_llm
     app.dependency_overrides[get_vector_store] = lambda: mock_store
 
-    agent = _make_sse_agent(["{\"content\": \"chunk-1\"}", "{\"content\": \"chunk-2\"}"])
+    agent = _make_sse_agent(['{"content": "chunk-1"}', '{"content": "chunk-2"}'])
 
     with patch("api.routers.chat.create_hybrid_agent", return_value=agent):
         with client.stream(
@@ -42,10 +43,10 @@ def test_chat_sse_stream_success():
             ct = r.headers.get("content-type", "")
             assert ct.startswith("text/event-stream")
             body = b"".join(list(r.iter_bytes())).decode("utf-8")
-            assert "data: {\"content\": \"chunk-1\"}" in body
-            assert "data: {\"content\": \"chunk-2\"}" in body
+            assert 'data: {"content": "chunk-1"}' in body
+            assert 'data: {"content": "chunk-2"}' in body
             assert "event: meta" in body
-            assert "\"sources\"" in body
+            assert '"sources"' in body
             assert "data: [DONE]" in body
 
     app.dependency_overrides = {}
@@ -76,7 +77,7 @@ def test_chat_sse_includes_request_id_in_meta_event():
             body = b"".join(list(r.iter_bytes())).decode("utf-8")
             # Check that request_id is in meta event
             assert "event: meta" in body
-            assert f"\"request_id\": \"{test_request_id}\"" in body
+            assert f'"request_id": "{test_request_id}"' in body
 
     app.dependency_overrides = {}
 
@@ -90,6 +91,8 @@ def test_chat_sse_error_event_on_streaming_failure():
     class _FailingAgent:
         async def astream_query(self, message: str):
             await asyncio.sleep(0)
+            if False:
+                yield ""
             raise RuntimeError("streaming failed")
 
     mock_llm = MagicMock()
@@ -111,10 +114,9 @@ def test_chat_sse_error_event_on_streaming_failure():
             body = b"".join(list(r.iter_bytes())).decode("utf-8")
             # Check that error event is sent with request_id
             assert "event: error" in body
-            assert f"\"request_id\": \"{test_request_id}\"" in body
+            assert f'"request_id": "{test_request_id}"' in body
             assert "streaming failed" in body
             # Stream should still terminate properly
             assert "data: [DONE]" in body
 
     app.dependency_overrides = {}
-

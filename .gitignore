@@ -14,12 +14,25 @@ __azurite_*
 # Trae Agent configuration
 trae_config.yaml
 trae_config.yml
-.trae/documents/
+.trae/
+.history/
+.mcp.json
+
+# Task Master (keep tasks/PRD in repo, ignore local state/config)
+.taskmaster/state.json
+.taskmaster/config.json
 
 # Claude Code local configuration (never commit secrets)
+.claude/
 .claude/settings.local.json
 .claude/CLAUDE.local.md
 .claude/memory*.json
+
+# Other local AI/IDE tooling
+.cursor/
+.windsurf/
+.continue/
+.aider*
 
 # Streamlit secrets
 .streamlit/secrets.toml
