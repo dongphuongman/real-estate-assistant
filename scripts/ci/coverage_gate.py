@@ -57,9 +57,9 @@ def run_git_diff(base_ref: str | None) -> str:
         cmd = ["git", "diff", "--unified=0", f"{base_ref}...HEAD"]
     else:
         if os.environ.get("GITHUB_ACTIONS", "").strip().lower() == "true":
-            cmd = ["git", "diff", "--unified=0", "HEAD~1...HEAD"]
+            cmd = ["git", "diff", "--unified=0", "--ignore-all-space", "HEAD~1...HEAD"]
         else:
-            cmd = ["git", "diff", "--unified=0", "HEAD"]
+            cmd = ["git", "diff", "--unified=0", "--ignore-all-space", "HEAD"]
     result = subprocess.run(
         cmd,
         capture_output=True,
