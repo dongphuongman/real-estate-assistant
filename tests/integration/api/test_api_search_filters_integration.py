@@ -4,6 +4,7 @@ from api.main import app
 
 client = TestClient(app)
 
+
 def test_search_accepts_filters_and_returns_422_on_bad_types():
     headers = {"X-API-Key": "dev-secret-key"}
     # Valid filters should be accepted

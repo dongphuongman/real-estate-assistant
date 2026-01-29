@@ -68,4 +68,3 @@ def test_apply_prompt_template_unknown_template_returns_404(valid_headers):
         headers=valid_headers,
     )
     assert r.status_code == 404
-

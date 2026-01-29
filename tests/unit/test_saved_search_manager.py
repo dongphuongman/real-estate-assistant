@@ -19,7 +19,9 @@ def test_saved_search_manager_searches_preferences_and_favorites(tmp_path):
     assert manager.delete_search("s1") is True
     assert manager.get_search("s1") is None
 
-    prefs = UserPreferences(default_sort="rooms", results_per_page=25, show_map=False, preferred_provider="openai")
+    prefs = UserPreferences(
+        default_sort="rooms", results_per_page=25, show_map=False, preferred_provider="openai"
+    )
     manager.update_preferences(prefs)
     got = manager.get_preferences()
     assert got.default_sort == "rooms"
@@ -54,4 +56,3 @@ def test_saved_search_manager_loads_from_disk(tmp_path):
     assert reloaded.is_favorite("p2") is True
     favs = reloaded.get_favorites()
     assert favs and favs[0].property_id == "p2"
-

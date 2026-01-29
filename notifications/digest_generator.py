@@ -53,7 +53,7 @@ class DigestGenerator:
         # 1. Gather property highlights (Consumer focus)
         top_picks = []
         price_drop_properties = []
-        
+
         # We'll use a set of seen property IDs to avoid duplicates across saved searches
         seen_ids = set()
         saved_search_data = []
@@ -62,7 +62,7 @@ class DigestGenerator:
         for search in saved_searches:
             # Convert saved search to query
             query = search.to_query_string()
-            
+
             # Use vector store to find matches
             # Note: In a real implementation, we would filter by 'created_at' for 'new' properties
             # or check a price history for 'price_drops'.
@@ -70,42 +70,36 @@ class DigestGenerator:
             try:
                 # Construct filters from saved search
                 filters = self._build_filters(search)
-                
+
                 results = self.vector_store.search(
                     query=query,
                     k=5,  # Fetch a few to filter
-                    filter=filters
+                    filter=filters,
                 )
-                
+
                 match_count = len(results)
-                saved_search_data.append({
-                    "id": search.id,
-                    "name": search.name,
-                    "new_matches": match_count
-                })
-                
+                saved_search_data.append(
+                    {"id": search.id, "name": search.name, "new_matches": match_count}
+                )
+
                 for doc, _score in results:
                     prop_data = doc.metadata
-                    prop_id = prop_data.get("id") or prop_data.get("url") # Fallback ID
-                    
+                    prop_id = prop_data.get("id") or prop_data.get("url")  # Fallback ID
+
                     if prop_id and prop_id not in seen_ids:
                         seen_ids.add(prop_id)
-                        
+
                         # Add to top picks (simplified logic for now)
                         if len(top_picks) < 5:
                             top_picks.append(prop_data)
-                            
+
                         # Check for price drops (if data available)
                         # This assumes metadata might have 'price_drop' or similar field
                         # For now, we leave price_drop_properties empty unless we find explicit signals
-                        
+
             except Exception as e:
                 logger.error(f"Error searching for saved search {search.name}: {e}")
-                saved_search_data.append({
-                    "id": search.id,
-                    "name": search.name,
-                    "new_matches": 0
-                })
+                saved_search_data.append({"id": search.id, "name": search.name, "new_matches": 0})
                 continue
 
         # 2. Gather market stats (Consumer/Expert)
@@ -114,80 +108,84 @@ class DigestGenerator:
         for s in saved_searches:
             if s.city:
                 cities.add(s.city)
-        
+
         # Fallback to a default city if none specified
         if not cities:
-            cities.add("New York") # Example default
-            
+            cities.add("New York")  # Example default
+
         # 3. Build Expert Section (if applicable)
         expert_data = None
-        # Logic: If user has advanced preferences or explicit 'expert' flag (not yet in UserPrefs, 
+        # Logic: If user has advanced preferences or explicit 'expert' flag (not yet in UserPrefs,
         # but implied by the task "Consumer/Expert"), we add it.
-        # For now, we'll include it if they have saved searches (indicating active interest) 
+        # For now, we'll include it if they have saved searches (indicating active interest)
         # or if we want to showcase the feature.
-        # Let's assume we always generate it, and the template decides to show it 
+        # Let's assume we always generate it, and the template decides to show it
         # or we pass it only if the user is an 'expert' (maybe determined by usage?).
-        # For this task, let's include it for everyone to demonstrate the capability, 
-        # or check if we can infer 'expert' status. 
+        # For this task, let's include it for everyone to demonstrate the capability,
+        # or check if we can infer 'expert' status.
         # The prompt says "Consumer/Expert" digest. Let's provide the data structure.
-        
+
         expert_rows = []
         trending_cities = []
-        
-        for city in list(cities)[:3]: # Limit to 3 cities
+
+        for city in list(cities)[:3]:  # Limit to 3 cities
             try:
                 # Market trends
                 trend = self.market_insights.get_price_trend(city)
                 if trend:
-                    trending_cities.append({
-                        "name": city,
-                        "trend": trend.direction,
-                        "change": f"{trend.change_percent:.1f}%"
-                    })
-                    
-                    expert_rows.append({
-                        "City": city,
-                        "Avg Price": f"${trend.average_price:,.0f}",
-                        "Trend": f"{trend.direction} ({trend.change_percent:+.1f}%)",
-                        "Inventory": "Normal" # Placeholder or derived
-                    })
+                    trending_cities.append(
+                        {
+                            "name": city,
+                            "trend": trend.direction,
+                            "change": f"{trend.change_percent:.1f}%",
+                        }
+                    )
+
+                    expert_rows.append(
+                        {
+                            "City": city,
+                            "Avg Price": f"${trend.average_price:,.0f}",
+                            "Trend": f"{trend.direction} ({trend.change_percent:+.1f}%)",
+                            "Inventory": "Normal",  # Placeholder or derived
+                        }
+                    )
             except Exception:
                 pass
 
         if expert_rows:
             expert_data = {
                 "market_table": expert_rows,
-                "analysis": "Market shows mixed signals with stable inventory in major areas." # Dynamic generation could go here
+                "analysis": "Market shows mixed signals with stable inventory in major areas.",  # Dynamic generation could go here
             }
 
         # 4. Construct final payload
         return {
-            "new_properties": len(top_picks), # Placeholder count
-            "price_drops": 0, # Placeholder
-            "avg_price": 0, # Placeholder
-            "total_properties": 1250, # Placeholder global count
-            "average_price": 0, # Placeholder
+            "new_properties": len(top_picks),  # Placeholder count
+            "price_drops": 0,  # Placeholder
+            "avg_price": 0,  # Placeholder
+            "total_properties": 1250,  # Placeholder global count
+            "average_price": 0,  # Placeholder
             "trending_cities": trending_cities,
             "saved_searches": saved_search_data,
             "top_picks": top_picks,
             "price_drop_properties": price_drop_properties,
-            "expert": expert_data
+            "expert": expert_data,
         }
 
     def _build_filters(self, search: SavedSearch) -> Dict[str, Any]:
         """Build Chroma/VectorStore compatible filters from SavedSearch."""
         filters = {}
         conditions = []
-        
+
         if search.city:
             conditions.append({"city": {"$eq": search.city}})
-            
+
         if search.min_price:
             conditions.append({"price": {"$gte": search.min_price}})
-            
+
         if search.max_price:
             conditions.append({"price": {"$lte": search.max_price}})
-            
+
         if search.min_rooms:
             conditions.append({"rooms": {"$gte": search.min_rooms}})
 
@@ -196,5 +194,5 @@ class DigestGenerator:
             filters = {"$and": conditions}
         elif len(conditions) == 1:
             filters = conditions[0]
-            
+
         return filters

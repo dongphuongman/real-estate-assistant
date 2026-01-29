@@ -34,7 +34,7 @@ describe("RegisterPage", () => {
 
   it("submits form with correct values", async () => {
     render(<RegisterPage />)
-    
+
     const nameInput = screen.getByLabelText("Full Name")
     const emailInput = screen.getByLabelText("Email")
     const passwordInput = screen.getByLabelText("Password")
@@ -43,14 +43,14 @@ describe("RegisterPage", () => {
     fireEvent.change(nameInput, { target: { value: "John Doe" } })
     fireEvent.change(emailInput, { target: { value: "test@example.com" } })
     fireEvent.change(passwordInput, { target: { value: "password123" } })
-    
+
     fireEvent.click(submitButton)
 
     // Check loading state
     expect(submitButton).toBeDisabled()
     expect(window.localStorage.getItem("userEmail")).toBe("test@example.com")
     expect(document.querySelector(".animate-spin")).toBeTruthy()
-    
+
     // Fast-forward time wrapped in act
     act(() => {
       jest.runAllTimers()

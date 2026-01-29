@@ -53,7 +53,7 @@ Real estate agents often spend significant time manually matching clients with p
   - Number of bedrooms and bathrooms
   - Desired amenities (parking, garden, pool)
   - Proximity to points of interest (schools, public transportation)
-  
+
 #### 3. Data Integration
 - The system should support multiple data sources:
   - Local CSV files

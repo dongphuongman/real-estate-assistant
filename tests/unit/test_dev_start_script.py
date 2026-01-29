@@ -12,12 +12,16 @@ from scripts.dev.start import (
 
 
 def test_get_default_api_access_key_from_env_prefers_primary_key() -> None:
-    with patch.dict(os.environ, {"API_ACCESS_KEY": " primary ", "API_ACCESS_KEYS": "rot1,rot2"}, clear=True):
+    with patch.dict(
+        os.environ, {"API_ACCESS_KEY": " primary ", "API_ACCESS_KEYS": "rot1,rot2"}, clear=True
+    ):
         assert _get_default_api_access_key_from_env() == "primary"
 
 
 def test_get_default_api_access_key_from_env_falls_back_to_rotated_keys() -> None:
-    with patch.dict(os.environ, {"API_ACCESS_KEY": "   ", "API_ACCESS_KEYS": " rot1 , rot2 "}, clear=True):
+    with patch.dict(
+        os.environ, {"API_ACCESS_KEY": "   ", "API_ACCESS_KEYS": " rot1 , rot2 "}, clear=True
+    ):
         assert _get_default_api_access_key_from_env() == "rot1"
 
 
@@ -53,4 +57,3 @@ def test_main_local_dry_run_redacts_api_keys(capsys) -> None:
     assert "FRONTEND_CMD:" in out
     assert "supersecret" not in out
     assert "<redacted>" in out
-

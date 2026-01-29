@@ -45,7 +45,9 @@ class WebResearchAgent:
                 "max_results": max(0, int(self.config.web_search_max_results)),
             }
         )
-        intermediate_steps.append({"tool": "web_search", "input": {"query": question}, "output": search_raw})
+        intermediate_steps.append(
+            {"tool": "web_search", "input": {"query": question}, "output": search_raw}
+        )
 
         try:
             search_payload = json.loads(search_raw)
@@ -70,7 +72,7 @@ class WebResearchAgent:
             max_open_urls=max(1, int(self.config.max_open_urls)),
             question=question,
             results="\n".join(
-                f"{r.get('id')}. {r.get('title','')}\nURL: {r.get('url','')}\nSnippet: {r.get('snippet','')}\n"
+                f"{r.get('id')}. {r.get('title', '')}\nURL: {r.get('url', '')}\nSnippet: {r.get('snippet', '')}\n"
                 for r in results
             ),
         )
@@ -88,7 +90,9 @@ class WebResearchAgent:
             if not url:
                 continue
             open_raw = self.open_url.run(url)
-            intermediate_steps.append({"tool": "open_url", "input": {"url": url}, "output": open_raw})
+            intermediate_steps.append(
+                {"tool": "open_url", "input": {"url": url}, "output": open_raw}
+            )
             try:
                 open_payload = json.loads(open_raw)
             except Exception:
@@ -107,18 +111,27 @@ class WebResearchAgent:
             return {
                 "answer": "I couldn't open any of the search results.",
                 "sources": [
-                    {"title": r.get("title", ""), "url": r.get("url", ""), "snippet": r.get("snippet", "")}
+                    {
+                        "title": r.get("title", ""),
+                        "url": r.get("url", ""),
+                        "snippet": r.get("snippet", ""),
+                    }
                     for r in results
                 ],
                 "intermediate_steps": intermediate_steps,
             }
 
         sources = [
-            {"title": s["title"], "url": s["url"], "snippet": s.get("snippet", ""), "provider": search_payload.get("provider")}
+            {
+                "title": s["title"],
+                "url": s["url"],
+                "snippet": s.get("snippet", ""),
+                "provider": search_payload.get("provider"),
+            }
             for s in opened
         ]
         context = "\n\n".join(
-            f"[{idx+1}] {s['title']}\nURL: {s['url']}\nExtracted: {s['text']}"
+            f"[{idx + 1}] {s['title']}\nURL: {s['url']}\nExtracted: {s['text']}"
             for idx, s in enumerate(opened)
         )
 

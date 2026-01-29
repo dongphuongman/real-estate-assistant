@@ -109,12 +109,14 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
         # HSTS: Enforces HTTPS in production (1 year)
         if is_production and request.url.scheme == "https":
-            response.headers[
-                "Strict-Transport-Security"
-            ] = "max-age=31536000; includeSubDomains; preload"
+            response.headers["Strict-Transport-Security"] = (
+                "max-age=31536000; includeSubDomains; preload"
+            )
 
         # CSP: Controls resource loading
-        response.headers["Content-Security-Policy"] = self.CSP_PROD if is_production else self.CSP_DEV
+        response.headers["Content-Security-Policy"] = (
+            self.CSP_PROD if is_production else self.CSP_DEV
+        )
 
         # Referrer-Policy: Controls referrer information
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"

@@ -23,11 +23,11 @@ class DataProviderFactory:
             An instance of a BaseDataProvider subclass
         """
         source_str = str(source)
-        
+
         # Determine extension
-        if source_str.lower().endswith('.json'):
+        if source_str.lower().endswith(".json"):
             return JSONDataProvider(source_str)
-        elif source_str.lower().endswith(('.csv', '.xlsx', '.xls')):
+        elif source_str.lower().endswith((".csv", ".xlsx", ".xls")):
             return CSVDataProvider(source_str)
         else:
             # Default to CSV provider for unknown extensions (legacy behavior compatibility)

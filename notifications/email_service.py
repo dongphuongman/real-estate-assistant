@@ -19,6 +19,7 @@ from typing import List, Optional
 
 class EmailProvider(str, Enum):
     """Supported email providers."""
+
     GMAIL = "gmail"
     OUTLOOK = "outlook"
     SENDGRID = "sendgrid"
@@ -28,6 +29,7 @@ class EmailProvider(str, Enum):
 @dataclass
 class EmailConfig:
     """Email service configuration."""
+
     provider: EmailProvider
     smtp_server: str
     smtp_port: int
@@ -42,11 +44,13 @@ class EmailConfig:
 
 class EmailValidationError(Exception):
     """Raised when email validation fails."""
+
     pass
 
 
 class EmailSendError(Exception):
     """Raised when email sending fails."""
+
     pass
 
 
@@ -80,7 +84,7 @@ class EmailService:
         Returns:
             True if valid, False otherwise
         """
-        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         return bool(re.match(pattern, email))
 
     def send_email(
@@ -90,7 +94,7 @@ class EmailService:
         body: str,
         html: bool = False,
         cc: Optional[List[str]] = None,
-        bcc: Optional[List[str]] = None
+        bcc: Optional[List[str]] = None,
     ) -> bool:
         """
         Send an email.
@@ -142,7 +146,7 @@ class EmailService:
                     ) from e
 
                 # Wait before retry (exponential backoff)
-                wait_time = 2 ** attempt
+                wait_time = 2**attempt
                 time.sleep(wait_time)
 
         return False
@@ -154,7 +158,7 @@ class EmailService:
         body: str,
         html: bool = False,
         batch_size: int = 50,
-        delay_between_batches: float = 1.0
+        delay_between_batches: float = 1.0,
     ) -> dict:
         """
         Send email to multiple recipients in batches.
@@ -170,22 +174,18 @@ class EmailService:
         Returns:
             Dictionary with success/failure counts
         """
-        results = {
-            'sent': 0,
-            'failed': 0,
-            'failed_emails': []
-        }
+        results = {"sent": 0, "failed": 0, "failed_emails": []}
 
         for i in range(0, len(recipients), batch_size):
-            batch = recipients[i:i + batch_size]
+            batch = recipients[i : i + batch_size]
 
             for email in batch:
                 try:
                     self.send_email(email, subject, body, html)
-                    results['sent'] += 1
+                    results["sent"] += 1
                 except Exception as e:
-                    results['failed'] += 1
-                    results['failed_emails'].append({'email': email, 'error': str(e)})
+                    results["failed"] += 1
+                    results["failed_emails"].append({"email": email, "error": str(e)})
 
             # Delay between batches to avoid rate limits
             if i + batch_size < len(recipients):
@@ -230,10 +230,10 @@ class EmailService:
         success_rate = (self._sent_count / total * 100) if total > 0 else 0
 
         return {
-            'sent': self._sent_count,
-            'failed': self._failed_count,
-            'total': total,
-            'success_rate': success_rate
+            "sent": self._sent_count,
+            "failed": self._failed_count,
+            "total": total,
+            "success_rate": success_rate,
         }
 
     def _create_message(
@@ -243,25 +243,25 @@ class EmailService:
         body: str,
         html: bool,
         cc: Optional[List[str]],
-        bcc: Optional[List[str]]
+        bcc: Optional[List[str]],
     ) -> MIMEMultipart:
         """Create email message."""
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From'] = formataddr((self.config.from_name, self.config.from_email))
-        msg['To'] = to_email
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = subject
+        msg["From"] = formataddr((self.config.from_name, self.config.from_email))
+        msg["To"] = to_email
 
         if cc:
-            msg['Cc'] = ', '.join(cc)
+            msg["Cc"] = ", ".join(cc)
 
         if bcc:
-            msg['Bcc'] = ', '.join(bcc)
+            msg["Bcc"] = ", ".join(bcc)
 
         # Add body
         if html:
-            part = MIMEText(body, 'html')
+            part = MIMEText(body, "html")
         else:
-            part = MIMEText(body, 'plain')
+            part = MIMEText(body, "plain")
 
         msg.attach(part)
 
@@ -272,18 +272,14 @@ class EmailService:
         if self.config.use_ssl:
             # Use SSL
             with smtplib.SMTP_SSL(
-                self.config.smtp_server,
-                self.config.smtp_port,
-                timeout=self.config.timeout
+                self.config.smtp_server, self.config.smtp_port, timeout=self.config.timeout
             ) as server:
                 server.login(self.config.username, self.config.password)
                 server.send_message(msg)
         else:
             # Use TLS
             with smtplib.SMTP(
-                self.config.smtp_server,
-                self.config.smtp_port,
-                timeout=self.config.timeout
+                self.config.smtp_server, self.config.smtp_port, timeout=self.config.timeout
             ) as server:
                 if self.config.use_tls:
                     server.starttls()
@@ -296,9 +292,7 @@ class EmailServiceFactory:
 
     @staticmethod
     def create_gmail_service(
-        username: str,
-        password: str,
-        from_name: str = "Real Estate Assistant"
+        username: str, password: str, from_name: str = "Real Estate Assistant"
     ) -> EmailService:
         """
         Create Gmail email service.
@@ -313,23 +307,21 @@ class EmailServiceFactory:
         """
         config = EmailConfig(
             provider=EmailProvider.GMAIL,
-            smtp_server='smtp.gmail.com',
+            smtp_server="smtp.gmail.com",
             smtp_port=587,
             username=username,
             password=password,
             from_email=username,
             from_name=from_name,
             use_tls=True,
-            use_ssl=False
+            use_ssl=False,
         )
 
         return EmailService(config)
 
     @staticmethod
     def create_outlook_service(
-        username: str,
-        password: str,
-        from_name: str = "Real Estate Assistant"
+        username: str, password: str, from_name: str = "Real Estate Assistant"
     ) -> EmailService:
         """
         Create Outlook/Hotmail email service.
@@ -344,14 +336,14 @@ class EmailServiceFactory:
         """
         config = EmailConfig(
             provider=EmailProvider.OUTLOOK,
-            smtp_server='smtp-mail.outlook.com',
+            smtp_server="smtp-mail.outlook.com",
             smtp_port=587,
             username=username,
             password=password,
             from_email=username,
             from_name=from_name,
             use_tls=True,
-            use_ssl=False
+            use_ssl=False,
         )
 
         return EmailService(config)
@@ -365,7 +357,7 @@ class EmailServiceFactory:
         from_email: str,
         from_name: str = "Real Estate Assistant",
         use_tls: bool = True,
-        use_ssl: bool = False
+        use_ssl: bool = False,
     ) -> EmailService:
         """
         Create custom SMTP email service.
@@ -392,7 +384,7 @@ class EmailServiceFactory:
             from_email=from_email,
             from_name=from_name,
             use_tls=use_tls,
-            use_ssl=use_ssl
+            use_ssl=use_ssl,
         )
 
         return EmailService(config)
@@ -420,12 +412,16 @@ class EmailServiceFactory:
         timeout = int(timeout_raw) if timeout_raw.isdigit() else 30
 
         if provider_raw == EmailProvider.GMAIL.value:
-            svc = EmailServiceFactory.create_gmail_service(username=username, password=password, from_name=from_name)
+            svc = EmailServiceFactory.create_gmail_service(
+                username=username, password=password, from_name=from_name
+            )
             svc.config.timeout = timeout
             return svc
 
         if provider_raw == EmailProvider.OUTLOOK.value:
-            svc = EmailServiceFactory.create_outlook_service(username=username, password=password, from_name=from_name)
+            svc = EmailServiceFactory.create_outlook_service(
+                username=username, password=password, from_name=from_name
+            )
             svc.config.timeout = timeout
             return svc
 

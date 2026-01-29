@@ -13,18 +13,14 @@ from yarl import URL
 logger = logging.getLogger(__name__)
 
 # Initialize Faker for Poland locale (for generating fake owner data)
-fake_pl = Faker('pl_PL')
+fake_pl = Faker("pl_PL")
 
 # Set the pandas option to opt into future behavior
 pd.options.future.no_silent_downcasting = True
 
 
-
 class DataLoaderCsv:
-
-    def __init__(
-            self, csv_path: Path | URL | str | None
-    ):
+    def __init__(self, csv_path: Path | URL | str | None):
         if csv_path is None:
             self.csv_path = None
             return
@@ -57,9 +53,9 @@ class DataLoaderCsv:
     @staticmethod
     def convert_github_url_to_raw(url: str) -> str:
         """Convert GitHub URL to raw content URL."""
-        if 'github.com' in url and '/blob/' in url:
+        if "github.com" in url and "/blob/" in url:
             # Convert github.com/user/repo/blob/branch/file to raw.githubusercontent.com/user/repo/branch/file
-            return url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/')
+            return url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
         return url
 
     def load_df(self) -> pd.DataFrame:
@@ -140,8 +136,8 @@ class DataLoaderCsv:
 
     @staticmethod
     def camel_to_snake(name: str) -> str:
-        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+        s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+        return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
     @staticmethod
     def format_df(df: pd.DataFrame, rows_count: int | None = None) -> pd.DataFrame:
@@ -150,108 +146,160 @@ class DataLoaderCsv:
 
         # Drop rows with any NaN values
         df_copy = df.copy()
-        logger.info(f'Original data frame rows: {len(df_copy)}')
+        logger.info(f"Original data frame rows: {len(df_copy)}")
 
         # Camel case to snake for header first
-        df_copy.columns = [
-            DataLoaderCsv.camel_to_snake(col) for col in df_copy.columns]
+        df_copy.columns = [DataLoaderCsv.camel_to_snake(col) for col in df_copy.columns]
 
         # Map common synonyms to canonical schema keys (best effort)
-        if 'price' not in df_copy.columns:
-            price_cols = [col for col in df_copy.columns if any(x in col.lower() for x in ['price', 'cost', 'rent'])]
+        if "price" not in df_copy.columns:
+            price_cols = [
+                col
+                for col in df_copy.columns
+                if any(x in col.lower() for x in ["price", "cost", "rent"])
+            ]
             if price_cols:
-                df_copy = df_copy.rename(columns={price_cols[0]: 'price'})
+                df_copy = df_copy.rename(columns={price_cols[0]: "price"})
 
         # Add missing essential columns with default values
-        if 'city' not in df_copy.columns:
+        if "city" not in df_copy.columns:
             # Try to find location column
-            location_cols = [col for col in df_copy.columns if any(x in col.lower() for x in ['city', 'location', 'place', 'town'])]
+            location_cols = [
+                col
+                for col in df_copy.columns
+                if any(x in col.lower() for x in ["city", "location", "place", "town"])
+            ]
             if location_cols:
-                df_copy = df_copy.rename(columns={location_cols[0]: 'city'})
+                df_copy = df_copy.rename(columns={location_cols[0]: "city"})
             else:
-                df_copy['city'] = 'Unknown'
+                df_copy["city"] = "Unknown"
 
-        if 'rooms' not in df_copy.columns:
+        if "rooms" not in df_copy.columns:
             # Try to find rooms column
-            room_cols = [col for col in df_copy.columns if 'room' in col.lower() or 'bedroom' in col.lower()]
+            room_cols = [
+                col for col in df_copy.columns if "room" in col.lower() or "bedroom" in col.lower()
+            ]
             if room_cols:
-                df_copy = df_copy.rename(columns={room_cols[0]: 'rooms'})
+                df_copy = df_copy.rename(columns={room_cols[0]: "rooms"})
             else:
-                df_copy['rooms'] = 2.0
+                df_copy["rooms"] = 2.0
         else:
-            df_copy['rooms'] = df_copy['rooms'].fillna(2.0)
+            df_copy["rooms"] = df_copy["rooms"].fillna(2.0)
 
         # Prefer canonical 'area_sqm'
-        if 'area_sqm' not in df_copy.columns:
-            area_cols = [col for col in df_copy.columns if any(x in col.lower() for x in ['area_sqm', 'area', 'size', 'sqm', 'square'])]
+        if "area_sqm" not in df_copy.columns:
+            area_cols = [
+                col
+                for col in df_copy.columns
+                if any(x in col.lower() for x in ["area_sqm", "area", "size", "sqm", "square"])
+            ]
             if area_cols:
-                df_copy = df_copy.rename(columns={area_cols[0]: 'area_sqm'})
+                df_copy = df_copy.rename(columns={area_cols[0]: "area_sqm"})
 
         # Currency handling: normalize currency column if present, set defaults
-        if 'currency' not in df_copy.columns:
-            currency_cols = [col for col in df_copy.columns if 'currency' in col.lower() or 'curr' in col.lower()]
+        if "currency" not in df_copy.columns:
+            currency_cols = [
+                col for col in df_copy.columns if "currency" in col.lower() or "curr" in col.lower()
+            ]
             if currency_cols:
-                df_copy = df_copy.rename(columns={currency_cols[0]: 'currency'})
+                df_copy = df_copy.rename(columns={currency_cols[0]: "currency"})
             else:
                 # Heuristic default: PLN for common Polish cities, else Unknown
-                pl_cities = {'warsaw','warszawa','krakow','wroclaw','poznan','gdansk','szczecin','lublin','katowice','bydgoszcz','lodz'}
-                default_curr = 'PLN' if ('city' in df_copy.columns and any(str(c).lower() in pl_cities for c in df_copy['city'].dropna().astype(str).unique())) else 'Unknown'
-                df_copy['currency'] = default_curr
+                pl_cities = {
+                    "warsaw",
+                    "warszawa",
+                    "krakow",
+                    "wroclaw",
+                    "poznan",
+                    "gdansk",
+                    "szczecin",
+                    "lublin",
+                    "katowice",
+                    "bydgoszcz",
+                    "lodz",
+                }
+                default_curr = (
+                    "PLN"
+                    if (
+                        "city" in df_copy.columns
+                        and any(
+                            str(c).lower() in pl_cities
+                            for c in df_copy["city"].dropna().astype(str).unique()
+                        )
+                    )
+                    else "Unknown"
+                )
+                df_copy["currency"] = default_curr
 
         # Listing type normalization
-        if 'listing_type' not in df_copy.columns:
-            lt_cols = [col for col in df_copy.columns if any(x in col.lower() for x in ['listing_type', 'deal_type', 'sale_or_rent', 'listing', 'status'])]
+        if "listing_type" not in df_copy.columns:
+            lt_cols = [
+                col
+                for col in df_copy.columns
+                if any(
+                    x in col.lower()
+                    for x in ["listing_type", "deal_type", "sale_or_rent", "listing", "status"]
+                )
+            ]
             if lt_cols:
-                df_copy = df_copy.rename(columns={lt_cols[0]: 'listing_type'})
+                df_copy = df_copy.rename(columns={lt_cols[0]: "listing_type"})
             else:
-                df_copy['listing_type'] = 'rent'
+                df_copy["listing_type"] = "rent"
         else:
-            df_copy['listing_type'] = df_copy['listing_type'].fillna('rent')
-        df_copy['listing_type'] = df_copy['listing_type'].astype(str).str.strip().str.lower().replace({
-            'for_rent': 'rent',
-            'rental': 'rent',
-            'lease': 'rent',
-            'for_sale': 'sale',
-            'sold': 'sale',
-            'room_rent': 'room',
-            'sublet': 'sublease'
-        })
+            df_copy["listing_type"] = df_copy["listing_type"].fillna("rent")
+        df_copy["listing_type"] = (
+            df_copy["listing_type"]
+            .astype(str)
+            .str.strip()
+            .str.lower()
+            .replace(
+                {
+                    "for_rent": "rent",
+                    "rental": "rent",
+                    "lease": "rent",
+                    "for_sale": "sale",
+                    "sold": "sale",
+                    "room_rent": "room",
+                    "sublet": "sublease",
+                }
+            )
+        )
 
         # Geocoordinates: fill latitude/longitude deterministically by city where missing
         city_coords = {
-            'warsaw': (52.2297, 21.0122),
-            'krakow': (50.0647, 19.9450),
-            'wroclaw': (51.1079, 17.0385),
-            'poznan': (52.4064, 16.9252),
-            'gdansk': (54.3520, 18.6466),
-            'szczecin': (53.4285, 14.5528),
-            'lublin': (51.2465, 22.5684),
-            'katowice': (50.2649, 19.0238),
-            'bydgoszcz': (53.1235, 18.0084),
-            'lodz': (51.7592, 19.4560)
+            "warsaw": (52.2297, 21.0122),
+            "krakow": (50.0647, 19.9450),
+            "wroclaw": (51.1079, 17.0385),
+            "poznan": (52.4064, 16.9252),
+            "gdansk": (54.3520, 18.6466),
+            "szczecin": (53.4285, 14.5528),
+            "lublin": (51.2465, 22.5684),
+            "katowice": (50.2649, 19.0238),
+            "bydgoszcz": (53.1235, 18.0084),
+            "lodz": (51.7592, 19.4560),
         }
         # Ensure columns exist
-        if 'latitude' not in df_copy.columns:
-            df_copy['latitude'] = np.nan
-        if 'longitude' not in df_copy.columns:
-            df_copy['longitude'] = np.nan
-        
+        if "latitude" not in df_copy.columns:
+            df_copy["latitude"] = np.nan
+        if "longitude" not in df_copy.columns:
+            df_copy["longitude"] = np.nan
+
         # Vectorized fill
-        if 'city' in df_copy.columns:
+        if "city" in df_copy.columns:
             # Create normalized city series for lookup
-            cities_normalized = df_copy['city'].astype(str).str.strip().str.lower()
-            
+            cities_normalized = df_copy["city"].astype(str).str.strip().str.lower()
+
             # Create mapping series
             lat_map = cities_normalized.map(lambda x: city_coords.get(x, (None, None))[0])
             lon_map = cities_normalized.map(lambda x: city_coords.get(x, (None, None))[1])
-            
+
             # Fill missing values
-            df_copy['latitude'] = df_copy['latitude'].fillna(lat_map)
-            df_copy['longitude'] = df_copy['longitude'].fillna(lon_map)
-            
+            df_copy["latitude"] = df_copy["latitude"].fillna(lat_map)
+            df_copy["longitude"] = df_copy["longitude"].fillna(lon_map)
+
             # Coerce to float
-            df_copy['latitude'] = pd.to_numeric(df_copy['latitude'], errors='coerce')
-            df_copy['longitude'] = pd.to_numeric(df_copy['longitude'], errors='coerce')
+            df_copy["latitude"] = pd.to_numeric(df_copy["latitude"], errors="coerce")
+            df_copy["longitude"] = pd.to_numeric(df_copy["longitude"], errors="coerce")
 
         # Do not drop rows; allow missing values (schema-agnostic ingestion)
         df_cleaned = df_copy
@@ -259,15 +307,22 @@ class DataLoaderCsv:
         # Shuffle the DataFrame to ensure randomness
         df_shuffled = df_cleaned.sample(frac=1, random_state=1).reset_index(drop=True)
 
-        df_final = (df_shuffled.head(rows_count).copy() if rows_count else df_shuffled.copy())
+        df_final = df_shuffled.head(rows_count).copy() if rows_count else df_shuffled.copy()
 
         # Replace values with True/False
-        df_final = df_final.replace({'yes': True, 'no': False})
+        df_final = df_final.replace({"yes": True, "no": False})
 
         # Normalize boolean columns: fill NaN -> False and coerce to bool
         bool_cols = [
-            'has_parking', 'has_garden', 'has_pool', 'has_garage', 'has_bike_room',
-            'is_furnished', 'pets_allowed', 'has_balcony', 'has_elevator'
+            "has_parking",
+            "has_garden",
+            "has_pool",
+            "has_garage",
+            "has_bike_room",
+            "is_furnished",
+            "pets_allowed",
+            "has_balcony",
+            "has_elevator",
         ]
         for col in bool_cols:
             if col in df_final.columns:
@@ -281,58 +336,70 @@ class DataLoaderCsv:
                 return s.astype(float)
             except Exception:
                 return s
-        df_final = df_final.apply(lambda x: _to_float_series(x) if pd.api.types.is_integer_dtype(x) else x)
+
+        df_final = df_final.apply(
+            lambda x: _to_float_series(x) if pd.api.types.is_integer_dtype(x) else x
+        )
 
         # Bathrooms normalization (best effort)
-        if 'bathrooms' not in df_final.columns and 'rooms' in df_final.columns:
+        if "bathrooms" not in df_final.columns and "rooms" in df_final.columns:
             # Vectorized bathroom estimation
-            df_final['bathrooms'] = 1.0
-            
+            df_final["bathrooms"] = 1.0
+
             # Find properties with 2+ rooms
-            mask_large = (df_final['rooms'] >= 2)
-            
+            mask_large = df_final["rooms"] >= 2
+
             if mask_large.any():
                 # Randomly assign 1.0 or 2.0 to large properties
                 # We use numpy to generate random choices for the masked selection
                 random_baths = np.random.choice([1.0, 2.0], size=mask_large.sum())
-                df_final.loc[mask_large, 'bathrooms'] = random_baths
-                
-        elif 'bathrooms' in df_final.columns:
-            df_final['bathrooms'] = df_final['bathrooms'].fillna(1.0)
+                df_final.loc[mask_large, "bathrooms"] = random_baths
 
-        for field in ['has_garden', 'has_pool', 'has_garage', 'has_bike_room']:
+        elif "bathrooms" in df_final.columns:
+            df_final["bathrooms"] = df_final["bathrooms"].fillna(1.0)
+
+        for field in ["has_garden", "has_pool", "has_garage", "has_bike_room"]:
             if field not in df_final.columns:
                 df_final[field] = np.random.choice([True, False], size=len(df_final))
-        if 'has_elevator' not in df_final.columns:
-            df_final['has_elevator'] = np.random.choice([True, False], size=len(df_final))
+        if "has_elevator" not in df_final.columns:
+            df_final["has_elevator"] = np.random.choice([True, False], size=len(df_final))
 
         # Year built normalization
-        if 'year_built' not in df_final.columns:
-             year_cols = [col for col in df_final.columns if any(x in col.lower() for x in ['year_built', 'construction_year', 'built_year'])]
-             if year_cols:
-                 df_final = df_final.rename(columns={year_cols[0]: 'year_built'})
-             else:
-                 df_final['year_built'] = np.random.randint(1970, 2025, size=len(df_final))
+        if "year_built" not in df_final.columns:
+            year_cols = [
+                col
+                for col in df_final.columns
+                if any(x in col.lower() for x in ["year_built", "construction_year", "built_year"])
+            ]
+            if year_cols:
+                df_final = df_final.rename(columns={year_cols[0]: "year_built"})
+            else:
+                df_final["year_built"] = np.random.randint(1970, 2025, size=len(df_final))
         else:
-             df_final['year_built'] = df_final['year_built'].fillna(2000)
+            df_final["year_built"] = df_final["year_built"].fillna(2000)
 
         # Energy rating normalization
-        if 'energy_rating' not in df_final.columns:
-             energy_cols = [col for col in df_final.columns if any(x in col.lower() for x in ['energy_rating', 'energy_class', 'epc'])]
-             if energy_cols:
-                 df_final = df_final.rename(columns={energy_cols[0]: 'energy_rating'})
-             else:
-                 df_final['energy_rating'] = np.random.choice(['A', 'B', 'C', 'D', 'E', 'F', 'G'], size=len(df_final))
+        if "energy_rating" not in df_final.columns:
+            energy_cols = [
+                col
+                for col in df_final.columns
+                if any(x in col.lower() for x in ["energy_rating", "energy_class", "epc"])
+            ]
+            if energy_cols:
+                df_final = df_final.rename(columns={energy_cols[0]: "energy_rating"})
+            else:
+                df_final["energy_rating"] = np.random.choice(
+                    ["A", "B", "C", "D", "E", "F", "G"], size=len(df_final)
+                )
         else:
-             df_final['energy_rating'] = df_final['energy_rating'].fillna('C')
+            df_final["energy_rating"] = df_final["energy_rating"].fillna("C")
 
         # Log added columns and final row count
         header_final = df_final.columns.tolist()
         diff_header = set(header_final) - set(header)
 
         if diff_header:
-            logger.info(f'Added columns with generated data: {diff_header}')
-        logger.info(f'Formatted data frame rows: {len(df_final)}')
+            logger.info(f"Added columns with generated data: {diff_header}")
+        logger.info(f"Formatted data frame rows: {len(df_final)}")
 
         return df_final
-

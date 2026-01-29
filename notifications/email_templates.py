@@ -46,21 +46,21 @@ class EmailTemplate:
         body {{
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
             line-height: 1.6;
-            color: {EmailTemplate.COLORS['text']};
+            color: {EmailTemplate.COLORS["text"]};
             margin: 0;
             padding: 0;
-            background-color: {EmailTemplate.COLORS['background']};
+            background-color: {EmailTemplate.COLORS["background"]};
         }}
         .container {{
             max-width: 600px;
             margin: 20px auto;
-            background-color: {EmailTemplate.COLORS['white']};
+            background-color: {EmailTemplate.COLORS["white"]};
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }}
         .header {{
-            background: linear-gradient(135deg, {EmailTemplate.COLORS['primary']}, #1565c0);
+            background: linear-gradient(135deg, {EmailTemplate.COLORS["primary"]}, #1565c0);
             color: white;
             padding: 30px 20px;
             text-align: center;
@@ -74,17 +74,17 @@ class EmailTemplate:
             padding: 30px 20px;
         }}
         .footer {{
-            background-color: {EmailTemplate.COLORS['background']};
+            background-color: {EmailTemplate.COLORS["background"]};
             padding: 20px;
             text-align: center;
             font-size: 12px;
-            color: {EmailTemplate.COLORS['text_light']};
-            border-top: 1px solid {EmailTemplate.COLORS['border']};
+            color: {EmailTemplate.COLORS["text_light"]};
+            border-top: 1px solid {EmailTemplate.COLORS["border"]};
         }}
         .button {{
             display: inline-block;
             padding: 12px 24px;
-            background-color: {EmailTemplate.COLORS['primary']};
+            background-color: {EmailTemplate.COLORS["primary"]};
             color: white;
             text-decoration: none;
             border-radius: 5px;
@@ -115,8 +115,8 @@ class EmailTemplate:
         </div>
         <div class="footer">
             <p>You're receiving this email because you have notifications enabled.</p>
-            <p><a href="#" style="color: {EmailTemplate.COLORS['text_light']};">Manage Preferences</a> |
-               <a href="#" style="color: {EmailTemplate.COLORS['text_light']};">Unsubscribe</a></p>
+            <p><a href="#" style="color: {EmailTemplate.COLORS["text_light"]};">Manage Preferences</a> |
+               <a href="#" style="color: {EmailTemplate.COLORS["text_light"]};">Unsubscribe</a></p>
             <p style="margin-top: 15px;">© 2025 Real Estate Assistant. All rights reserved.</p>
         </div>
     </div>
@@ -156,10 +156,10 @@ class EmailTemplate:
         return f"""
 <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 15px 0;
      border-left: 4px solid {border_color}; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-    <h3 style="margin-top: 0; color: {EmailTemplate.COLORS['text']};">
+    <h3 style="margin-top: 0; color: {EmailTemplate.COLORS["text"]};">
         {prop.property_type} in {prop.city}
     </h3>
-    <div style="font-size: 24px; font-weight: bold; color: {EmailTemplate.COLORS['primary']}; margin: 10px 0;">
+    <div style="font-size: 24px; font-weight: bold; color: {EmailTemplate.COLORS["primary"]}; margin: 10px 0;">
         ${prop.price:,.0f}/month
     </div>
     <div style="margin: 15px 0;">
@@ -201,37 +201,37 @@ class PriceDropTemplate(EmailTemplate):
         subject = f"🔔 Price Drop Alert - {prop.city} Property"
 
         content = f"""
-<h2 style="color: {EmailTemplate.COLORS['success']};">💰 Great News - Price Drop!</h2>
+<h2 style="color: {EmailTemplate.COLORS["success"]};">💰 Great News - Price Drop!</h2>
 <p>{greeting}</p>
 <p>A property you're watching has dropped in price. This could be a great opportunity!</p>
 
-<div style="background-color: {EmailTemplate.COLORS['background']}; padding: 25px; border-radius: 8px; margin: 20px 0;">
+<div style="background-color: {EmailTemplate.COLORS["background"]}; padding: 25px; border-radius: 8px; margin: 20px 0;">
     <h3 style="margin-top: 0;">{prop.property_type} in {prop.city}</h3>
 
     <div style="margin: 20px 0;">
         <div style="margin-bottom: 10px;">
             <strong>Previous Price:</strong>
-            <span style="text-decoration: line-through; color: {EmailTemplate.COLORS['text_light']};">
+            <span style="text-decoration: line-through; color: {EmailTemplate.COLORS["text_light"]};">
                 ${old_price:,.0f}/month
             </span>
         </div>
         <div style="margin-bottom: 10px;">
             <strong>New Price:</strong>
-            <span style="color: {EmailTemplate.COLORS['success']}; font-size: 28px; font-weight: bold;">
+            <span style="color: {EmailTemplate.COLORS["success"]}; font-size: 28px; font-weight: bold;">
                 ${new_price:,.0f}/month
             </span>
         </div>
-        <div style="background-color: {EmailTemplate.COLORS['success']}; color: white;
+        <div style="background-color: {EmailTemplate.COLORS["success"]}; color: white;
              padding: 10px 15px; border-radius: 5px; display: inline-block; margin-top: 10px;">
             <strong>You Save: ${savings:,.0f} ({percent_drop:.1f}% off)</strong>
         </div>
     </div>
 
-    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid {EmailTemplate.COLORS['border']};">
+    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid {EmailTemplate.COLORS["border"]};">
         <h4 style="margin-top: 0;">Property Details:</h4>
         <ul style="list-style: none; padding: 0;">
             <li>🛏️ {prop.rooms} bedrooms, 🚿 {prop.bathrooms} bathrooms</li>
-            <li>📏 {prop.area_sqm if prop.area_sqm else 'N/A'} sqm</li>
+            <li>📏 {prop.area_sqm if prop.area_sqm else "N/A"} sqm</li>
             <li>🏷️ {prop.property_type}</li>
         </ul>
         <p><strong>Amenities:</strong> {EmailTemplate._format_amenities(prop)}</p>
@@ -242,7 +242,7 @@ class PriceDropTemplate(EmailTemplate):
     <a href="#" class="button">View Property Details</a>
 </div>
 
-<p style="color: {EmailTemplate.COLORS['text_light']}; font-size: 14px;">
+<p style="color: {EmailTemplate.COLORS["text_light"]}; font-size: 14px;">
     Act fast! Price drops often attract multiple interested renters.
 </p>
 """
@@ -285,27 +285,27 @@ class NewPropertyTemplate(EmailTemplate):
         if len(properties) > max_display:
             remaining = len(properties) - max_display
             properties_html += f"""
-<p style="text-align: center; color: {EmailTemplate.COLORS['text_light']}; font-style: italic;">
-    ...and {remaining} more {'property' if remaining == 1 else 'properties'}
+<p style="text-align: center; color: {EmailTemplate.COLORS["text_light"]}; font-style: italic;">
+    ...and {remaining} more {"property" if remaining == 1 else "properties"}
 </p>
 """
 
         content = f"""
-<h2 style="color: {EmailTemplate.COLORS['primary']};">🏠 New Properties Match Your Search!</h2>
+<h2 style="color: {EmailTemplate.COLORS["primary"]};">🏠 New Properties Match Your Search!</h2>
 <p>{greeting}</p>
-<p>We found <strong>{count}</strong> new {'property' if count == 1 else 'properties'} matching your saved search:
-   <strong style="color: {EmailTemplate.COLORS['primary']};">{search_name}</strong></p>
+<p>We found <strong>{count}</strong> new {"property" if count == 1 else "properties"} matching your saved search:
+   <strong style="color: {EmailTemplate.COLORS["primary"]};">{search_name}</strong></p>
 
 {properties_html}
 
 <div style="text-align: center; margin: 30px 0;">
     <a href="#" class="button">View All Matches</a>
-    <a href="#" style="display: inline-block; padding: 12px 24px; color: {EmailTemplate.COLORS['text']};
-       text-decoration: none; border: 1px solid {EmailTemplate.COLORS['border']}; border-radius: 5px;
+    <a href="#" style="display: inline-block; padding: 12px 24px; color: {EmailTemplate.COLORS["text"]};
+       text-decoration: none; border: 1px solid {EmailTemplate.COLORS["border"]}; border-radius: 5px;
        margin: 10px 5px;">Manage Searches</a>
 </div>
 
-<p style="color: {EmailTemplate.COLORS['text_light']}; font-size: 14px;">
+<p style="color: {EmailTemplate.COLORS["text_light"]}; font-size: 14px;">
     These properties were recently added and match your search criteria.
     Contact landlords quickly to schedule viewings.
 </p>
@@ -386,7 +386,11 @@ class DigestTemplate(EmailTemplate):
                 baths = _fmt_number(p.get("bathrooms"))
                 area = _fmt_number(p.get("area_sqm"))
                 price_per_sqm = p.get("price_per_sqm")
-                pps = f"{_fmt_money(price_per_sqm, p.get('currency'))}/m²" if price_per_sqm is not None else None
+                pps = (
+                    f"{_fmt_money(price_per_sqm, p.get('currency'))}/m²"
+                    if price_per_sqm is not None
+                    else None
+                )
                 prop_type = p.get("property_type")
                 listing_type = p.get("listing_type")
 
@@ -424,17 +428,20 @@ class DigestTemplate(EmailTemplate):
                 link_style = f"color: {EmailTemplate.COLORS['primary']}; text-decoration: none;"
                 cta = f'<a href="{url}" style="{link_style}">View listing</a>' if url else ""
 
-                amenity_style = f"margin: 6px 0 0 0; color: {EmailTemplate.COLORS['text_light']}; " "font-size: 13px;"
+                amenity_style = (
+                    f"margin: 6px 0 0 0; color: {EmailTemplate.COLORS['text_light']}; "
+                    "font-size: 13px;"
+                )
                 amenities_html = f'<p style="{amenity_style}">{amenities}</p>' if amenities else ""
 
                 cards += f"""
-    <div style="background-color: {EmailTemplate.COLORS['white']}; padding: 15px; border-radius: 8px; margin: 12px 0;
-         border: 1px solid {EmailTemplate.COLORS['border']};">
+    <div style="background-color: {EmailTemplate.COLORS["white"]}; padding: 15px; border-radius: 8px; margin: 12px 0;
+         border: 1px solid {EmailTemplate.COLORS["border"]};">
         <div style="display: flex; justify-content: space-between; gap: 10px; align-items: baseline;">
             <div style="font-weight: 600;">{headline}</div>
-            <div style="font-weight: 700; color: {EmailTemplate.COLORS['primary']}; white-space: nowrap;">{price}</div>
+            <div style="font-weight: 700; color: {EmailTemplate.COLORS["primary"]}; white-space: nowrap;">{price}</div>
         </div>
-        <div style="margin-top: 6px; color: {EmailTemplate.COLORS['text_light']}; font-size: 14px;">
+        <div style="margin-top: 6px; color: {EmailTemplate.COLORS["text_light"]}; font-size: 14px;">
             {subline}
         </div>
         {amenities_html}
@@ -447,7 +454,10 @@ class DigestTemplate(EmailTemplate):
             if not rows:
                 return ""
             cols = list(rows[0].keys())
-            th_style = "text-align: left; padding: 8px; border-bottom: 1px solid " f"{EmailTemplate.COLORS['border']};"
+            th_style = (
+                "text-align: left; padding: 8px; border-bottom: 1px solid "
+                f"{EmailTemplate.COLORS['border']};"
+            )
             header = "".join([f'<th style="{th_style}">{c}</th>' for c in cols])
             body_rows = ""
             td_style = f"padding: 8px; border-bottom: 1px solid {EmailTemplate.COLORS['border']};"
@@ -459,7 +469,11 @@ class DigestTemplate(EmailTemplate):
                         tds.append(f"{v:.2f}")
                     else:
                         tds.append(str(v) if v is not None else "—")
-                body_rows += "<tr>" + "".join([f'<td style="{td_style}">{cell}</td>' for cell in tds]) + "</tr>"
+                body_rows += (
+                    "<tr>"
+                    + "".join([f'<td style="{td_style}">{cell}</td>' for cell in tds])
+                    + "</tr>"
+                )
             return f"""
 <div style="margin: 25px 0;">
     <h3>📌 {title}</h3>
@@ -473,36 +487,36 @@ class DigestTemplate(EmailTemplate):
 """
 
         content = f"""
-<h2 style="color: {EmailTemplate.COLORS['primary']};">📊 {period} Real Estate Digest</h2>
+<h2 style="color: {EmailTemplate.COLORS["primary"]};">📊 {period} Real Estate Digest</h2>
 <p>{greeting}</p>
-<p style="color: {EmailTemplate.COLORS['text_light']};">{date_str}</p>
+<p style="color: {EmailTemplate.COLORS["text_light"]};">{date_str}</p>
 
-<div style="background-color: {EmailTemplate.COLORS['background']}; padding: 25px; border-radius: 8px; margin: 25px 0;">
+<div style="background-color: {EmailTemplate.COLORS["background"]}; padding: 25px; border-radius: 8px; margin: 25px 0;">
     <h3 style="margin-top: 0; text-align: center;">Market Summary</h3>
 
     <div style="display: flex; justify-content: space-around; flex-wrap: wrap; margin: 20px 0;">
         <div style="text-align: center; margin: 15px; min-width: 120px;">
-            <div style="font-size: 36px; font-weight: bold; color: {EmailTemplate.COLORS['primary']};
+            <div style="font-size: 36px; font-weight: bold; color: {EmailTemplate.COLORS["primary"]};
                  margin-bottom: 5px;">
                 {new_properties}
             </div>
-            <div style="color: {EmailTemplate.COLORS['text_light']};">New Properties</div>
+            <div style="color: {EmailTemplate.COLORS["text_light"]};">New Properties</div>
         </div>
 
         <div style="text-align: center; margin: 15px; min-width: 120px;">
-            <div style="font-size: 36px; font-weight: bold; color: {EmailTemplate.COLORS['success']};
+            <div style="font-size: 36px; font-weight: bold; color: {EmailTemplate.COLORS["success"]};
                  margin-bottom: 5px;">
                 {price_drops}
             </div>
-            <div style="color: {EmailTemplate.COLORS['text_light']};">Price Drops</div>
+            <div style="color: {EmailTemplate.COLORS["text_light"]};">Price Drops</div>
         </div>
 
         <div style="text-align: center; margin: 15px; min-width: 120px;">
-            <div style="font-size: 36px; font-weight: bold; color: {EmailTemplate.COLORS['warning']};
+            <div style="font-size: 36px; font-weight: bold; color: {EmailTemplate.COLORS["warning"]};
                  margin-bottom: 5px;">
                 ${avg_price:,.0f}
             </div>
-            <div style="color: {EmailTemplate.COLORS['text_light']};">Avg Price</div>
+            <div style="color: {EmailTemplate.COLORS["text_light"]};">Avg Price</div>
         </div>
     </div>
 </div>
@@ -536,14 +550,18 @@ class DigestTemplate(EmailTemplate):
             for search in saved_searches:
                 search_name = search.get("name", "Unnamed Search")
                 new_matches = search.get("new_matches", 0)
-                match_color = EmailTemplate.COLORS["success"] if new_matches > 0 else EmailTemplate.COLORS["text_light"]
+                match_color = (
+                    EmailTemplate.COLORS["success"]
+                    if new_matches > 0
+                    else EmailTemplate.COLORS["text_light"]
+                )
 
                 content += f"""
     <div style="background-color: white; padding: 15px; border-radius: 5px; margin: 10px 0;
          border-left: 3px solid {match_color};">
         <strong>{search_name}</strong>
         <span style="float: right; color: {match_color}; font-weight: bold;">
-            {new_matches} new {'match' if new_matches == 1 else 'matches'}
+            {new_matches} new {"match" if new_matches == 1 else "matches"}
         </span>
     </div>
 """
@@ -573,13 +591,13 @@ class DigestTemplate(EmailTemplate):
                 p_cards = _render_property_cards([p])
                 drops_cards += f"""
     <div style="margin: 0 0 10px 0;">
-        <div style="margin-bottom: 6px; color: {EmailTemplate.COLORS['text_light']};
+        <div style="margin-bottom: 6px; color: {EmailTemplate.COLORS["text_light"]};
              font-size: 13px;">
             {city}: {price_old} →
-            <span style="color: {EmailTemplate.COLORS['success']}; font-weight: 700;">
+            <span style="color: {EmailTemplate.COLORS["success"]}; font-weight: 700;">
                 {price_new}
             </span>
-            (<span style="color: {EmailTemplate.COLORS['success']}; font-weight: 700;">-{pct_str}</span>)
+            (<span style="color: {EmailTemplate.COLORS["success"]}; font-weight: 700;">-{pct_str}</span>)
         </div>
         {p_cards}
     </div>
@@ -607,20 +625,20 @@ class DigestTemplate(EmailTemplate):
 
             if analysis:
                 content += f"""
-<div style="margin-bottom: 20px; font-style: italic; color: {EmailTemplate.COLORS['text']};">
+<div style="margin-bottom: 20px; font-style: italic; color: {EmailTemplate.COLORS["text"]};">
     "{analysis}"
 </div>
 """
 
             if market_table:
                 content += _render_expert_table("Market Trends", market_table)
-            
+
             if city_indices:
                 content += _render_expert_table("City Price Indices (Top 10)", city_indices)
-            
+
             if yoy_up:
                 content += _render_expert_table("YoY — Top Gainers", yoy_up)
-                
+
             if yoy_down:
                 content += _render_expert_table("YoY — Top Decliners", yoy_down)
 
@@ -629,7 +647,7 @@ class DigestTemplate(EmailTemplate):
     <a href="#" class="button">View Dashboard</a>
 </div>
 
-<p style="color: {EmailTemplate.COLORS['text_light']}; font-size: 14px;">
+<p style="color: {EmailTemplate.COLORS["text_light"]}; font-size: 14px;">
     Stay informed about the latest market trends and never miss a great opportunity.
 </p>
 """
@@ -656,11 +674,11 @@ class TestEmailTemplate(EmailTemplate):
         subject = "✅ Test Email - Real Estate Assistant"
 
         content = f"""
-<h2 style="color: {EmailTemplate.COLORS['success']};">✅ Email Configuration Test</h2>
+<h2 style="color: {EmailTemplate.COLORS["success"]};">✅ Email Configuration Test</h2>
 <p>{greeting}</p>
 <p>This is a test email to verify your notification settings are working correctly.</p>
 
-<div style="background-color: {EmailTemplate.COLORS['background']}; padding: 20px; border-radius: 8px; margin: 20px 0;">
+<div style="background-color: {EmailTemplate.COLORS["background"]}; padding: 20px; border-radius: 8px; margin: 20px 0;">
     <h3 style="margin-top: 0;">✓ Success!</h3>
     <p>If you're reading this, your email configuration is working properly. You can now receive:</p>
     <ul>
@@ -675,7 +693,7 @@ class TestEmailTemplate(EmailTemplate):
     <a href="#" class="button">Manage Notification Preferences</a>
 </div>
 
-<p style="color: {EmailTemplate.COLORS['text_light']}; font-size: 14px;">
+<p style="color: {EmailTemplate.COLORS["text_light"]}; font-size: 14px;">
     You can customize your notification preferences at any time to control what alerts you receive and how often.
 </p>
 """
@@ -707,11 +725,11 @@ class MarketUpdateTemplate(EmailTemplate):
         insights = update_data.get("insights", [])
 
         content = f"""
-<h2 style="color: {EmailTemplate.COLORS['primary']};">📈 {update_title}</h2>
+<h2 style="color: {EmailTemplate.COLORS["primary"]};">📈 {update_title}</h2>
 <p>{greeting}</p>
 <p>{summary}</p>
 
-<div style="background-color: {EmailTemplate.COLORS['background']}; padding: 20px; border-radius: 8px; margin: 20px 0;">
+<div style="background-color: {EmailTemplate.COLORS["background"]}; padding: 20px; border-radius: 8px; margin: 20px 0;">
     <h3 style="margin-top: 0;">Key Insights</h3>
 """
 

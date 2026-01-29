@@ -13,34 +13,90 @@ def multi_region_data():
     properties = [
         # USA Properties
         Property(
-            id="usa1", title="NYC Condo", description="Luxury", price=1000000, currency="USD",
-            city="New York", country="USA", region="NY", listing_type="sale", property_type="apartment",
-            bedrooms=2, bathrooms=2, area=100, date_posted=base_date
+            id="usa1",
+            title="NYC Condo",
+            description="Luxury",
+            price=1000000,
+            currency="USD",
+            city="New York",
+            country="USA",
+            region="NY",
+            listing_type="sale",
+            property_type="apartment",
+            bedrooms=2,
+            bathrooms=2,
+            area=100,
+            date_posted=base_date,
         ),
         Property(
-            id="usa2", title="LA House", description="Spacious", price=2000000, currency="USD",
-            city="Los Angeles", country="USA", region="CA", listing_type="sale", property_type="house",
-            bedrooms=3, bathrooms=3, area=200, date_posted=base_date
+            id="usa2",
+            title="LA House",
+            description="Spacious",
+            price=2000000,
+            currency="USD",
+            city="Los Angeles",
+            country="USA",
+            region="CA",
+            listing_type="sale",
+            property_type="house",
+            bedrooms=3,
+            bathrooms=3,
+            area=200,
+            date_posted=base_date,
         ),
         # Turkey Properties
         Property(
-            id="tr1", title="Istanbul Apt", description="Bosphorus view", price=500000, currency="USD",
-            city="Istanbul", country="Turkey", region="Marmara", listing_type="sale", property_type="apartment",
-            bedrooms=2, bathrooms=1, area=90, date_posted=base_date
+            id="tr1",
+            title="Istanbul Apt",
+            description="Bosphorus view",
+            price=500000,
+            currency="USD",
+            city="Istanbul",
+            country="Turkey",
+            region="Marmara",
+            listing_type="sale",
+            property_type="apartment",
+            bedrooms=2,
+            bathrooms=1,
+            area=90,
+            date_posted=base_date,
         ),
         Property(
-            id="tr2", title="Antalya Villa", description="Seaside", price=750000, currency="USD",
-            city="Antalya", country="Turkey", region="Mediterranean", listing_type="sale", property_type="house",
-            bedrooms=4, bathrooms=3, area=250, date_posted=base_date
+            id="tr2",
+            title="Antalya Villa",
+            description="Seaside",
+            price=750000,
+            currency="USD",
+            city="Antalya",
+            country="Turkey",
+            region="Mediterranean",
+            listing_type="sale",
+            property_type="house",
+            bedrooms=4,
+            bathrooms=3,
+            area=250,
+            date_posted=base_date,
         ),
         # Russia Properties
         Property(
-            id="ru1", title="Moscow Flat", description="City center", price=400000, currency="USD",
-            city="Moscow", country="Russia", region="Central", listing_type="sale", property_type="apartment",
-            bedrooms=1, bathrooms=1, area=50, date_posted=base_date
+            id="ru1",
+            title="Moscow Flat",
+            description="City center",
+            price=400000,
+            currency="USD",
+            city="Moscow",
+            country="Russia",
+            region="Central",
+            listing_type="sale",
+            property_type="apartment",
+            bedrooms=1,
+            bathrooms=1,
+            area=50,
+            date_posted=base_date,
         ),
     ]
     return PropertyCollection(properties=properties, total_count=len(properties))
+
 
 def test_regional_market_insights_integration(multi_region_data):
     """Integration test for MarketInsights with multi-region data."""
@@ -75,7 +131,7 @@ def test_regional_market_insights_integration(multi_region_data):
     # 4. Test Price Trends with filters
     usa_trend = insights.get_price_trend(country="USA")
     assert usa_trend.sample_size == 2
-    
+
     tr_trend = insights.get_price_trend(country="Turkey")
     assert tr_trend.sample_size == 2
 

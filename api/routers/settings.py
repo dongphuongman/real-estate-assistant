@@ -174,7 +174,9 @@ async def test_runtime(provider: str = Query(...)):
 
         p = ModelProviderFactory.get_provider(provider)
         if not p.is_local:
-            raise HTTPException(status_code=400, detail=f"Provider '{provider}' is not a local runtime provider")
+            raise HTTPException(
+                status_code=400, detail=f"Provider '{provider}' is not a local runtime provider"
+            )
 
         runtime_available, runtime_error = p.validate_connection()
         available_models = []
@@ -230,7 +232,9 @@ async def update_model_preferences(
         incoming_provider = payload.preferred_provider
         incoming_model = payload.preferred_model
 
-        next_provider = incoming_provider if incoming_provider is not None else existing.preferred_provider
+        next_provider = (
+            incoming_provider if incoming_provider is not None else existing.preferred_provider
+        )
         next_model = incoming_model if incoming_model is not None else existing.preferred_model
 
         if incoming_provider is not None and (incoming_provider.strip() == ""):
@@ -256,7 +260,10 @@ async def update_model_preferences(
             if next_model:
                 allowed_models = {m.id for m in provider.list_models()}
                 if next_model not in allowed_models:
-                    raise HTTPException(status_code=400, detail=f"Unknown model for provider '{next_provider}': {next_model}")
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Unknown model for provider '{next_provider}': {next_model}",
+                    )
             else:
                 if incoming_provider is not None and existing.preferred_model:
                     allowed_models = {m.id for m in provider.list_models()}

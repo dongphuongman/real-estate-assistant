@@ -18,7 +18,7 @@ class TestPropertyReranker:
             boost_exact_matches=2.0,
             boost_metadata_match=1.5,
             boost_quality_signals=1.3,
-            diversity_penalty=0.8
+            diversity_penalty=0.8,
         )
 
         assert reranker.boost_exact_matches == 2.0
@@ -53,11 +53,11 @@ class TestPropertyReranker:
         docs = [
             Document(
                 page_content="A beautiful apartment with garden",
-                metadata={"id": "1", "has_garden": True, "price": 1000}
+                metadata={"id": "1", "has_garden": True, "price": 1000},
             ),
             Document(
                 page_content="A nice property available",
-                metadata={"id": "2", "has_garden": False, "price": 1000}
+                metadata={"id": "2", "has_garden": False, "price": 1000},
             ),
         ]
 
@@ -73,25 +73,23 @@ class TestPropertyReranker:
         docs = [
             Document(
                 page_content="Property in city",
-                metadata={"id": "1", "price": 900, "has_parking": True}
+                metadata={"id": "1", "price": 900, "has_parking": True},
             ),
             Document(
                 page_content="Property in city",
-                metadata={"id": "2", "price": 1500, "has_parking": False}
+                metadata={"id": "2", "price": 1500, "has_parking": False},
             ),
         ]
 
         query = "under $1000 with parking"
-        user_prefs = {'max_price': 1000, 'has_parking': True}
+        user_prefs = {"max_price": 1000, "has_parking": True}
 
-        results = reranker.rerank(
-            query, docs, user_preferences=user_prefs, k=2
-        )
+        results = reranker.rerank(query, docs, user_preferences=user_prefs, k=2)
 
         # Document matching preferences should rank higher
         top_doc, top_score = results[0]
-        assert top_doc.metadata['price'] <= 1000
-        assert top_doc.metadata['has_parking'] is True
+        assert top_doc.metadata["price"] <= 1000
+        assert top_doc.metadata["has_parking"] is True
 
     def test_quality_signals_boosting(self, reranker):
         """Test quality signals boosting."""
@@ -104,16 +102,12 @@ class TestPropertyReranker:
                     "has_parking": True,
                     "has_garden": True,
                     "has_balcony": True,
-                    "price_per_sqm": 20
-                }
+                    "price_per_sqm": 20,
+                },
             ),
             Document(
                 page_content="Apartment",  # Short description
-                metadata={
-                    "id": "2",
-                    "price": 1000,
-                    "price_per_sqm": 35
-                }
+                metadata={"id": "2", "price": 1000, "price_per_sqm": 35},
             ),
         ]
 
@@ -122,7 +116,7 @@ class TestPropertyReranker:
 
         # Document with better quality signals should rank higher
         top_doc, top_score = results[0]
-        assert top_doc.metadata['id'] == "1"  # More amenities, better price/sqm
+        assert top_doc.metadata["id"] == "1"  # More amenities, better price/sqm
 
     def test_diversity_penalty(self, reranker):
         """Test diversity penalty for similar results."""
@@ -130,11 +124,7 @@ class TestPropertyReranker:
         docs = [
             Document(
                 page_content=f"Apartment {i} in Krakow",
-                metadata={
-                    "id": f"{i}",
-                    "city": "Krakow",
-                    "price": 950 + i * 10
-                }
+                metadata={"id": f"{i}", "city": "Krakow", "price": 950 + i * 10},
             )
             for i in range(10)
         ]
@@ -170,12 +160,7 @@ class TestPropertyReranker:
         query = "apartments"
         initial_scores = [0.9, 0.8, 0.7, 0.6, 0.5]
 
-        results = reranker.rerank(
-            query,
-            sample_documents,
-            initial_scores=initial_scores,
-            k=5
-        )
+        results = reranker.rerank(query, sample_documents, initial_scores=initial_scores, k=5)
 
         # Results should be returned
         assert len(results) > 0
@@ -194,28 +179,26 @@ class TestPropertyReranker:
         docs = [
             Document(
                 page_content="Expensive luxury apartment",
-                metadata={"id": "1", "price": 5000, "has_parking": False}
+                metadata={"id": "1", "price": 5000, "has_parking": False},
             ),
             Document(
                 page_content="Affordable apartment with parking",
-                metadata={"id": "2", "price": 900, "has_parking": True}
+                metadata={"id": "2", "price": 900, "has_parking": True},
             ),
             Document(
                 page_content="Mid-range property",
-                metadata={"id": "3", "price": 1500, "has_parking": False}
+                metadata={"id": "3", "price": 1500, "has_parking": False},
             ),
         ]
 
         query = "affordable apartment with parking"
-        user_prefs = {'max_price': 1000, 'has_parking': True}
+        user_prefs = {"max_price": 1000, "has_parking": True}
 
-        results = reranker.rerank(
-            query, docs, user_preferences=user_prefs, k=3
-        )
+        results = reranker.rerank(query, docs, user_preferences=user_prefs, k=3)
 
         # Best match should be at top
         top_doc, top_score = results[0]
-        assert top_doc.metadata['id'] == "2"  # Matches all criteria
+        assert top_doc.metadata["id"] == "2"  # Matches all criteria
 
 
 class TestSimpleReranker:
@@ -241,14 +224,8 @@ class TestSimpleReranker:
         reranker = SimpleReranker(boost_factor=2.0)
 
         docs = [
-            Document(
-                page_content="A nice property",
-                metadata={"id": "1"}
-            ),
-            Document(
-                page_content="An apartment in Krakow",
-                metadata={"id": "2"}
-            ),
+            Document(page_content="A nice property", metadata={"id": "1"}),
+            Document(page_content="An apartment in Krakow", metadata={"id": "2"}),
         ]
 
         query = "apartment Krakow"
@@ -256,7 +233,7 @@ class TestSimpleReranker:
 
         # Document with exact matches should rank higher
         top_doc, top_score = results[0]
-        assert top_doc.metadata['id'] == "2"
+        assert top_doc.metadata["id"] == "2"
 
 
 class TestRerankerFactory:
@@ -278,10 +255,7 @@ class TestRerankerEdgeCases:
 
     def test_single_document(self, reranker):
         """Test reranking with single document."""
-        doc = Document(
-            page_content="An apartment",
-            metadata={"id": "1", "price": 1000}
-        )
+        doc = Document(page_content="An apartment", metadata={"id": "1", "price": 1000})
 
         results = reranker.rerank("apartment", [doc], k=5)
 
@@ -341,12 +315,20 @@ class TestRerankerEdgeCases:
 
         reranker = StrategicReranker(valuation_model=FailingModel())
         docs = [
-            Document(page_content="A", metadata={"id": "1", "city": "Warsaw", "price": 100000, "area_sqm": 50}),
-            Document(page_content="B", metadata={"id": "2", "city": "Warsaw", "price": 250000, "area_sqm": 50}),
+            Document(
+                page_content="A",
+                metadata={"id": "1", "city": "Warsaw", "price": 100000, "area_sqm": 50},
+            ),
+            Document(
+                page_content="B",
+                metadata={"id": "2", "city": "Warsaw", "price": 250000, "area_sqm": 50},
+            ),
         ]
 
         with caplog.at_level("WARNING"):
-            results = reranker.rerank_with_strategy("apartment", docs, strategy="investor", initial_scores=[1.0, 1.0])
+            results = reranker.rerank_with_strategy(
+                "apartment", docs, strategy="investor", initial_scores=[1.0, 1.0]
+            )
 
         assert len(results) == 2
         assert any("Failed to value property 1" in record.message for record in caplog.records)

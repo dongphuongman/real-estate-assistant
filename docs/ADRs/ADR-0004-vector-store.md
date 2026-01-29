@@ -11,4 +11,3 @@ Project requires hybrid retrieval with persistence and geo filters.
 ## Consequences
 - Quick local indexing; predictable dev.
 - Managed DB option for scalability and backups.
-

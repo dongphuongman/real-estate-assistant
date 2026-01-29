@@ -22,4 +22,3 @@ def test_api_reference_md_endpoints_in_sync_with_openapi_snapshot() -> None:
     committed_section = _extract_endpoints_section(committed)
     assert committed_section.startswith(generated[:100])
     assert generated in committed_section
-

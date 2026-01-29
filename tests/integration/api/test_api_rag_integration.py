@@ -180,7 +180,9 @@ def test_rag_upload_mixed_text_and_pdf_returns_partial_success(monkeypatch, tmp_
             ("files", ("guide.txt", b"Hello from text", "text/plain")),
             ("files", ("doc.pdf", b"%PDF-", "application/pdf")),
         ]
-        resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
+        resp = client.post(
+            "/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"}
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert data["chunks_indexed"] > 0
@@ -204,7 +206,9 @@ def test_rag_upload_pdf_only_returns_422_when_missing_dependency(monkeypatch, tm
 
         monkeypatch.setattr(builtins, "__import__", _fake_import)
         files = {"files": ("doc.pdf", b"%PDF-", "application/pdf")}
-        resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
+        resp = client.post(
+            "/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"}
+        )
         assert resp.status_code == 422
         detail = resp.json()["detail"]
         assert detail["message"] == "No documents were indexed"
@@ -234,7 +238,9 @@ def test_rag_upload_docx_only_returns_422_when_missing_dependency(monkeypatch, t
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             )
         }
-        resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
+        resp = client.post(
+            "/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"}
+        )
         assert resp.status_code == 422
         detail = resp.json()["detail"]
         assert detail["message"] == "No documents were indexed"
@@ -254,7 +260,9 @@ def test_rag_upload_document_extraction_error_returns_422(monkeypatch, tmp_path)
             lambda **_kwargs: (_ for _ in ()).throw(DocumentTextExtractionError("bad parse")),
         )
         files = {"files": ("guide.txt", b"Hello", "text/plain")}
-        resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
+        resp = client.post(
+            "/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"}
+        )
         assert resp.status_code == 422
         detail = resp.json()["detail"]
         assert detail["message"] == "No documents were indexed"
@@ -269,9 +277,13 @@ def test_rag_upload_empty_text_returns_422(monkeypatch, tmp_path):
     app.dependency_overrides[get_knowledge_store] = lambda: store
 
     try:
-        monkeypatch.setattr("api.routers.rag.extract_text_segments_from_upload", lambda **_kwargs: [])
+        monkeypatch.setattr(
+            "api.routers.rag.extract_text_segments_from_upload", lambda **_kwargs: []
+        )
         files = {"files": ("guide.txt", b"Hello", "text/plain")}
-        resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
+        resp = client.post(
+            "/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"}
+        )
         assert resp.status_code == 422
         detail = resp.json()["detail"]
         assert detail["message"] == "No documents were indexed"
@@ -290,7 +302,9 @@ def test_rag_upload_ingest_exception_returns_422(monkeypatch, tmp_path):
 
     try:
         files = {"files": ("guide.txt", b"Hello", "text/plain")}
-        resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
+        resp = client.post(
+            "/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"}
+        )
         assert resp.status_code == 422
         detail = resp.json()["detail"]
         assert detail["message"] == "No documents were indexed"
@@ -312,7 +326,9 @@ def test_rag_upload_total_payload_too_large_returns_413_and_no_ingest(monkeypatc
             ("files", ("a.md", b"123", "text/markdown")),
             ("files", ("b.md", b"456", "text/markdown")),
         ]
-        resp = client.post("/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"})
+        resp = client.post(
+            "/api/v1/rag/upload", files=files, headers={"X-API-Key": "dev-secret-key"}
+        )
         assert resp.status_code == 413
         assert getattr(store, "_docs", []) == []
     finally:

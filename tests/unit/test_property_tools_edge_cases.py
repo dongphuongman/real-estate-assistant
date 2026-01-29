@@ -46,8 +46,14 @@ def test_property_comparison_tool_handles_no_docs_and_formats_values():
     class Store:
         def get_properties_by_ids(self, ids):
             return [
-                Document(page_content="", metadata={"id": "p1", "price": 1000, "price_per_sqm": 20, "area_sqm": 50}),
-                Document(page_content="", metadata={"id": "p2", "price": 2000, "price_per_sqm": 40, "area_sqm": 60}),
+                Document(
+                    page_content="",
+                    metadata={"id": "p1", "price": 1000, "price_per_sqm": 20, "area_sqm": 50},
+                ),
+                Document(
+                    page_content="",
+                    metadata={"id": "p2", "price": 2000, "price_per_sqm": 40, "area_sqm": 60},
+                ),
             ]
 
     tool2 = PropertyComparisonTool(vector_store=Store())

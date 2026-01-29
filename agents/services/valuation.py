@@ -3,8 +3,7 @@ from typing import Any, Dict, Protocol, runtime_checkable
 
 @runtime_checkable
 class ValuationProvider(Protocol):
-    def estimate_value(self, property_data: Dict[str, Any]) -> float:
-        ...
+    def estimate_value(self, property_data: Dict[str, Any]) -> float: ...
 
 
 class SimpleValuationProvider:

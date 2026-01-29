@@ -18,5 +18,6 @@ def test_property_to_document_metadata_is_primitives(tmp_path):
     assert "chroma_dp" not in md
     # Check types are allowed
     for k, v in md.items():
-        assert (v is None) or isinstance(v, (str, int, float, bool)), f"Key {k} has invalid type {type(v)}"
-
+        assert (v is None) or isinstance(v, (str, int, float, bool)), (
+            f"Key {k} has invalid type {type(v)}"
+        )

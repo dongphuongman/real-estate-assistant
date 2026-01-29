@@ -33,7 +33,7 @@ class PropertyReranker:
         boost_exact_matches: float = 1.5,
         boost_metadata_match: float = 1.3,
         boost_quality_signals: float = 1.2,
-        diversity_penalty: float = 0.9
+        diversity_penalty: float = 0.9,
     ):
         """
         Initialize reranker.
@@ -55,7 +55,7 @@ class PropertyReranker:
         documents: List[Document],
         initial_scores: Optional[List[float]] = None,
         user_preferences: Optional[Dict[str, Any]] = None,
-        k: Optional[int] = None
+        k: Optional[int] = None,
     ) -> List[Tuple[Document, float]]:
         """
         Rerank documents based on multiple relevance signals.
@@ -90,22 +90,22 @@ class PropertyReranker:
 
             # Boost for exact keyword matches
             exact_match_boost = self._calculate_exact_match_boost(query, doc)
-            score *= (1.0 + exact_match_boost * self.boost_exact_matches)
+            score *= 1.0 + exact_match_boost * self.boost_exact_matches
 
             # Boost for metadata alignment
             if user_preferences:
                 metadata_boost = self._calculate_metadata_boost(doc, user_preferences)
-                score *= (1.0 + metadata_boost * self.boost_metadata_match)
+                score *= 1.0 + metadata_boost * self.boost_metadata_match
 
             # Boost for quality signals
             quality_boost = self._calculate_quality_boost(doc)
-            score *= (1.0 + quality_boost * self.boost_quality_signals)
+            score *= 1.0 + quality_boost * self.boost_quality_signals
 
             reranked.append((doc, score))
-            
+
         # Sort by score descending
         reranked.sort(key=lambda x: x[1], reverse=True)
-        
+
         # Apply diversity penalty if many results
         if len(reranked) > 5:
             reranked = self._apply_diversity_penalty(reranked)
@@ -113,27 +113,43 @@ class PropertyReranker:
         # Return top k
         if k:
             reranked = reranked[:k]
-            
+
         return reranked
 
     def _calculate_exact_match_boost(self, query: str, doc: Document) -> float:
         """Calculate boost for exact keyword matches in title/description."""
         text = (doc.page_content + " " + doc.metadata.get("title", "")).lower()
-        
+
         stop_words = {
-            'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at',
-            'to', 'for', 'of', 'with', 'by', 'from', 'show', 'find',
-            'me', 'i', 'want', 'need', 'looking'
+            "the",
+            "a",
+            "an",
+            "and",
+            "or",
+            "but",
+            "in",
+            "on",
+            "at",
+            "to",
+            "for",
+            "of",
+            "with",
+            "by",
+            "from",
+            "show",
+            "find",
+            "me",
+            "i",
+            "want",
+            "need",
+            "looking",
         }
-        
-        query_terms = [
-            t for t in query.lower().split() 
-            if len(t) > 2 and t not in stop_words
-        ]
-        
+
+        query_terms = [t for t in query.lower().split() if len(t) > 2 and t not in stop_words]
+
         if not query_terms:
             return 0.0
-            
+
         matches = sum(1 for term in query_terms if term in text)
         return matches / len(query_terms)
 
@@ -142,28 +158,28 @@ class PropertyReranker:
         metadata = doc.metadata
         total_prefs = 0
         matches = 0
-        
+
         # Location match
         if "city" in preferences and preferences["city"]:
             total_prefs += 1
             if metadata.get("city", "").lower() == preferences["city"].lower():
                 matches += 1
-                
+
         # Property type match
         if "property_type" in preferences and preferences["property_type"]:
             total_prefs += 1
             if metadata.get("property_type", "").lower() == preferences["property_type"].lower():
                 matches += 1
-        
+
         # Rooms match (exact or range could be better, but sticking to simple)
         if "rooms" in preferences and preferences["rooms"]:
             total_prefs += 1
             if metadata.get("rooms") == preferences["rooms"]:
                 matches += 1
-                
+
         if total_prefs == 0:
             return 0.0
-            
+
         return matches / total_prefs
 
     def _calculate_quality_boost(self, doc: Document) -> float:
@@ -171,32 +187,31 @@ class PropertyReranker:
         score = 0.0
         metadata = doc.metadata
         max_score = 0.0
-        
+
         # Bonus for having price
         max_score += 0.2
         if metadata.get("price"):
             score += 0.2
-            
+
         # Bonus for having area
         max_score += 0.2
         if metadata.get("area_sqm"):
             score += 0.2
-            
+
         # Bonus for having images (mock check)
         max_score += 0.1
-        if metadata.get("has_images", True): # Default to true for now
+        if metadata.get("has_images", True):  # Default to true for now
             score += 0.1
-            
+
         # Bonus for detailed description
         max_score += 0.2
         if len(doc.page_content) > 200:
             score += 0.2
-            
+
         return score / max_score if max_score > 0 else 0.0
 
     def _apply_diversity_penalty(
-        self,
-        reranked: List[Tuple[Document, float]]
+        self, reranked: List[Tuple[Document, float]]
     ) -> List[Tuple[Document, float]]:
         """
         Apply diversity penalty to avoid too many similar results.
@@ -215,21 +230,21 @@ class PropertyReranker:
             metadata = doc.metadata
 
             # Penalize if we've seen this city multiple times
-            city = metadata.get('city', '').lower()
+            city = metadata.get("city", "").lower()
             if city in seen_cities:
                 adjusted_score *= self.diversity_penalty
             else:
                 seen_cities.add(city)
 
             # Penalize if we've seen this price range
-            price = metadata.get('price', 0)
+            price = metadata.get("price", 0)
             if price:
                 price_range = f"{int(price // 500) * 500}-{int(price // 500 + 1) * 500}"
                 if price_range in seen_price_ranges and len(seen_price_ranges) > 2:
                     adjusted_score *= self.diversity_penalty
                 else:
                     seen_price_ranges.add(price_range)
-            
+
             adjusted.append((doc, adjusted_score))
 
         # Re-sort by adjusted scores
@@ -242,7 +257,7 @@ class StrategicReranker(PropertyReranker):
     """
     Advanced reranker using valuation models and user strategies.
     """
-    
+
     def __init__(
         self,
         valuation_model: Any = None,
@@ -250,28 +265,28 @@ class StrategicReranker(PropertyReranker):
     ) -> None:
         super().__init__(**kwargs)
         self.valuation_model = valuation_model
-        
+
     def rerank_with_strategy(
         self,
         query: str,
         documents: List[Document],
         strategy: str = "balanced",  # "investor", "family", "bargain", "balanced"
         initial_scores: Optional[List[float]] = None,
-        k: Optional[int] = None
+        k: Optional[int] = None,
     ) -> List[Tuple[Document, float]]:
         """
         Rerank based on a high-level strategy.
         """
         # First do base reranking
         base_results = self.rerank(query, documents, initial_scores)
-        
+
         # Apply strategy-specific boosts
         strategic_results = []
-        
+
         for doc, score in base_results:
             metadata = doc.metadata
             strategy_boost = 0.0
-            
+
             if strategy == "investor":
                 # Boost high yield / low price per sqm / undervalued
                 # This requires ValuationModel
@@ -280,30 +295,30 @@ class StrategicReranker(PropertyReranker):
                         # Convert doc metadata to Property object
                         # Use loose validation or default values for missing fields to avoid validation errors
                         prop_data = metadata.copy()
-                        
+
                         # Ensure required fields for Property validation if missing
-                        if 'city' not in prop_data:
-                            prop_data['city'] = "Unknown" 
-                        
+                        if "city" not in prop_data:
+                            prop_data["city"] = "Unknown"
+
                         # Create Property instance (handle potential validation errors)
                         prop = Property(**prop_data)
-                        
+
                         valuation = self.valuation_model.predict_fair_price(prop)
-                        
+
                         # Boost based on valuation status
                         if valuation.valuation_status == "highly_undervalued":
                             strategy_boost += 0.5
                         elif valuation.valuation_status == "undervalued":
                             strategy_boost += 0.3
-                            
+
                         # Also boost based on ROI/Yield if available in metadata
                         # (Assuming calculated elsewhere or estimated)
-                        
+
                     except Exception as e:
                         # Log warning but continue
                         logger.warning(f"Failed to value property {metadata.get('id')}: {e}")
                         pass
-                
+
                 # Simple heuristic boosts if no model (or if model failed)
                 if metadata.get("price") and metadata.get("area_sqm"):
                     raw_price = metadata.get("price")
@@ -318,7 +333,7 @@ class StrategicReranker(PropertyReranker):
                                     strategy_boost += 0.3
                         except (ValueError, TypeError):
                             pass
-                        
+
             elif strategy == "family":
                 # Boost rooms, garden, area, parking
                 rooms = float(metadata.get("rooms", 0) or 0)
@@ -328,23 +343,23 @@ class StrategicReranker(PropertyReranker):
                     strategy_boost += 0.3
                 if metadata.get("has_parking"):
                     strategy_boost += 0.2
-                    
+
             elif strategy == "bargain":
                 # Boost lowest price
                 price = float(metadata.get("price", 0) or 0)
-                if price > 0 and price < 200000: # Arbitrary "cheap"
+                if price > 0 and price < 200000:  # Arbitrary "cheap"
                     strategy_boost += 0.5
-                    
+
             # Apply boost
             new_score = score * (1.0 + strategy_boost)
             strategic_results.append((doc, new_score))
-            
+
         # Sort
         strategic_results.sort(key=lambda x: x[1], reverse=True)
-        
+
         if k:
             strategic_results = strategic_results[:k]
-            
+
         return strategic_results
 
 
@@ -369,7 +384,7 @@ class SimpleReranker:
         query: str,
         documents: List[Document],
         initial_scores: Optional[List[float]] = None,
-        k: Optional[int] = None
+        k: Optional[int] = None,
     ) -> List[Tuple[Document, float]]:
         """Simple reranking based on exact matches."""
         if not documents:
@@ -399,21 +414,23 @@ class SimpleReranker:
 
         # Sort by score
         reranked.sort(key=lambda x: x[1], reverse=True)
-        
+
         if k:
             reranked = reranked[:k]
-            
+
         return reranked
 
 
-def create_reranker(valuation_model: Any = None, advanced: bool = True) -> Union[StrategicReranker, SimpleReranker]:
+def create_reranker(
+    valuation_model: Any = None, advanced: bool = True
+) -> Union[StrategicReranker, SimpleReranker]:
     """
     Factory function to create a StrategicReranker.
-    
+
     Args:
         valuation_model: Optional valuation model for investor strategy
         advanced: Whether to use advanced StrategicReranker or SimpleReranker
-        
+
     Returns:
         Configured Reranker
     """

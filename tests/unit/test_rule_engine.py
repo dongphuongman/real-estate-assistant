@@ -18,7 +18,6 @@ def test_ignore_patterns_skip_validation_for_known_paths():
     assert violations == []
 
 
-
 def test_no_secrets_rule_detects_potential_secret():
     eng = RuleEngine()
     content = "API_KEY = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'"

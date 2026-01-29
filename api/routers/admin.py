@@ -84,7 +84,9 @@ async def ingest_data(request: IngestRequest):
 
                 # Stop if we've reached the limit
                 if len(all_properties) >= max_props:
-                    logger.warning(f"Reached maximum property limit ({max_props}), stopping ingestion")
+                    logger.warning(
+                        f"Reached maximum property limit ({max_props}), stopping ingestion"
+                    )
                     break
             except Exception as e:
                 msg = f"Failed to load {url}: {str(e)}"
@@ -102,15 +104,14 @@ async def ingest_data(request: IngestRequest):
             message += f" (reached maximum property limit of {max_props})"
 
         return IngestResponse(
-            message=message,
-            properties_processed=len(all_properties),
-            errors=errors
+            message=message, properties_processed=len(all_properties), errors=errors
         )
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Ingestion failed: {e}")
         raise HTTPException(status_code=500, detail=str(e)) from e
+
 
 @router.post("/admin/reindex", response_model=ReindexResponse)
 async def reindex_data(
@@ -126,28 +127,26 @@ async def reindex_data(
             status_code=404,
             detail="No data in cache. Run ingestion first.",
         )
-        
+
     try:
         # In a real scenario, we might want to clear the collection first if
         # request.clear_existing is True.
         # Currently ChromaPropertyStore doesn't expose a clear method publicly in the
         # interface we checked.
         # We will just add documents (upsert behavior usually).
-        
+
         if not store:
             raise HTTPException(status_code=503, detail="Vector store unavailable")
 
         store.add_documents(collection.properties)
-        
-        return ReindexResponse(
-            message="Reindexing successful",
-            count=len(collection.properties)
-        )
+
+        return ReindexResponse(message="Reindexing successful", count=len(collection.properties))
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Reindexing failed: {e}")
         raise HTTPException(status_code=500, detail=str(e)) from e
+
 
 @router.get("/admin/health", response_model=HealthCheck)
 async def admin_health_check(
@@ -157,16 +156,17 @@ async def admin_health_check(
     Detailed health check for admin.
     """
     status = "healthy"
-    
+
     # Check cache
     if not load_collection():
         status = "degraded (no data cache)"
-        
+
     # Check vector store
     if not store:
         status = "degraded (vector store unavailable)"
-        
+
     return HealthCheck(status=status, version=settings.version)
+
 
 @router.get("/admin/metrics", response_model=dict)
 async def admin_metrics(request: Request):

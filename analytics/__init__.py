@@ -14,14 +14,14 @@ from .market_insights import (
 from .session_tracker import EventType, SessionStats, SessionTracker
 
 __all__ = [
-    'MarketInsights',
-    'PriceTrend',
-    'MarketStatistics',
-    'TrendDirection',
-    'LocationInsights',
-    'PropertyTypeInsights',
-    'HistoricalPricePoint',
-    'SessionTracker',
-    'SessionStats',
-    'EventType'
+    "MarketInsights",
+    "PriceTrend",
+    "MarketStatistics",
+    "TrendDirection",
+    "LocationInsights",
+    "PropertyTypeInsights",
+    "HistoricalPricePoint",
+    "SessionTracker",
+    "SessionStats",
+    "EventType",
 ]

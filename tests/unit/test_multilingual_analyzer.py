@@ -10,7 +10,7 @@ def test_multilingual_query_analyzer():
     # "Поиск квартиры с парковкой и лифтом построенной после 2010 года"
     ru_query = "Поиск квартиры с парковкой и лифтом построенной после 2010 года"
     analysis_ru = analyzer.analyze(ru_query)
-    
+
     assert analysis_ru.intent == QueryIntent.SIMPLE_RETRIEVAL
     assert analysis_ru.extracted_filters.get("must_have_parking") is True
     assert analysis_ru.extracted_filters.get("must_have_elevator") is True
@@ -20,7 +20,7 @@ def test_multilingual_query_analyzer():
     # "Havuzlu ve enerji sınıfı A olan daire bul"
     tr_query = "Havuzlu ve enerji sınıfı A olan daire bul"
     analysis_tr = analyzer.analyze(tr_query)
-    
+
     assert analysis_tr.intent == QueryIntent.SIMPLE_RETRIEVAL
     assert analysis_tr.extracted_filters.get("has_pool") is True
     assert analysis_tr.extracted_filters.get("energy_ratings") == ["A"]
@@ -39,4 +39,3 @@ def test_multilingual_query_analyzer():
     tr_compare = "İstanbul vs Ankara karşılaştır"
     analysis_tr_comp = analyzer.analyze(tr_compare)
     assert analysis_tr_comp.intent == QueryIntent.COMPARISON
-

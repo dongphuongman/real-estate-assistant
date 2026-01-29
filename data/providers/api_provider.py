@@ -4,6 +4,7 @@ API Data Provider Implementation.
 This module provides a generic API provider and a Mock implementation
 for fetching property data from external services.
 """
+
 import logging
 from typing import List, Optional
 
@@ -15,16 +16,17 @@ from data.schemas import Property
 
 logger = logging.getLogger(__name__)
 
+
 class APIProvider(BaseDataProvider):
     """
     Generic API Provider for fetching property data.
-    
+
     Attributes:
         api_url (str): Base URL of the API.
         api_key (str): API Key for authentication.
         timeout (int): Request timeout in seconds.
     """
-    
+
     def __init__(self, api_url: str, api_key: Optional[str] = None, timeout: int = 10):
         super().__init__(source=api_url)
         self.api_key = api_key
@@ -34,13 +36,17 @@ class APIProvider(BaseDataProvider):
     def validate_source(self) -> bool:
         """
         Check if the API is reachable.
-        
+
         Returns:
             bool: True if reachable, False otherwise.
         """
         try:
             response = requests.get(str(self.source), headers=self.headers, timeout=self.timeout)
-            return response.status_code in [200, 401, 403]  # 401/403 means reachable but auth failed
+            return response.status_code in [
+                200,
+                401,
+                403,
+            ]  # 401/403 means reachable but auth failed
         except requests.RequestException:
             logger.error(f"Failed to connect to API: {self.source}")
             return False
@@ -48,12 +54,14 @@ class APIProvider(BaseDataProvider):
     def load_data(self) -> pd.DataFrame:
         """
         Load data from the API.
-        
+
         Returns:
             pd.DataFrame: DataFrame containing raw property data.
         """
         try:
-            response = requests.get(f"{str(self.source)}/properties", headers=self.headers, timeout=self.timeout)
+            response = requests.get(
+                f"{str(self.source)}/properties", headers=self.headers, timeout=self.timeout
+            )
             response.raise_for_status()
             data = response.json()
             # specific mapping logic should be handled by subclasses or a mapping config
@@ -66,7 +74,7 @@ class APIProvider(BaseDataProvider):
     def get_properties(self) -> List[Property]:
         """
         Get validated Property objects.
-        
+
         Returns:
             List[Property]: List of Property objects.
         """
@@ -87,7 +95,7 @@ class MockRealEstateAPIProvider(APIProvider):
     Mock Provider to simulate a Real Estate API.
     Useful for testing and development without a real API key.
     """
-    
+
     def __init__(self) -> None:
         super().__init__(api_url="https://mock.api.realestate.com", api_key="mock-key")
 
@@ -110,7 +118,7 @@ class MockRealEstateAPIProvider(APIProvider):
                 "property_type": "apartment",
                 "listing_type": "rent",
                 "rooms": 2,
-                "area_sqm": 55.0
+                "area_sqm": 55.0,
             },
             {
                 "id": "mock_2",
@@ -122,8 +130,8 @@ class MockRealEstateAPIProvider(APIProvider):
                 "property_type": "studio",
                 "listing_type": "rent",
                 "rooms": 1,
-                "area_sqm": 30.0
-            }
+                "area_sqm": 30.0,
+            },
         ]
         return pd.DataFrame(mock_data)
 

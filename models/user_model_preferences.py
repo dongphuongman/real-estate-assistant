@@ -35,8 +35,14 @@ class UserModelPreferences:
 
         return cls(
             user_email=str(data.get("user_email") or "").strip(),
-            preferred_provider=(str(data.get("preferred_provider")).strip() if data.get("preferred_provider") else None),
-            preferred_model=(str(data.get("preferred_model")).strip() if data.get("preferred_model") else None),
+            preferred_provider=(
+                str(data.get("preferred_provider")).strip()
+                if data.get("preferred_provider")
+                else None
+            ),
+            preferred_model=(
+                str(data.get("preferred_model")).strip() if data.get("preferred_model") else None
+            ),
             updated_at=parsed_updated_at,
         )
 
@@ -112,4 +118,3 @@ class UserModelPreferencesManager:
 
 
 MODEL_PREFS_MANAGER = UserModelPreferencesManager()
-

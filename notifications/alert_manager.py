@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 
 class AlertType(str, Enum):
     """Types of alerts."""
+
     PRICE_DROP = "price_drop"
     NEW_PROPERTY = "new_property"
     SAVED_SEARCH_MATCH = "saved_search_match"
@@ -39,6 +40,7 @@ class AlertType(str, Enum):
 @dataclass
 class Alert:
     """Alert information."""
+
     alert_type: AlertType
     user_email: str
     property_id: Optional[str] = None
@@ -63,11 +65,7 @@ class AlertManager:
     Handles price drops, new properties, and saved search matches.
     """
 
-    def __init__(
-        self,
-        email_service: EmailService,
-        storage_path: str = ".alerts"
-    ):
+    def __init__(self, email_service: EmailService, storage_path: str = ".alerts"):
         """
         Initialize alert manager.
 
@@ -177,7 +175,9 @@ class AlertManager:
                     prop_dict = prop.dict()
             data["property"] = prop_dict
             if alert.property_id is None:
-                alert.property_id = str(prop_dict.get("id")) if prop_dict.get("id") is not None else None
+                alert.property_id = (
+                    str(prop_dict.get("id")) if prop_dict.get("id") is not None else None
+                )
         return Alert(
             alert_type=alert.alert_type,
             user_email=alert.user_email,
@@ -224,19 +224,19 @@ class AlertManager:
         """Load pending alerts from disk."""
         if not self.pending_alerts_file.exists():
             return []
-        
+
         try:
-            with open(self.pending_alerts_file, 'r') as f:
+            with open(self.pending_alerts_file, "r") as f:
                 data = json.load(f)
                 alerts = []
-                for a_data in data.get('alerts', []):
+                for a_data in data.get("alerts", []):
                     # Convert dict back to Alert object
                     # Handle datetime conversion
-                    if 'created_at' in a_data and a_data['created_at']:
-                        a_data['created_at'] = datetime.fromisoformat(a_data['created_at'])
-                    if 'sent_at' in a_data and a_data['sent_at']:
-                        a_data['sent_at'] = datetime.fromisoformat(a_data['sent_at'])
-                    
+                    if "created_at" in a_data and a_data["created_at"]:
+                        a_data["created_at"] = datetime.fromisoformat(a_data["created_at"])
+                    if "sent_at" in a_data and a_data["sent_at"]:
+                        a_data["sent_at"] = datetime.fromisoformat(a_data["sent_at"])
+
                     alerts.append(Alert(**a_data))
                 return alerts
         except Exception as e:
@@ -246,21 +246,25 @@ class AlertManager:
     def _save_pending_alerts(self):
         """Save pending alerts to disk."""
         try:
-            with open(self.pending_alerts_file, 'w') as f:
+            with open(self.pending_alerts_file, "w") as f:
                 # Convert alerts to dicts, handling datetime
                 alerts_data = []
                 for alert in self._pending_alerts:
-                    a_dict = asdict(alert) if hasattr(alert, '__dataclass_fields__') else alert.__dict__
-                    if a_dict.get('created_at'):
-                        a_dict['created_at'] = a_dict['created_at'].isoformat()
-                    if a_dict.get('sent_at'):
-                        a_dict['sent_at'] = a_dict['sent_at'].isoformat()
+                    a_dict = (
+                        asdict(alert) if hasattr(alert, "__dataclass_fields__") else alert.__dict__
+                    )
+                    if a_dict.get("created_at"):
+                        a_dict["created_at"] = a_dict["created_at"].isoformat()
+                    if a_dict.get("sent_at"):
+                        a_dict["sent_at"] = a_dict["sent_at"].isoformat()
                     alerts_data.append(a_dict)
-                
-                json.dump({
-                    'alerts': alerts_data,
-                    'last_updated': datetime.now().isoformat()
-                }, f, indent=2, default=str)
+
+                json.dump(
+                    {"alerts": alerts_data, "last_updated": datetime.now().isoformat()},
+                    f,
+                    indent=2,
+                    default=str,
+                )
         except Exception as e:
             logger.error(f"Error saving pending alerts: {e}")
 
@@ -268,7 +272,7 @@ class AlertManager:
         self,
         current_properties: PropertyCollection,
         previous_properties: PropertyCollection,
-        threshold_percent: float = 5.0
+        threshold_percent: float = 5.0,
     ) -> List[Dict[str, Any]]:
         """
         Detect price drops between property listings.
@@ -285,8 +289,7 @@ class AlertManager:
 
         # Create lookup dict for previous prices
         prev_prices = {
-            self._get_property_key(prop): prop.price
-            for prop in previous_properties.properties
+            self._get_property_key(prop): prop.price for prop in previous_properties.properties
         }
 
         # Check for price drops
@@ -301,21 +304,21 @@ class AlertManager:
                     percent_drop = ((old_price - new_price) / old_price) * 100
 
                     if percent_drop >= threshold_percent:
-                        price_drops.append({
-                            'property': prop,
-                            'old_price': old_price,
-                            'new_price': new_price,
-                            'percent_drop': percent_drop,
-                            'savings': old_price - new_price,
-                            'property_key': prop_key
-                        })
+                        price_drops.append(
+                            {
+                                "property": prop,
+                                "old_price": old_price,
+                                "new_price": new_price,
+                                "percent_drop": percent_drop,
+                                "savings": old_price - new_price,
+                                "property_key": prop_key,
+                            }
+                        )
 
         return price_drops
 
     def check_new_property_matches(
-        self,
-        new_properties: PropertyCollection,
-        saved_searches: List[SavedSearch]
+        self, new_properties: PropertyCollection, saved_searches: List[SavedSearch]
     ) -> Dict[str, List[Property]]:
         """
         Find new properties matching saved searches.
@@ -344,10 +347,7 @@ class AlertManager:
         return matches
 
     def send_price_drop_alert(
-        self,
-        user_email: str,
-        property_info: Dict[str, Any],
-        send_email: bool = True
+        self, user_email: str, property_info: Dict[str, Any], send_email: bool = True
     ) -> bool:
         """
         Send price drop alert to user.
@@ -360,7 +360,7 @@ class AlertManager:
         Returns:
             True if sent successfully
         """
-        prop = property_info['property']
+        prop = property_info["property"]
         if isinstance(prop, dict):
             prop = Property(**prop)
             property_info = dict(property_info)
@@ -380,15 +380,15 @@ class AlertManager:
 
         <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px;">
             <h3>{prop.property_type} in {prop.city}</h3>
-            <p><strong>Previous Price:</strong> <span style="text-decoration: line-through;">${property_info['old_price']:.0f}</span></p>
-            <p><strong>New Price:</strong> <span style="color: #2ca02c; font-size: 1.2em;">${property_info['new_price']:.0f}</span></p>
-            <p><strong>Savings:</strong> <span style="color: #2ca02c;">-{property_info['percent_drop']:.1f}% (${property_info['savings']:.0f})</span></p>
+            <p><strong>Previous Price:</strong> <span style="text-decoration: line-through;">${property_info["old_price"]:.0f}</span></p>
+            <p><strong>New Price:</strong> <span style="color: #2ca02c; font-size: 1.2em;">${property_info["new_price"]:.0f}</span></p>
+            <p><strong>Savings:</strong> <span style="color: #2ca02c;">-{property_info["percent_drop"]:.1f}% (${property_info["savings"]:.0f})</span></p>
 
             <div style="margin-top: 15px;">
                 <p><strong>Details:</strong></p>
                 <ul>
                     <li>{prop.rooms} bedrooms, {prop.bathrooms} bathrooms</li>
-                    {'<li>' + str(prop.area_sqm) + ' sqm</li>' if prop.area_sqm else ''}
+                    {"<li>" + str(prop.area_sqm) + " sqm</li>" if prop.area_sqm else ""}
                 </ul>
             </div>
         </div>
@@ -397,10 +397,7 @@ class AlertManager:
         if send_email:
             try:
                 self.email_service.send_email(
-                    to_email=user_email,
-                    subject=subject,
-                    body=message,
-                    html=True
+                    to_email=user_email, subject=subject, body=message, html=True
                 )
                 self._mark_alert_sent(alert_key)
                 return True
@@ -418,7 +415,7 @@ class AlertManager:
         search_id: str,
         search_name: str,
         matching_properties: List[Property],
-        send_email: bool = True
+        send_email: bool = True,
     ) -> bool:
         """
         Send new property match alert to user.
@@ -447,13 +444,15 @@ class AlertManager:
             properties_html += f"""
             <div style="background-color: white; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #1f77b4;">
                 <h3 style="margin-top: 0;">{prop.city} - ${prop.price}/month</h3>
-                <p>{prop.rooms} bed | {prop.bathrooms} bath{' | ' + str(prop.area_sqm) + ' sqm' if prop.area_sqm else ''}</p>
+                <p>{prop.rooms} bed | {prop.bathrooms} bath{" | " + str(prop.area_sqm) + " sqm" if prop.area_sqm else ""}</p>
                 <p><strong>Amenities:</strong> {amenities}</p>
             </div>
             """
 
         if len(matching_properties) > 5:
-            properties_html += f"<p><em>...and {len(matching_properties) - 5} more properties</em></p>"
+            properties_html += (
+                f"<p><em>...and {len(matching_properties) - 5} more properties</em></p>"
+            )
 
         message = f"""
         <h2 style="color: #1f77b4;">🏠 New Property Matches!</h2>
@@ -464,10 +463,7 @@ class AlertManager:
         if send_email:
             try:
                 self.email_service.send_email(
-                    to_email=user_email,
-                    subject=subject,
-                    body=message,
-                    html=True
+                    to_email=user_email, subject=subject, body=message, html=True
                 )
                 self._mark_alert_sent(alert_key)
                 return True
@@ -485,7 +481,7 @@ class AlertManager:
         saved_searches: List[SavedSearch],
         digest_generator: "DigestGenerator",
         digest_type: str = "daily",
-        send_email: bool = True
+        send_email: bool = True,
     ) -> bool:
         """
         Generate and send a digest for a user.
@@ -509,11 +505,7 @@ class AlertManager:
             return False
 
     def send_digest(
-        self,
-        user_email: str,
-        digest_type: str,
-        data: Dict[str, Any],
-        send_email: bool = True
+        self, user_email: str, digest_type: str, data: Dict[str, Any], send_email: bool = True
     ) -> bool:
         """
         Send daily or weekly digest to user.
@@ -532,15 +524,14 @@ class AlertManager:
         if alert_key in self._sent_alerts:
             return False
 
-        subject, message = DigestTemplate.render(digest_type, data, user_name=user_email.split("@")[0])
+        subject, message = DigestTemplate.render(
+            digest_type, data, user_name=user_email.split("@")[0]
+        )
 
         if send_email:
             try:
                 self.email_service.send_email(
-                    to_email=user_email,
-                    subject=subject,
-                    body=message,
-                    html=True
+                    to_email=user_email, subject=subject, body=message, html=True
                 )
                 self._mark_alert_sent(alert_key)
                 return True
@@ -564,7 +555,7 @@ class AlertManager:
             str(prop.property_type),
             str(int(prop.rooms)) if prop.rooms is not None else "rooms",
             str(int(prop.bathrooms)) if prop.bathrooms is not None else "baths",
-            str(int(prop.area_sqm)) if prop.area_sqm is not None else "area"
+            str(int(prop.area_sqm)) if prop.area_sqm is not None else "area",
         ]
         return "_".join(key_parts)
 
@@ -597,19 +588,20 @@ class AlertManager:
             return set()
 
         try:
-            with open(self.sent_alerts_file, 'r') as f:
+            with open(self.sent_alerts_file, "r") as f:
                 data = json.load(f)
-                return set(data.get('alerts', []))
+                return set(data.get("alerts", []))
         except Exception:
             return set()
 
     def _save_sent_alerts(self):
         """Save sent alerts to disk."""
-        with open(self.sent_alerts_file, 'w') as f:
-            json.dump({
-                'alerts': list(self._sent_alerts),
-                'last_updated': datetime.now().isoformat()
-            }, f, indent=2)
+        with open(self.sent_alerts_file, "w") as f:
+            json.dump(
+                {"alerts": list(self._sent_alerts), "last_updated": datetime.now().isoformat()},
+                f,
+                indent=2,
+            )
 
     def get_alert_statistics(self) -> Dict[str, int]:
         """
@@ -618,10 +610,7 @@ class AlertManager:
         Returns:
             Dictionary with alert counts
         """
-        return {
-            'total_sent': len(self._sent_alerts),
-            'pending': len(self._pending_alerts)
-        }
+        return {"total_sent": len(self._sent_alerts), "pending": len(self._pending_alerts)}
 
     def clear_old_alerts(self, days: int = 30):
         """

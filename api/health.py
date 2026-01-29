@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 class HealthStatus(str, Enum):
     """Health status enumeration."""
+
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
@@ -348,7 +349,8 @@ async def require_healthy(dependencies: Optional[list[str]] = None) -> None:
     if health.status == HealthStatus.UNHEALTHY:
         # Find unhealthy dependencies
         unhealthy_deps = [
-            name for name, dep in health.dependencies.items()
+            name
+            for name, dep in health.dependencies.items()
             if dep.status == HealthStatus.UNHEALTHY
         ]
 

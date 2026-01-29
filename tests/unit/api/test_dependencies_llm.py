@@ -39,7 +39,9 @@ def test_get_llm_uses_default_provider_and_first_model(monkeypatch):
     settings.default_model = None
     fake = FakeProvider()
     monkeypatch.setattr(ModelProviderFactory, "_PROVIDERS", {"openai": lambda config=None: fake})
-    monkeypatch.setattr(ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: fake)
+    monkeypatch.setattr(
+        ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: fake
+    )
     llm = deps.get_llm()
     assert getattr(llm, "model_id", None) == "model-a"
     assert fake.created and fake.created[0]["model_id"] == "model-a"
@@ -51,7 +53,9 @@ def test_get_llm_raises_when_no_models(monkeypatch):
     settings.default_model = None
     fake = FakeProvider()
     fake._models = []
-    monkeypatch.setattr(ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: fake)
+    monkeypatch.setattr(
+        ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: fake
+    )
     with pytest.raises(RuntimeError):
         _ = deps.get_llm()
 
@@ -61,7 +65,9 @@ def test_get_llm_uses_user_model_preferences(monkeypatch):
     settings.default_model = None
 
     fake = FakeProvider()
-    monkeypatch.setattr(ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: fake)
+    monkeypatch.setattr(
+        ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: fake
+    )
 
     class _Prefs:
         preferred_provider = "openai"
@@ -150,10 +156,14 @@ def test_create_llm_with_resolved_model_id_uses_ollama_default_model_when_missin
 
     class OllamaProvider(FakeProvider):
         def list_models(self):
-            raise AssertionError("list_models should not be called when ollama_default_model is set")
+            raise AssertionError(
+                "list_models should not be called when ollama_default_model is set"
+            )
 
     ollama = OllamaProvider()
-    monkeypatch.setattr(ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: ollama)
+    monkeypatch.setattr(
+        ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: ollama
+    )
 
     llm, resolved_model = deps._create_llm_with_resolved_model_id("ollama", None)
     assert resolved_model == "llama3.2:3b"
@@ -161,12 +171,16 @@ def test_create_llm_with_resolved_model_id_uses_ollama_default_model_when_missin
 
 
 def test_get_optional_llm_returns_none_on_error(monkeypatch):
-    monkeypatch.setattr(deps, "get_llm", lambda x_user_email=None: (_ for _ in ()).throw(RuntimeError("no llm")))
+    monkeypatch.setattr(
+        deps, "get_llm", lambda x_user_email=None: (_ for _ in ()).throw(RuntimeError("no llm"))
+    )
     assert deps.get_optional_llm() is None
 
 
 def test_get_optional_llm_returns_llm_when_available(monkeypatch):
-    monkeypatch.setattr(deps, "get_llm", lambda x_user_email=None: types.SimpleNamespace(model_id="m1"))
+    monkeypatch.setattr(
+        deps, "get_llm", lambda x_user_email=None: types.SimpleNamespace(model_id="m1")
+    )
     llm = deps.get_optional_llm()
     assert getattr(llm, "model_id", None) == "m1"
 
@@ -204,7 +218,9 @@ def test_get_optional_llm_with_details_uses_explicit_overrides(monkeypatch):
     settings.default_provider = "openai"
     settings.default_model = None
     fake = FakeProvider()
-    monkeypatch.setattr(ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: fake)
+    monkeypatch.setattr(
+        ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: fake
+    )
     llm, provider, model = deps.get_optional_llm_with_details(
         x_user_email=None,
         provider_override="openai",
@@ -219,7 +235,9 @@ def test_get_optional_llm_with_details_ignores_preferences_on_exception(monkeypa
     settings.default_provider = "openai"
     settings.default_model = None
     fake = FakeProvider()
-    monkeypatch.setattr(ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: fake)
+    monkeypatch.setattr(
+        ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: fake
+    )
 
     class _Mgr:
         def get_preferences(self, user_email: str):
@@ -237,12 +255,16 @@ def test_get_optional_llm_with_details_ignores_preferences_on_exception(monkeypa
     assert model == "model-a"
 
 
-def test_get_optional_llm_with_details_uses_preferred_provider_when_model_override_only(monkeypatch):
+def test_get_optional_llm_with_details_uses_preferred_provider_when_model_override_only(
+    monkeypatch,
+):
     settings.default_provider = "openai"
     settings.default_model = None
 
     fake = FakeProvider()
-    monkeypatch.setattr(ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: fake)
+    monkeypatch.setattr(
+        ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: fake
+    )
 
     class _Prefs:
         preferred_provider = "ollama"
@@ -273,7 +295,9 @@ def test_get_optional_llm_with_details_returns_none_on_explicit_failure(monkeypa
     settings.default_provider = "openai"
     settings.default_model = None
     failing = FailingProvider()
-    monkeypatch.setattr(ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: failing)
+    monkeypatch.setattr(
+        ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: failing
+    )
 
     llm, provider, model = deps.get_optional_llm_with_details(
         x_user_email=None,

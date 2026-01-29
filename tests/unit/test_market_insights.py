@@ -567,31 +567,66 @@ def historical_market_properties():
     properties = [
         # Last month
         Property(
-            id="h1", city="Krakow", price=1000, area_sqm=50, rooms=2, bathrooms=1,
-            scraped_at=now - timedelta(days=30), property_type=PropertyType.APARTMENT,
-            has_parking=True, has_garden=False
+            id="h1",
+            city="Krakow",
+            price=1000,
+            area_sqm=50,
+            rooms=2,
+            bathrooms=1,
+            scraped_at=now - timedelta(days=30),
+            property_type=PropertyType.APARTMENT,
+            has_parking=True,
+            has_garden=False,
         ),
         Property(
-            id="h2", city="Krakow", price=1100, area_sqm=50, rooms=2, bathrooms=1,
-            scraped_at=now - timedelta(days=25), property_type=PropertyType.APARTMENT,
-            has_parking=True, has_garden=False
+            id="h2",
+            city="Krakow",
+            price=1100,
+            area_sqm=50,
+            rooms=2,
+            bathrooms=1,
+            scraped_at=now - timedelta(days=25),
+            property_type=PropertyType.APARTMENT,
+            has_parking=True,
+            has_garden=False,
         ),
         # Two months ago
         Property(
-            id="h3", city="Krakow", price=900, area_sqm=50, rooms=2, bathrooms=1,
-            scraped_at=now - timedelta(days=60), property_type=PropertyType.APARTMENT,
-            has_parking=True, has_garden=False
+            id="h3",
+            city="Krakow",
+            price=900,
+            area_sqm=50,
+            rooms=2,
+            bathrooms=1,
+            scraped_at=now - timedelta(days=60),
+            property_type=PropertyType.APARTMENT,
+            has_parking=True,
+            has_garden=False,
         ),
         Property(
-            id="h4", city="Krakow", price=950, area_sqm=50, rooms=2, bathrooms=1,
-            scraped_at=now - timedelta(days=65), property_type=PropertyType.APARTMENT,
-            has_parking=True, has_garden=False
+            id="h4",
+            city="Krakow",
+            price=950,
+            area_sqm=50,
+            rooms=2,
+            bathrooms=1,
+            scraped_at=now - timedelta(days=65),
+            property_type=PropertyType.APARTMENT,
+            has_parking=True,
+            has_garden=False,
         ),
         # Current month
         Property(
-            id="h5", city="Krakow", price=1200, area_sqm=50, rooms=2, bathrooms=1,
-            scraped_at=now, property_type=PropertyType.APARTMENT,
-            has_parking=True, has_garden=False
+            id="h5",
+            city="Krakow",
+            price=1200,
+            area_sqm=50,
+            rooms=2,
+            bathrooms=1,
+            scraped_at=now,
+            property_type=PropertyType.APARTMENT,
+            has_parking=True,
+            has_garden=False,
         ),
     ]
     return PropertyCollection(properties=properties, total_count=len(properties))
@@ -604,21 +639,21 @@ class TestHistoricalTrends:
         """Test retrieving historical price trends."""
         insights = MarketInsights(historical_market_properties)
         trends = insights.get_historical_price_trends(interval="month", city="Krakow")
-        
+
         # We should have at least 1 group (if months are same) or up to 3 groups
         assert len(trends) >= 1
-        
+
         # Sort by date
         sorted_trends = sorted(trends, key=lambda x: x.start_date)
         assert trends == sorted_trends
-        
+
         # Check specific values
         for trend in trends:
             assert isinstance(trend, HistoricalPricePoint)
             assert trend.average_price > 0
             assert trend.volume > 0
             assert trend.period
-            
+
     def test_get_historical_price_trends_empty(self):
         """Test historical trends with no data."""
         empty_collection = PropertyCollection(properties=[], total_count=0)
@@ -629,11 +664,11 @@ class TestHistoricalTrends:
     def test_get_historical_price_trends_intervals(self, historical_market_properties):
         """Test different intervals."""
         insights = MarketInsights(historical_market_properties)
-        
+
         # Test year interval
         trends_year = insights.get_historical_price_trends(interval="year", city="Krakow")
         assert len(trends_year) >= 1
-        
+
         # Test invalid interval
         with pytest.raises(ValueError):
             insights.get_historical_price_trends(interval="invalid")

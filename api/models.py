@@ -56,19 +56,11 @@ class SearchRequest(BaseModel):
     alpha: float = 0.7
 
     # Geospatial
-    lat: Optional[float] = Field(
-        None, ge=-90, le=90, description="Latitude for geo-search"
-    )
-    lon: Optional[float] = Field(
-        None, ge=-180, le=180, description="Longitude for geo-search"
-    )
+    lat: Optional[float] = Field(None, ge=-90, le=90, description="Latitude for geo-search")
+    lon: Optional[float] = Field(None, ge=-180, le=180, description="Longitude for geo-search")
     radius_km: Optional[float] = Field(None, gt=0, description="Radius in kilometers")
-    min_lat: Optional[float] = Field(
-        None, ge=-90, le=90, description="Bounding box min latitude"
-    )
-    max_lat: Optional[float] = Field(
-        None, ge=-90, le=90, description="Bounding box max latitude"
-    )
+    min_lat: Optional[float] = Field(None, ge=-90, le=90, description="Bounding box min latitude")
+    max_lat: Optional[float] = Field(None, ge=-90, le=90, description="Bounding box max latitude")
     min_lon: Optional[float] = Field(
         None, ge=-180, le=180, description="Bounding box min longitude"
     )
@@ -227,7 +219,9 @@ class ModelPreferencesUpdate(BaseModel):
     @model_validator(mode="after")
     def validate_not_empty(self) -> "ModelPreferencesUpdate":
         if self.preferred_provider is None and self.preferred_model is None:
-            raise ValueError("At least one of preferred_provider or preferred_model must be provided")
+            raise ValueError(
+                "At least one of preferred_provider or preferred_model must be provided"
+            )
         return self
 
 
@@ -286,31 +280,39 @@ class LocationAnalysisResponse(BaseModel):
     lat: Optional[float] = None
     lon: Optional[float] = None
 
+
 class ValuationRequest(BaseModel):
     property_id: str
+
 
 class ValuationResponse(BaseModel):
     property_id: str
     estimated_value: float
 
+
 class LegalCheckRequest(BaseModel):
     text: str
+
 
 class LegalCheckResponse(BaseModel):
     risks: List[Dict[str, Any]] = []
     score: float = 0.0
 
+
 class DataEnrichmentRequest(BaseModel):
     address: str
+
 
 class DataEnrichmentResponse(BaseModel):
     address: str
     data: Dict[str, Any] = {}
 
+
 class CRMContactRequest(BaseModel):
     name: str
     phone: Optional[str] = None
     email: Optional[str] = None
+
 
 class CRMContactResponse(BaseModel):
     id: str
@@ -372,17 +374,20 @@ class PromptTemplateApplyResponse(BaseModel):
 # SSE Event Models for TASK-003.1
 class SSEContentEvent(BaseModel):
     """SSE content chunk event."""
+
     content: str
 
 
 class SSEErrorEvent(BaseModel):
     """SSE error event for streaming failures."""
+
     error: str
     request_id: Optional[str] = None
 
 
 class SSEMetaEvent(BaseModel):
     """SSE meta event with sources and session info."""
+
     sources: List[Dict[str, Any]] = Field(default_factory=list)
     sources_truncated: bool = False
     session_id: str

@@ -137,4 +137,3 @@ def test_crm_sync_is_gated_by_webhook_url():
     finally:
         settings.crm_webhook_url = old_url
         app.dependency_overrides = {}
-

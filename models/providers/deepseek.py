@@ -49,10 +49,7 @@ class DeepSeekProvider(RemoteModelProvider):
                 display_name="DeepSeek R1 (Latest - Reasoning)",
                 provider_name=self.display_name,
                 context_window=64000,
-                pricing=PricingInfo(
-                    input_price_per_1m=0.55,
-                    output_price_per_1m=2.19
-                ),
+                pricing=PricingInfo(input_price_per_1m=0.55, output_price_per_1m=2.19),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -60,17 +57,19 @@ class DeepSeekProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Latest advanced reasoning model - competes with o1, shows chain-of-thought",
-                recommended_for=["complex reasoning", "math problems", "scientific analysis", "detailed explanations"]
+                recommended_for=[
+                    "complex reasoning",
+                    "math problems",
+                    "scientific analysis",
+                    "detailed explanations",
+                ],
             ),
             ModelInfo(
                 id="deepseek-chat",
                 display_name="DeepSeek V3 Chat (Recommended)",
                 provider_name=self.display_name,
                 context_window=64000,
-                pricing=PricingInfo(
-                    input_price_per_1m=0.14,
-                    output_price_per_1m=0.28
-                ),
+                pricing=PricingInfo(input_price_per_1m=0.14, output_price_per_1m=0.28),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -78,17 +77,19 @@ class DeepSeekProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Latest general-purpose chat model (V3) - strong reasoning at low cost",
-                recommended_for=["general chat", "reasoning", "coding assistance", "cost-effective"]
+                recommended_for=[
+                    "general chat",
+                    "reasoning",
+                    "coding assistance",
+                    "cost-effective",
+                ],
             ),
             ModelInfo(
                 id="deepseek-coder",
                 display_name="DeepSeek Coder",
                 provider_name=self.display_name,
                 context_window=64000,
-                pricing=PricingInfo(
-                    input_price_per_1m=0.14,
-                    output_price_per_1m=0.28
-                ),
+                pricing=PricingInfo(input_price_per_1m=0.14, output_price_per_1m=0.28),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -96,7 +97,12 @@ class DeepSeekProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Specialized coding model trained on code and technical documentation",
-                recommended_for=["code generation", "debugging", "code review", "technical documentation"]
+                recommended_for=[
+                    "code generation",
+                    "debugging",
+                    "code review",
+                    "technical documentation",
+                ],
             ),
         ]
 
@@ -106,7 +112,7 @@ class DeepSeekProvider(RemoteModelProvider):
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
         streaming: bool = True,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> BaseChatModel:
         """Create DeepSeek model instance using OpenAI-compatible client."""
         # Validate model exists
@@ -114,8 +120,7 @@ class DeepSeekProvider(RemoteModelProvider):
         if not model_info:
             available = [m.id for m in self.list_models()]
             raise ValueError(
-                f"Model '{model_id}' not available. "
-                f"Available models: {', '.join(available)}"
+                f"Model '{model_id}' not available. Available models: {', '.join(available)}"
             )
 
         # Validate API key
@@ -132,7 +137,7 @@ class DeepSeekProvider(RemoteModelProvider):
             streaming=streaming,
             api_key=SecretStr(api_key),
             base_url=self.config.get("base_url", "https://api.deepseek.com"),
-            **kwargs
+            **kwargs,
         )
         if max_tokens is not None:
             llm.max_tokens = max_tokens

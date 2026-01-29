@@ -40,18 +40,23 @@ def get_vector_store() -> Optional["ChromaPropertyStore"]:
         store = ChromaPropertyStore(
             persist_directory=str(settings.chroma_dir),
             collection_name="properties",
-            embedding_model=settings.embedding_model
+            embedding_model=settings.embedding_model,
         )
         return store
     except Exception:
         return None
 
+
 def _create_llm(provider_name: str, model_id: Optional[str]) -> BaseChatModel:
-    llm, _resolved_model_id = _create_llm_with_resolved_model_id(provider_name=provider_name, model_id=model_id)
+    llm, _resolved_model_id = _create_llm_with_resolved_model_id(
+        provider_name=provider_name, model_id=model_id
+    )
     return llm
 
 
-def _create_llm_with_resolved_model_id(provider_name: str, model_id: Optional[str]) -> tuple[BaseChatModel, str]:
+def _create_llm_with_resolved_model_id(
+    provider_name: str, model_id: Optional[str]
+) -> tuple[BaseChatModel, str]:
     factory_provider = ModelProviderFactory.get_provider(provider_name)
     resolved_model_id = model_id
 
@@ -111,7 +116,9 @@ def get_llm(
                     return _create_llm("ollama", settings.ollama_default_model)
             except Exception:
                 pass
-        raise RuntimeError(f"Could not initialize LLM with provider '{primary_provider}': {e}") from e
+        raise RuntimeError(
+            f"Could not initialize LLM with provider '{primary_provider}': {e}"
+        ) from e
 
 
 def get_optional_llm(
@@ -144,18 +151,23 @@ def get_optional_llm_with_details(
             logger.warning("Failed to load model preferences: %s", e)
 
     has_overrides = bool(
-        (provider_override and provider_override.strip()) or (model_override and model_override.strip())
+        (provider_override and provider_override.strip())
+        or (model_override and model_override.strip())
     )
 
     if provider_override and provider_override.strip():
         primary_provider = provider_override.strip()
-        primary_model = model_override.strip() if model_override and model_override.strip() else None
+        primary_model = (
+            model_override.strip() if model_override and model_override.strip() else None
+        )
     elif model_override and model_override.strip():
         primary_provider = preferred_provider or default_provider_name
         primary_model = model_override.strip()
     else:
         primary_provider = preferred_provider or default_provider_name
-        primary_model = preferred_model if preferred_provider else (preferred_model or default_model_id)
+        primary_model = (
+            preferred_model if preferred_provider else (preferred_model or default_model_id)
+        )
 
     try:
         llm, resolved_model_id = _create_llm_with_resolved_model_id(primary_provider, primary_model)
@@ -207,7 +219,9 @@ def parse_rag_qa_request(
         return payload
 
     if question is None or not question.strip():
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Question must not be empty")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Question must not be empty"
+        )
 
     return RagQaRequest(
         question=question,
@@ -227,16 +241,19 @@ def get_rag_qa_llm_details(
         model_override=rag_request.model,
     )
 
+
 def get_valuation_provider() -> Optional[ValuationProvider]:
     if settings.valuation_mode != "simple":
         return None
     return SimpleValuationProvider()
+
 
 def get_crm_connector() -> Optional[CRMConnector]:
     url = settings.crm_webhook_url
     if not url:
         return None
     return WebhookCRMConnector(url)
+
 
 @lru_cache()
 def get_knowledge_store() -> Optional["KnowledgeStore"]:
@@ -255,19 +272,22 @@ def get_knowledge_store() -> Optional["KnowledgeStore"]:
     except Exception:
         return None
 
+
 def get_data_enrichment_service() -> Optional[DataEnrichmentService]:
     if not settings.data_enrichment_enabled:
         return None
     return BasicDataEnrichmentService()
+
 
 def get_legal_check_service() -> Optional[LegalCheckService]:
     if settings.legal_check_mode != "basic":
         return None
     return BasicLegalCheckService()
 
+
 def get_agent(
     store: Annotated[Optional["ChromaPropertyStore"], Depends(get_vector_store)],
-    llm: Annotated[BaseChatModel, Depends(get_llm)]
+    llm: Annotated[BaseChatModel, Depends(get_llm)],
 ) -> Any:
     """
     Get initialized Hybrid Agent.
@@ -278,6 +298,6 @@ def get_agent(
         # But we can try to create it with a dummy retriever or fail
         # HybridPropertyAgent needs a retriever.
         raise RuntimeError("Vector Store unavailable, cannot create Hybrid Agent")
-    
+
     retriever = store.get_retriever()
     return create_hybrid_agent(llm=llm, retriever=retriever)

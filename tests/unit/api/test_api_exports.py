@@ -51,9 +51,7 @@ def test_export_properties_by_ids_csv_success(mock_store, valid_headers):
 def test_export_properties_by_search_json_success(mock_store, valid_headers):
     mock_store.hybrid_search.return_value = [
         (
-            Document(
-                page_content="x", metadata={"id": "p1", "city": "Warsaw", "price": 1200}
-            ),
+            Document(page_content="x", metadata={"id": "p1", "city": "Warsaw", "price": 1200}),
             0.9,
         )
     ]
@@ -156,9 +154,7 @@ def test_documents_to_export_rows_fills_missing_id():
     assert rows == [{"city": "Krakow", "id": "unknown"}]
 
 
-def test_export_properties_by_ids_markdown_success(
-    mock_store, valid_headers, monkeypatch
-):
+def test_export_properties_by_ids_markdown_success(mock_store, valid_headers, monkeypatch):
     def fake_export_to_markdown(self, include_summary, max_properties):
         return "markdown-export"
 
@@ -190,9 +186,7 @@ def test_export_properties_by_ids_excel_success(mock_store, valid_headers, monke
         buf.seek(0)
         return buf
 
-    monkeypatch.setattr(
-        exports_router.PropertyExporter, "export_to_excel", fake_export_to_excel
-    )
+    monkeypatch.setattr(exports_router.PropertyExporter, "export_to_excel", fake_export_to_excel)
     mock_store.get_properties_by_ids.return_value = [
         Document(page_content="x", metadata={"id": "p1"})
     ]
@@ -220,9 +214,7 @@ def test_export_properties_by_ids_pdf_success(mock_store, valid_headers, monkeyp
         buf.seek(0)
         return buf
 
-    monkeypatch.setattr(
-        exports_router.PropertyExporter, "export_to_pdf", fake_export_to_pdf
-    )
+    monkeypatch.setattr(exports_router.PropertyExporter, "export_to_pdf", fake_export_to_pdf)
     mock_store.get_properties_by_ids.return_value = [
         Document(page_content="x", metadata={"id": "p1"})
     ]

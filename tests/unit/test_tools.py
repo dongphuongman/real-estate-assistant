@@ -26,10 +26,7 @@ class TestMortgageCalculatorTool:
     def test_basic_mortgage_calculation(self, mortgage_calc):
         """Test basic mortgage calculation."""
         result = mortgage_calc._run(
-            property_price=100000,
-            down_payment_percent=20,
-            interest_rate=4.0,
-            loan_years=30
+            property_price=100000, down_payment_percent=20, interest_rate=4.0, loan_years=30
         )
 
         assert "100,000" in result
@@ -43,10 +40,7 @@ class TestMortgageCalculatorTool:
         # Test case: $100k, 20% down, 4%, 30 years
         # Expected monthly: ~$382
         result = mortgage_calc._run(
-            property_price=100000,
-            down_payment_percent=20,
-            interest_rate=4.0,
-            loan_years=30
+            property_price=100000, down_payment_percent=20, interest_rate=4.0, loan_years=30
         )
 
         # Extract monthly payment from result
@@ -57,9 +51,9 @@ class TestMortgageCalculatorTool:
         principal = 100000 * 0.8  # 80,000
         monthly_rate = 0.04 / 12
         num_payments = 30 * 12
-        expected_monthly = (
-            principal * monthly_rate * (1 + monthly_rate) ** num_payments
-        ) / ((1 + monthly_rate) ** num_payments - 1)
+        expected_monthly = (principal * monthly_rate * (1 + monthly_rate) ** num_payments) / (
+            (1 + monthly_rate) ** num_payments - 1
+        )
 
         # Should be around $382
         assert 370 <= expected_monthly <= 390
@@ -68,36 +62,24 @@ class TestMortgageCalculatorTool:
         """Test with different down payment percentages."""
         # 10% down
         result1 = mortgage_calc._run(
-            property_price=200000,
-            down_payment_percent=10,
-            interest_rate=5.0,
-            loan_years=30
+            property_price=200000, down_payment_percent=10, interest_rate=5.0, loan_years=30
         )
         assert "20,000" in result1  # 10% down
 
         # 30% down
         result2 = mortgage_calc._run(
-            property_price=200000,
-            down_payment_percent=30,
-            interest_rate=5.0,
-            loan_years=30
+            property_price=200000, down_payment_percent=30, interest_rate=5.0, loan_years=30
         )
         assert "60,000" in result2  # 30% down
 
     def test_different_interest_rates(self, mortgage_calc):
         """Test with different interest rates."""
         result1 = mortgage_calc._run(
-            property_price=150000,
-            down_payment_percent=20,
-            interest_rate=3.5,
-            loan_years=30
+            property_price=150000, down_payment_percent=20, interest_rate=3.5, loan_years=30
         )
 
         result2 = mortgage_calc._run(
-            property_price=150000,
-            down_payment_percent=20,
-            interest_rate=6.0,
-            loan_years=30
+            property_price=150000, down_payment_percent=20, interest_rate=6.0, loan_years=30
         )
 
         # Both should complete without error
@@ -107,17 +89,11 @@ class TestMortgageCalculatorTool:
     def test_different_loan_terms(self, mortgage_calc):
         """Test with different loan terms."""
         result_15 = mortgage_calc._run(
-            property_price=180000,
-            down_payment_percent=20,
-            interest_rate=4.5,
-            loan_years=15
+            property_price=180000, down_payment_percent=20, interest_rate=4.5, loan_years=15
         )
 
         result_30 = mortgage_calc._run(
-            property_price=180000,
-            down_payment_percent=20,
-            interest_rate=4.5,
-            loan_years=30
+            property_price=180000, down_payment_percent=20, interest_rate=4.5, loan_years=30
         )
 
         assert "15" in result_15 or "Total Interest (15 years)" in result_15
@@ -126,10 +102,7 @@ class TestMortgageCalculatorTool:
     def test_zero_interest_rate(self, mortgage_calc):
         """Test with 0% interest rate."""
         result = mortgage_calc._run(
-            property_price=120000,
-            down_payment_percent=20,
-            interest_rate=0.0,
-            loan_years=30
+            property_price=120000, down_payment_percent=20, interest_rate=0.0, loan_years=30
         )
 
         # With 0% interest, monthly should be loan / months
@@ -140,10 +113,7 @@ class TestMortgageCalculatorTool:
     def test_invalid_property_price(self, mortgage_calc):
         """Test with invalid property price."""
         result = mortgage_calc._run(
-            property_price=-100000,
-            down_payment_percent=20,
-            interest_rate=4.0,
-            loan_years=30
+            property_price=-100000, down_payment_percent=20, interest_rate=4.0, loan_years=30
         )
 
         assert "Error" in result
@@ -154,7 +124,7 @@ class TestMortgageCalculatorTool:
             property_price=100000,
             down_payment_percent=150,  # Invalid: > 100%
             interest_rate=4.0,
-            loan_years=30
+            loan_years=30,
         )
 
         assert "Error" in result
@@ -165,7 +135,7 @@ class TestMortgageCalculatorTool:
             property_price=100000,
             down_payment_percent=20,
             interest_rate=-5.0,  # Invalid: negative
-            loan_years=30
+            loan_years=30,
         )
 
         assert "Error" in result
@@ -176,7 +146,7 @@ class TestMortgageCalculatorTool:
             property_price=100000,
             down_payment_percent=20,
             interest_rate=4.0,
-            loan_years=0  # Invalid: zero years
+            loan_years=0,  # Invalid: zero years
         )
 
         assert "Error" in result
@@ -192,10 +162,7 @@ class TestMortgageCalculatorTool:
         # $180,000 property, 20% down, 4.5% rate, 30 years
         # Expected: ~$730/month
         result = mortgage_calc._run(
-            property_price=180000,
-            down_payment_percent=20,
-            interest_rate=4.5,
-            loan_years=30
+            property_price=180000, down_payment_percent=20, interest_rate=4.5, loan_years=30
         )
 
         # Verify key components are present
@@ -238,9 +205,9 @@ class TestPropertyComparisonTool:
         result = comparator._run("apartment A vs apartment B")
 
         # Should mention comparison features
-        assert any(word in result.lower() for word in [
-            "price", "comparison", "compare", "pros", "cons"
-        ])
+        assert any(
+            word in result.lower() for word in ["price", "comparison", "compare", "pros", "cons"]
+        )
 
 
 class TestPriceAnalysisTool:
@@ -267,9 +234,10 @@ class TestPriceAnalysisTool:
         result = price_analyzer._run("Warsaw")
 
         # Should mention analytical features
-        assert any(word in result.lower() for word in [
-            "average", "median", "price", "analysis", "statistics"
-        ])
+        assert any(
+            word in result.lower()
+            for word in ["average", "median", "price", "analysis", "statistics"]
+        )
 
 
 class TestLocationAnalysisTool:
@@ -296,9 +264,9 @@ class TestLocationAnalysisTool:
         result = location_analyzer._run("Warsaw downtown")
 
         # Should mention location features
-        assert any(word in result.lower() for word in [
-            "location", "proximity", "neighborhood", "distance"
-        ])
+        assert any(
+            word in result.lower() for word in ["location", "proximity", "neighborhood", "distance"]
+        )
 
 
 class TestToolFactory:
@@ -309,8 +277,8 @@ class TestToolFactory:
         tools = create_property_tools()
 
         assert len(tools) == 4
-        assert all(hasattr(tool, 'name') for tool in tools)
-        assert all(hasattr(tool, 'description') for tool in tools)
+        assert all(hasattr(tool, "name") for tool in tools)
+        assert all(hasattr(tool, "description") for tool in tools)
 
     def test_tool_names_unique(self):
         """Test that tool names are unique."""
@@ -328,7 +296,7 @@ class TestToolFactory:
             "mortgage_calculator",
             "property_comparator",
             "price_analyzer",
-            "location_analyzer"
+            "location_analyzer",
         }
 
         assert tool_names == expected_names

@@ -109,9 +109,15 @@ def test_production_accepts_specific_cors_origins():
     old_cors = os.environ.get("CORS_ALLOW_ORIGINS")
     try:
         os.environ["ENVIRONMENT"] = "production"
-        os.environ["CORS_ALLOW_ORIGINS"] = "https://example.com, https://app.local, https://api.example.com"
+        os.environ["CORS_ALLOW_ORIGINS"] = (
+            "https://example.com, https://app.local, https://api.example.com"
+        )
         settings = AppSettings()
-        assert settings.cors_allow_origins == ["https://example.com", "https://app.local", "https://api.example.com"]
+        assert settings.cors_allow_origins == [
+            "https://example.com",
+            "https://app.local",
+            "https://api.example.com",
+        ]
     finally:
         if old_env is None:
             os.environ.pop("ENVIRONMENT", None)

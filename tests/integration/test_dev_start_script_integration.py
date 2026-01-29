@@ -17,4 +17,3 @@ def test_dev_start_script_dry_run_does_not_print_secrets() -> None:
     assert "FRONTEND_CMD:" in out
     assert "dev-secret-key" not in out
     assert "<redacted>" in out
-

@@ -79,9 +79,7 @@ async def get_api_key(
                     "request_id": request_id,
                 },
             )
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials"
-            )
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
 
     if _is_valid_api_key(candidate, normalized_keys):
         return candidate
@@ -100,6 +98,4 @@ async def get_api_key(
         },
     )
 
-    raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials"
-    )
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")

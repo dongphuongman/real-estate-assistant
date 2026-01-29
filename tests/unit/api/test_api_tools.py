@@ -37,9 +37,7 @@ def test_mortgage_calculator_success(valid_headers):
         "interest_rate": 5.0,
         "loan_years": 30,
     }
-    response = client.post(
-        "/api/v1/tools/mortgage-calculator", json=payload, headers=valid_headers
-    )
+    response = client.post("/api/v1/tools/mortgage-calculator", json=payload, headers=valid_headers)
     assert response.status_code == 200
     data = response.json()
     assert data["monthly_payment"] > 0
@@ -54,9 +52,7 @@ def test_mortgage_calculator_invalid_input(valid_headers):
         "interest_rate": 5.0,
         "loan_years": 30,
     }
-    response = client.post(
-        "/api/v1/tools/mortgage-calculator", json=payload, headers=valid_headers
-    )
+    response = client.post("/api/v1/tools/mortgage-calculator", json=payload, headers=valid_headers)
     assert response.status_code == 422
     # Pydantic validation error returns a detail list
     detail = response.json()["detail"]
@@ -92,12 +88,8 @@ class _FakeVectorStore:
 
 def test_compare_properties_success(valid_headers):
     store = _FakeVectorStore()
-    store.add_doc(
-        Document(page_content="a", metadata={"id": "p1", "price": 100000, "city": "X"})
-    )
-    store.add_doc(
-        Document(page_content="b", metadata={"id": "p2", "price": 150000, "city": "X"})
-    )
+    store.add_doc(Document(page_content="a", metadata={"id": "p1", "price": 100000, "city": "X"}))
+    store.add_doc(Document(page_content="b", metadata={"id": "p2", "price": 150000, "city": "X"}))
     app.dependency_overrides[get_vector_store] = lambda: store
 
     response = client.post(
@@ -250,9 +242,7 @@ def test_price_analysis_success(valid_headers):
 def test_location_analysis_success(valid_headers):
     store = _FakeVectorStore()
     store.add_doc(
-        Document(
-            page_content="a", metadata={"id": "p1", "city": "X", "lat": 1.0, "lon": 2.0}
-        )
+        Document(page_content="a", metadata={"id": "p1", "city": "X", "lat": 1.0, "lon": 2.0})
     )
     app.dependency_overrides[get_vector_store] = lambda: store
 

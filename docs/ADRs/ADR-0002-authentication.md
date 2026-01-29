@@ -10,4 +10,3 @@ MVP uses a single API key to protect `/api/v1/*`. The web app proxies API calls 
 ## Consequences
 - Simple free-tier protection with rate limiting.
 - Migration path to proper auth without breaking API surface.
-

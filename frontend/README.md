@@ -45,7 +45,7 @@ This is the Next.js frontend for the AI Real Estate Assistant (V4).
 - **Search**: Property search interface.
 - **Chat**: AI Assistant interaction.
 - **Analytics**: Market insights and dashboards.
- 
+
 ## Security Notes
 - Do not expose secrets in the client. Use server-side env vars and the Next.js `/api/v1/*` proxy to inject `X-API-Key`.
 - In production, authenticate requests server-side; let the backend enforce rate limits and CORS.

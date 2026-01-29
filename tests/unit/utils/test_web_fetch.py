@@ -16,7 +16,9 @@ def test_fetch_url_text_rejects_non_http_schemes():
 
 
 def test_fetch_url_text_rejects_localhost(monkeypatch):
-    monkeypatch.setattr(web_fetch.socket, "getaddrinfo", lambda *_a, **_k: [("", "", "", "", ("127.0.0.1", 0))])
+    monkeypatch.setattr(
+        web_fetch.socket, "getaddrinfo", lambda *_a, **_k: [("", "", "", "", ("127.0.0.1", 0))]
+    )
     assert (
         web_fetch.fetch_url_text(
             "http://localhost:8000/",
@@ -50,7 +52,9 @@ def test_searxng_search_parses_results(monkeypatch):
         )
 
     monkeypatch.setattr(web_fetch.requests, "get", fake_get)
-    results = web_fetch.searxng_search(searxng_url="http://searxng:8080", query="hello", max_results=1, timeout_seconds=1)
+    results = web_fetch.searxng_search(
+        searxng_url="http://searxng:8080", query="hello", max_results=1, timeout_seconds=1
+    )
     assert len(results) == 1
     assert results[0].title == "t1"
     assert results[0].url == "https://example.com/a"

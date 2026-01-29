@@ -25,8 +25,7 @@ def export_openapi_schema(*, app: FastAPI, output_path: Path, check: bool = Fals
         existing_text = output_path.read_text(encoding="utf-8").replace("\r\n", "\n")
         if existing_text != output_text:
             raise SystemExit(
-                "OpenAPI schema drift detected. Regenerate with: "
-                "python scripts\\export_openapi.py"
+                "OpenAPI schema drift detected. Regenerate with: python scripts\\export_openapi.py"
             )
         return
 

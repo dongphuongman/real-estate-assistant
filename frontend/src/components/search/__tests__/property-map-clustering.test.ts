@@ -58,4 +58,3 @@ describe("property-map-clustering", () => {
     expect(items.some((i) => i.kind === "cluster")).toBe(true);
   });
 });
-

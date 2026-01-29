@@ -24,10 +24,7 @@ def test_schema_type_handles_refs_arrays_and_unions() -> None:
         schema_type({"oneOf": [{"type": "string"}, {"$ref": "#/components/schemas/X"}]})
         == "string | X"
     )
-    assert (
-        schema_type({"anyOf": [{"type": "string"}, {"type": "integer"}]})
-        == "string | integer"
-    )
+    assert schema_type({"anyOf": [{"type": "string"}, {"type": "integer"}]}) == "string | integer"
     assert schema_type({"type": "array", "items": "not-a-dict"}) == "array"
     assert schema_type({"enum": list(range(20))}).endswith("…)")
     assert schema_type({}) == "object"
@@ -94,10 +91,7 @@ def test_serialize_api_reference_markdown_handles_unknown_version_and_method_sor
 
 def test_iter_openapi_operations_skips_invalid_shapes() -> None:
     assert list(iter_openapi_operations({"paths": []})) == []
-    assert (
-        list(iter_openapi_operations({"paths": {"/x": "not-a-dict"}}))
-        == []
-    )
+    assert list(iter_openapi_operations({"paths": {"/x": "not-a-dict"}})) == []
 
 
 def test_render_operation_block_renders_tags_description_and_parameters() -> None:
@@ -146,10 +140,7 @@ def test_render_request_body_skips_non_dict_media_but_keeps_required_line() -> N
 
 def test_render_responses_handles_non_dict_entries_and_empty_rows() -> None:
     assert render_responses({"default": "nope"}) == ""
-    assert (
-        render_responses({"200": {"description": "OK", "content": {"text/plain": {}}}})
-        != ""
-    )
+    assert render_responses({"200": {"description": "OK", "content": {"text/plain": {}}}}) != ""
 
 
 def test_export_api_reference_markdown_writes_file(tmp_path: Path) -> None:

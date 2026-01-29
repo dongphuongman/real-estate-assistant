@@ -18,7 +18,18 @@ def test_matches_basic_filters():
 
 
 def test_to_query_string_human_readable():
-    ss = SavedSearch(id="s1", name="Family", city="Warsaw", min_rooms=2, max_rooms=3, min_price=800, max_price=1500, must_have_parking=True, must_be_furnished=True, property_types=["apartment", "house"])
+    ss = SavedSearch(
+        id="s1",
+        name="Family",
+        city="Warsaw",
+        min_rooms=2,
+        max_rooms=3,
+        min_price=800,
+        max_price=1500,
+        must_have_parking=True,
+        must_be_furnished=True,
+        property_types=["apartment", "house"],
+    )
     q = ss.to_query_string()
     assert "in Warsaw" in q
     assert "with 2-3 rooms" in q
@@ -71,4 +82,3 @@ def test_energy_certs_filter_ignores_empty_values():
     ss = SavedSearch(id="s3", name="Energy", energy_certs=["", "  ", "A"])
     assert ss.matches({"energy_cert": "a"}) is True
     assert ss.matches({"energy_cert": "b"}) is False
-

@@ -12,4 +12,3 @@ Goal: MVP launch with zero cost using reliable free services.
 ## Consequences
 - Fast setup; limited resources and cold starts.
 - Later migration to paid tiers preserves architecture.
-

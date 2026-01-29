@@ -56,9 +56,7 @@ async def export_properties(
             min_lon=request.search.min_lon,
             max_lon=request.search.max_lon,
             sort_by=request.search.sort_by.value if request.search.sort_by else None,
-            sort_order=(
-                request.search.sort_order.value if request.search.sort_order else None
-            ),
+            sort_order=(request.search.sort_order.value if request.search.sort_order else None),
         )
         documents = [doc for doc, _score in results]
 
@@ -128,6 +126,4 @@ async def export_properties(
             detail=str(e),
         ) from e
 
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported export format"
-    )
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported export format")

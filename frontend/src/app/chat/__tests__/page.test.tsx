@@ -186,11 +186,11 @@ describe("ChatPage", () => {
 
   it("does not submit empty message", async () => {
     render(<ChatPage />)
-    
+
     const sendButton = screen.getByRole("button", { name: /send message/i })
-    
+
     fireEvent.click(sendButton)
-    
+
     expect(mockStream).not.toHaveBeenCalled()
   })
 })

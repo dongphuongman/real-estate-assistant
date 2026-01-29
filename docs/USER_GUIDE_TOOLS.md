@@ -17,4 +17,3 @@ The Tools section provides quick utilities for property evaluation and analysis.
 1. Open Tools page from the main navigation.
 2. Fill in the form and click the action button.
 3. Review results or error messages and adjust inputs if needed.
-

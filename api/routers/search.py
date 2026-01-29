@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+
 @router.post("/search", response_model=SearchResponse, tags=["Search"])
 async def search_properties(
     request: SearchRequest,
@@ -24,8 +25,7 @@ async def search_properties(
     """
     if not store:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Vector store is not available"
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Vector store is not available"
         )
 
     # Sanitize search query to prevent injection attacks
@@ -54,31 +54,31 @@ async def search_properties(
             sort_by=request.sort_by.value if request.sort_by else None,
             sort_order=request.sort_order.value if request.sort_order else None,
         )
-        
+
         items = []
         for doc, score in results:
             try:
                 # Document metadata contains property fields
                 # We need to handle potential data inconsistencies
                 metadata = doc.metadata.copy()
-                
+
                 # Ensure 'id' is present (sometimes stored as doc-id in Chroma)
                 if "id" not in metadata:
                     metadata["id"] = "unknown"
-                
+
                 # 'rooms' might be stored as float in Chroma metadata
                 # (no int type support sometimes)
                 # Pydantic handles this conversion usually
-                
+
                 # Construct Property model
                 # validation_error might occur if metadata is incomplete
                 prop = Property.model_validate(metadata)
-                
+
                 items.append(SearchResultItem(property=prop, score=score))
             except Exception as e:
                 logger.warning(f"Failed to parse property from search result: {e}")
                 continue
-                
+
         return SearchResponse(results=items, count=len(items))
 
     except Exception as e:

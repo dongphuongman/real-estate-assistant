@@ -12,7 +12,7 @@ from config.settings import settings as app_settings
 
 class FakeAgent:
     def __init__(self):
-        self.emitted = ["{\"content\":\"Hello\"}", "{\"content\":\"World\"}"]
+        self.emitted = ['{"content":"Hello"}', '{"content":"World"}']
 
     async def astream_query(self, msg: str):
         for e in self.emitted:
@@ -27,13 +27,17 @@ class FakeAgent:
 
 @pytest.fixture(autouse=True)
 def _patch_agent(monkeypatch):
-    monkeypatch.setattr(chat_router, "create_hybrid_agent", lambda llm, retriever, memory=None: FakeAgent())
+    monkeypatch.setattr(
+        chat_router, "create_hybrid_agent", lambda llm, retriever, memory=None: FakeAgent()
+    )
 
 
 def test_chat_sse_streams_events_and_sets_request_id_header():
     client = TestClient(app)
     app.dependency_overrides[get_llm] = lambda: object()
-    app.dependency_overrides[get_vector_store] = lambda: types.SimpleNamespace(get_retriever=lambda: object())
+    app.dependency_overrides[get_vector_store] = lambda: types.SimpleNamespace(
+        get_retriever=lambda: object()
+    )
     payload = {"message": "Hi", "stream": True}
     headers = {"X-API-Key": "dev-secret-key"}
     old_max_items = app_settings.chat_sources_max_items
@@ -56,7 +60,7 @@ def test_chat_sse_streams_events_and_sets_request_id_header():
         meta_line = next(
             line
             for line in data_lines
-            if line.startswith("data: {") and "\"sources\"" in line and "\"session_id\"" in line
+            if line.startswith("data: {") and '"sources"' in line and '"session_id"' in line
         )
         import json
 

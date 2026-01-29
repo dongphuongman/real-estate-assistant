@@ -81,10 +81,14 @@ def _strip_html(input_str: str) -> str:
         String with HTML tags removed
     """
     # Remove script tags and content
-    input_str = re.sub(r"<script\b[^>]*>(.*?)</script>", "", input_str, flags=re.IGNORECASE | re.DOTALL)
+    input_str = re.sub(
+        r"<script\b[^>]*>(.*?)</script>", "", input_str, flags=re.IGNORECASE | re.DOTALL
+    )
 
     # Remove style tags and content
-    input_str = re.sub(r"<style\b[^>]*>(.*?)</style>", "", input_str, flags=re.IGNORECASE | re.DOTALL)
+    input_str = re.sub(
+        r"<style\b[^>]*>(.*?)</style>", "", input_str, flags=re.IGNORECASE | re.DOTALL
+    )
 
     # Remove HTML comments
     input_str = re.sub(r"<!--.*?-->", "", input_str, flags=re.DOTALL)
@@ -266,21 +270,24 @@ def truncate_for_logging(value: str, max_length: int = 200) -> str:
 # IMPORTANT: Order matters - more specific patterns must come first
 SENSITIVE_PATTERNS = [
     # OpenAI-style API keys (sk- prefix) - must come before generic pattern
-    (r'sk-[a-zA-Z0-9-]+', 'sk-***'),
+    (r"sk-[a-zA-Z0-9-]+", "sk-***"),
     # GitHub tokens (ghp_, gho_, ghu_, ghs_, ghr_ prefixes)
-    (r'gh[pousr]_[a-zA-Z0-9-]+', '***'),
+    (r"gh[pousr]_[a-zA-Z0-9-]+", "***"),
     # Generic API key patterns (for api_key=, token=, etc.)
-    (r'(api[_-]?key|apikey|token|bearer|auth[_-]?token)(["\']?\s*[:=]\s*["\']?)([a-zA-Z0-9_\-]{7,})', r'\1\2***'),
+    (
+        r'(api[_-]?key|apikey|token|bearer|auth[_-]?token)(["\']?\s*[:=]\s*["\']?)([a-zA-Z0-9_\-]{7,})',
+        r"\1\2***",
+    ),
     # Bearer tokens
-    (r'Bearer\s+[a-zA-Z0-9_\-\.]+', 'Bearer ***'),
+    (r"Bearer\s+[a-zA-Z0-9_\-\.]+", "Bearer ***"),
     # Passwords (when preceded by key name)
-    (r'(password|passwd|pwd)(["\']?\s*[:=]\s*["\']?)([^\s"\'`,<>]{6,})', r'\1\2***'),
+    (r'(password|passwd|pwd)(["\']?\s*[:=]\s*["\']?)([^\s"\'`,<>]{6,})', r"\1\2***"),
     # Common test/placeholder passwords (for test data sanitization)
-    (r'\b(password123|secret123|admin123|root123|test123|passwd123|secret)\b', '***'),
+    (r"\b(password123|secret123|admin123|root123|test123|passwd123|secret)\b", "***"),
     # Email addresses (partial redaction)
-    (r'\b([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b', r'\1@***'),
+    (r"\b([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b", r"\1@***"),
     # URLs (redact query params which may contain sensitive data)
-    (r'(https?://[^\s?]+)\?[^<>\s]*', r'\1?***'),
+    (r"(https?://[^\s?]+)\?[^<>\s]*", r"\1?***"),
 ]
 
 

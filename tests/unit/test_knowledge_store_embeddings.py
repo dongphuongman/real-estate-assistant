@@ -4,7 +4,9 @@ from vector_store.knowledge_store import KnowledgeStore, _create_embeddings
 
 
 def test_create_embeddings_returns_none_when_unavailable(monkeypatch):
-    monkeypatch.setattr("vector_store.knowledge_store.app_settings.openai_api_key", "", raising=False)
+    monkeypatch.setattr(
+        "vector_store.knowledge_store.app_settings.openai_api_key", "", raising=False
+    )
 
     original_import = builtins.__import__
 

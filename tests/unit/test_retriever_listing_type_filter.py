@@ -10,8 +10,24 @@ def test_hybrid_retriever_filters_rent_vs_sale(tmp_path):
         store = ChromaPropertyStore(persist_directory=str(tmp_path))
 
     props = [
-        Property(id="r1", city="Warsaw", price=5000, rooms=2, property_type=PropertyType.APARTMENT, listing_type=ListingType.RENT, description="balcony"),
-        Property(id="s1", city="Krakow", price=95000, rooms=3, property_type=PropertyType.APARTMENT, listing_type=ListingType.SALE, description="garage"),
+        Property(
+            id="r1",
+            city="Warsaw",
+            price=5000,
+            rooms=2,
+            property_type=PropertyType.APARTMENT,
+            listing_type=ListingType.RENT,
+            description="balcony",
+        ),
+        Property(
+            id="s1",
+            city="Krakow",
+            price=95000,
+            rooms=3,
+            property_type=PropertyType.APARTMENT,
+            listing_type=ListingType.SALE,
+            description="garage",
+        ),
     ]
     coll = PropertyCollection(properties=props, total_count=len(props))
     store.add_property_collection(coll)

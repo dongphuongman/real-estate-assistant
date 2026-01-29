@@ -20,7 +20,9 @@ def test_create_llm_passes_callbacks_as_list(monkeypatch):
         captured.update(kwargs)
         return object()
 
-    monkeypatch.setattr(app_services.ModelProviderFactory, "create_model", staticmethod(fake_create_model))
+    monkeypatch.setattr(
+        app_services.ModelProviderFactory, "create_model", staticmethod(fake_create_model)
+    )
 
     cb1 = Mock()
     cb2 = Mock()
@@ -81,7 +83,9 @@ def test_create_conversation_chain_builds_memory(monkeypatch):
         captured.update(kwargs)
         return object()
 
-    monkeypatch.setattr(app_services.ConversationalRetrievalChain, "from_llm", staticmethod(fake_from_llm))
+    monkeypatch.setattr(
+        app_services.ConversationalRetrievalChain, "from_llm", staticmethod(fake_from_llm)
+    )
 
     chain = app_services.create_conversation_chain(
         llm=Mock(),
@@ -115,4 +119,3 @@ def test_create_hybrid_agent_instance_passes_use_tools(monkeypatch):
     assert agent is not None
     assert captured["use_tools"] is True
     assert captured["verbose"] is True
-

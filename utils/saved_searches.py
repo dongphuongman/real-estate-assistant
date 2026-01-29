@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field
 
 class SavedSearch(BaseModel):
     """A saved search with criteria and preferences."""
+
     id: str = Field(description="Unique search identifier")
     name: str = Field(description="User-friendly search name")
     description: Optional[str] = Field(None, description="Search description")
@@ -59,18 +60,18 @@ class SavedSearch(BaseModel):
             True if property matches all criteria
         """
         # City filter
-        if self.city and property_dict.get('city', '').lower() != self.city.lower():
+        if self.city and property_dict.get("city", "").lower() != self.city.lower():
             return False
 
         # Price filter
-        price = property_dict.get('price', 0)
+        price = property_dict.get("price", 0)
         if self.min_price and price < self.min_price:
             return False
         if self.max_price and price > self.max_price:
             return False
 
         # Rooms filter
-        rooms = property_dict.get('rooms', 0)
+        rooms = property_dict.get("rooms", 0)
         if self.min_rooms and rooms < self.min_rooms:
             return False
         if self.max_rooms and rooms > self.max_rooms:
@@ -78,22 +79,22 @@ class SavedSearch(BaseModel):
 
         # Property type filter
         if self.property_types:
-            prop_type = property_dict.get('property_type', '')
-            if hasattr(prop_type, 'value'):
+            prop_type = property_dict.get("property_type", "")
+            if hasattr(prop_type, "value"):
                 prop_type = prop_type.value
             if str(prop_type).lower() not in [pt.lower() for pt in self.property_types]:
                 return False
 
         # Amenity filters (must have)
-        if self.must_have_parking and not property_dict.get('has_parking', False):
+        if self.must_have_parking and not property_dict.get("has_parking", False):
             return False
-        if self.must_have_elevator and not property_dict.get('has_elevator', False):
+        if self.must_have_elevator and not property_dict.get("has_elevator", False):
             return False
-        if self.must_have_garden and not property_dict.get('has_garden', False):
+        if self.must_have_garden and not property_dict.get("has_garden", False):
             return False
-        if self.must_have_pool and not property_dict.get('has_pool', False):
+        if self.must_have_pool and not property_dict.get("has_pool", False):
             return False
-        if self.must_be_furnished and not property_dict.get('is_furnished', False):
+        if self.must_be_furnished and not property_dict.get("is_furnished", False):
             return False
 
         raw_year = property_dict.get("year_built")
@@ -187,6 +188,7 @@ class SavedSearch(BaseModel):
 
 class UserPreferences(BaseModel):
     """User preferences and settings."""
+
     # Display preferences
     default_sort: str = "price_asc"  # price_asc, price_desc, rooms, date
     results_per_page: int = 10
@@ -209,6 +211,7 @@ class UserPreferences(BaseModel):
 
 class FavoriteProperty(BaseModel):
     """A favorited property."""
+
     property_id: str
     added_at: datetime = Field(default_factory=datetime.now)
     notes: Optional[str] = None
@@ -248,7 +251,7 @@ class SavedSearchManager:
             return []
 
         try:
-            with open(self.searches_file, 'r') as f:
+            with open(self.searches_file, "r") as f:
                 data = json.load(f)
                 return [SavedSearch(**search) for search in data]
         except Exception:
@@ -260,7 +263,7 @@ class SavedSearchManager:
             return UserPreferences()
 
         try:
-            with open(self.preferences_file, 'r') as f:
+            with open(self.preferences_file, "r") as f:
                 data = json.load(f)
                 return UserPreferences(**data)
         except Exception:
@@ -272,7 +275,7 @@ class SavedSearchManager:
             return []
 
         try:
-            with open(self.favorites_file, 'r') as f:
+            with open(self.favorites_file, "r") as f:
                 data = json.load(f)
                 return [FavoriteProperty(**fav) for fav in data]
         except Exception:
@@ -280,33 +283,18 @@ class SavedSearchManager:
 
     def _save_searches(self) -> None:
         """Save searches to disk."""
-        with open(self.searches_file, 'w') as f:
-            json.dump(
-                [search.dict() for search in self.saved_searches],
-                f,
-                indent=2,
-                default=str
-            )
+        with open(self.searches_file, "w") as f:
+            json.dump([search.dict() for search in self.saved_searches], f, indent=2, default=str)
 
     def _save_preferences(self) -> None:
         """Save preferences to disk."""
-        with open(self.preferences_file, 'w') as f:
-            json.dump(
-                self.user_preferences.dict(),
-                f,
-                indent=2,
-                default=str
-            )
+        with open(self.preferences_file, "w") as f:
+            json.dump(self.user_preferences.dict(), f, indent=2, default=str)
 
     def _save_favorites(self) -> None:
         """Save favorites to disk."""
-        with open(self.favorites_file, 'w') as f:
-            json.dump(
-                [fav.dict() for fav in self.favorite_properties],
-                f,
-                indent=2,
-                default=str
-            )
+        with open(self.favorites_file, "w") as f:
+            json.dump([fav.dict() for fav in self.favorite_properties], f, indent=2, default=str)
 
     def save_search(self, search: SavedSearch) -> SavedSearch:
         """
@@ -408,7 +396,9 @@ class SavedSearchManager:
         """
         return self.user_preferences
 
-    def add_favorite(self, property_id: str, notes: Optional[str] = None, tags: Optional[List[str]] = None) -> FavoriteProperty:
+    def add_favorite(
+        self, property_id: str, notes: Optional[str] = None, tags: Optional[List[str]] = None
+    ) -> FavoriteProperty:
         """
         Add a property to favorites.
 
@@ -432,11 +422,7 @@ class SavedSearchManager:
                 return fav
 
         # Add new
-        favorite = FavoriteProperty(
-            property_id=property_id,
-            notes=notes,
-            tags=tags or []
-        )
+        favorite = FavoriteProperty(property_id=property_id, notes=notes, tags=tags or [])
         self.favorite_properties.append(favorite)
         self._save_favorites()
         return favorite

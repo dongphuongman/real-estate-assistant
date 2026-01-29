@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 class NotificationStatus(str, Enum):
     """Status of a notification."""
+
     PENDING = "pending"
     SENT = "sent"
     DELIVERED = "delivered"
@@ -34,6 +35,7 @@ class NotificationStatus(str, Enum):
 
 class NotificationType(str, Enum):
     """Types of notifications."""
+
     PRICE_DROP = "price_drop"
     NEW_PROPERTY = "new_property"
     SAVED_SEARCH = "saved_search"
@@ -63,6 +65,7 @@ class NotificationRecord:
         metadata: Additional metadata (property_id, search_id, etc.)
         retry_count: Number of retry attempts
     """
+
     id: str
     user_email: str
     notification_type: NotificationType
@@ -81,27 +84,41 @@ class NotificationRecord:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""
         data = asdict(self)
-        data['notification_type'] = self.notification_type.value
-        data['status'] = self.status.value
+        data["notification_type"] = self.notification_type.value
+        data["status"] = self.status.value
 
         # Convert datetime to ISO format
-        for field_name in ['sent_at', 'delivered_at', 'opened_at', 'clicked_at', 'failed_at', 'created_at']:
+        for field_name in [
+            "sent_at",
+            "delivered_at",
+            "opened_at",
+            "clicked_at",
+            "failed_at",
+            "created_at",
+        ]:
             if data[field_name]:
                 data[field_name] = data[field_name].isoformat()
 
         return data
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'NotificationRecord':
+    def from_dict(cls, data: Dict[str, Any]) -> "NotificationRecord":
         """Create from dictionary."""
         # Convert enums
-        if 'notification_type' in data:
-            data['notification_type'] = NotificationType(data['notification_type'])
-        if 'status' in data:
-            data['status'] = NotificationStatus(data['status'])
+        if "notification_type" in data:
+            data["notification_type"] = NotificationType(data["notification_type"])
+        if "status" in data:
+            data["status"] = NotificationStatus(data["status"])
 
         # Convert datetime strings
-        for field_name in ['sent_at', 'delivered_at', 'opened_at', 'clicked_at', 'failed_at', 'created_at']:
+        for field_name in [
+            "sent_at",
+            "delivered_at",
+            "opened_at",
+            "clicked_at",
+            "failed_at",
+            "created_at",
+        ]:
             if data.get(field_name) and isinstance(data[field_name], str):
                 data[field_name] = datetime.fromisoformat(data[field_name])
 
@@ -139,7 +156,7 @@ class NotificationHistory:
         user_email: str,
         notification_type: NotificationType,
         subject: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> NotificationRecord:
         """
         Record a new notification.
@@ -161,7 +178,7 @@ class NotificationHistory:
             user_email=user_email,
             notification_type=notification_type,
             subject=subject,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         self._history[notification_id] = record
@@ -198,10 +215,7 @@ class NotificationHistory:
             self._save_history()
 
     def mark_failed(
-        self,
-        notification_id: str,
-        error_message: str,
-        add_to_retry_queue: bool = True
+        self, notification_id: str, error_message: str, add_to_retry_queue: bool = True
     ):
         """
         Mark notification as failed.
@@ -233,7 +247,7 @@ class NotificationHistory:
         user_email: str,
         limit: Optional[int] = None,
         notification_type: Optional[NotificationType] = None,
-        status: Optional[NotificationStatus] = None
+        status: Optional[NotificationStatus] = None,
     ) -> List[NotificationRecord]:
         """
         Get notifications for a user.
@@ -247,10 +261,7 @@ class NotificationHistory:
         Returns:
             List of notification records
         """
-        records = [
-            record for record in self._history.values()
-            if record.user_email == user_email
-        ]
+        records = [record for record in self._history.values() if record.user_email == user_email]
 
         # Apply filters
         if notification_type:
@@ -268,9 +279,7 @@ class NotificationHistory:
         return records
 
     def get_recent_notifications(
-        self,
-        days: int = 7,
-        limit: Optional[int] = None
+        self, days: int = 7, limit: Optional[int] = None
     ) -> List[NotificationRecord]:
         """
         Get recent notifications.
@@ -284,10 +293,7 @@ class NotificationHistory:
         """
         cutoff = datetime.now() - timedelta(days=days)
 
-        records = [
-            record for record in self._history.values()
-            if record.created_at >= cutoff
-        ]
+        records = [record for record in self._history.values() if record.created_at >= cutoff]
 
         records.sort(key=lambda x: x.created_at, reverse=True)
 
@@ -302,10 +308,7 @@ class NotificationHistory:
 
     def remove_from_retry_queue(self, notification_id: str):
         """Remove notification from retry queue."""
-        self._failed_queue = [
-            n for n in self._failed_queue
-            if n.id != notification_id
-        ]
+        self._failed_queue = [n for n in self._failed_queue if n.id != notification_id]
         self._save_failed_queue()
 
     def get_user_statistics(self, user_email: str) -> Dict[str, Any]:
@@ -322,27 +325,29 @@ class NotificationHistory:
 
         if not user_records:
             return {
-                'total_sent': 0,
-                'total_delivered': 0,
-                'total_opened': 0,
-                'total_clicked': 0,
-                'total_failed': 0,
-                'delivery_rate': 0.0,
-                'open_rate': 0.0,
-                'click_rate': 0.0,
-                'by_type': {}
+                "total_sent": 0,
+                "total_delivered": 0,
+                "total_opened": 0,
+                "total_clicked": 0,
+                "total_failed": 0,
+                "delivery_rate": 0.0,
+                "open_rate": 0.0,
+                "click_rate": 0.0,
+                "by_type": {},
             }
 
         total = len(user_records)
-        delivered = sum(1 for r in user_records if r.status in [
-            NotificationStatus.DELIVERED,
-            NotificationStatus.OPENED,
-            NotificationStatus.CLICKED
-        ])
-        opened = sum(1 for r in user_records if r.status in [
-            NotificationStatus.OPENED,
-            NotificationStatus.CLICKED
-        ])
+        delivered = sum(
+            1
+            for r in user_records
+            if r.status
+            in [NotificationStatus.DELIVERED, NotificationStatus.OPENED, NotificationStatus.CLICKED]
+        )
+        opened = sum(
+            1
+            for r in user_records
+            if r.status in [NotificationStatus.OPENED, NotificationStatus.CLICKED]
+        )
         clicked = sum(1 for r in user_records if r.status == NotificationStatus.CLICKED)
         failed = sum(1 for r in user_records if r.status == NotificationStatus.FAILED)
 
@@ -352,15 +357,15 @@ class NotificationHistory:
             by_type[record.notification_type.value] += 1
 
         return {
-            'total_sent': total,
-            'total_delivered': delivered,
-            'total_opened': opened,
-            'total_clicked': clicked,
-            'total_failed': failed,
-            'delivery_rate': (delivered / total * 100) if total > 0 else 0.0,
-            'open_rate': (opened / delivered * 100) if delivered > 0 else 0.0,
-            'click_rate': (clicked / delivered * 100) if delivered > 0 else 0.0,
-            'by_type': dict(by_type)
+            "total_sent": total,
+            "total_delivered": delivered,
+            "total_opened": opened,
+            "total_clicked": clicked,
+            "total_failed": failed,
+            "delivery_rate": (delivered / total * 100) if total > 0 else 0.0,
+            "open_rate": (opened / delivered * 100) if delivered > 0 else 0.0,
+            "click_rate": (clicked / delivered * 100) if delivered > 0 else 0.0,
+            "by_type": dict(by_type),
         }
 
     def get_overall_statistics(self) -> Dict[str, Any]:
@@ -374,31 +379,33 @@ class NotificationHistory:
 
         if not all_records:
             return {
-                'total_notifications': 0,
-                'total_users': 0,
-                'total_delivered': 0,
-                'total_opened': 0,
-                'total_clicked': 0,
-                'total_failed': 0,
-                'delivery_rate': 0.0,
-                'open_rate': 0.0,
-                'click_rate': 0.0,
-                'by_type': {},
-                'by_status': {}
+                "total_notifications": 0,
+                "total_users": 0,
+                "total_delivered": 0,
+                "total_opened": 0,
+                "total_clicked": 0,
+                "total_failed": 0,
+                "delivery_rate": 0.0,
+                "open_rate": 0.0,
+                "click_rate": 0.0,
+                "by_type": {},
+                "by_status": {},
             }
 
         total = len(all_records)
         unique_users = len(set(r.user_email for r in all_records))
 
-        delivered = sum(1 for r in all_records if r.status in [
-            NotificationStatus.DELIVERED,
-            NotificationStatus.OPENED,
-            NotificationStatus.CLICKED
-        ])
-        opened = sum(1 for r in all_records if r.status in [
-            NotificationStatus.OPENED,
-            NotificationStatus.CLICKED
-        ])
+        delivered = sum(
+            1
+            for r in all_records
+            if r.status
+            in [NotificationStatus.DELIVERED, NotificationStatus.OPENED, NotificationStatus.CLICKED]
+        )
+        opened = sum(
+            1
+            for r in all_records
+            if r.status in [NotificationStatus.OPENED, NotificationStatus.CLICKED]
+        )
         clicked = sum(1 for r in all_records if r.status == NotificationStatus.CLICKED)
         failed = sum(1 for r in all_records if r.status == NotificationStatus.FAILED)
 
@@ -413,17 +420,17 @@ class NotificationHistory:
             by_status[record.status.value] += 1
 
         return {
-            'total_notifications': total,
-            'total_users': unique_users,
-            'total_delivered': delivered,
-            'total_opened': opened,
-            'total_clicked': clicked,
-            'total_failed': failed,
-            'delivery_rate': (delivered / total * 100) if total > 0 else 0.0,
-            'open_rate': (opened / delivered * 100) if delivered > 0 else 0.0,
-            'click_rate': (clicked / delivered * 100) if delivered > 0 else 0.0,
-            'by_type': dict(by_type),
-            'by_status': dict(by_status)
+            "total_notifications": total,
+            "total_users": unique_users,
+            "total_delivered": delivered,
+            "total_opened": opened,
+            "total_clicked": clicked,
+            "total_failed": failed,
+            "delivery_rate": (delivered / total * 100) if total > 0 else 0.0,
+            "open_rate": (opened / delivered * 100) if delivered > 0 else 0.0,
+            "click_rate": (clicked / delivered * 100) if delivered > 0 else 0.0,
+            "by_type": dict(by_type),
+            "by_status": dict(by_status),
         }
 
     def cleanup_old_records(self, days: int = 90):
@@ -436,8 +443,7 @@ class NotificationHistory:
         cutoff = datetime.now() - timedelta(days=days)
 
         self._history = {
-            id: record for id, record in self._history.items()
-            if record.created_at >= cutoff
+            id: record for id, record in self._history.items() if record.created_at >= cutoff
         }
 
         self._save_history()
@@ -448,7 +454,7 @@ class NotificationHistory:
             return
 
         try:
-            with open(self.history_file, 'r') as f:
+            with open(self.history_file, "r") as f:
                 data = json.load(f)
 
             for notification_id, record_data in data.items():
@@ -460,12 +466,9 @@ class NotificationHistory:
 
     def _save_history(self):
         """Save notification history to disk."""
-        data = {
-            id: record.to_dict()
-            for id, record in self._history.items()
-        }
+        data = {id: record.to_dict() for id, record in self._history.items()}
 
-        with open(self.history_file, 'w') as f:
+        with open(self.history_file, "w") as f:
             json.dump(data, f, indent=2)
 
     def _load_failed_queue(self):
@@ -474,13 +477,10 @@ class NotificationHistory:
             return
 
         try:
-            with open(self.failed_queue_file, 'r') as f:
+            with open(self.failed_queue_file, "r") as f:
                 data = json.load(f)
 
-            self._failed_queue = [
-                NotificationRecord.from_dict(record_data)
-                for record_data in data
-            ]
+            self._failed_queue = [NotificationRecord.from_dict(record_data) for record_data in data]
 
         except Exception as e:
             logger.warning("Error loading failed queue: %s", e)
@@ -489,5 +489,5 @@ class NotificationHistory:
         """Save failed notifications queue to disk."""
         data = [record.to_dict() for record in self._failed_queue]
 
-        with open(self.failed_queue_file, 'w') as f:
+        with open(self.failed_queue_file, "w") as f:
             json.dump(data, f, indent=2)

@@ -45,10 +45,7 @@ class AnthropicProvider(RemoteModelProvider):
                 display_name="Claude Sonnet 4.5 (Latest)",
                 provider_name=self.display_name,
                 context_window=200000,
-                pricing=PricingInfo(
-                    input_price_per_1m=3.00,
-                    output_price_per_1m=15.00
-                ),
+                pricing=PricingInfo(input_price_per_1m=3.00, output_price_per_1m=15.00),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -57,19 +54,20 @@ class AnthropicProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Latest and most advanced Claude model with improved reasoning and coding",
-                recommended_for=["complex reasoning", "code generation", "long documents", "agentic workflows"]
+                recommended_for=[
+                    "complex reasoning",
+                    "code generation",
+                    "long documents",
+                    "agentic workflows",
+                ],
             ),
-
             # Claude 3.5 Generation
             ModelInfo(
                 id="claude-3-5-sonnet-20241022",
                 display_name="Claude 3.5 Sonnet",
                 provider_name=self.display_name,
                 context_window=200000,
-                pricing=PricingInfo(
-                    input_price_per_1m=3.00,
-                    output_price_per_1m=15.00
-                ),
+                pricing=PricingInfo(input_price_per_1m=3.00, output_price_per_1m=15.00),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -78,17 +76,14 @@ class AnthropicProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Powerful Claude model with extended context - consider Sonnet 4.5 for latest features",
-                recommended_for=["complex reasoning", "long documents", "code generation"]
+                recommended_for=["complex reasoning", "long documents", "code generation"],
             ),
             ModelInfo(
                 id="claude-3-5-haiku-20241022",
                 display_name="Claude 3.5 Haiku (Recommended)",
                 provider_name=self.display_name,
                 context_window=200000,
-                pricing=PricingInfo(
-                    input_price_per_1m=0.80,
-                    output_price_per_1m=4.00
-                ),
+                pricing=PricingInfo(input_price_per_1m=0.80, output_price_per_1m=4.00),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -96,19 +91,20 @@ class AnthropicProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Fast and cost-effective model for simpler tasks",
-                recommended_for=["quick responses", "high volume", "cost-effective", "general purpose"]
+                recommended_for=[
+                    "quick responses",
+                    "high volume",
+                    "cost-effective",
+                    "general purpose",
+                ],
             ),
-
             # Legacy Models
             ModelInfo(
                 id="claude-3-opus-20240229",
                 display_name="Claude 3 Opus (Legacy)",
                 provider_name=self.display_name,
                 context_window=200000,
-                pricing=PricingInfo(
-                    input_price_per_1m=15.00,
-                    output_price_per_1m=75.00
-                ),
+                pricing=PricingInfo(input_price_per_1m=15.00, output_price_per_1m=75.00),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -116,7 +112,7 @@ class AnthropicProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Previous generation model - consider Claude Sonnet 4.5 for better performance and lower cost",
-                recommended_for=["legacy compatibility"]
+                recommended_for=["legacy compatibility"],
             ),
         ]
 
@@ -126,7 +122,7 @@ class AnthropicProvider(RemoteModelProvider):
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
         streaming: bool = True,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> BaseChatModel:
         """Create Anthropic model instance."""
         # Validate model exists
@@ -134,8 +130,7 @@ class AnthropicProvider(RemoteModelProvider):
         if not model_info:
             available = [m.id for m in self.list_models()]
             raise ValueError(
-                f"Model '{model_id}' not available. "
-                f"Available models: {', '.join(available)}"
+                f"Model '{model_id}' not available. Available models: {', '.join(available)}"
             )
 
         # Validate API key
@@ -151,10 +146,7 @@ class AnthropicProvider(RemoteModelProvider):
             max_tokens = 4096
 
         llm = ChatAnthropic(
-            temperature=temperature,
-            streaming=streaming,
-            api_key=SecretStr(api_key),
-            **kwargs
+            temperature=temperature, streaming=streaming, api_key=SecretStr(api_key), **kwargs
         )
         llm.model = model_id
         llm.max_tokens = max_tokens

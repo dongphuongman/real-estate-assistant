@@ -6,16 +6,18 @@ from api.main import app
 from config.settings import AppSettings
 
 client = TestClient(app)
- 
+
+
 def _test_settings() -> AppSettings:
     return AppSettings(
         environment="development",
         auth_email_enabled=True,
         auth_code_ttl_minutes=1,
         session_ttl_days=1,
-        auth_storage_dir=".auth_integration"
+        auth_storage_dir=".auth_integration",
     )
- 
+
+
 def test_email_auth_end_to_end(tmp_path):
     with patch("api.routers.auth.get_settings") as mock_settings:
         s = _test_settings()
@@ -25,7 +27,9 @@ def test_email_auth_end_to_end(tmp_path):
         assert resp.status_code == 200
         code = resp.json().get("code")
         assert code is not None
-        resp2 = client.post("/api/v1/auth/verify-code", json={"email": "alice@example.com", "code": code})
+        resp2 = client.post(
+            "/api/v1/auth/verify-code", json={"email": "alice@example.com", "code": code}
+        )
         assert resp2.status_code == 200
         token = resp2.json().get("session_token")
         assert token is not None

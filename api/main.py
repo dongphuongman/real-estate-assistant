@@ -63,6 +63,7 @@ async def startup_event():
 
     # Setup signal handlers for graceful shutdown (only in main thread)
     import threading
+
     if threading.current_thread() is threading.main_thread():
         for sig in (signal.SIGTERM, signal.SIGINT):
             if hasattr(signal, sig.name):
@@ -117,8 +118,12 @@ async def startup_event():
         enabled_raw = os.getenv("UPTIME_MONITOR_ENABLED", "false").strip().lower()
         enabled = enabled_raw in {"1", "true", "yes", "y", "on"}
         if enabled and email_service:
-            health_url = os.getenv("UPTIME_MONITOR_HEALTH_URL", "http://localhost:8000/health").strip()
-            to_email = os.getenv("UPTIME_MONITOR_EMAIL_TO", "ops@example.com").strip() or "ops@example.com"
+            health_url = os.getenv(
+                "UPTIME_MONITOR_HEALTH_URL", "http://localhost:8000/health"
+            ).strip()
+            to_email = (
+                os.getenv("UPTIME_MONITOR_EMAIL_TO", "ops@example.com").strip() or "ops@example.com"
+            )
             interval = float(os.getenv("UPTIME_MONITOR_INTERVAL", "60").strip() or "60")
             threshold = int(os.getenv("UPTIME_MONITOR_FAIL_THRESHOLD", "3").strip() or "3")
             cooldown = float(os.getenv("UPTIME_MONITOR_COOLDOWN_SECONDS", "1800").strip() or "1800")
@@ -129,10 +134,14 @@ async def startup_event():
                 alert_cooldown_seconds=cooldown,
                 to_email=to_email,
             )
-            uptime_monitor = UptimeMonitor(checker=checker, email_service=email_service, config=mon_cfg, logger=logger)
+            uptime_monitor = UptimeMonitor(
+                checker=checker, email_service=email_service, config=mon_cfg, logger=logger
+            )
             uptime_monitor.start()
             app.state.uptime_monitor = uptime_monitor
-            logger.info("Uptime Monitor started url=%s to=%s interval=%s", health_url, to_email, interval)
+            logger.info(
+                "Uptime Monitor started url=%s to=%s interval=%s", health_url, to_email, interval
+            )
     except Exception as e:
         logger.error(f"Failed to start Uptime Monitor: {e}")
 
@@ -202,7 +211,9 @@ async def shutdown_event():
         if redis_client:
             logger.info("Closing Redis connection...")
             try:
-                await redis_client.aclose() if hasattr(redis_client, "aclose") else redis_client.close()
+                await redis_client.aclose() if hasattr(
+                    redis_client, "aclose"
+                ) else redis_client.close()
                 logger.info("Redis connection closed.")
             except Exception as e:
                 logger.error(f"Error closing Redis connection: {e}")
@@ -225,15 +236,11 @@ app.add_middleware(
 app.include_router(search.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(chat.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(rag_router.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
-app.include_router(
-    settings_router.router, prefix="/api/v1", dependencies=[Depends(get_api_key)]
-)
+app.include_router(settings_router.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(tools.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(prompt_templates.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(admin.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
-app.include_router(
-    exports.router, prefix="/api/v1", dependencies=[Depends(get_api_key)]
-)
+app.include_router(exports.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(auth.router, prefix="/api/v1")
 
 

@@ -83,7 +83,9 @@ def test_property_retriever_uses_fallback_while_indexing(tmp_path):
 
     with (
         patch.object(ChromaPropertyStore, "_create_embeddings", return_value=MagicMock()),
-        patch.object(ChromaPropertyStore, "_initialize_vector_store", return_value=fake_vector_store),
+        patch.object(
+            ChromaPropertyStore, "_initialize_vector_store", return_value=fake_vector_store
+        ),
     ):
         store = ChromaPropertyStore(persist_directory=str(tmp_path))
 

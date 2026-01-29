@@ -169,9 +169,7 @@ def test_serialize_web_sources_handles_non_serializable_metadata():
     class CustomObj:
         pass
 
-    web_sources = [
-        {"url": "https://example.com", "snippet": "A", "custom": CustomObj()}
-    ]
+    web_sources = [{"url": "https://example.com", "snippet": "A", "custom": CustomObj()}]
     sources, truncated = serialize_web_sources(
         web_sources,
         max_items=10,

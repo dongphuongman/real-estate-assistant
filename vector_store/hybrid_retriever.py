@@ -46,49 +46,43 @@ class HybridPropertyRetriever(BaseRetriever):
         arbitrary_types_allowed = True
 
     def search_with_filters(
-        self,
-        query: str,
-        filters: Dict[str, Any],
-        k: Optional[int] = None
+        self, query: str, filters: Dict[str, Any], k: Optional[int] = None
     ) -> List[Document]:
         """
         Search with explicit filters (bypassing internal extraction).
-        
+
         Args:
             query: Search query
             filters: Metadata filters
             k: Optional override for k
-            
+
         Returns:
             List of documents
         """
         effective_k = k if k is not None else self.k
-        
+
         # Merge with forced filters
         if self.forced_filters:
             for key, val in self.forced_filters.items():
                 filters[key] = val
-                
+
         # Use hybrid search
         results_with_scores = self.vector_store.hybrid_search(
-            query=query,
-            filters=filters,
-            k=effective_k,
-            alpha=self.alpha
+            query=query, filters=filters, k=effective_k, alpha=self.alpha
         )
-        
+
         results = [doc for doc, _ in results_with_scores]
-        
+
         # Apply post-filtering just in case (though hybrid_search should handle it)
-        # We rely on hybrid_search to handle Chroma filters, but complex logic 
-        # might need post-processing. For now, assume hybrid_search is sufficient 
+        # We rely on hybrid_search to handle Chroma filters, but complex logic
+        # might need post-processing. For now, assume hybrid_search is sufficient
         # for retrieval, and we trust it.
-        
+
         # If we are AdvancedPropertyRetriever, we might want to apply extra logic?
         # No, search_with_filters is intended to be a direct entry point.
         # But if we want sorting/ranges that Chroma doesn't support fully?
         # The _build_chroma_filter handles ranges.
-        
+
         return results
 
     def _get_relevant_documents(
@@ -116,13 +110,13 @@ class HybridPropertyRetriever(BaseRetriever):
 
         # Perform search
         initial_scores: List[float]
-        
+
         # Always use hybrid search if available
         # Note: MMR logic is harder to combine with hybrid scoring (BM25)
         # If search_type is MMR, we might skip hybrid scoring or apply it after?
         # For now, let's prioritize hybrid search over MMR if it's "similarity"
         # If it's MMR, we use vector store retriever.
-        
+
         if self.search_type == "mmr":
             # Use MMR for diversity (Vector only)
             retriever = self.vector_store.get_retriever(
@@ -147,10 +141,7 @@ class HybridPropertyRetriever(BaseRetriever):
         else:
             # Use Hybrid Search
             results_with_scores = self.vector_store.hybrid_search(
-                query=query,
-                filters=filters,
-                k=candidate_k,
-                alpha=self.alpha
+                query=query, filters=filters, k=candidate_k, alpha=self.alpha
             )
             results = [doc for doc, score in results_with_scores]
             initial_scores = [score for doc, score in results_with_scores]
@@ -178,7 +169,7 @@ class HybridPropertyRetriever(BaseRetriever):
                     documents=results,
                     strategy=self.strategy,
                     initial_scores=initial_scores,
-                    k=self.k
+                    k=self.k,
                 )
                 results = [doc for doc, score in reranked]
             except Exception as e:
@@ -186,7 +177,7 @@ class HybridPropertyRetriever(BaseRetriever):
                 # Fallback to original results
                 pass
 
-        return results[:self.k]
+        return results[: self.k]
 
     def _extract_filters(self, query: str) -> Dict[str, Any]:
         """
@@ -233,11 +224,7 @@ class HybridPropertyRetriever(BaseRetriever):
 
         return filters
 
-    def _apply_filters(
-        self,
-        documents: List[Document],
-        filters: Dict[str, Any]
-    ) -> List[Document]:
+    def _apply_filters(self, documents: List[Document], filters: Dict[str, Any]) -> List[Document]:
         """
         Apply filters to documents.
 
@@ -299,7 +286,7 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
 
         # Perform search
         initial_scores: List[float]
-        
+
         if self.search_type == "mmr":
             retriever = self.vector_store.get_retriever(
                 search_type="mmr",
@@ -321,10 +308,7 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
         else:
             # Use Hybrid Search
             results_with_scores = self.vector_store.hybrid_search(
-                query=query,
-                filters=filters,
-                k=candidate_k,
-                alpha=self.alpha
+                query=query, filters=filters, k=candidate_k, alpha=self.alpha
             )
             results = [doc for doc, score in results_with_scores]
             initial_scores = [score for doc, score in results_with_scores]
@@ -337,13 +321,13 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
         ) -> Tuple[List[Document], List[float]]:
             if not docs:
                 return [], []
-            
+
             # Map doc ID to score
             score_map = {id(d): s for d, s in zip(docs, scores, strict=False)}
-            
+
             # Apply filter
             filtered_docs = filter_func(docs)
-            
+
             # Reconstruct scores
             filtered_scores = [score_map.get(id(d), 0.0) for d in filtered_docs]
             return filtered_docs, filtered_scores
@@ -357,10 +341,10 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
             )
 
         # Note: hybrid_search already applies most filters (price, rooms, etc) via Chroma
-        # But AdvancedRetriever might have explicit properties set (min_price, etc) 
+        # But AdvancedRetriever might have explicit properties set (min_price, etc)
         # that are NOT in the extracted filters if they came from UI/Config, not query.
         # So we must still apply them.
-        
+
         if self.min_price is not None or self.max_price is not None:
             results, initial_scores = apply_filtering(
                 results, initial_scores, self._filter_by_price
@@ -371,9 +355,7 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
             and self.center_lon is not None
             and self.radius_km is not None
         ):
-            results, initial_scores = apply_filtering(
-                results, initial_scores, self._filter_by_geo
-            )
+            results, initial_scores = apply_filtering(results, initial_scores, self._filter_by_geo)
 
         if self.year_built_min is not None or self.year_built_max is not None:
             results, initial_scores = apply_filtering(
@@ -389,7 +371,7 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
         # Usually reranking provides a better sort.
         # But if explicit sort_by is set (e.g. "price"), user wants that order.
         # If sort_by is NOT set, we use reranking score.
-        
+
         if self.reranker and not self.sort_by:
             try:
                 reranked = self.reranker.rerank_with_strategy(
@@ -397,7 +379,7 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
                     documents=results,
                     strategy=self.strategy,
                     initial_scores=initial_scores,
-                    k=self.k
+                    k=self.k,
                 )
                 results = [doc for doc, score in reranked]
                 # No need to update initial_scores as we are done with scoring
@@ -407,7 +389,7 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
         if self.sort_by:
             results = self._sort_results(results)
 
-        return results[:self.k]
+        return results[: self.k]
 
     def _filter_by_price(self, documents: List[Document]) -> List[Document]:
         """Filter documents by price range."""
@@ -499,18 +481,13 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
 
         filtered = []
         import math
+
         lat1 = math.radians(self.center_lat)
         lon1 = math.radians(self.center_lon)
         for doc in documents:
-            lat = (
-                doc.metadata.get("lat")
-                if "lat" in doc.metadata
-                else doc.metadata.get("latitude")
-            )
+            lat = doc.metadata.get("lat") if "lat" in doc.metadata else doc.metadata.get("latitude")
             lon = (
-                doc.metadata.get("lon")
-                if "lon" in doc.metadata
-                else doc.metadata.get("longitude")
+                doc.metadata.get("lon") if "lon" in doc.metadata else doc.metadata.get("longitude")
             )
             if lat is None or lon is None:
                 continue
@@ -518,8 +495,8 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
             lon2 = math.radians(float(lon))
             dlat = lat2 - lat1
             dlon = lon2 - lon1
-            a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
-            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+            a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
             dist_km = 6371.0 * c
             if dist_km <= self.radius_km:
                 filtered.append(doc)
@@ -543,7 +520,7 @@ def create_retriever(
     forced_filters: Optional[Dict[str, Any]] = None,
     reranker: Optional[StrategicReranker] = None,
     strategy: str = "balanced",
-    **kwargs: Any
+    **kwargs: Any,
 ) -> BaseRetriever:
     """
     Factory function to create a retriever.
@@ -565,9 +542,13 @@ def create_retriever(
     """
     # Use advanced retriever if price filters or sorting specified
     if (
-        min_price is not None or max_price is not None or sort_by is not None or
-        (center_lat is not None and center_lon is not None and radius_km is not None) or
-        year_built_min is not None or year_built_max is not None or energy_certs
+        min_price is not None
+        or max_price is not None
+        or sort_by is not None
+        or (center_lat is not None and center_lon is not None and radius_km is not None)
+        or year_built_min is not None
+        or year_built_max is not None
+        or energy_certs
     ):
         return AdvancedPropertyRetriever(
             vector_store=vector_store,
@@ -586,7 +567,7 @@ def create_retriever(
             forced_filters=forced_filters,
             reranker=reranker,
             strategy=strategy,
-            **kwargs
+            **kwargs,
         )
 
     # Use hybrid retriever otherwise
@@ -597,5 +578,5 @@ def create_retriever(
         forced_filters=forced_filters,
         reranker=reranker,
         strategy=strategy,
-        **kwargs
+        **kwargs,
     )

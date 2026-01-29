@@ -8,10 +8,13 @@ class DummyResp:
 
 def test_http_checker_ok(monkeypatch):
     calls = []
+
     def fake_get(url, timeout):
         calls.append((url, timeout))
         return DummyResp(200)
+
     import requests
+
     monkeypatch.setattr(requests, "get", fake_get)
     check = make_http_checker("http://localhost:8000/health", timeout=1.0)
     assert check() is True
@@ -21,7 +24,9 @@ def test_http_checker_ok(monkeypatch):
 def test_http_checker_handles_errors(monkeypatch):
     def fake_get(url, timeout):
         raise RuntimeError("network error")
+
     import requests
+
     monkeypatch.setattr(requests, "get", fake_get)
     check = make_http_checker("http://localhost:8000/health", timeout=1.0)
     assert check() is False

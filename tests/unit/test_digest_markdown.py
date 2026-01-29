@@ -16,4 +16,3 @@ def test_generate_digest_markdown_has_sections():
     assert "## City Price Indices" in md
     assert "## YoY — Top Gainers" in md
     assert "## YoY — Top Decliners" in md
-

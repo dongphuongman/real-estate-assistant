@@ -86,9 +86,10 @@ def test_user_model_preferences_from_dict_handles_invalid_updated_at():
 
 def test_user_model_preferences_manager_clears_fields_with_empty_strings(tmp_path):
     manager = UserModelPreferencesManager(storage_path=str(tmp_path))
-    manager.update_preferences("u3@example.com", preferred_provider="openai", preferred_model="gpt-4o")
+    manager.update_preferences(
+        "u3@example.com", preferred_provider="openai", preferred_model="gpt-4o"
+    )
     manager.update_preferences("u3@example.com", preferred_provider="  ", preferred_model=" ")
     prefs = manager.get_preferences("u3@example.com")
     assert prefs.preferred_provider is None
     assert prefs.preferred_model is None
-

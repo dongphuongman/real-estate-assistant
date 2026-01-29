@@ -41,9 +41,7 @@ def get_prompt_template_by_id(template_id: str) -> PromptTemplate | None:
     return None
 
 
-def render_prompt_template(
-    template: PromptTemplate, variables: Mapping[str, Any]
-) -> str:
+def render_prompt_template(template: PromptTemplate, variables: Mapping[str, Any]) -> str:
     declared_vars = {v.name: v for v in template.variables}
 
     unknown_vars = sorted(set(variables.keys()) - set(declared_vars.keys()))
@@ -229,4 +227,3 @@ _TEMPLATES: tuple[PromptTemplate, ...] = (
 _TEMPLATE_IDS = [t.id for t in _TEMPLATES]
 if len(_TEMPLATE_IDS) != len(set(_TEMPLATE_IDS)):
     raise RuntimeError("Duplicate prompt template IDs detected")
-

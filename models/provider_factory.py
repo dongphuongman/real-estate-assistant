@@ -56,10 +56,7 @@ class ModelProviderFactory:
 
     @classmethod
     def get_provider(
-        cls,
-        provider_name: str,
-        config: Optional[Dict[str, Any]] = None,
-        use_cache: bool = True
+        cls, provider_name: str, config: Optional[Dict[str, Any]] = None, use_cache: bool = True
     ) -> ModelProvider:
         """
         Get a provider instance by name.
@@ -78,8 +75,7 @@ class ModelProviderFactory:
         if provider_name not in cls._PROVIDERS:
             available = ", ".join(cls.list_providers())
             raise ValueError(
-                f"Unknown provider '{provider_name}'. "
-                f"Available providers: {available}"
+                f"Unknown provider '{provider_name}'. Available providers: {available}"
             )
 
         # Check cache
@@ -93,7 +89,7 @@ class ModelProviderFactory:
         # Prepare config with defaults from settings
         if config is None:
             config = {}
-        
+
         # Inject API key from settings if not present
         if "api_key" not in config:
             if provider_name == "openai":
@@ -183,7 +179,7 @@ class ModelProviderFactory:
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
         streaming: bool = True,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> BaseChatModel:
         """
         Create a model instance by ID.
@@ -205,7 +201,7 @@ class ModelProviderFactory:
         # Apply defaults from settings if not provided
         if temperature is None:
             temperature = settings.default_temperature
-        
+
         if max_tokens is None:
             max_tokens = settings.default_max_tokens
 
@@ -217,7 +213,7 @@ class ModelProviderFactory:
                 temperature=temperature,
                 max_tokens=max_tokens,
                 streaming=streaming,
-                **kwargs
+                **kwargs,
             )
 
         # Auto-detect provider
@@ -234,7 +230,7 @@ class ModelProviderFactory:
             temperature=temperature,
             max_tokens=max_tokens,
             streaming=streaming,
-            **kwargs
+            **kwargs,
         )
 
     @classmethod
@@ -259,11 +255,7 @@ class ModelProviderFactory:
         return results
 
     @classmethod
-    def register_provider(
-        cls,
-        name: str,
-        provider_class: Type[ModelProvider]
-    ) -> None:
+    def register_provider(cls, name: str, provider_class: Type[ModelProvider]) -> None:
         """
         Register a custom provider.
 

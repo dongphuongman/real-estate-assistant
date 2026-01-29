@@ -26,7 +26,10 @@ def _multi_key_settings() -> AppSettings:
 
 def test_rate_limit_headers_and_429():
     client = TestClient(app)
-    with patch("config.settings.get_settings") as mock_settings, patch("api.auth.get_settings") as mock_auth_settings:
+    with (
+        patch("config.settings.get_settings") as mock_settings,
+        patch("api.auth.get_settings") as mock_auth_settings,
+    ):
         mock_settings.return_value = _rl_settings()
         mock_auth_settings.return_value = mock_settings.return_value
         headers = {"X-API-Key": "test-key-123"}
@@ -43,7 +46,10 @@ def test_rate_limit_headers_and_429():
 def test_per_client_rate_limits_differ_by_api_key():
     """Test that different API keys have independent rate limits."""
     client = TestClient(app)
-    with patch("config.settings.get_settings") as mock_settings, patch("api.auth.get_settings") as mock_auth_settings:
+    with (
+        patch("config.settings.get_settings") as mock_settings,
+        patch("api.auth.get_settings") as mock_auth_settings,
+    ):
         mock_settings.return_value = _multi_key_settings()
         mock_auth_settings.return_value = mock_settings.return_value
 
@@ -72,7 +78,10 @@ def test_per_client_rate_limits_differ_by_api_key():
 def test_per_client_rate_limits_with_secondary_key():
     """Test that secondary API key gets its own rate limit bucket."""
     client = TestClient(app)
-    with patch("config.settings.get_settings") as mock_settings, patch("api.auth.get_settings") as mock_auth_settings:
+    with (
+        patch("config.settings.get_settings") as mock_settings,
+        patch("api.auth.get_settings") as mock_auth_settings,
+    ):
         settings = AppSettings(
             environment="development",
             api_access_key="primary-key",

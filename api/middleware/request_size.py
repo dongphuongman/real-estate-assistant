@@ -44,8 +44,7 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
         self.max_body_size_bytes = max_body_size_mb * 1024 * 1024
         self.max_upload_size_bytes = max_upload_size_mb * 1024 * 1024
         logger.info(
-            "Request size limits initialized: "
-            "max_body=%dMB, max_upload=%dMB",
+            "Request size limits initialized: max_body=%dMB, max_upload=%dMB",
             max_body_size_mb,
             max_upload_size_mb,
         )
@@ -135,5 +134,9 @@ def add_request_size_limits(
     except (AttributeError, ValueError, TypeError):
         upload_limit = max_upload_size_mb
 
-    app.add_middleware(RequestSizeLimitMiddleware, max_body_size_mb=body_limit, max_upload_size_mb=upload_limit)
-    logger.info("Request size limit middleware added: body=%dMB, upload=%dMB", body_limit, upload_limit)
+    app.add_middleware(
+        RequestSizeLimitMiddleware, max_body_size_mb=body_limit, max_upload_size_mb=upload_limit
+    )
+    logger.info(
+        "Request size limit middleware added: body=%dMB, upload=%dMB", body_limit, upload_limit
+    )

@@ -174,7 +174,9 @@ class TestEmailService:
 
     def test_gmail_service_factory(self):
         """Test Gmail service creation via factory."""
-        service = EmailServiceFactory.create_gmail_service(username="test@gmail.com", password="app_password")
+        service = EmailServiceFactory.create_gmail_service(
+            username="test@gmail.com", password="app_password"
+        )
 
         assert isinstance(service, EmailService)
         assert service.config.provider == EmailProvider.GMAIL
@@ -183,7 +185,9 @@ class TestEmailService:
 
     def test_outlook_service_factory(self):
         """Test Outlook service creation via factory."""
-        service = EmailServiceFactory.create_outlook_service(username="test@outlook.com", password="password")
+        service = EmailServiceFactory.create_outlook_service(
+            username="test@outlook.com", password="password"
+        )
 
         assert isinstance(service, EmailService)
         assert service.config.provider == EmailProvider.OUTLOOK
@@ -423,7 +427,9 @@ class TestNotificationPreferencesManager:
         """Test updating specific preference fields."""
         prefs_manager.get_preferences("user@example.com")  # Create initial
 
-        updated = prefs_manager.update_preferences("user@example.com", price_drop_threshold=15.0, max_alerts_per_day=5)
+        updated = prefs_manager.update_preferences(
+            "user@example.com", price_drop_threshold=15.0, max_alerts_per_day=5
+        )
 
         assert updated.price_drop_threshold == 15.0
         assert updated.max_alerts_per_day == 5
@@ -431,7 +437,9 @@ class TestNotificationPreferencesManager:
     def test_get_users_by_frequency(self, prefs_manager):
         """Test filtering users by alert frequency."""
         prefs_manager.update_preferences("user1@example.com", alert_frequency=AlertFrequency.DAILY)
-        prefs_manager.update_preferences("user2@example.com", alert_frequency=AlertFrequency.INSTANT)
+        prefs_manager.update_preferences(
+            "user2@example.com", alert_frequency=AlertFrequency.INSTANT
+        )
         prefs_manager.update_preferences("user3@example.com", alert_frequency=AlertFrequency.DAILY)
 
         daily_users = prefs_manager.get_users_by_frequency(AlertFrequency.DAILY)
@@ -512,7 +520,9 @@ class TestDigestScheduler:
             },
         )
 
-        search_manager.save_search(SavedSearch(id="s1", name="Krakow Deals", city="Krakow", min_rooms=2))
+        search_manager.save_search(
+            SavedSearch(id="s1", name="Krakow Deals", city="Krakow", min_rooms=2)
+        )
 
         previous = PropertyCollection(
             properties=[
@@ -558,7 +568,9 @@ class TestDigestScheduler:
         assert "Top Picks" in sent_body
         assert "900" in sent_body
 
-        records = history.get_user_notifications(user_email, notification_type=NotificationType.DIGEST_DAILY)
+        records = history.get_user_notifications(
+            user_email, notification_type=NotificationType.DIGEST_DAILY
+        )
         assert len(records) == 1
         assert records[0].status == NotificationStatus.SENT
 
@@ -759,8 +771,12 @@ class TestNotificationHistory:
 
     def test_get_user_statistics(self, history):
         """Test getting user notification statistics."""
-        record1 = history.record_notification("user@example.com", NotificationType.PRICE_DROP, "Alert 1")
-        record2 = history.record_notification("user@example.com", NotificationType.NEW_PROPERTY, "Alert 2")
+        record1 = history.record_notification(
+            "user@example.com", NotificationType.PRICE_DROP, "Alert 1"
+        )
+        record2 = history.record_notification(
+            "user@example.com", NotificationType.NEW_PROPERTY, "Alert 2"
+        )
 
         history.mark_sent(record1.id)
         history.mark_delivered(record1.id)
@@ -786,12 +802,16 @@ class TestNotificationHistory:
     def test_cleanup_old_records(self, history):
         """Test cleaning up old notification records."""
         # Create old record
-        old_record = history.record_notification("user@example.com", NotificationType.PRICE_DROP, "Old Alert")
+        old_record = history.record_notification(
+            "user@example.com", NotificationType.PRICE_DROP, "Old Alert"
+        )
         # Manually set creation date to 100 days ago
         history._history[old_record.id].created_at = datetime.now() - timedelta(days=100)
 
         # Create recent record
-        recent_record = history.record_notification("user@example.com", NotificationType.NEW_PROPERTY, "Recent Alert")
+        recent_record = history.record_notification(
+            "user@example.com", NotificationType.NEW_PROPERTY, "Recent Alert"
+        )
 
         # Cleanup records older than 90 days
         history.cleanup_old_records(days=90)

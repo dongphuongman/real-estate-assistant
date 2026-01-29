@@ -48,7 +48,10 @@ def test_production_wildcard_cors_fails_during_app_initialization():
         # (the module-level settings = AppSettings() is executed on import)
         try:
             import config.settings  # noqa: F401
-            pytest.fail("Expected ValidationError when importing config.settings with production + wildcard CORS")
+
+            pytest.fail(
+                "Expected ValidationError when importing config.settings with production + wildcard CORS"
+            )
         except Exception as e:
             # The error is a pydantic ValidationError wrapping our ValueError
             error_msg = str(e).lower()

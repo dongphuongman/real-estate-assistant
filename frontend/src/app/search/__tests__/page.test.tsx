@@ -81,7 +81,7 @@ describe("SearchPage", () => {
     })
 
     render(<SearchPage />)
-    
+
     const input = screen.getByLabelText("Search query")
     const searchButton = screen.getByRole("button", { name: /search/i })
 
@@ -191,7 +191,7 @@ describe("SearchPage", () => {
     })
 
     render(<SearchPage />)
-    
+
     const input = screen.getByLabelText("Search query")
     const searchButton = screen.getByRole("button", { name: /search/i })
 
@@ -235,7 +235,7 @@ describe("SearchPage", () => {
     })
 
     render(<SearchPage />)
-    
+
     const input = screen.getByLabelText("Search query")
     const searchButton = screen.getByRole("button", { name: /search/i })
 
@@ -264,7 +264,7 @@ describe("SearchPage", () => {
     })
 
     render(<SearchPage />)
-    
+
     const input = screen.getByLabelText("Search query")
     const searchButton = screen.getByRole("button", { name: /search/i })
 

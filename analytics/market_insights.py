@@ -55,7 +55,6 @@ class HistoricalPricePoint:
     avg_price_per_sqm: Optional[float] = None
 
 
-
 class MarketStatistics(BaseModel):
     """Comprehensive market statistics."""
 
@@ -169,13 +168,13 @@ class MarketInsights:
                 }
             )
         df = pd.DataFrame(data)
-        
+
         # Ensure datetime columns are properly typed
         if "scraped_at" in df.columns:
             df["scraped_at"] = pd.to_datetime(df["scraped_at"])
         if "last_updated" in df.columns:
             df["last_updated"] = pd.to_datetime(df["last_updated"])
-            
+
         return df
 
     def _calculate_statistics(self, df: pd.DataFrame) -> MarketStatistics:
@@ -246,10 +245,10 @@ class MarketInsights:
         return self._calculate_statistics(df)
 
     def get_price_trend(
-        self, 
-        city: Optional[str] = None, 
-        region: Optional[str] = None, 
-        country: Optional[str] = None
+        self,
+        city: Optional[str] = None,
+        region: Optional[str] = None,
+        country: Optional[str] = None,
     ) -> PriceTrend:
         """
         Analyze price trends for overall market, specific city, region or country.
@@ -481,7 +480,6 @@ class MarketInsights:
 
         return sorted(results, key=lambda x: x.start_date)
 
-
     def filter_by_geo_radius(
         self, center_lat: float, center_lon: float, radius_km: float
     ) -> pd.DataFrame:
@@ -630,7 +628,7 @@ class MarketInsights:
         if energy_ratings:
             allowed_ratings = {str(x).upper() for x in energy_ratings}
             if "energy_rating" in df.columns:
-                 df = df[df["energy_rating"].astype(str).str.upper().isin(allowed_ratings)]
+                df = df[df["energy_rating"].astype(str).str.upper().isin(allowed_ratings)]
 
         return df
 
@@ -746,7 +744,7 @@ class MarketInsights:
             "counts": hist.tolist(),
             "bin_edges": bin_edges.tolist(),
             "bins": [
-                f"${bin_edges[i]:.0f}-${bin_edges[i+1]:.0f}" for i in range(len(bin_edges) - 1)
+                f"${bin_edges[i]:.0f}-${bin_edges[i + 1]:.0f}" for i in range(len(bin_edges) - 1)
             ],
         }
 
@@ -905,10 +903,10 @@ class MarketInsights:
     def get_country_indices(self, countries: Optional[List[str]] = None) -> pd.DataFrame:
         """
         Get monthly price indices and YoY change for countries.
-        
+
         Args:
             countries: Optional list of countries to filter/include.
-            
+
         Returns:
             DataFrame with country, month, avg_price, yoy_pct, count.
         """
@@ -916,7 +914,7 @@ class MarketInsights:
         if countries:
             countries_lower = [c.lower() for c in countries]
             df = df[df["country"].str.lower().isin(countries_lower)]
-            
+
         if "scraped_at" not in df.columns:
             scraped = []
             for p in self.properties.properties:
@@ -924,21 +922,21 @@ class MarketInsights:
             while len(scraped) < len(df):
                 scraped.append(None)
             df["scraped_at"] = scraped[: len(df)]
-            
+
         df = df.dropna(subset=["scraped_at"])
         if len(df) == 0:
             return pd.DataFrame(columns=["country", "month", "avg_price", "yoy_pct", "count"])
-            
+
         df["dt"] = pd.to_datetime(df["scraped_at"])
         df["month"] = df["dt"].dt.to_period("M").dt.to_timestamp()
-        
+
         grouped = (
             df.groupby(["country", "month"])
             .agg(avg_price=("price", "mean"), count=("price", "count"))
             .reset_index()
             .sort_values(["country", "month"])
         )
-        
+
         grouped["yoy_pct"] = None
         try:
             grouped["yoy_pct"] = grouped.groupby("country")["avg_price"].transform(
@@ -946,6 +944,6 @@ class MarketInsights:
             )
         except Exception:
             pass
-            
+
         latest = grouped.groupby("country").tail(1)
         return latest[["country", "month", "avg_price", "yoy_pct", "count"]]

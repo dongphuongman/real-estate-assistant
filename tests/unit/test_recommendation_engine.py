@@ -15,7 +15,13 @@ def test_recommend_ranks_and_limits_k():
         Document(page_content="Nice apartment", metadata={"id": "1", "price_per_sqm": 50}),
         Document(
             page_content="Great value apartment" * 30,
-            metadata={"id": "2", "price_per_sqm": 15, "has_parking": True, "has_garden": True, "has_balcony": True},
+            metadata={
+                "id": "2",
+                "price_per_sqm": 15,
+                "has_parking": True,
+                "has_garden": True,
+                "has_balcony": True,
+            },
         ),
     ]
 
@@ -49,7 +55,9 @@ def test_explicit_score_matches_city_case_insensitive_and_rooms_float():
         },
     )
 
-    score, explanation = engine._score_property(doc, prefs, viewed_properties=None, favorited_properties=None)
+    score, explanation = engine._score_property(
+        doc, prefs, viewed_properties=None, favorited_properties=None
+    )
     assert score > 0
     assert "preference_match" in explanation
     assert explanation["why_recommended"]
@@ -64,4 +72,3 @@ def test_generate_reason_defaults_when_no_signals():
         metadata={},
     )
     assert reason == "Good match for your search"
-

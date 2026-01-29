@@ -12,6 +12,7 @@ from typing import Optional
 @dataclass
 class ValidationResult:
     """Result of API key validation."""
+
     is_valid: bool
     provider: str
     message: str
@@ -39,29 +40,22 @@ class APIKeyValidator:
             # Make a minimal test request
             client.models.list()
 
-            return ValidationResult(
-                is_valid=True,
-                provider="OpenAI",
-                message="API key is valid"
-            )
+            return ValidationResult(is_valid=True, provider="OpenAI", message="API key is valid")
         except Exception as e:
             error_msg = str(e)
-            if (
-                "authentication" in error_msg.lower()
-                or "api_key" in error_msg.lower()
-            ):
+            if "authentication" in error_msg.lower() or "api_key" in error_msg.lower():
                 return ValidationResult(
                     is_valid=False,
                     provider="OpenAI",
                     message="Invalid API key",
-                    error_details=error_msg
+                    error_details=error_msg,
                 )
             else:
                 return ValidationResult(
                     is_valid=False,
                     provider="OpenAI",
                     message="Validation error",
-                    error_details=error_msg
+                    error_details=error_msg,
                 )
 
     @staticmethod
@@ -84,29 +78,29 @@ class APIKeyValidator:
             client.messages.create(
                 model="claude-3-5-haiku-20241022",
                 max_tokens=1,
-                messages=[{"role": "user", "content": "hi"}]
+                messages=[{"role": "user", "content": "hi"}],
             )
 
-            return ValidationResult(
-                is_valid=True,
-                provider="Anthropic",
-                message="API key is valid"
-            )
+            return ValidationResult(is_valid=True, provider="Anthropic", message="API key is valid")
         except Exception as e:
             error_msg = str(e)
-            if "authentication" in error_msg.lower() or "api_key" in error_msg.lower() or "401" in error_msg:
+            if (
+                "authentication" in error_msg.lower()
+                or "api_key" in error_msg.lower()
+                or "401" in error_msg
+            ):
                 return ValidationResult(
                     is_valid=False,
                     provider="Anthropic",
                     message="Invalid API key",
-                    error_details=error_msg
+                    error_details=error_msg,
                 )
             else:
                 return ValidationResult(
                     is_valid=False,
                     provider="Anthropic",
                     message="Validation error",
-                    error_details=error_msg
+                    error_details=error_msg,
                 )
 
     @staticmethod
@@ -127,11 +121,7 @@ class APIKeyValidator:
             # List available models as a test
             list(genai.list_models())
 
-            return ValidationResult(
-                is_valid=True,
-                provider="Google",
-                message="API key is valid"
-            )
+            return ValidationResult(is_valid=True, provider="Google", message="API key is valid")
         except Exception as e:
             error_msg = str(e)
             if (
@@ -144,14 +134,14 @@ class APIKeyValidator:
                     is_valid=False,
                     provider="Google",
                     message="Invalid API key",
-                    error_details=error_msg
+                    error_details=error_msg,
                 )
             else:
                 return ValidationResult(
                     is_valid=False,
                     provider="Google",
                     message="Validation error",
-                    error_details=error_msg
+                    error_details=error_msg,
                 )
 
     @staticmethod
@@ -169,44 +159,30 @@ class APIKeyValidator:
             import requests
 
             # Grok uses OpenAI-compatible API
-            headers = {
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json"
-            }
+            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
             # Test request to list models
-            response = requests.get(
-                "https://api.x.ai/v1/models",
-                headers=headers,
-                timeout=10
-            )
+            response = requests.get("https://api.x.ai/v1/models", headers=headers, timeout=10)
 
             if response.status_code == 200:
-                return ValidationResult(
-                    is_valid=True,
-                    provider="Grok",
-                    message="API key is valid"
-                )
+                return ValidationResult(is_valid=True, provider="Grok", message="API key is valid")
             elif response.status_code in [401, 403]:
                 return ValidationResult(
                     is_valid=False,
                     provider="Grok",
                     message="Invalid API key",
-                    error_details=f"HTTP {response.status_code}"
+                    error_details=f"HTTP {response.status_code}",
                 )
             else:
                 return ValidationResult(
                     is_valid=False,
                     provider="Grok",
                     message="Validation error",
-                    error_details=f"HTTP {response.status_code}"
+                    error_details=f"HTTP {response.status_code}",
                 )
         except Exception as e:
             return ValidationResult(
-                is_valid=False,
-                provider="Grok",
-                message="Validation error",
-                error_details=str(e)
+                is_valid=False, provider="Grok", message="Validation error", error_details=str(e)
             )
 
     @staticmethod
@@ -224,44 +200,37 @@ class APIKeyValidator:
             import requests
 
             # DeepSeek uses OpenAI-compatible API
-            headers = {
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json"
-            }
+            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
             # Test request to list models
             response = requests.get(
-                "https://api.deepseek.com/v1/models",
-                headers=headers,
-                timeout=10
+                "https://api.deepseek.com/v1/models", headers=headers, timeout=10
             )
 
             if response.status_code == 200:
                 return ValidationResult(
-                    is_valid=True,
-                    provider="DeepSeek",
-                    message="API key is valid"
+                    is_valid=True, provider="DeepSeek", message="API key is valid"
                 )
             elif response.status_code in [401, 403]:
                 return ValidationResult(
                     is_valid=False,
                     provider="DeepSeek",
                     message="Invalid API key",
-                    error_details=f"HTTP {response.status_code}"
+                    error_details=f"HTTP {response.status_code}",
                 )
             else:
                 return ValidationResult(
                     is_valid=False,
                     provider="DeepSeek",
                     message="Validation error",
-                    error_details=f"HTTP {response.status_code}"
+                    error_details=f"HTTP {response.status_code}",
                 )
         except Exception as e:
             return ValidationResult(
                 is_valid=False,
                 provider="DeepSeek",
                 message="Validation error",
-                error_details=str(e)
+                error_details=str(e),
             )
 
     @classmethod
@@ -290,7 +259,7 @@ class APIKeyValidator:
                 is_valid=False,
                 provider=provider,
                 message="Unknown provider",
-                error_details=f"No validator for provider: {provider}"
+                error_details=f"No validator for provider: {provider}",
             )
 
         return validator(api_key)

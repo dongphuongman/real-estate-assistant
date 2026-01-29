@@ -115,7 +115,7 @@ To serve on a domain (e.g., `realestate.ai`) with SSL.
    ```nginx
    server {
        server_name your-domain.com;
-       
+
        # Frontend
        location / {
            proxy_pass http://localhost:3000;
@@ -140,7 +140,7 @@ To serve on a domain (e.g., `realestate.ai`) with SSL.
    sudo ln -s /etc/nginx/sites-available/ai-real-estate /etc/nginx/sites-enabled/
    sudo nginx -t
    sudo systemctl restart nginx
-   
+
    # Setup SSL
    sudo certbot --nginx -d your-domain.com
    ```

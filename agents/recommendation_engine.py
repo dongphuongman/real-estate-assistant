@@ -39,7 +39,7 @@ class PropertyRecommendationEngine:
         user_preferences: Optional[UserPreferences] = None,
         viewed_properties: Optional[List[str]] = None,
         favorited_properties: Optional[List[str]] = None,
-        k: int = 5
+        k: int = 5,
     ) -> List[Tuple[Document, float, Dict[str, Any]]]:
         """
         Generate personalized recommendations.
@@ -62,10 +62,7 @@ class PropertyRecommendationEngine:
         for doc in documents:
             # Calculate recommendation score
             score, explanation = self._score_property(
-                doc,
-                user_preferences,
-                viewed_properties,
-                favorited_properties
+                doc, user_preferences, viewed_properties, favorited_properties
             )
 
             scored_docs.append((doc, score, explanation))
@@ -81,7 +78,7 @@ class PropertyRecommendationEngine:
         doc: Document,
         user_preferences: Optional[UserPreferences],
         viewed_properties: Optional[List[str]],
-        favorited_properties: Optional[List[str]]
+        favorited_properties: Optional[List[str]],
     ) -> Tuple[float, Dict[str, Any]]:
         """
         Score a property for recommendation.
@@ -96,32 +93,30 @@ class PropertyRecommendationEngine:
         explicit_score = 0.0
         if user_preferences:
             explicit_score = self._calculate_explicit_score(metadata, user_preferences)
-            explanation['preference_match'] = f"{explicit_score:.2f}"
+            explanation["preference_match"] = f"{explicit_score:.2f}"
 
         # 2. Value score
         value_score = self._calculate_value_score(metadata)
-        explanation['value_score'] = f"{value_score:.2f}"
+        explanation["value_score"] = f"{value_score:.2f}"
 
         # 3. Implicit preference score (similarity to viewed/favorited)
         implicit_score = 0.0
         if viewed_properties or favorited_properties:
             implicit_score = self._calculate_implicit_score(
-                metadata,
-                viewed_properties,
-                favorited_properties
+                metadata, viewed_properties, favorited_properties
             )
-            explanation['similar_to_favorites'] = implicit_score > 0.7
+            explanation["similar_to_favorites"] = implicit_score > 0.7
 
         # 4. Popularity score (placeholder - would use actual data)
         popularity_score = 0.5  # Neutral
-        explanation['trending'] = False
+        explanation["trending"] = False
 
         # Combine scores
         final_score = (
-            self.weight_explicit * explicit_score +
-            self.weight_value * value_score +
-            self.weight_implicit * implicit_score +
-            self.weight_popularity * popularity_score
+            self.weight_explicit * explicit_score
+            + self.weight_value * value_score
+            + self.weight_implicit * implicit_score
+            + self.weight_popularity * popularity_score
         )
 
         # Add quality boost
@@ -132,23 +127,18 @@ class PropertyRecommendationEngine:
         )
         if has_quality_amenities >= 3:
             final_score *= 1.1
-            explanation['premium_amenities'] = True
+            explanation["premium_amenities"] = True
 
         # Explanation summary
-        explanation['recommendation_score'] = f"{final_score:.2f}"
-        explanation['why_recommended'] = self._generate_recommendation_reason(
-            explicit_score,
-            value_score,
-            implicit_score,
-            metadata
+        explanation["recommendation_score"] = f"{final_score:.2f}"
+        explanation["why_recommended"] = self._generate_recommendation_reason(
+            explicit_score, value_score, implicit_score, metadata
         )
 
         return final_score, explanation
 
     def _calculate_explicit_score(
-        self,
-        metadata: Dict[str, Any],
-        preferences: UserPreferences
+        self, metadata: Dict[str, Any], preferences: UserPreferences
     ) -> float:
         """Score based on explicit user preferences."""
         score = 0.0
@@ -174,7 +164,9 @@ class PropertyRecommendationEngine:
         if preferences.preferred_cities:
             checks += 1
             city = metadata.get("city")
-            if isinstance(city, str) and any(city.lower() == pref.lower() for pref in preferences.preferred_cities):
+            if isinstance(city, str) and any(
+                city.lower() == pref.lower() for pref in preferences.preferred_cities
+            ):
                 score += 1.0
 
         # Rooms match
@@ -257,7 +249,7 @@ class PropertyRecommendationEngine:
         self,
         metadata: Dict[str, Any],
         viewed_properties: Optional[List[str]],
-        favorited_properties: Optional[List[str]]
+        favorited_properties: Optional[List[str]],
     ) -> float:
         """
         Score based on similarity to viewed/favorited properties.
@@ -281,7 +273,7 @@ class PropertyRecommendationEngine:
         explicit_score: float,
         value_score: float,
         implicit_score: float,
-        metadata: Dict[str, Any]
+        metadata: Dict[str, Any],
     ) -> str:
         """Generate human-readable recommendation reason."""
         reasons = []
@@ -301,11 +293,11 @@ class PropertyRecommendationEngine:
 
         # Feature highlights
         highlights = []
-        if metadata.get('has_parking'):
+        if metadata.get("has_parking"):
             highlights.append("parking")
-        if metadata.get('has_garden'):
+        if metadata.get("has_garden"):
             highlights.append("garden")
-        if metadata.get('has_pool'):
+        if metadata.get("has_pool"):
             highlights.append("pool")
 
         if highlights:

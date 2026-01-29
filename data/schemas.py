@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 class PropertyType(str, Enum):
     """Enumeration of property types."""
+
     APARTMENT = "apartment"
     HOUSE = "house"
     STUDIO = "studio"
@@ -28,6 +29,7 @@ class PropertyType(str, Enum):
 
 class NegotiationRate(str, Enum):
     """Enumeration of negotiation rates."""
+
     HIGH = "high"
     MIDDLE = "middle"
     LOW = "low"
@@ -65,12 +67,10 @@ class Property(BaseModel):
 
     # Property Classification
     property_type: PropertyType = Field(
-        default=PropertyType.APARTMENT,
-        description="Type of property"
+        default=PropertyType.APARTMENT, description="Type of property"
     )
     listing_type: ListingType = Field(
-        default=ListingType.RENT,
-        description="Listing type: rent/sale/room/sublease"
+        default=ListingType.RENT, description="Listing type: rent/sale/room/sublease"
     )
 
     # Physical Characteristics
@@ -80,17 +80,20 @@ class Property(BaseModel):
     floor: Optional[float] = Field(None, description="Floor number")
     total_floors: Optional[float] = Field(None, description="Total floors in building")
     year_built: Optional[int] = Field(None, ge=1000, le=2030, description="Year of construction")
-    energy_rating: Optional[str] = Field(None, description="Energy efficiency rating (e.g., A, B, C)")
+    energy_rating: Optional[str] = Field(
+        None, description="Energy efficiency rating (e.g., A, B, C)"
+    )
 
     # Financial Information
     price: Optional[float] = Field(None, ge=0, description="Monthly rental price or listing price")
-    currency: Optional[str] = Field(None, description="Currency code for price (e.g., PLN, EUR, USD)")
+    currency: Optional[str] = Field(
+        None, description="Currency code for price (e.g., PLN, EUR, USD)"
+    )
     price_media: Optional[float] = Field(None, ge=0, description="Estimated utility costs")
     price_delta: Optional[float] = Field(None, description="Price variation/negotiation room")
     deposit: Optional[float] = Field(None, ge=0, description="Security deposit amount")
     negotiation_rate: Optional[NegotiationRate] = Field(
-        None,
-        description="Level of price negotiability"
+        None, description="Level of price negotiability"
     )
 
     # Amenities (Boolean Features)
@@ -105,11 +108,21 @@ class Property(BaseModel):
     has_elevator: bool = Field(default=False, description="Building has elevator")
 
     # Proximity Information (in meters)
-    distance_to_school: Optional[float] = Field(None, ge=0, description="Distance to nearest school (m)")
-    distance_to_clinic: Optional[float] = Field(None, ge=0, description="Distance to nearest clinic (m)")
-    distance_to_restaurant: Optional[float] = Field(None, ge=0, description="Distance to nearest restaurant (m)")
-    distance_to_transport: Optional[float] = Field(None, ge=0, description="Distance to public transport (m)")
-    distance_to_shopping: Optional[float] = Field(None, ge=0, description="Distance to shopping center (m)")
+    distance_to_school: Optional[float] = Field(
+        None, ge=0, description="Distance to nearest school (m)"
+    )
+    distance_to_clinic: Optional[float] = Field(
+        None, ge=0, description="Distance to nearest clinic (m)"
+    )
+    distance_to_restaurant: Optional[float] = Field(
+        None, ge=0, description="Distance to nearest restaurant (m)"
+    )
+    distance_to_transport: Optional[float] = Field(
+        None, ge=0, description="Distance to public transport (m)"
+    )
+    distance_to_shopping: Optional[float] = Field(
+        None, ge=0, description="Distance to shopping center (m)"
+    )
 
     # Owner/Contact Information
     owner_name: Optional[str] = Field(None, description="Property owner name")
@@ -120,27 +133,32 @@ class Property(BaseModel):
     source_url: Optional[str] = Field(None, description="Source URL of the listing")
     source_platform: Optional[str] = Field(None, description="Platform where listing originated")
     scraped_at: Optional[datetime] = Field(
-        default_factory=datetime.now,
-        description="When data was scraped"
+        default_factory=datetime.now, description="When data was scraped"
     )
     last_updated: Optional[datetime] = Field(
-        default_factory=datetime.now,
-        description="Last update timestamp"
+        default_factory=datetime.now, description="Last update timestamp"
     )
 
     # Computed/Derived Fields
     price_per_sqm: Optional[float] = Field(None, description="Price per square meter")
-    price_in_eur: Optional[float] = Field(None, description="Price converted to EUR for normalization")
-    total_monthly_cost: Optional[float] = Field(None, description="Total monthly cost (rent + utilities)")
-    points_of_interest: List['PointOfInterest'] = Field(default_factory=list, description="Nearby points of interest")
+    price_in_eur: Optional[float] = Field(
+        None, description="Price converted to EUR for normalization"
+    )
+    total_monthly_cost: Optional[float] = Field(
+        None, description="Total monthly cost (rent + utilities)"
+    )
+    points_of_interest: List["PointOfInterest"] = Field(
+        default_factory=list, description="Nearby points of interest"
+    )
 
     class Config:
         """Pydantic model configuration."""
+
         use_enum_values = True
         validate_assignment = True
         extra = "allow"  # Allow additional fields for flexibility
 
-    @field_validator('rooms', 'bathrooms')
+    @field_validator("rooms", "bathrooms")
     @classmethod
     def validate_positive(cls, v: float, info: ValidationInfo) -> float:
         """Ensure rooms and bathrooms are positive."""
@@ -148,7 +166,7 @@ class Property(BaseModel):
             raise ValueError(f"{info.field_name} must be positive")
         return v
 
-    @field_validator('price')
+    @field_validator("price")
     @classmethod
     def validate_price_reasonable(cls, v: float) -> float:
         """Ensure price is within reasonable bounds."""
@@ -215,7 +233,9 @@ class Property(BaseModel):
         if self.distance_to_transport:
             proximity_info.append(f"public transport within {int(self.distance_to_transport)}m")
 
-        proximity_str = ", ".join(proximity_info) if proximity_info else "proximity information not available"
+        proximity_str = (
+            ", ".join(proximity_info) if proximity_info else "proximity information not available"
+        )
 
         text_parts = [
             f"Property in {self.city}",
@@ -225,20 +245,42 @@ class Property(BaseModel):
             text_parts.append(f", {self.neighborhood} neighborhood")
 
         # Handle property_type as either enum or string (Pydantic might convert to string)
-        prop_type_str = self.property_type.value if hasattr(self.property_type, 'value') else str(self.property_type)
+        prop_type_str = (
+            self.property_type.value
+            if hasattr(self.property_type, "value")
+            else str(self.property_type)
+        )
 
-        rooms_str = str(int(self.rooms)) if (self.rooms is not None and not pd.isna(self.rooms)) else "unknown"
-        baths_str = str(int(self.bathrooms)) if (self.bathrooms is not None and not pd.isna(self.bathrooms)) else "unknown"
+        rooms_str = (
+            str(int(self.rooms))
+            if (self.rooms is not None and not pd.isna(self.rooms))
+            else "unknown"
+        )
+        baths_str = (
+            str(int(self.bathrooms))
+            if (self.bathrooms is not None and not pd.isna(self.bathrooms))
+            else "unknown"
+        )
 
-        price_num_str = f"{int(self.price)}" if (self.price is not None and not pd.isna(self.price)) else "unknown"
+        price_num_str = (
+            f"{int(self.price)}"
+            if (self.price is not None and not pd.isna(self.price))
+            else "unknown"
+        )
         curr = self.currency if (self.currency is not None and not pd.isna(self.currency)) else None
         price_str = f"${price_num_str}" if curr is None else f"{price_num_str} {curr}"
-        listing = self.listing_type.value if hasattr(self.listing_type, 'value') else str(self.listing_type)
-        text_parts.extend([
-            f". {prop_type_str.title()} with {rooms_str} rooms and {baths_str} bathrooms",
-            f". Listing: {listing.title()}"
-        ])
-        if listing == 'sale':
+        listing = (
+            self.listing_type.value
+            if hasattr(self.listing_type, "value")
+            else str(self.listing_type)
+        )
+        text_parts.extend(
+            [
+                f". {prop_type_str.title()} with {rooms_str} rooms and {baths_str} bathrooms",
+                f". Listing: {listing.title()}",
+            ]
+        )
+        if listing == "sale":
             text_parts.append(f", Price: {price_str}")
         else:
             text_parts.append(f", Monthly rent: {price_str}")
@@ -248,16 +290,22 @@ class Property(BaseModel):
 
         if self.floor is not None and not pd.isna(self.floor):
             floor_str = str(int(self.floor))
-            tf = self.total_floors if (self.total_floors is not None and not pd.isna(self.total_floors)) else None
+            tf = (
+                self.total_floors
+                if (self.total_floors is not None and not pd.isna(self.total_floors))
+                else None
+            )
             if tf is not None:
                 text_parts.append(f", floor {floor_str} of {int(tf)}")
             else:
                 text_parts.append(f", floor {floor_str}")
 
-        text_parts.extend([
-            f". Amenities: {amenities_str}",
-            f". {proximity_str}",
-        ])
+        text_parts.extend(
+            [
+                f". Amenities: {amenities_str}",
+                f". {proximity_str}",
+            ]
+        )
 
         if self.description:
             text_parts.append(f". Description: {self.description}")
@@ -267,6 +315,7 @@ class Property(BaseModel):
 
 class PropertyCollection(BaseModel):
     """Collection of properties with metadata."""
+
     properties: List[Property]
     total_count: int
     source: Optional[str] = None
@@ -292,10 +341,10 @@ class PropertyCollection(BaseModel):
                 row_dict = row.to_dict()
 
                 src = source or "unknown"
-                if 'id' not in row_dict or pd.isna(row_dict.get('id')):
-                    row_dict['id'] = f"{src}#{idx}"
-                if source and ('source_url' not in row_dict or pd.isna(row_dict.get('source_url'))):
-                    row_dict['source_url'] = source
+                if "id" not in row_dict or pd.isna(row_dict.get("id")):
+                    row_dict["id"] = f"{src}#{idx}"
+                if source and ("source_url" not in row_dict or pd.isna(row_dict.get("source_url"))):
+                    row_dict["source_url"] = source
 
                 # Create Property instance (will validate automatically)
                 prop = Property(**row_dict)
@@ -305,11 +354,7 @@ class PropertyCollection(BaseModel):
                 logger.warning("Skipping row %s due to validation error: %s", idx, e)
                 continue
 
-        return cls(
-            properties=properties,
-            total_count=len(properties),
-            source=source
-        )
+        return cls(properties=properties, total_count=len(properties), source=source)
 
     def to_dataframe(self) -> pd.DataFrame:
         """
@@ -335,7 +380,7 @@ class PropertyCollection(BaseModel):
         year_built_min: Optional[int] = None,
         year_built_max: Optional[int] = None,
         energy_ratings: Optional[List[str]] = None,
-        property_type: Optional[PropertyType] = None
+        property_type: Optional[PropertyType] = None,
     ) -> "PropertyCollection":
         """
         Filter properties by various criteria.
@@ -362,16 +407,10 @@ class PropertyCollection(BaseModel):
         filtered = self.properties
 
         if country:
-            filtered = [
-                p for p in filtered 
-                if p.country and p.country.lower() == country.lower()
-            ]
+            filtered = [p for p in filtered if p.country and p.country.lower() == country.lower()]
 
         if region:
-            filtered = [
-                p for p in filtered 
-                if p.region and p.region.lower() == region.lower()
-            ]
+            filtered = [p for p in filtered if p.region and p.region.lower() == region.lower()]
 
         if city:
             filtered = [p for p in filtered if p.city.lower() == city.lower()]
@@ -398,29 +437,31 @@ class PropertyCollection(BaseModel):
             filtered = [p for p in filtered if p.has_elevator == has_elevator]
 
         if year_built_min is not None:
-            filtered = [p for p in filtered if p.year_built is not None and p.year_built >= year_built_min]
+            filtered = [
+                p for p in filtered if p.year_built is not None and p.year_built >= year_built_min
+            ]
 
         if year_built_max is not None:
-            filtered = [p for p in filtered if p.year_built is not None and p.year_built <= year_built_max]
+            filtered = [
+                p for p in filtered if p.year_built is not None and p.year_built <= year_built_max
+            ]
 
         if energy_ratings:
             filtered = [
-                p for p in filtered 
-                if p.energy_rating and p.energy_rating in energy_ratings
+                p for p in filtered if p.energy_rating and p.energy_rating in energy_ratings
             ]
 
         if property_type is not None:
             filtered = [p for p in filtered if p.property_type == property_type]
 
         return PropertyCollection(
-            properties=filtered,
-            total_count=len(filtered),
-            source=self.source
+            properties=filtered, total_count=len(filtered), source=self.source
         )
 
 
 class SearchCriteria(BaseModel):
     """User search criteria for property search."""
+
     query: str = Field(..., description="Natural language search query")
     country: Optional[str] = None
     region: Optional[str] = None
@@ -431,21 +472,21 @@ class SearchCriteria(BaseModel):
     max_rooms: Optional[float] = Field(None, ge=0)
     property_type: Optional[PropertyType] = None
     required_amenities: List[str] = Field(default_factory=list)
-    
+
     # PRO Filters
     must_have_parking: Optional[bool] = None
     must_have_elevator: Optional[bool] = None
     year_built_min: Optional[int] = None
     year_built_max: Optional[int] = None
     energy_ratings: Optional[List[str]] = None
-    
+
     max_results: int = Field(default=10, ge=1, le=100)
 
-    @field_validator('max_price')
+    @field_validator("max_price")
     @classmethod
     def validate_price_range(cls, v: Optional[float], info: ValidationInfo) -> Optional[float]:
         """Ensure max_price is greater than min_price if both are set."""
-        min_price = cast(Optional[float], info.data.get('min_price'))
+        min_price = cast(Optional[float], info.data.get("min_price"))
         if v is not None and min_price is not None and v < min_price:
             raise ValueError("max_price must be greater than min_price")
         return v
@@ -453,6 +494,7 @@ class SearchCriteria(BaseModel):
 
 class UserPreferences(BaseModel):
     """Stored user preferences for personalized recommendations."""
+
     user_id: str
     preferred_cities: List[str] = Field(default_factory=list)
     budget_range: tuple[float, float] = Field(default=(0, 10000))
@@ -470,6 +512,7 @@ class PointOfInterest(BaseModel):
     """
     Represents a point of interest near a property.
     """
+
     name: str = Field(..., description="Name of the POI")
     category: str = Field(..., description="Category (e.g., school, transport, park)")
     latitude: float = Field(..., description="Latitude coordinate")

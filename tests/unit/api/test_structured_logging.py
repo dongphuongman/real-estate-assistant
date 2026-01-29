@@ -19,9 +19,11 @@ def test_api_request_structured_log_contains_fields():
     logger.addHandler(handler)
     logger.setLevel(logging.INFO)
     add_observability(app, logger)
+
     @app.get("/ping")
     def _ping():
         return {"ok": True}
+
     client = TestClient(app)
     client.get("/ping")
     contents = stream.getvalue().strip().splitlines()

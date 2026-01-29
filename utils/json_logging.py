@@ -25,6 +25,7 @@ class JsonFormatter(logging.Formatter):
                 base[key] = getattr(record, key)
         return json.dumps(base, ensure_ascii=False)
 
+
 def configure_json_logging(level: int = logging.INFO) -> None:
     logging.root.handlers.clear()
     handler = logging.StreamHandler()

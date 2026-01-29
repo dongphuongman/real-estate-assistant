@@ -46,4 +46,3 @@ def test_settings_test_runtime_integration_rejects_non_local_provider(mock_facto
     r = client.get("/api/v1/settings/test-runtime?provider=openai", headers={"X-API-Key": key})
     assert r.status_code == 400
     assert "not a local runtime provider" in r.json()["detail"]
-

@@ -18,7 +18,12 @@ def _has_docker_compose() -> bool:
     if shutil.which("docker") is None:
         return False
     try:
-        subprocess.run(["docker", "compose", "version"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(
+            ["docker", "compose", "version"],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
         return True
     except Exception:
         return False
@@ -36,7 +41,9 @@ def _get_default_api_access_key_from_env() -> str:
 
 
 def _ensure_uv_dev_env(root: Path) -> None:
-    _run_checked([sys.executable, str(root / "scripts" / "dev" / "bootstrap_uv.py"), "--dev"], cwd=root)
+    _run_checked(
+        [sys.executable, str(root / "scripts" / "dev" / "bootstrap_uv.py"), "--dev"], cwd=root
+    )
 
 
 def _docker_gpu_available() -> bool:
@@ -117,7 +124,9 @@ def _build_frontend_env(*, backend_env: dict[str, str]) -> dict[str, str]:
     env.setdefault("NEXT_PUBLIC_API_URL", "/api/v1")
     env.setdefault("BACKEND_API_URL", "http://localhost:8000/api/v1")
     if not env.get("API_ACCESS_KEY", "").strip() and not env.get("API_ACCESS_KEYS", "").strip():
-        effective_backend_key = backend_env.get("API_ACCESS_KEY", "").strip() or _get_default_api_access_key_from_env()
+        effective_backend_key = (
+            backend_env.get("API_ACCESS_KEY", "").strip() or _get_default_api_access_key_from_env()
+        )
         if effective_backend_key:
             env["API_ACCESS_KEY"] = effective_backend_key
     return env
@@ -127,7 +136,17 @@ def _run_local(root: Path, *, service: str, no_bootstrap: bool, dry_run: bool) -
     wants_backend = service in {"all", "backend"}
     wants_frontend = service in {"all", "frontend"}
 
-    backend_cmd = ["uv", "run", "uvicorn", "api.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+    backend_cmd = [
+        "uv",
+        "run",
+        "uvicorn",
+        "api.main:app",
+        "--reload",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+    ]
     frontend_cmd = ["npm", "run", "dev"]
 
     env_backend = _build_backend_env()
@@ -139,10 +158,24 @@ def _run_local(root: Path, *, service: str, no_bootstrap: bool, dry_run: bool) -
         if wants_frontend:
             print("FRONTEND_CMD:", " ".join(frontend_cmd))
         if wants_backend:
-            print("BACKEND_ENV:", _sanitize_env_for_display({k: env_backend[k] for k in sorted(env_backend) if k in {"ENVIRONMENT", "API_ACCESS_KEY", "API_ACCESS_KEYS"}}))
+            print(
+                "BACKEND_ENV:",
+                _sanitize_env_for_display(
+                    {
+                        k: env_backend[k]
+                        for k in sorted(env_backend)
+                        if k in {"ENVIRONMENT", "API_ACCESS_KEY", "API_ACCESS_KEYS"}
+                    }
+                ),
+            )
         if wants_frontend:
             keys = {"NEXT_PUBLIC_API_URL", "BACKEND_API_URL", "API_ACCESS_KEY", "API_ACCESS_KEYS"}
-            print("FRONTEND_ENV:", _sanitize_env_for_display({k: env_frontend[k] for k in sorted(env_frontend) if k in keys}))
+            print(
+                "FRONTEND_ENV:",
+                _sanitize_env_for_display(
+                    {k: env_frontend[k] for k in sorted(env_frontend) if k in keys}
+                ),
+            )
         return 0
 
     if wants_frontend and shutil.which("npm") is None:
@@ -161,7 +194,9 @@ def _run_local(root: Path, *, service: str, no_bootstrap: bool, dry_run: bool) -
         if wants_backend:
             procs.append(subprocess.Popen(backend_cmd, cwd=str(root), env=env_backend))
         if wants_frontend:
-            procs.append(subprocess.Popen(frontend_cmd, cwd=str(root / "frontend"), env=env_frontend))
+            procs.append(
+                subprocess.Popen(frontend_cmd, cwd=str(root / "frontend"), env=env_frontend)
+            )
 
         while True:
             for proc in procs:
@@ -217,7 +252,12 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"DOCKER_CMD: {cmd}")
                 return 0
             return _run_docker(root, profiles=effective_profiles)
-        return _run_local(root, service=args.service, no_bootstrap=bool(args.no_bootstrap), dry_run=bool(args.dry_run))
+        return _run_local(
+            root,
+            service=args.service,
+            no_bootstrap=bool(args.no_bootstrap),
+            dry_run=bool(args.dry_run),
+        )
     if args.mode == "docker":
         if args.dry_run:
             prefix = "docker compose"
@@ -227,7 +267,9 @@ def main(argv: list[str] | None = None) -> int:
             print(f"DOCKER_CMD: {cmd}")
             return 0
         return _run_docker(root, profiles=effective_profiles)
-    return _run_local(root, service=args.service, no_bootstrap=bool(args.no_bootstrap), dry_run=bool(args.dry_run))
+    return _run_local(
+        root, service=args.service, no_bootstrap=bool(args.no_bootstrap), dry_run=bool(args.dry_run)
+    )
 
 
 if __name__ == "__main__":

@@ -50,7 +50,7 @@ class HybridPropertyAgent:
         web_fetch_timeout_seconds: float = 10.0,
         web_fetch_max_bytes: int = 300_000,
         web_allowlist_domains: Optional[List[str]] = None,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         """
         Initialize hybrid agent.
@@ -65,15 +65,13 @@ class HybridPropertyAgent:
         self.llm = llm
         self.retriever = retriever
         self.memory = memory or ConversationBufferMemory(
-            memory_key="chat_history",
-            return_messages=True,
-            output_key="answer"
+            memory_key="chat_history", return_messages=True, output_key="answer"
         )
-        
+
         # Try to extract vector_store from retriever to enable tool actions
         vector_store = getattr(retriever, "vector_store", None)
         self.tools = tools or create_property_tools(vector_store=vector_store)
-        
+
         self.verbose = verbose
         self.internet_enabled = bool(internet_enabled)
         self.searxng_url = str(searxng_url).strip() if searxng_url else None
@@ -98,15 +96,18 @@ class HybridPropertyAgent:
             retriever=self.retriever,
             memory=self.memory,
             return_source_documents=True,
-            verbose=self.verbose
+            verbose=self.verbose,
         )
 
     def _create_tool_agent(self) -> AgentExecutor:
         """Create tool-based agent for complex queries."""
 
         # Create prompt template for tool agent
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are a specialized Real Estate Assistant.
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    """You are a specialized Real Estate Assistant.
 
 Scope:
 - Answer questions about properties, real estate markets, mortgages, financing, negotiation, neighborhood/location insights, and related decision support.
@@ -126,24 +127,22 @@ When answering:
 4. Be concise but thorough
 5. Always cite sources when using property data
 
-Context from property database will be provided when relevant."""),
-            MessagesPlaceholder(variable_name="chat_history", optional=True),
-            ("human", "{input}"),
-            MessagesPlaceholder(variable_name="agent_scratchpad"),
-        ])
+Context from property database will be provided when relevant.""",
+                ),
+                MessagesPlaceholder(variable_name="chat_history", optional=True),
+                ("human", "{input}"),
+                MessagesPlaceholder(variable_name="agent_scratchpad"),
+            ]
+        )
 
         try:
-            agent = create_openai_tools_agent(
-                llm=self.llm,
-                tools=self.tools,
-                prompt=prompt
-            )
+            agent = create_openai_tools_agent(llm=self.llm, tools=self.tools, prompt=prompt)
             return AgentExecutor(
                 agent=agent,
                 tools=self.tools,
                 memory=self.memory,
                 verbose=self.verbose,
-                return_intermediate_steps=True
+                return_intermediate_steps=True,
             )
         except Exception:
             from langchain.agents import AgentType, initialize_agent
@@ -194,7 +193,12 @@ Context from property database will be provided when relevant."""),
                 self.memory.save_context({"input": q}, {"answer": answer})
             except Exception:
                 pass
-            return {"answer": answer, "source_documents": [], "method": "capabilities", "intent": QueryIntent.GENERAL_QUESTION.value}
+            return {
+                "answer": answer,
+                "source_documents": [],
+                "method": "capabilities",
+                "intent": QueryIntent.GENERAL_QUESTION.value,
+            }
 
         out_of_domain_markers = [
             "recipe",
@@ -218,15 +222,16 @@ Context from property database will be provided when relevant."""),
                 self.memory.save_context({"input": q}, {"answer": answer})
             except Exception:
                 pass
-            return {"answer": answer, "source_documents": [], "method": "out_of_domain", "intent": QueryIntent.GENERAL_QUESTION.value}
+            return {
+                "answer": answer,
+                "source_documents": [],
+                "method": "out_of_domain",
+                "intent": QueryIntent.GENERAL_QUESTION.value,
+            }
 
         return None
 
-    def process_query(
-        self,
-        query: str,
-        return_analysis: bool = False
-    ) -> Dict[str, Any]:
+    def process_query(self, query: str, return_analysis: bool = False) -> Dict[str, Any]:
         """
         Process a query using the hybrid approach.
 
@@ -252,7 +257,9 @@ Context from property database will be provided when relevant."""),
             if return_analysis:
                 result["analysis"] = analysis.dict()
             return result
-        if (analysis.requires_external_data or Tool.WEB_SEARCH in analysis.tools_needed) and not self.internet_enabled:
+        if (
+            analysis.requires_external_data or Tool.WEB_SEARCH in analysis.tools_needed
+        ) and not self.internet_enabled:
             result = {
                 "answer": (
                     "This question likely requires up-to-date web data, but internet tools are disabled. "
@@ -292,31 +299,28 @@ Context from property database will be provided when relevant."""),
         return self._retrieve_documents(query, analysis, k=k)
 
     def _retrieve_documents(
-        self,
-        query: str,
-        analysis: QueryAnalysis,
-        k: int = 5
+        self, query: str, analysis: QueryAnalysis, k: int = 5
     ) -> List[Document]:
         """
         Retrieve documents using hybrid search with explicit filters if available.
-        
+
         Args:
             query: User query
             analysis: Query analysis result
             k: Number of documents to retrieve
-            
+
         Returns:
             List of relevant documents
         """
         # Check if we have extracted filters
         filters = analysis.extracted_filters
-        
+
         # Check if retriever supports explicit filtering (HybridPropertyRetriever)
         if filters and hasattr(self.retriever, "search_with_filters"):
             if self.verbose:
                 logger.info(f"Using hybrid search with filters: {filters}")
             return cast(List[Document], self.retriever.search_with_filters(query, filters, k=k))
-            
+
         # Fallback to standard retrieval
         if self.verbose:
             logger.info("Using standard retrieval")
@@ -324,28 +328,23 @@ Context from property database will be provided when relevant."""),
         return docs[:k]
 
     async def _aretrieve_documents(
-        self,
-        query: str,
-        analysis: QueryAnalysis,
-        k: int = 5
+        self, query: str, analysis: QueryAnalysis, k: int = 5
     ) -> List[Document]:
         filters = analysis.extracted_filters
 
         if filters and hasattr(self.retriever, "asearch_with_filters"):
             if self.verbose:
                 logger.info("Using async hybrid search with filters: %s", filters)
-            return cast(List[Document], await self.retriever.asearch_with_filters(query, filters, k=k))
+            return cast(
+                List[Document], await self.retriever.asearch_with_filters(query, filters, k=k)
+            )
 
         if self.verbose:
             logger.info("Using async standard retrieval")
         docs = await self.retriever.aget_relevant_documents(query)
         return docs[:k]
 
-    def _process_with_rag(
-        self,
-        query: str,
-        analysis: QueryAnalysis
-    ) -> Dict[str, Any]:
+    def _process_with_rag(self, query: str, analysis: QueryAnalysis) -> Dict[str, Any]:
         """Process simple query with RAG only."""
         if self.verbose:
             logger.info("Processing with RAG only")
@@ -354,10 +353,10 @@ Context from property database will be provided when relevant."""),
             # If we have filters, we should use them for better retrieval
             if analysis.extracted_filters:
                 docs = self._retrieve_documents(query, analysis)
-                
+
                 # Construct context from docs
                 context_text = "\n\n".join([doc.page_content for doc in docs])
-                
+
                 # Simple generation without history rephrasing for now
                 # (Or we could implement rephrasing if needed)
                 prompt = (
@@ -365,15 +364,17 @@ Context from property database will be provided when relevant."""),
                     f"{context_text}\n\n"
                     f"Question: {query}"
                 )
-                
+
                 response_msg = self.llm.invoke(prompt)
-                answer = response_msg.content if hasattr(response_msg, "content") else str(response_msg)
-                
+                answer = (
+                    response_msg.content if hasattr(response_msg, "content") else str(response_msg)
+                )
+
                 return {
                     "answer": answer,
                     "source_documents": docs,
                     "method": "rag_filtered",
-                    "intent": analysis.intent.value
+                    "intent": analysis.intent.value,
                 }
 
             # Standard RAG chain
@@ -398,7 +399,7 @@ Context from property database will be provided when relevant."""),
                 "answer": response["answer"],
                 "source_documents": source_documents,
                 "method": "rag",
-                "intent": analysis.intent.value
+                "intent": analysis.intent.value,
             }
 
         except Exception as e:
@@ -406,7 +407,7 @@ Context from property database will be provided when relevant."""),
                 "answer": f"Error processing query with RAG: {str(e)}",
                 "source_documents": [],
                 "method": "rag",
-                "error": str(e)
+                "error": str(e),
             }
 
     def _process_with_web_search(
@@ -446,11 +447,7 @@ Context from property database will be provided when relevant."""),
             "intermediate_steps": intermediate_steps,
         }
 
-    def _process_with_agent(
-        self,
-        query: str,
-        analysis: QueryAnalysis
-    ) -> Dict[str, Any]:
+    def _process_with_agent(self, query: str, analysis: QueryAnalysis) -> Dict[str, Any]:
         """Process complex query with tool agent."""
         if self.verbose:
             logger.info("Processing with tool agent")
@@ -465,23 +462,23 @@ Context from property database will be provided when relevant."""),
             # Add context to query if available
             enhanced_query = query
             if context_docs:
-                context_text = "\n\n".join([
-                    f"Property {i+1}: {doc.page_content[:200]}..."
-                    for i, doc in enumerate(context_docs)
-                ])
+                context_text = "\n\n".join(
+                    [
+                        f"Property {i + 1}: {doc.page_content[:200]}..."
+                        for i, doc in enumerate(context_docs)
+                    ]
+                )
                 enhanced_query = f"{query}\n\nRelevant properties:\n{context_text}"
 
             # Run agent
-            response = self.tool_agent.invoke({
-                "input": enhanced_query
-            })
+            response = self.tool_agent.invoke({"input": enhanced_query})
 
             return {
                 "answer": response["output"],
                 "source_documents": context_docs,
                 "method": "agent",
                 "intent": analysis.intent.value,
-                "intermediate_steps": response.get("intermediate_steps", [])
+                "intermediate_steps": response.get("intermediate_steps", []),
             }
 
         except Exception as e:
@@ -489,14 +486,10 @@ Context from property database will be provided when relevant."""),
                 "answer": f"Error processing query with agent: {str(e)}",
                 "source_documents": [],
                 "method": "agent",
-                "error": str(e)
+                "error": str(e),
             }
 
-    def _process_hybrid(
-        self,
-        query: str,
-        analysis: QueryAnalysis
-    ) -> Dict[str, Any]:
+    def _process_hybrid(self, query: str, analysis: QueryAnalysis) -> Dict[str, Any]:
         """Process with hybrid approach - RAG + agent capabilities."""
         if self.verbose:
             logger.info("Processing with hybrid approach")
@@ -518,9 +511,7 @@ Context from property database will be provided when relevant."""),
                     f"Now answer this: {query}"
                 )
 
-                agent_response = self.tool_agent.invoke({
-                    "input": enhanced_query
-                })
+                agent_response = self.tool_agent.invoke({"input": enhanced_query})
 
                 answer = agent_response["output"]
 
@@ -528,20 +519,17 @@ Context from property database will be provided when relevant."""),
                 "answer": answer,
                 "source_documents": source_docs,
                 "method": "hybrid",
-                "intent": analysis.intent.value
+                "intent": analysis.intent.value,
             }
 
         except Exception:
             # Fallback to RAG-only
             return self._process_with_rag(query, analysis)
 
-    async def astream_query(
-        self,
-        query: str
-    ) -> AsyncIterator[str]:
+    async def astream_query(self, query: str) -> AsyncIterator[str]:
         """
         Process a query using the hybrid approach and stream the response.
-        
+
         Yields:
             JSON string chunks containing 'content' or 'error'.
         """
@@ -574,16 +562,9 @@ Context from property database will be provided when relevant."""),
                 logger.error(f"Streaming fallback failed: {fallback_error}")
             yield json.dumps({"error": str(e)})
 
-    async def _astream_with_rag(
-        self,
-        query: str,
-        analysis: QueryAnalysis
-    ) -> AsyncIterator[str]:
+    async def _astream_with_rag(self, query: str, analysis: QueryAnalysis) -> AsyncIterator[str]:
         """Stream RAG response."""
-        async for event in self.rag_chain.astream_events(
-            {"question": query},
-            version="v1"
-        ):
+        async for event in self.rag_chain.astream_events({"question": query}, version="v1"):
             kind = event["event"]
             if kind == "on_chat_model_stream":
                 content = event["data"]["chunk"].content
@@ -591,13 +572,10 @@ Context from property database will be provided when relevant."""),
                     yield json.dumps({"content": content})
 
     async def _astream_with_agent(
-        self,
-        query: str,
-        analysis: QueryAnalysis,
-        rag_context: str = ""
+        self, query: str, analysis: QueryAnalysis, rag_context: str = ""
     ) -> AsyncIterator[str]:
         """Stream Agent response."""
-        
+
         # Prepare input
         input_text = query
         if rag_context:
@@ -606,29 +584,24 @@ Context from property database will be provided when relevant."""),
             try:
                 context_docs = await self._aretrieve_documents(query, analysis, k=3)
                 if context_docs:
-                    context_text = "\n\n".join([
-                        f"Property {i+1}: {doc.page_content[:200]}..."
-                        for i, doc in enumerate(context_docs)
-                    ])
+                    context_text = "\n\n".join(
+                        [
+                            f"Property {i + 1}: {doc.page_content[:200]}..."
+                            for i, doc in enumerate(context_docs)
+                        ]
+                    )
                     input_text = f"{query}\n\nRelevant properties:\n{context_text}"
             except Exception as e:
                 logger.warning(f"Retrieval failed in stream: {e}")
 
-        async for event in self.tool_agent.astream_events(
-            {"input": input_text},
-            version="v1"
-        ):
+        async for event in self.tool_agent.astream_events({"input": input_text}, version="v1"):
             kind = event["event"]
             if kind == "on_chat_model_stream":
                 content = event["data"]["chunk"].content
                 if content:
                     yield json.dumps({"content": content})
 
-    async def _astream_hybrid(
-        self,
-        query: str,
-        analysis: QueryAnalysis
-    ) -> AsyncIterator[str]:
+    async def _astream_hybrid(self, query: str, analysis: QueryAnalysis) -> AsyncIterator[str]:
         """Stream Hybrid response."""
         rag_response = await self.rag_chain.ainvoke({"question": query})
         answer = rag_response["answer"]
@@ -660,15 +633,13 @@ class SimpleRAGAgent:
         llm: BaseChatModel,
         retriever: BaseRetriever,
         memory: Optional[ConversationBufferMemory] = None,
-        verbose: bool = False
+        verbose: bool = False,
     ) -> None:
         """Initialize simple RAG agent."""
         self.llm = llm
         self.retriever = retriever
         self.memory = memory or ConversationBufferMemory(
-            memory_key="chat_history",
-            return_messages=True,
-            output_key="answer"
+            memory_key="chat_history", return_messages=True, output_key="answer"
         )
         self.verbose = verbose
 
@@ -677,7 +648,7 @@ class SimpleRAGAgent:
             retriever=retriever,
             memory=self.memory,
             return_source_documents=True,
-            verbose=verbose
+            verbose=verbose,
         )
 
     def process_query(self, query: str) -> Dict[str, Any]:
@@ -688,7 +659,7 @@ class SimpleRAGAgent:
             return {
                 "answer": response["answer"],
                 "source_documents": response.get("source_documents", []),
-                "method": "rag_only"
+                "method": "rag_only",
             }
 
         except Exception as e:
@@ -696,7 +667,7 @@ class SimpleRAGAgent:
                 "answer": f"Error: {str(e)}",
                 "source_documents": [],
                 "method": "rag_only",
-                "error": str(e)
+                "error": str(e),
             }
 
     def get_sources_for_query(self, query: str, k: int = 5) -> List[Document]:
@@ -721,7 +692,7 @@ def create_hybrid_agent(
     web_fetch_timeout_seconds: float = 10.0,
     web_fetch_max_bytes: int = 300_000,
     web_allowlist_domains: Optional[List[str]] = None,
-    verbose: bool = False
+    verbose: bool = False,
 ) -> Any:
     """
     Factory function to create an agent.
@@ -747,12 +718,7 @@ def create_hybrid_agent(
             web_fetch_timeout_seconds=web_fetch_timeout_seconds,
             web_fetch_max_bytes=web_fetch_max_bytes,
             web_allowlist_domains=web_allowlist_domains,
-            verbose=verbose
+            verbose=verbose,
         )
     else:
-        return SimpleRAGAgent(
-            llm=llm,
-            retriever=retriever,
-            memory=memory,
-            verbose=verbose
-        )
+        return SimpleRAGAgent(llm=llm, retriever=retriever, memory=memory, verbose=verbose)

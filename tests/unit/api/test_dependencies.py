@@ -63,6 +63,7 @@ def test_get_llm_chooses_first_model_when_default_missing(monkeypatch):
             return SimpleNamespace(id=model_id, kwargs=kwargs, t=temperature, max_tokens=max_tokens)
 
     import models.provider_factory as pf_mod
+
     monkeypatch.setattr(pf_mod.ModelProviderFactory, "get_provider", lambda name: _Provider())
     llm = get_llm()
     assert getattr(llm, "id", "") == "m1"
@@ -81,6 +82,7 @@ def test_get_llm_raises_when_no_models(monkeypatch):
             return SimpleNamespace()
 
     import models.provider_factory as pf_mod
+
     monkeypatch.setattr(pf_mod.ModelProviderFactory, "get_provider", lambda name: _Provider())
     with pytest.raises(RuntimeError):
         get_llm()

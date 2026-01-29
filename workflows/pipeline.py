@@ -15,6 +15,7 @@ from rules.engine import RuleEngine
 
 logger = logging.getLogger(__name__)
 
+
 class DevPipeline:
     def __init__(self, provider: str = "openai"):
         self.coding_agent = CodingAgent(provider=provider)
@@ -25,12 +26,7 @@ class DevPipeline:
     def _run_git_cmd(self, args: list) -> str:
         """Run a git command and return output."""
         try:
-            result = subprocess.run(
-                ["git"] + args, 
-                capture_output=True, 
-                text=True, 
-                check=True
-            )
+            result = subprocess.run(["git"] + args, capture_output=True, text=True, check=True)
             return result.stdout.strip()
         except subprocess.CalledProcessError as e:
             logger.error(f"Git command failed: {e.stderr}")
@@ -39,10 +35,10 @@ class DevPipeline:
     def create_feature_branch(self, description: str) -> str:
         """Create a new feature branch based on description."""
         # Create a slug from description
-        slug = re.sub(r'[^a-z0-9]+', '-', description.lower()).strip('-')[:30]
+        slug = re.sub(r"[^a-z0-9]+", "-", description.lower()).strip("-")[:30]
         timestamp = uuid.uuid4().hex[:6]
         branch_name = f"feature/{slug}-{timestamp}"
-        
+
         logger.info(f"Creating branch: {branch_name}")
         try:
             self._run_git_cmd(["checkout", "-b", branch_name])
@@ -65,7 +61,7 @@ class DevPipeline:
     def implement_feature(self, description: str, use_git: bool = False) -> dict[str, Any]:
         """
         Run the full implementation pipeline: Code -> Validate -> Test -> Document.
-        
+
         Args:
             description: Feature description
             use_git: Whether to create a branch and commit changes
@@ -77,14 +73,16 @@ class DevPipeline:
         if use_git:
             branch_name = self.create_feature_branch(description)
             if branch_name:
-                result["steps"].append({"step": "git_branch", "branch": branch_name, "status": "created"})
+                result["steps"].append(
+                    {"step": "git_branch", "branch": branch_name, "status": "created"}
+                )
 
         # Step 1: Coding
         logger.info("Step 1: Coding")
         code_result = self.coding_agent.run(description)
         code = code_result.get("code", "")
         result["steps"].append({"step": "coding", "output": code_result})
-        
+
         if not code:
             result["status"] = "failed"
             result["error"] = "Coding agent failed to generate code"
@@ -94,12 +92,14 @@ class DevPipeline:
         logger.info("Step 2: Validation")
         violations = self.rule_engine.validate_code(code)
         validation_passed = len([v for v in violations if v.severity == "error"]) == 0
-        
-        result["steps"].append({
-            "step": "validation", 
-            "passed": validation_passed, 
-            "violations": [v.dict() for v in violations]
-        })
+
+        result["steps"].append(
+            {
+                "step": "validation",
+                "passed": validation_passed,
+                "violations": [v.dict() for v in violations],
+            }
+        )
 
         if not validation_passed:
             result["status"] = "failed"
@@ -120,9 +120,9 @@ class DevPipeline:
         result["final_output"] = {
             "code": code,
             "tests": test_result.get("tests"),
-            "docs": doc_result.get("documentation")
+            "docs": doc_result.get("documentation"),
         }
-        
+
         # Step 5: Git Commit (if enabled)
         if use_git and branch_name and result["status"] == "success":
             # Note: In a real implementation, we would write the files to disk here before committing.
@@ -130,6 +130,8 @@ class DevPipeline:
             commit_msg = f"feat(auto): implement {description[:50]}..."
             committed = self.commit_changes(commit_msg)
             if committed:
-                result["steps"].append({"step": "git_commit", "status": "committed", "message": commit_msg})
-        
+                result["steps"].append(
+                    {"step": "git_commit", "status": "committed", "message": commit_msg}
+                )
+
         return result

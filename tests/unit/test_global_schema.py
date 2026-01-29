@@ -34,4 +34,3 @@ class TestGlobalSchema:
     def test_price_per_sqm_uses_price_when_no_eur(self):
         prop = Property(city="Krakow", area_sqm=50, price=5000)
         assert prop.price_per_sqm == pytest.approx(100.0)
-

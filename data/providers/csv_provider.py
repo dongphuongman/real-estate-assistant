@@ -23,7 +23,7 @@ class CSVDataProvider(BaseDataProvider):
         """Load data from the CSV/Excel source."""
         if self._cache is not None:
             return self._cache
-        
+
         df = self._loader.load_df()
         # Ensure it is formatted according to our schema rules
         self._cache = self._loader.format_df(df)
@@ -33,25 +33,27 @@ class CSVDataProvider(BaseDataProvider):
         """Convert loaded data to Property objects."""
         df = self.load_data()
         properties = []
-        
+
         for _, row in df.iterrows():
             try:
                 # Convert row to dict and filter out None/NaN values that might break validation
                 # if the schema has strict defaults or optionals.
                 # However, Property schema usually handles Optional fields.
                 # We need to ensure required fields are present.
-                
+
                 data = row.to_dict()
-                
+
                 # Handle potential NaN values for optional fields if Pydantic expects None
                 clean_data = {k: v for k, v in data.items() if pd.notna(v)}
-                
+
                 # Basic mapping if needed, but format_df does most heavy lifting.
                 # We might need to handle specific types like 'image_urls' which might be strings in CSV
-                if 'image_urls' in clean_data and isinstance(clean_data['image_urls'], str):
-                     # Simple split if it's a comma-separated string, or keep as is if schema expects list
-                     # Assuming simple case for now or that format_df handled it (it doesn't seem to parse lists)
-                     clean_data['image_urls'] = [url.strip() for url in clean_data['image_urls'].split(',')]
+                if "image_urls" in clean_data and isinstance(clean_data["image_urls"], str):
+                    # Simple split if it's a comma-separated string, or keep as is if schema expects list
+                    # Assuming simple case for now or that format_df handled it (it doesn't seem to parse lists)
+                    clean_data["image_urls"] = [
+                        url.strip() for url in clean_data["image_urls"].split(",")
+                    ]
 
                 # Create Property object
                 # Note: We rely on Pydantic's validation here.
@@ -62,5 +64,5 @@ class CSVDataProvider(BaseDataProvider):
             except Exception:
                 # In a real scenario, we might want to log this
                 continue
-                
+
         return properties

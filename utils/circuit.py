@@ -30,6 +30,7 @@ T = TypeVar("T")
 
 class CircuitState(str, Enum):
     """Circuit breaker states."""
+
     CLOSED = "closed"  # Normal operation, requests pass through
     OPEN = "open"  # Circuit is open, requests fail fast
     HALF_OPEN = "half_open"  # Testing if provider has recovered
@@ -152,9 +153,10 @@ class CircuitBreaker:
                     self._half_open_calls = 0
                 else:
                     # Circuit still open
-                    cooldown_remaining = self.config.timeout_seconds - (
-                        datetime.now(tz=UTC) - self.stats.last_failure_time
-                    ).total_seconds()
+                    cooldown_remaining = (
+                        self.config.timeout_seconds
+                        - (datetime.now(tz=UTC) - self.stats.last_failure_time).total_seconds()
+                    )
                     self.stats.rejected_calls += 1
                     raise CircuitBreakerOpenError(self.provider, cooldown_remaining)
 
@@ -304,9 +306,7 @@ class CircuitBreakerRegistry:
         Returns:
             Dict mapping provider name to stats
         """
-        return {
-            provider: breaker.get_stats() for provider, breaker in self._breakers.items()
-        }
+        return {provider: breaker.get_stats() for provider, breaker in self._breakers.items()}
 
     async def reset_all(self) -> None:
         """Reset all circuit breakers to closed state."""

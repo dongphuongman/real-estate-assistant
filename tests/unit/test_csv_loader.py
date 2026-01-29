@@ -14,13 +14,15 @@ def test_convert_github_url_to_raw():
 
 
 def test_format_df_adds_missing_columns_and_normalizes():
-    df = pd.DataFrame({
-        "City": ["Krakow", None],
-        "Rooms": [2, None],
-        "Price": [900, 1200],
-        "has_parking": ["yes", None],
-        "has_balcony": [1, 0],
-    })
+    df = pd.DataFrame(
+        {
+            "City": ["Krakow", None],
+            "Rooms": [2, None],
+            "Price": [900, 1200],
+            "has_parking": ["yes", None],
+            "has_balcony": [1, 0],
+        }
+    )
     out = DataLoaderCsv.format_df(df)
     assert "city" in out.columns
     assert "rooms" in out.columns
@@ -60,4 +62,3 @@ def test_load_df_reads_excel_from_path():
 
     assert list(df_out.columns) == ["city", "price", "rooms"]
     assert len(df_out) == 1
-

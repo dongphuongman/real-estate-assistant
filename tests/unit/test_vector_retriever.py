@@ -23,10 +23,13 @@ def test_get_retriever_fallback_returns_docs(tmp_path):
     with patch.object(ChromaPropertyStore, "_create_embeddings", return_value=None):
         store = ChromaPropertyStore(persist_directory=str(tmp_path))
 
-    coll = PropertyCollection(properties=[
-        make_prop("p1", "Krakow", 900, 2, "garden balcony"),
-        make_prop("p2", "Warsaw", 1200, 3, "garage"),
-    ], total_count=2)
+    coll = PropertyCollection(
+        properties=[
+            make_prop("p1", "Krakow", 900, 2, "garden balcony"),
+            make_prop("p2", "Warsaw", 1200, 3, "garage"),
+        ],
+        total_count=2,
+    )
     store.add_property_collection(coll)
 
     retr = store.get_retriever(search_type="mmr", k=1, fetch_k=2)

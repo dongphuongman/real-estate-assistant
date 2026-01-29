@@ -17,55 +17,56 @@ def mock_settings():
         yield mock
     ModelProviderFactory.clear_cache()
 
+
 def test_get_provider_injects_api_key(mock_settings):
     # Get provider without config
     # We use real OpenAIProvider here, which is fine as it's lightweight
     provider = ModelProviderFactory.get_provider("openai", use_cache=False)
-    
+
     # Check if api_key was injected into config
     assert provider.config.get("api_key") == "test-openai-key"
+
 
 def test_get_provider_manual_config_overrides_settings(mock_settings):
     custom_config = {"api_key": "custom-key"}
     provider = ModelProviderFactory.get_provider("openai", config=custom_config, use_cache=False)
-    
+
     assert provider.config.get("api_key") == "custom-key"
+
 
 def test_create_model_uses_defaults(mock_settings):
     # Mock provider instance
     mock_provider_instance = MagicMock()
-    
+
     # Mock the provider class constructor
     mock_provider_class = MagicMock(return_value=mock_provider_instance)
-    
+
     # Patch the registry
     with patch.dict(ModelProviderFactory._PROVIDERS, {"openai": mock_provider_class}):
         # Call create_model without temp/tokens
         ModelProviderFactory.create_model("gpt-4o", provider_name="openai")
-        
+
         # Verify create_model was called on provider with defaults from settings
         mock_provider_instance.create_model.assert_called_once()
         call_kwargs = mock_provider_instance.create_model.call_args.kwargs
-        
+
         assert call_kwargs["temperature"] == 0.7
         assert call_kwargs["max_tokens"] == 1000
+
 
 def test_create_model_manual_overrides_defaults(mock_settings):
     mock_provider_instance = MagicMock()
     mock_provider_class = MagicMock(return_value=mock_provider_instance)
-    
+
     with patch.dict(ModelProviderFactory._PROVIDERS, {"openai": mock_provider_class}):
         # Call create_model WITH explicit temp/tokens
         ModelProviderFactory.create_model(
-            "gpt-4o", 
-            provider_name="openai",
-            temperature=0.2,
-            max_tokens=500
+            "gpt-4o", provider_name="openai", temperature=0.2, max_tokens=500
         )
-        
+
         mock_provider_instance.create_model.assert_called_once()
         call_kwargs = mock_provider_instance.create_model.call_args.kwargs
-        
+
         assert call_kwargs["temperature"] == 0.2
         assert call_kwargs["max_tokens"] == 500
 
@@ -97,7 +98,14 @@ class _StubProvider(ModelProvider):
     def list_models(self) -> list[ModelInfo]:
         return list(self._models)
 
-    def create_model(self, model_id: str, temperature: float = 0.0, max_tokens=None, streaming: bool = True, **kwargs):
+    def create_model(
+        self,
+        model_id: str,
+        temperature: float = 0.0,
+        max_tokens=None,
+        streaming: bool = True,
+        **kwargs,
+    ):
         return MagicMock(name=f"model:{model_id}")
 
     def validate_connection(self) -> tuple[bool, str | None]:
@@ -188,7 +196,9 @@ def test_create_model_auto_detect_uses_detected_provider(mock_settings):
     provider.create_model.return_value = MagicMock()
     model_info = ModelInfo(id="m1", display_name="M1", provider_name="p1", context_window=1)
     with patch.object(ModelProviderFactory, "get_model_by_id", return_value=(provider, model_info)):
-        ModelProviderFactory.create_model("m1", provider_name=None, temperature=0.3, max_tokens=50, streaming=False)
+        ModelProviderFactory.create_model(
+            "m1", provider_name=None, temperature=0.3, max_tokens=50, streaming=False
+        )
     provider.create_model.assert_called_once()
     call_kwargs = provider.create_model.call_args.kwargs
     assert call_kwargs["model_id"] == "m1"

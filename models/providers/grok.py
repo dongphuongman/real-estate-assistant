@@ -49,10 +49,7 @@ class GrokProvider(RemoteModelProvider):
                 display_name="Grok 2 (Latest - Recommended)",
                 provider_name=self.display_name,
                 context_window=131072,
-                pricing=PricingInfo(
-                    input_price_per_1m=2.00,
-                    output_price_per_1m=10.00
-                ),
+                pricing=PricingInfo(input_price_per_1m=2.00, output_price_per_1m=10.00),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -60,17 +57,20 @@ class GrokProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Latest Grok model with enhanced reasoning and real-time information from X",
-                recommended_for=["real-time analysis", "current events", "reasoning", "creative tasks", "general purpose"]
+                recommended_for=[
+                    "real-time analysis",
+                    "current events",
+                    "reasoning",
+                    "creative tasks",
+                    "general purpose",
+                ],
             ),
             ModelInfo(
                 id="grok-2-vision-1212",
                 display_name="Grok 2 Vision (Multimodal)",
                 provider_name=self.display_name,
                 context_window=32768,
-                pricing=PricingInfo(
-                    input_price_per_1m=2.00,
-                    output_price_per_1m=10.00
-                ),
+                pricing=PricingInfo(input_price_per_1m=2.00, output_price_per_1m=10.00),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -79,17 +79,19 @@ class GrokProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Grok 2 with vision capabilities for image analysis and understanding",
-                recommended_for=["image analysis", "visual reasoning", "multimodal tasks", "document understanding"]
+                recommended_for=[
+                    "image analysis",
+                    "visual reasoning",
+                    "multimodal tasks",
+                    "document understanding",
+                ],
             ),
             ModelInfo(
                 id="grok-beta",
                 display_name="Grok Beta (Experimental)",
                 provider_name=self.display_name,
                 context_window=131072,
-                pricing=PricingInfo(
-                    input_price_per_1m=5.00,
-                    output_price_per_1m=15.00
-                ),
+                pricing=PricingInfo(input_price_per_1m=5.00, output_price_per_1m=15.00),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -97,7 +99,12 @@ class GrokProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Experimental Grok model with cutting-edge features and improvements",
-                recommended_for=["experimental features", "advanced reasoning", "complex analysis", "testing"]
+                recommended_for=[
+                    "experimental features",
+                    "advanced reasoning",
+                    "complex analysis",
+                    "testing",
+                ],
             ),
         ]
 
@@ -107,7 +114,7 @@ class GrokProvider(RemoteModelProvider):
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
         streaming: bool = True,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> BaseChatModel:
         """Create Grok model instance using OpenAI-compatible client."""
         # Validate model exists
@@ -115,8 +122,7 @@ class GrokProvider(RemoteModelProvider):
         if not model_info:
             available = [m.id for m in self.list_models()]
             raise ValueError(
-                f"Model '{model_id}' not available. "
-                f"Available models: {', '.join(available)}"
+                f"Model '{model_id}' not available. Available models: {', '.join(available)}"
             )
 
         # Validate API key
@@ -133,7 +139,7 @@ class GrokProvider(RemoteModelProvider):
             streaming=streaming,
             api_key=SecretStr(api_key),
             base_url=self.config.get("base_url", "https://api.x.ai/v1"),
-            **kwargs
+            **kwargs,
         )
         if max_tokens is not None:
             llm.max_tokens = max_tokens

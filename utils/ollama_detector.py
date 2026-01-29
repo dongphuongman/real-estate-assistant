@@ -19,6 +19,7 @@ import requests
 @dataclass
 class OllamaStatus:
     """Status of Ollama installation and service."""
+
     is_installed: bool
     is_running: bool
     version: Optional[str] = None
@@ -45,13 +46,13 @@ class OllamaDetector:
             str: 'macos', 'linux', or 'windows'
         """
         system = platform.system().lower()
-        if system == 'darwin':
-            return 'macos'
-        elif system == 'linux':
-            return 'linux'
-        elif system == 'windows':
-            return 'windows'
-        return 'unknown'
+        if system == "darwin":
+            return "macos"
+        elif system == "linux":
+            return "linux"
+        elif system == "windows":
+            return "windows"
+        return "unknown"
 
     @staticmethod
     def check_ollama_installed() -> bool:
@@ -63,10 +64,7 @@ class OllamaDetector:
         """
         try:
             result = subprocess.run(
-                ['ollama', '--version'],
-                capture_output=True,
-                text=True,
-                timeout=5
+                ["ollama", "--version"], capture_output=True, text=True, timeout=5
             )
             return result.returncode == 0
         except (FileNotFoundError, subprocess.TimeoutExpired, Exception):
@@ -82,10 +80,7 @@ class OllamaDetector:
         """
         try:
             result = subprocess.run(
-                ['ollama', '--version'],
-                capture_output=True,
-                text=True,
-                timeout=5
+                ["ollama", "--version"], capture_output=True, text=True, timeout=5
             )
             if result.returncode == 0:
                 # Output is typically "ollama version 0.X.X"
@@ -126,8 +121,8 @@ class OllamaDetector:
             response = requests.get(f"{base_url}/api/tags", timeout=3)
             if response.status_code == 200:
                 data = response.json()
-                models = data.get('models', [])
-                return [model.get('name', '') for model in models if model.get('name')]
+                models = data.get("models", [])
+                return [model.get("name", "") for model in models if model.get("name")]
             return []
         except (requests.RequestException, Exception):
             return []
@@ -166,7 +161,7 @@ class OllamaDetector:
             version=version,
             base_url=base_url,
             available_models=available_models,
-            error_message=error_message
+            error_message=error_message,
         )
 
     @staticmethod
@@ -184,105 +179,105 @@ class OllamaDetector:
             os_type = OllamaDetector.get_os_type()
 
         instructions = {
-            'macos': {
-                'title': '🍎 macOS Installation',
-                'method_1': {
-                    'name': 'Download Installer (Recommended)',
-                    'steps': [
-                        'Visit https://ollama.com/download',
-                        'Download Ollama for macOS',
-                        'Open the downloaded .dmg file',
-                        'Drag Ollama to Applications folder',
-                        'Launch Ollama from Applications'
+            "macos": {
+                "title": "🍎 macOS Installation",
+                "method_1": {
+                    "name": "Download Installer (Recommended)",
+                    "steps": [
+                        "Visit https://ollama.com/download",
+                        "Download Ollama for macOS",
+                        "Open the downloaded .dmg file",
+                        "Drag Ollama to Applications folder",
+                        "Launch Ollama from Applications",
                     ],
-                    'url': 'https://ollama.com/download'
+                    "url": "https://ollama.com/download",
                 },
-                'method_2': {
-                    'name': 'Homebrew',
-                    'command': 'brew install ollama',
-                    'steps': [
-                        'Open Terminal',
-                        'Run: brew install ollama',
-                        'Start Ollama: ollama serve'
-                    ]
-                },
-                'post_install': [
-                    'Verify installation: ollama --version',
-                    'Pull a model: ollama pull llama3.3:8b',
-                    'Test: ollama run llama3.3:8b'
-                ]
-            },
-            'linux': {
-                'title': '🐧 Linux Installation',
-                'method_1': {
-                    'name': 'One-line Install (Recommended)',
-                    'command': 'curl -fsSL https://ollama.com/install.sh | sh',
-                    'steps': [
-                        'Open Terminal',
-                        'Run the install script:',
-                        'curl -fsSL https://ollama.com/install.sh | sh',
-                        'Start Ollama: ollama serve'
+                "method_2": {
+                    "name": "Homebrew",
+                    "command": "brew install ollama",
+                    "steps": [
+                        "Open Terminal",
+                        "Run: brew install ollama",
+                        "Start Ollama: ollama serve",
                     ],
-                    'url': 'https://ollama.com/download'
                 },
-                'method_2': {
-                    'name': 'Manual Installation',
-                    'steps': [
-                        'Visit https://ollama.com/download',
-                        'Download the Linux binary',
-                        'Make it executable: chmod +x ollama',
-                        'Move to PATH: sudo mv ollama /usr/local/bin/',
-                        'Start service: ollama serve'
-                    ]
-                },
-                'post_install': [
-                    'Verify: ollama --version',
-                    'Enable systemd service (optional):',
-                    'sudo systemctl enable ollama',
-                    'sudo systemctl start ollama',
-                    'Pull a model: ollama pull llama3.3:8b'
-                ]
+                "post_install": [
+                    "Verify installation: ollama --version",
+                    "Pull a model: ollama pull llama3.3:8b",
+                    "Test: ollama run llama3.3:8b",
+                ],
             },
-            'windows': {
-                'title': '🪟 Windows Installation',
-                'method_1': {
-                    'name': 'Download Installer (Recommended)',
-                    'steps': [
-                        'Visit https://ollama.com/download',
-                        'Download Ollama for Windows',
-                        'Run the installer (.exe file)',
-                        'Follow installation wizard',
-                        'Ollama will start automatically'
+            "linux": {
+                "title": "🐧 Linux Installation",
+                "method_1": {
+                    "name": "One-line Install (Recommended)",
+                    "command": "curl -fsSL https://ollama.com/install.sh | sh",
+                    "steps": [
+                        "Open Terminal",
+                        "Run the install script:",
+                        "curl -fsSL https://ollama.com/install.sh | sh",
+                        "Start Ollama: ollama serve",
                     ],
-                    'url': 'https://ollama.com/download'
+                    "url": "https://ollama.com/download",
                 },
-                'method_2': {
-                    'name': 'Windows Package Manager (winget)',
-                    'command': 'winget install Ollama.Ollama',
-                    'steps': [
-                        'Open PowerShell or Command Prompt',
-                        'Run: winget install Ollama.Ollama',
-                        'Ollama will start automatically'
-                    ]
+                "method_2": {
+                    "name": "Manual Installation",
+                    "steps": [
+                        "Visit https://ollama.com/download",
+                        "Download the Linux binary",
+                        "Make it executable: chmod +x ollama",
+                        "Move to PATH: sudo mv ollama /usr/local/bin/",
+                        "Start service: ollama serve",
+                    ],
                 },
-                'post_install': [
-                    'Open Command Prompt or PowerShell',
-                    'Verify: ollama --version',
-                    'Pull a model: ollama pull llama3.3:8b',
-                    'Test: ollama run llama3.3:8b'
-                ]
+                "post_install": [
+                    "Verify: ollama --version",
+                    "Enable systemd service (optional):",
+                    "sudo systemctl enable ollama",
+                    "sudo systemctl start ollama",
+                    "Pull a model: ollama pull llama3.3:8b",
+                ],
             },
-            'unknown': {
-                'title': '❓ Installation Instructions',
-                'message': (
-                    'Visit https://ollama.com/download for installation '
-                    'instructions for your platform.'
+            "windows": {
+                "title": "🪟 Windows Installation",
+                "method_1": {
+                    "name": "Download Installer (Recommended)",
+                    "steps": [
+                        "Visit https://ollama.com/download",
+                        "Download Ollama for Windows",
+                        "Run the installer (.exe file)",
+                        "Follow installation wizard",
+                        "Ollama will start automatically",
+                    ],
+                    "url": "https://ollama.com/download",
+                },
+                "method_2": {
+                    "name": "Windows Package Manager (winget)",
+                    "command": "winget install Ollama.Ollama",
+                    "steps": [
+                        "Open PowerShell or Command Prompt",
+                        "Run: winget install Ollama.Ollama",
+                        "Ollama will start automatically",
+                    ],
+                },
+                "post_install": [
+                    "Open Command Prompt or PowerShell",
+                    "Verify: ollama --version",
+                    "Pull a model: ollama pull llama3.3:8b",
+                    "Test: ollama run llama3.3:8b",
+                ],
+            },
+            "unknown": {
+                "title": "❓ Installation Instructions",
+                "message": (
+                    "Visit https://ollama.com/download for installation "
+                    "instructions for your platform."
                 ),
-                'url': 'https://ollama.com/download'
-            }
+                "url": "https://ollama.com/download",
+            },
         }
 
-        return instructions.get(os_type, instructions['unknown'])
+        return instructions.get(os_type, instructions["unknown"])
 
     @staticmethod
     def get_recommended_models() -> List[Dict[str, str]]:
@@ -294,35 +289,35 @@ class OllamaDetector:
         """
         return [
             {
-                'name': 'llama3.3:8b',
-                'size': '4.9 GB',
-                'ram': '8 GB',
-                'description': 'Latest Llama 3.3 - Best overall performance',
-                'command': 'ollama pull llama3.3:8b',
-                'recommended': True
+                "name": "llama3.3:8b",
+                "size": "4.9 GB",
+                "ram": "8 GB",
+                "description": "Latest Llama 3.3 - Best overall performance",
+                "command": "ollama pull llama3.3:8b",
+                "recommended": True,
             },
             {
-                'name': 'llama3.2:3b',
-                'size': '2.0 GB',
-                'ram': '4 GB',
-                'description': 'Lightweight - Great for limited resources',
-                'command': 'ollama pull llama3.2:3b',
-                'recommended': True
+                "name": "llama3.2:3b",
+                "size": "2.0 GB",
+                "ram": "4 GB",
+                "description": "Lightweight - Great for limited resources",
+                "command": "ollama pull llama3.2:3b",
+                "recommended": True,
             },
             {
-                'name': 'mistral:7b',
-                'size': '4.1 GB',
-                'ram': '8 GB',
-                'description': 'Excellent for general tasks',
-                'command': 'ollama pull mistral:7b',
-                'recommended': False
+                "name": "mistral:7b",
+                "size": "4.1 GB",
+                "ram": "8 GB",
+                "description": "Excellent for general tasks",
+                "command": "ollama pull mistral:7b",
+                "recommended": False,
             },
             {
-                'name': 'qwen2.5:7b',
-                'size': '4.7 GB',
-                'ram': '8 GB',
-                'description': 'Strong multilingual support',
-                'command': 'ollama pull qwen2.5:7b',
-                'recommended': False
-            }
+                "name": "qwen2.5:7b",
+                "size": "4.7 GB",
+                "ram": "8 GB",
+                "description": "Strong multilingual support",
+                "command": "ollama pull qwen2.5:7b",
+                "recommended": False,
+            },
         ]

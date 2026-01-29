@@ -15,11 +15,13 @@ logger = logging.getLogger(__name__)
 def _create_embeddings() -> Optional[Embeddings]:
     try:
         from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
+
         return FastEmbedEmbeddings(model_name=app_settings.embedding_model)
     except Exception as e:
         logger.warning(f"FastEmbed unavailable: {e}")
         try:
             from langchain_openai import OpenAIEmbeddings
+
             if app_settings.openai_api_key:
                 return OpenAIEmbeddings()
         except Exception as e2:
@@ -40,9 +42,7 @@ class KnowledgeStore:
         persist_directory: Optional[str] = None,
         collection_name: str = "knowledge",
     ):
-        self.persist_directory = Path(
-            persist_directory or os.path.join(os.getcwd(), "chroma_db")
-        )
+        self.persist_directory = Path(persist_directory or os.path.join(os.getcwd(), "chroma_db"))
         self.collection_name = collection_name
         self.embeddings: Optional[Embeddings] = _create_embeddings()
 
@@ -58,9 +58,7 @@ class KnowledgeStore:
             length_function=len,
         )
 
-    def ingest_text(
-        self, text: str, source: str, metadata: Optional[Dict[str, Any]] = None
-    ) -> int:
+    def ingest_text(self, text: str, source: str, metadata: Optional[Dict[str, Any]] = None) -> int:
         """
         Ingest plain text content into the knowledge store.
         Returns number of chunks added.
@@ -101,9 +99,7 @@ class KnowledgeStore:
         self._docs.extend(docs_to_add)
         return len(docs_to_add)
 
-    def similarity_search_with_score(
-        self, query: str, k: int = 5
-    ) -> List[Tuple[Document, float]]:
+    def similarity_search_with_score(self, query: str, k: int = 5) -> List[Tuple[Document, float]]:
         # In-memory scoring by simple term overlap
         tokens = [t for t in query.lower().split() if t]
         scored: List[Tuple[Document, float]] = []
@@ -118,9 +114,7 @@ class KnowledgeStore:
     def get_stats(self) -> Dict[str, Any]:
         count = 0
         count = len(getattr(self, "_docs", []))
-        provider = (
-            type(self.embeddings).__name__ if self.embeddings is not None else "none"
-        )
+        provider = type(self.embeddings).__name__ if self.embeddings is not None else "none"
         return {
             "collection": self.collection_name,
             "persist_directory": str(self.persist_directory),

@@ -1,6 +1,7 @@
 """
 Engine to execute rules.
 """
+
 from typing import List
 
 from .base import BaseRule, RuleViolation
@@ -13,7 +14,7 @@ class RuleEngine:
         self.rules: List[BaseRule] = [
             LineLengthRule(max_length=MAX_LINE_LENGTH),
             NoSecretsRule(),
-            PerformanceLoopRule()
+            PerformanceLoopRule(),
         ]
 
     def add_rule(self, rule: BaseRule):
@@ -31,13 +32,15 @@ class RuleEngine:
             for pat in IGNORE_PATTERNS:
                 if pat in file_path.replace("\\", "/"):
                     return []
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
             return self.validate_code(content, file_path)
         except Exception as e:
-            return [RuleViolation(
-                rule_id="SYS001",
-                message=f"Could not read file: {e}",
-                severity="error",
-                file_path=file_path
-            )]
+            return [
+                RuleViolation(
+                    rule_id="SYS001",
+                    message=f"Could not read file: {e}",
+                    severity="error",
+                    file_path=file_path,
+                )
+            ]

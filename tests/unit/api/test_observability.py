@@ -1,16 +1,60 @@
+import builtins
 import logging
 import re
+import sys
+import types
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from api.observability import (
     RateLimiter,
+    RedisRateLimiter,
     add_observability,
     client_id_from_api_key,
     generate_request_id,
     normalize_request_id,
 )
+
+
+def _fake_redis_module(current_count: int, oldest_ts: float):
+    class _FakePipeline:
+        def __init__(self, count: int):
+            self._count = count
+
+        def zremrangebyscore(self, *args, **kwargs):
+            return self
+
+        def zcard(self, *args, **kwargs):
+            return self
+
+        def zadd(self, *args, **kwargs):
+            return self
+
+        def expire(self, *args, **kwargs):
+            return self
+
+        def execute(self):
+            return [0, self._count, 0, 0]
+
+    class _FakeRedis:
+        def __init__(self, count: int, oldest: float):
+            self._count = count
+            self._oldest = oldest
+
+        def ping(self):
+            return True
+
+        def pipeline(self):
+            return _FakePipeline(self._count)
+
+        def zrange(self, *args, **kwargs):
+            return [("0", self._oldest)]
+
+    def from_url(*args, **kwargs):
+        return _FakeRedis(current_count, oldest_ts)
+
+    return types.SimpleNamespace(from_url=from_url)
 
 
 def test_rate_limiter_allows_within_limit():
@@ -31,6 +75,60 @@ def test_rate_limiter_blocks_when_exceeded():
     assert ok2 is False
     assert limit2 == 1
     assert rem2 == 0
+    assert reset2 == 60
+
+
+def test_redis_rate_limiter_allows_when_under_limit(monkeypatch):
+    monkeypatch.setitem(sys.modules, "redis", _fake_redis_module(current_count=0, oldest_ts=1000.0))
+    limiter = RedisRateLimiter(
+        redis_url="redis://localhost",
+        max_requests=2,
+        window_seconds=60,
+        fallback_to_in_memory=False,
+    )
+    ok, limit, remaining, reset_in = limiter.check("c1", now=1000.0)
+    assert ok is True
+    assert limit == 2
+    assert remaining == 2
+    assert reset_in >= 1
+
+
+def test_redis_rate_limiter_blocks_when_over_limit(monkeypatch):
+    monkeypatch.setitem(sys.modules, "redis", _fake_redis_module(current_count=2, oldest_ts=1000.0))
+    limiter = RedisRateLimiter(
+        redis_url="redis://localhost",
+        max_requests=2,
+        window_seconds=60,
+        fallback_to_in_memory=False,
+    )
+    ok, limit, remaining, reset_in = limiter.check("c1", now=1000.0)
+    assert ok is False
+    assert limit == 2
+    assert remaining == 0
+    assert reset_in >= 1
+
+
+def test_redis_rate_limiter_falls_back_on_import_error(monkeypatch):
+    original_import = builtins.__import__
+
+    def _import(name, *args, **kwargs):
+        if name == "redis":
+            raise ImportError("missing redis")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", _import)
+    limiter = RedisRateLimiter(
+        redis_url="redis://localhost",
+        max_requests=1,
+        window_seconds=60,
+        fallback_to_in_memory=True,
+    )
+    ok1, _, _, _ = limiter.check("c1", now=0.0)
+    ok2, limit2, remaining2, reset2 = limiter.check("c1", now=0.0)
+    assert ok1 is True
+    assert ok2 is False
+    assert limit2 == 1
+    assert remaining2 == 0
     assert reset2 == 60
 
 

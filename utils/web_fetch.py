@@ -100,7 +100,12 @@ def fetch_url_text(
     if not _url_is_safe(url, allowlist_domains):
         return None
     try:
-        with requests.get(url, timeout=timeout_seconds, stream=True, headers={"User-Agent": "ai-real-estate-assistant/1.0"}) as resp:
+        with requests.get(
+            url,
+            timeout=timeout_seconds,
+            stream=True,
+            headers={"User-Agent": "ai-real-estate-assistant/1.0"},
+        ) as resp:
             if resp.status_code != 200:
                 return None
             content_type = (resp.headers.get("content-type") or "").lower()
@@ -134,7 +139,9 @@ def searxng_search(
         "X-Real-IP": "1.1.1.1",
     }
     try:
-        resp = requests.get(f"{base}/search", params=params, timeout=timeout_seconds, headers=headers)
+        resp = requests.get(
+            f"{base}/search", params=params, timeout=timeout_seconds, headers=headers
+        )
         if resp.status_code != 200:
             return []
         html_text = resp.text or ""
@@ -165,7 +172,9 @@ def duckduckgo_html_search(
     params = {"q": query}
     headers = {"User-Agent": "Mozilla/5.0"}
     try:
-        resp = requests.get("https://duckduckgo.com/html/", params=params, headers=headers, timeout=timeout_seconds)
+        resp = requests.get(
+            "https://duckduckgo.com/html/", params=params, headers=headers, timeout=timeout_seconds
+        )
         if resp.status_code not in {200, 202}:
             return []
         html_text = resp.text or ""

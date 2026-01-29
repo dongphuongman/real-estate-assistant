@@ -14,4 +14,3 @@ def test_generate_digest_pdf_starts_with_pdf_header():
     buf = exp.generate_digest_pdf()
     data = buf.getvalue()
     assert data[:4] == b"%PDF"
-

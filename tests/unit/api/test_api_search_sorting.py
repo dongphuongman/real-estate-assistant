@@ -11,14 +11,17 @@ from vector_store.chroma_store import ChromaPropertyStore
 
 client = TestClient(app)
 
+
 @pytest.fixture
 def mock_store():
     store = MagicMock(spec=ChromaPropertyStore)
     return store
 
+
 @pytest.fixture
 def valid_headers():
     return {"X-API-Key": "dev-secret-key"}
+
 
 def test_sorting_forwarded_to_hybrid_search(mock_store, valid_headers):
     prop = Property(id="p1", city="Krakow", price=500000, rooms=3, title="Nice flat")

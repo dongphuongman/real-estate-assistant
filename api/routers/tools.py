@@ -75,9 +75,7 @@ async def list_tools():
     return items
 
 
-@router.post(
-    "/tools/mortgage-calculator", response_model=MortgageResult, tags=["Tools"]
-)
+@router.post("/tools/mortgage-calculator", response_model=MortgageResult, tags=["Tools"])
 async def calculate_mortgage(input_data: MortgageInput):
     """
     Calculate mortgage payments.
@@ -156,9 +154,7 @@ async def compare_properties(
     return ComparePropertiesResponse(properties=properties, summary=summary)
 
 
-@router.post(
-    "/tools/price-analysis", response_model=PriceAnalysisResponse, tags=["Tools"]
-)
+@router.post("/tools/price-analysis", response_model=PriceAnalysisResponse, tags=["Tools"])
 async def price_analysis(
     request: PriceAnalysisRequest,
     store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
@@ -213,9 +209,7 @@ async def price_analysis(
     )
 
 
-@router.post(
-    "/tools/location-analysis", response_model=LocationAnalysisResponse, tags=["Tools"]
-)
+@router.post("/tools/location-analysis", response_model=LocationAnalysisResponse, tags=["Tools"])
 async def location_analysis(
     request: LocationAnalysisRequest,
     store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
@@ -249,9 +243,8 @@ async def location_analysis(
         lon=_to_float(md.get("lon")),
     )
 
-@router.post(
-    "/tools/valuation", response_model=ValuationResponse, tags=["Tools"]
-)
+
+@router.post("/tools/valuation", response_model=ValuationResponse, tags=["Tools"])
 async def valuation(
     request: ValuationRequest,
     store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
@@ -285,9 +278,8 @@ async def valuation(
     value = provider.estimate_value({"area": area, "price_per_sqm": price_per_sqm})
     return ValuationResponse(property_id=pid, estimated_value=value)
 
-@router.post(
-    "/tools/legal-check", response_model=LegalCheckResponse, tags=["Tools"]
-)
+
+@router.post("/tools/legal-check", response_model=LegalCheckResponse, tags=["Tools"])
 async def legal_check(
     request: LegalCheckRequest,
     service=Depends(get_legal_check_service),
@@ -309,9 +301,8 @@ async def legal_check(
         score=float(result.get("score", 0.0)),
     )
 
-@router.post(
-    "/tools/enrich-address", response_model=DataEnrichmentResponse, tags=["Tools"]
-)
+
+@router.post("/tools/enrich-address", response_model=DataEnrichmentResponse, tags=["Tools"])
 async def enrich_address(
     request: DataEnrichmentRequest,
     service=Depends(get_data_enrichment_service),
@@ -330,9 +321,8 @@ async def enrich_address(
     data = service.enrich(address)
     return DataEnrichmentResponse(address=address, data=data)
 
-@router.post(
-    "/tools/crm-sync-contact", response_model=CRMContactResponse, tags=["Tools"]
-)
+
+@router.post("/tools/crm-sync-contact", response_model=CRMContactResponse, tags=["Tools"])
 async def crm_sync_contact(
     request: CRMContactRequest,
     connector=Depends(get_crm_connector),
@@ -350,6 +340,7 @@ async def crm_sync_contact(
             detail="CRM sync failed",
         )
     return CRMContactResponse(id=cid)
+
 
 def _to_float(value: object) -> Optional[float]:
     if value is None:

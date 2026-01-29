@@ -17,25 +17,28 @@ from pydantic import BaseModel, Field
 
 class QueryIntent(str, Enum):
     """Types of query intents."""
+
     SIMPLE_RETRIEVAL = "simple_retrieval"  # "Show me apartments in Krakow"
-    FILTERED_SEARCH = "filtered_search"    # "Find 2-bed apartments under $1000"
-    COMPARISON = "comparison"              # "Compare properties in Warsaw vs Krakow"
-    ANALYSIS = "analysis"                  # "What's the average price per sqm?"
-    CALCULATION = "calculation"            # "Calculate mortgage for $200k property"
-    RECOMMENDATION = "recommendation"      # "What's the best value for money?"
-    CONVERSATION = "conversation"          # "Tell me more about the last property"
+    FILTERED_SEARCH = "filtered_search"  # "Find 2-bed apartments under $1000"
+    COMPARISON = "comparison"  # "Compare properties in Warsaw vs Krakow"
+    ANALYSIS = "analysis"  # "What's the average price per sqm?"
+    CALCULATION = "calculation"  # "Calculate mortgage for $200k property"
+    RECOMMENDATION = "recommendation"  # "What's the best value for money?"
+    CONVERSATION = "conversation"  # "Tell me more about the last property"
     GENERAL_QUESTION = "general_question"  # "How does the rental market work?"
 
 
 class Complexity(str, Enum):
     """Query complexity levels."""
-    SIMPLE = "simple"      # Direct retrieval, can use RAG only
-    MEDIUM = "medium"      # Some filtering or simple computation
-    COMPLEX = "complex"    # Requires multiple steps, tools, or reasoning
+
+    SIMPLE = "simple"  # Direct retrieval, can use RAG only
+    MEDIUM = "medium"  # Some filtering or simple computation
+    COMPLEX = "complex"  # Requires multiple steps, tools, or reasoning
 
 
 class Tool(str, Enum):
     """Available tools for query processing."""
+
     RAG_RETRIEVAL = "rag_retrieval"
     PYTHON_CODE = "python_code"
     CALCULATOR = "calculator"
@@ -46,6 +49,7 @@ class Tool(str, Enum):
 
 class QueryAnalysis(BaseModel):
     """Analysis result for a query."""
+
     query: str
     intent: QueryIntent
     complexity: Complexity
@@ -87,67 +91,158 @@ class QueryAnalyzer:
 
     # Keywords for intent classification
     RETRIEVAL_KEYWORDS = [
-        "show", "find", "list", "search", "get", "display",
-        "want", "need", "looking for", "give me",
-        "показать", "найти", "список", "поиск", "дать",  # RU
-        "göster", "bul", "listele", "ara", "ver", "istiyorum",  # TR
+        "show",
+        "find",
+        "list",
+        "search",
+        "get",
+        "display",
+        "want",
+        "need",
+        "looking for",
+        "give me",
+        "показать",
+        "найти",
+        "список",
+        "поиск",
+        "дать",  # RU
+        "göster",
+        "bul",
+        "listele",
+        "ara",
+        "ver",
+        "istiyorum",  # TR
     ]
 
     COMPARISON_KEYWORDS = [
-        "compare", "versus", "vs", "difference", "between",
-        "better", "cheaper", "more expensive", "bigger", "smaller",
-        "сравнить", "против", "разница", "между", "лучше", "дешевле",  # RU
-        "karşılaştır", "fark", "arasında", "daha iyi", "daha ucuz",  # TR
+        "compare",
+        "versus",
+        "vs",
+        "difference",
+        "between",
+        "better",
+        "cheaper",
+        "more expensive",
+        "bigger",
+        "smaller",
+        "сравнить",
+        "против",
+        "разница",
+        "между",
+        "лучше",
+        "дешевле",  # RU
+        "karşılaştır",
+        "fark",
+        "arasında",
+        "daha iyi",
+        "daha ucuz",  # TR
     ]
 
     CALCULATION_KEYWORDS = [
-        "calculate", "compute", "how much", "total cost",
-        "monthly payment", "mortgage", "interest", "loan",
-        "рассчитать", "посчитать", "сколько", "ипотека", "кредит",  # RU
-        "hesapla", "ne kadar", "toplam", "kredi", "ipotek",  # TR
+        "calculate",
+        "compute",
+        "how much",
+        "total cost",
+        "monthly payment",
+        "mortgage",
+        "interest",
+        "loan",
+        "рассчитать",
+        "посчитать",
+        "сколько",
+        "ипотека",
+        "кредит",  # RU
+        "hesapla",
+        "ne kadar",
+        "toplam",
+        "kredi",
+        "ipotek",  # TR
     ]
 
     ANALYSIS_KEYWORDS = [
-        "average", "mean", "median", "statistics", "trend",
-        "distribution", "analyze", "analysis", "insights",
-        "средняя", "медиана", "статистика", "тренд", "анализ",  # RU
-        "ortalama", "medyan", "istatistik", "trend", "analiz",  # TR
+        "average",
+        "mean",
+        "median",
+        "statistics",
+        "trend",
+        "distribution",
+        "analyze",
+        "analysis",
+        "insights",
+        "средняя",
+        "медиана",
+        "статистика",
+        "тренд",
+        "анализ",  # RU
+        "ortalama",
+        "medyan",
+        "istatistik",
+        "trend",
+        "analiz",  # TR
     ]
 
     RECOMMENDATION_KEYWORDS = [
-        "recommend", "suggest", "best", "optimal", "top",
-        "ideal", "perfect", "most suitable",
-        "порекомендуй", "лучший", "топ", "идеальный",  # RU
-        "öner", "tavsiye", "en iyi", "ideal", "mükemmel",  # TR
+        "recommend",
+        "suggest",
+        "best",
+        "optimal",
+        "top",
+        "ideal",
+        "perfect",
+        "most suitable",
+        "порекомендуй",
+        "лучший",
+        "топ",
+        "идеальный",  # RU
+        "öner",
+        "tavsiye",
+        "en iyi",
+        "ideal",
+        "mükemmel",  # TR
     ]
 
     # Filter extraction patterns
     # Price: match currency symbols or explicitly "price"/"cost" context if just number
     # For now, keeping simple but avoiding 4-digit years in specific ranges if possible?
     # Actually, let's keep the pattern but filter results later.
-    PRICE_PATTERN = re.compile(r'\$?\d{1,5}(?:,\d{3})*(?:\.\d{2})?')
-    ROOMS_PATTERN = re.compile(r'(\d+)[- ](?:bed(?:room)?|room|комнат|odalı)')
-    CITY_PATTERN = re.compile(r'\b(warsaw|krakow|gdansk|wroclaw|poznan|warszawa|kraków|gdańsk|wrocław|poznań|варшав|краков|гданьск|вроцлав|познан|varşova)\w*', re.IGNORECASE)
+    PRICE_PATTERN = re.compile(r"\$?\d{1,5}(?:,\d{3})*(?:\.\d{2})?")
+    ROOMS_PATTERN = re.compile(r"(\d+)[- ](?:bed(?:room)?|room|комнат|odalı)")
+    CITY_PATTERN = re.compile(
+        r"\b(warsaw|krakow|gdansk|wroclaw|poznan|warszawa|kraków|gdańsk|wrocław|poznań|варшав|краков|гданьск|вроцлав|познан|varşova)\w*",
+        re.IGNORECASE,
+    )
     # Added 'построен' (built) and 'yapı' (building/built) stems
-    YEAR_PATTERN = re.compile(r'(?:built|year|год|yıl|построен|yapı)[\D]{0,10}(\d{4})', re.IGNORECASE)
+    YEAR_PATTERN = re.compile(
+        r"(?:built|year|год|yıl|построен|yapı)[\D]{0,10}(\d{4})", re.IGNORECASE
+    )
     # Allow suffixes on class/rating words (e.g. sınıf-ı, класс-а)
-    ENERGY_PATTERN = re.compile(r'(?:energy|epc|энергия|enerji)(?:\s+(?:class|rating|класс|sınıf)\w*)?\s+([A-G])\b', re.IGNORECASE)
+    ENERGY_PATTERN = re.compile(
+        r"(?:energy|epc|энергия|enerji)(?:\s+(?:class|rating|класс|sınıf)\w*)?\s+([A-G])\b",
+        re.IGNORECASE,
+    )
 
     # City normalization map
     CITY_VARIANTS = {
-        'Warsaw': ['warsaw', 'warszawa', 'варшав', 'varşova'],
-        'Krakow': ['krakow', 'kraków', 'краков'],
-        'Gdansk': ['gdansk', 'gdańsk', 'гданьск'],
-        'Wroclaw': ['wroclaw', 'wrocław', 'вроцлав'],
-        'Poznan': ['poznan', 'poznań', 'познан'],
+        "Warsaw": ["warsaw", "warszawa", "варшав", "varşova"],
+        "Krakow": ["krakow", "kraków", "краков"],
+        "Gdansk": ["gdansk", "gdańsk", "гданьск"],
+        "Wroclaw": ["wroclaw", "wrocław", "вроцлав"],
+        "Poznan": ["poznan", "poznań", "познан"],
     }
 
     # Multilingual Amenities - using stems for better matching
-    PARKING_KEYWORDS = {'parking', 'garage', 'парковк', 'гараж', 'otopark', 'garaj'}  # парковк(а/и/ой)
-    GARDEN_KEYWORDS = {'garden', 'yard', 'сад', 'двор', 'bahçe'}
-    POOL_KEYWORDS = {'pool', 'бассейн', 'havuz'}
-    FURNISHED_KEYWORDS = {'furnished', 'мебель', 'меблир', 'eşyalı', 'mobilyalı'}  # меблир(ованная)
-    ELEVATOR_KEYWORDS = {'elevator', 'lift', 'лифт', 'asansör', 'winda'}
+    PARKING_KEYWORDS = {
+        "parking",
+        "garage",
+        "парковк",
+        "гараж",
+        "otopark",
+        "garaj",
+    }  # парковк(а/и/ой)
+    GARDEN_KEYWORDS = {"garden", "yard", "сад", "двор", "bahçe"}
+    POOL_KEYWORDS = {"pool", "бассейн", "havuz"}
+    FURNISHED_KEYWORDS = {"furnished", "мебель", "меблир", "eşyalı", "mobilyalı"}  # меблир(ованная)
+    ELEVATOR_KEYWORDS = {"elevator", "lift", "лифт", "asansör", "winda"}
 
     def analyze(self, query: str) -> QueryAnalysis:
         """
@@ -188,7 +283,7 @@ class QueryAnalyzer:
             requires_external_data=requires_external_data,
             tools_needed=tools,
             extracted_filters=filters,
-            reasoning=self._generate_reasoning(intent, complexity, tools)
+            reasoning=self._generate_reasoning(intent, complexity, tools),
         )
 
         return analysis
@@ -213,7 +308,13 @@ class QueryAnalyzer:
             return QueryIntent.RECOMMENDATION
 
         # Check for conversation (use word boundaries to avoid false matches like "it" in "with")
-        conversation_patterns = [r'\bprevious\b', r'\blast\b', r'\bthat one\b', r'\bit\b', r'\bthis\b']
+        conversation_patterns = [
+            r"\bprevious\b",
+            r"\blast\b",
+            r"\bthat one\b",
+            r"\bit\b",
+            r"\bthis\b",
+        ]
         if any(re.search(pattern, query_lower) for pattern in conversation_patterns):
             return QueryIntent.CONVERSATION
 
@@ -237,7 +338,7 @@ class QueryAnalyzer:
         year_val = None
         if year_match:
             year_val = int(year_match.group(1))
-            filters['year_built_min'] = year_val
+            filters["year_built_min"] = year_val
 
         # Extract price
         prices = self.PRICE_PATTERN.findall(query)
@@ -246,7 +347,7 @@ class QueryAnalyzer:
             price_values = []
             for p in prices:
                 try:
-                    val = float(p.replace('$', '').replace(',', ''))
+                    val = float(p.replace("$", "").replace(",", ""))
                     # Filter out the year value if it was captured as a price
                     if year_val and abs(val - year_val) < 0.1:
                         continue
@@ -255,15 +356,15 @@ class QueryAnalyzer:
                     continue
 
             if len(price_values) == 1:
-                filters['max_price'] = price_values[0]
+                filters["max_price"] = price_values[0]
             elif len(price_values) >= 2:
-                filters['min_price'] = min(price_values)
-                filters['max_price'] = max(price_values)
+                filters["min_price"] = min(price_values)
+                filters["max_price"] = max(price_values)
 
         # Extract number of rooms
         rooms_match = self.ROOMS_PATTERN.search(query)
         if rooms_match:
-            filters['rooms'] = int(rooms_match.group(1))
+            filters["rooms"] = int(rooms_match.group(1))
 
         # Extract city
         city_match = self.CITY_PATTERN.search(query)
@@ -274,39 +375,36 @@ class QueryAnalyzer:
                 if any(v in city_str for v in variants):
                     found_city = canonical
                     break
-            
+
             if found_city:
-                filters['city'] = found_city
+                filters["city"] = found_city
             else:
-                filters['city'] = city_match.group(1).title()
+                filters["city"] = city_match.group(1).title()
 
         # Extract amenities
         query_lower = query.lower()
         if any(kw in query_lower for kw in self.PARKING_KEYWORDS):
-            filters['has_parking'] = True
-            filters['must_have_parking'] = True
+            filters["has_parking"] = True
+            filters["must_have_parking"] = True
         if any(kw in query_lower for kw in self.GARDEN_KEYWORDS):
-            filters['has_garden'] = True
+            filters["has_garden"] = True
         if any(kw in query_lower for kw in self.POOL_KEYWORDS):
-            filters['has_pool'] = True
+            filters["has_pool"] = True
         if any(kw in query_lower for kw in self.FURNISHED_KEYWORDS):
-            filters['is_furnished'] = True
+            filters["is_furnished"] = True
         if any(kw in query_lower for kw in self.ELEVATOR_KEYWORDS):
-            filters['must_have_elevator'] = True
-            filters['has_elevator'] = True
+            filters["must_have_elevator"] = True
+            filters["has_elevator"] = True
 
         # Extract energy
         energy_match = self.ENERGY_PATTERN.search(query)
         if energy_match:
-            filters['energy_ratings'] = [energy_match.group(1).upper()]
+            filters["energy_ratings"] = [energy_match.group(1).upper()]
 
         return filters
 
     def _determine_complexity(
-        self,
-        query_lower: str,
-        intent: QueryIntent,
-        filters: Dict[str, Any]
+        self, query_lower: str, intent: QueryIntent, filters: Dict[str, Any]
     ) -> Complexity:
         """Determine query complexity level."""
 
@@ -323,7 +421,7 @@ class QueryAnalyzer:
             return Complexity.COMPLEX
 
         # Questions requiring explanation (use word boundaries to avoid false matches like "show" matching "how")
-        question_patterns = [r'\bwhy\b', r'\bhow\b', r'\bexplain\b', r'\bwhat is\b']
+        question_patterns = [r"\bwhy\b", r"\bhow\b", r"\bexplain\b", r"\bwhat is\b"]
         if any(re.search(pattern, query_lower) for pattern in question_patterns):
             return Complexity.MEDIUM
 
@@ -331,10 +429,7 @@ class QueryAnalyzer:
         return Complexity.SIMPLE
 
     def _determine_tools(
-        self,
-        intent: QueryIntent,
-        complexity: Complexity,
-        query_lower: str
+        self, intent: QueryIntent, complexity: Complexity, query_lower: str
     ) -> List[Tool]:
         """Determine which tools are needed."""
         tools = []
@@ -344,7 +439,7 @@ class QueryAnalyzer:
             QueryIntent.SIMPLE_RETRIEVAL,
             QueryIntent.FILTERED_SEARCH,
             QueryIntent.CONVERSATION,
-            QueryIntent.RECOMMENDATION
+            QueryIntent.RECOMMENDATION,
         ]:
             tools.append(Tool.RAG_RETRIEVAL)
 
@@ -354,7 +449,7 @@ class QueryAnalyzer:
 
         # Calculation tools
         if intent == QueryIntent.CALCULATION:
-            if 'mortgage' in query_lower:
+            if "mortgage" in query_lower:
                 tools.append(Tool.MORTGAGE_CALC)
             else:
                 tools.append(Tool.CALCULATOR)
@@ -395,43 +490,49 @@ class QueryAnalyzer:
 
     def _requires_computation(self, query_lower: str, intent: QueryIntent) -> bool:
         """Check if query requires numerical computation."""
-        return (
-            intent in [QueryIntent.CALCULATION, QueryIntent.ANALYSIS]
-            or any(word in query_lower for word in [
-                'average', 'mean', 'sum', 'total', 'calculate',
-                'compute', 'percentage', 'ratio'
-            ])
+        return intent in [QueryIntent.CALCULATION, QueryIntent.ANALYSIS] or any(
+            word in query_lower
+            for word in [
+                "average",
+                "mean",
+                "sum",
+                "total",
+                "calculate",
+                "compute",
+                "percentage",
+                "ratio",
+            ]
         )
 
     def _requires_external_data(self, query_lower: str) -> bool:
         """Check if query needs external/current data."""
-        return any(word in query_lower for word in [
-            "current",
-            "currently",
-            "latest",
-            "recent",
-            "today",
-            "market rate",
-            "interest rate",
-            "news",
-            "right now",
-            "at the moment",
-            "сейчас",
-            "сегодня",
-            "прямо сейчас",
-            "последн",
-            "актуал",
-            "новост",
-            "текущ",
-            "рынок",
-            "ставк",
-        ])
+        return any(
+            word in query_lower
+            for word in [
+                "current",
+                "currently",
+                "latest",
+                "recent",
+                "today",
+                "market rate",
+                "interest rate",
+                "news",
+                "right now",
+                "at the moment",
+                "сейчас",
+                "сегодня",
+                "прямо сейчас",
+                "последн",
+                "актуал",
+                "новост",
+                "текущ",
+                "рынок",
+                "ставк",
+            ]
+        )
 
     def _generate_reasoning(
-        self,
-        intent: QueryIntent,
-        complexity: Complexity,
-        tools: List[Tool]
+        self, intent: QueryIntent, complexity: Complexity, tools: List[Tool]
     ) -> str:
         """Generate human-readable reasoning for the classification."""
         reasoning_parts = [

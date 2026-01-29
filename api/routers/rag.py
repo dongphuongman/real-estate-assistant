@@ -104,9 +104,7 @@ async def upload_documents(
                 errors.append(f"{name}: {e}")
                 continue
 
-            filtered_segments = [
-                (s.text, s.metadata) for s in segments if (s.text or "").strip()
-            ]
+            filtered_segments = [(s.text, s.metadata) for s in segments if (s.text or "").strip()]
             if not filtered_segments:
                 errors.append(f"{name}: No extractable text found")
                 continue

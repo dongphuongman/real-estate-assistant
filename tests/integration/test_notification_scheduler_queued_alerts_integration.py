@@ -119,7 +119,9 @@ def test_queued_price_drop_alert_sends_after_quiet_hours(scheduler_context):
 
     email_service.send_email.assert_called()
 
-    records = history.get_user_notifications(user_email, notification_type=NotificationType.PRICE_DROP)
+    records = history.get_user_notifications(
+        user_email, notification_type=NotificationType.PRICE_DROP
+    )
     assert len(records) == 1
     assert records[0].status == NotificationStatus.SENT
 
@@ -177,7 +179,9 @@ def test_queued_new_property_alert_sends_after_quiet_hours(scheduler_context):
 
     email_service.send_email.assert_called()
 
-    records = history.get_user_notifications(user_email, notification_type=NotificationType.NEW_PROPERTY)
+    records = history.get_user_notifications(
+        user_email, notification_type=NotificationType.NEW_PROPERTY
+    )
     assert len(records) == 1
     assert records[0].status == NotificationStatus.SENT
 
@@ -206,6 +210,8 @@ def test_daily_digest_sends_and_records_history(scheduler_context):
     assert result["stats"]["digests_daily"] == 1
     email_service.send_email.assert_called()
 
-    records = history.get_user_notifications(user_email, notification_type=NotificationType.DIGEST_DAILY)
+    records = history.get_user_notifications(
+        user_email, notification_type=NotificationType.DIGEST_DAILY
+    )
     assert len(records) == 1
     assert records[0].status == NotificationStatus.SENT

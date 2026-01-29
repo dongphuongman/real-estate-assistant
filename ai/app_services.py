@@ -129,4 +129,3 @@ def create_hybrid_agent_instance(
         use_tools=True,
         verbose=verbose,
     )
-

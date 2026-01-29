@@ -9,20 +9,25 @@ from config.settings import get_settings
 from utils.auth_storage import AuthStorage
 
 router = APIRouter(tags=["Auth"])
- 
+
+
 class RequestCodeBody(BaseModel):
     email: str
- 
+
+
 class VerifyCodeBody(BaseModel):
     email: str
     code: str
- 
+
+
 class SessionInfo(BaseModel):
     session_token: str
     user_email: str
- 
+
+
 _code_re = re.compile(r"^[0-9]{6}$")
- 
+
+
 @router.post("/auth/request-code", response_model=dict)
 async def request_code(body: RequestCodeBody):
     settings = get_settings()
@@ -37,7 +42,8 @@ async def request_code(body: RequestCodeBody):
     if settings.environment.strip().lower() == "development":
         return {"status": "code_sent", "code": code}
     return {"status": "code_sent"}
- 
+
+
 @router.post("/auth/verify-code", response_model=SessionInfo)
 async def verify_code(body: VerifyCodeBody):
     settings = get_settings()
@@ -55,9 +61,12 @@ async def verify_code(body: VerifyCodeBody):
     storage.delete_code(email)
     token = storage.create_session(email, settings.session_ttl_days)
     return SessionInfo(session_token=token, user_email=email)
- 
+
+
 @router.get("/auth/session", response_model=SessionInfo)
-async def get_session(x_session_token: Optional[str] = Header(default=None, alias="X-Session-Token")):
+async def get_session(
+    x_session_token: Optional[str] = Header(default=None, alias="X-Session-Token"),
+):
     settings = get_settings()
     if not settings.auth_email_enabled:
         raise HTTPException(status_code=400, detail="Email auth disabled")

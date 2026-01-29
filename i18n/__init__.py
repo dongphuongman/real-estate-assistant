@@ -10,10 +10,4 @@ from .translations import (
     get_text,
 )
 
-__all__ = [
-    'get_text',
-    'get_language_name',
-    'get_available_languages',
-    'LANGUAGES',
-    'TRANSLATIONS'
-]
+__all__ = ["get_text", "get_language_name", "get_available_languages", "LANGUAGES", "TRANSLATIONS"]

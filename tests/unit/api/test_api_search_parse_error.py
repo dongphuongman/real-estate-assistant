@@ -11,14 +11,17 @@ from vector_store.chroma_store import ChromaPropertyStore
 
 client = TestClient(app)
 
+
 @pytest.fixture
 def mock_store():
     store = MagicMock(spec=ChromaPropertyStore)
     return store
 
+
 @pytest.fixture
 def valid_headers():
     return {"X-API-Key": "dev-secret-key"}
+
 
 def test_search_handles_parse_errors(mock_store, valid_headers):
     bad_doc = Document(page_content="bad", metadata={"id": "bad"})

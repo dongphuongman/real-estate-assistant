@@ -31,4 +31,3 @@ def test_prompt_templates_list_and_apply_integration():
     data = r2.json()
     assert data["template_id"] == "buyer_followup_email_v1"
     assert "Subject:" in data["rendered_text"]
-

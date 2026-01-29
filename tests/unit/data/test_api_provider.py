@@ -1,6 +1,7 @@
 """
 Unit tests for APIProvider and MockRealEstateAPIProvider.
 """
+
 from unittest.mock import Mock, patch
 
 import pandas as pd
@@ -12,7 +13,6 @@ from data.schemas import Property
 
 
 class TestAPIProvider:
-    
     @pytest.fixture
     def api_provider(self):
         return APIProvider(api_url="https://api.example.com", api_key="test-key")
@@ -27,12 +27,10 @@ class TestAPIProvider:
         mock_response = Mock()
         mock_response.status_code = 200
         mock_get.return_value = mock_response
-        
+
         assert api_provider.validate_source() is True
         mock_get.assert_called_once_with(
-            "https://api.example.com", 
-            headers={"Authorization": "Bearer test-key"}, 
-            timeout=10
+            "https://api.example.com", headers={"Authorization": "Bearer test-key"}, timeout=10
         )
 
     @patch("requests.get")
@@ -48,7 +46,7 @@ class TestAPIProvider:
         ]
         mock_response.raise_for_status.return_value = None
         mock_get.return_value = mock_response
-        
+
         df = api_provider.load_data()
         assert isinstance(df, pd.DataFrame)
         assert len(df) == 1
@@ -69,11 +67,11 @@ class TestAPIProvider:
                 "city": "New York",
                 "price": 5000,
                 "property_type": "apartment",
-                "listing_type": "rent"
+                "listing_type": "rent",
             }
         ]
         mock_get.return_value = mock_response
-        
+
         properties = api_provider.get_properties()
         assert len(properties) == 1
         assert isinstance(properties[0], Property)
@@ -83,7 +81,6 @@ class TestAPIProvider:
 
 
 class TestMockRealEstateAPIProvider:
-    
     @pytest.fixture
     def mock_provider(self):
         return MockRealEstateAPIProvider()

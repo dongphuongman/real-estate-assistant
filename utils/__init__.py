@@ -7,12 +7,12 @@ from .exporters import ExportFormat, InsightsExporter, PropertyExporter
 from .saved_searches import FavoriteProperty, SavedSearch, SavedSearchManager, UserPreferences
 
 __all__ = [
-    'PropertyExporter',
-    'InsightsExporter',
-    'ExportFormat',
-    'SavedSearchManager',
-    'SavedSearch',
-    'UserPreferences',
-    'FavoriteProperty',
-    'ParallelDataLoader',
+    "PropertyExporter",
+    "InsightsExporter",
+    "ExportFormat",
+    "SavedSearchManager",
+    "SavedSearch",
+    "UserPreferences",
+    "FavoriteProperty",
+    "ParallelDataLoader",
 ]

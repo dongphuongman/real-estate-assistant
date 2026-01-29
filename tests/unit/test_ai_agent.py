@@ -70,7 +70,9 @@ def test_real_estate_gpt_ask_qn_updates_history_and_uses_prompt(monkeypatch):
     assert len(dummy_agent.prompts) == 2
     assert "System: You are a specialized real estate assistant" in dummy_agent.prompts[0]
     assert "User: What is the cheapest property?" in dummy_agent.prompts[0]
-    assert "Assistant: Please keep responses relevant to real estate only." in dummy_agent.prompts[0]
+    assert (
+        "Assistant: Please keep responses relevant to real estate only." in dummy_agent.prompts[0]
+    )
     assert "User: What is the cheapest property?" in dummy_agent.prompts[1]
     assert "Assistant: ok" in dummy_agent.prompts[1]
     assert "User: And with parking?" in dummy_agent.prompts[1]
@@ -88,7 +90,9 @@ def test_real_estate_gpt_ask_qn_error_returns_message_and_does_not_append(monkey
             raise ValueError("boom")
 
     monkeypatch.setattr(agent_module, "ChatOpenAI", DummyLLM)
-    monkeypatch.setattr(agent_module, "create_pandas_dataframe_agent", lambda *args, **kwargs: FailingAgent())
+    monkeypatch.setattr(
+        agent_module, "create_pandas_dataframe_agent", lambda *args, **kwargs: FailingAgent()
+    )
 
     gpt = agent_module.RealEstateGPT(pd.DataFrame({"x": [1]}), key="test-key")
     answer = gpt.ask_qn("test question")

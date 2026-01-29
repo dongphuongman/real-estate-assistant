@@ -25,4 +25,3 @@ ai-real-estate-assistant/
 ├── utils/                  # Exporters, helpers
 └── tests/                  # Unit & integration tests
 ```
-

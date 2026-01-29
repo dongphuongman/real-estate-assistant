@@ -17,7 +17,7 @@ describe("MainNav", () => {
   it("renders navigation links", () => {
     (usePathname as jest.Mock).mockReturnValue("/")
     render(<MainNav />)
-    
+
     expect(screen.getByText("Home")).toBeInTheDocument()
     expect(screen.getByText("Search")).toBeInTheDocument()
     expect(screen.getByText("Assistant")).toBeInTheDocument()
@@ -29,10 +29,10 @@ describe("MainNav", () => {
   it("highlights active link", () => {
     (usePathname as jest.Mock).mockReturnValue("/search")
     render(<MainNav />)
-    
+
     const searchLink = screen.getByText("Search").closest("a")
     const homeLink = screen.getByText("Home").closest("a")
-    
+
     expect(searchLink).toHaveClass("text-foreground")
     expect(homeLink).toHaveClass("text-muted-foreground")
   })

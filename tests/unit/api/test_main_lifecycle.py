@@ -21,7 +21,10 @@ class _DummyScheduler:
 async def test_startup_initializes_scheduler(monkeypatch):
     # Patch names used inside api.main
     import api.main as main_mod
-    monkeypatch.setattr(main_mod, "EmailServiceFactory", SimpleNamespace(create_from_env=lambda: None))
+
+    monkeypatch.setattr(
+        main_mod, "EmailServiceFactory", SimpleNamespace(create_from_env=lambda: None)
+    )
     monkeypatch.setattr(main_mod, "NotificationScheduler", _DummyScheduler)
     monkeypatch.setattr(main_mod, "get_vector_store", lambda: None)
 

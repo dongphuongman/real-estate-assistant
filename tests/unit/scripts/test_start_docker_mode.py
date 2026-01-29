@@ -24,4 +24,3 @@ def test_docker_mode_gpu_includes_profile_in_dry_run(capsys):
     out = capsys.readouterr().out
     assert rc == 0
     assert "--profile gpu" in out
-

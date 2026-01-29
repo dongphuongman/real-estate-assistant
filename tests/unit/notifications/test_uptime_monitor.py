@@ -30,7 +30,12 @@ def test_uptime_monitor_sends_alert_on_consecutive_failures():
         return outcomes.pop(0) if outcomes else True
 
     email = FakeEmailService()
-    cfg = UptimeMonitorConfig(interval_seconds=0.01, fail_threshold=3, alert_cooldown_seconds=0.1, to_email="ops@example.com")
+    cfg = UptimeMonitorConfig(
+        interval_seconds=0.01,
+        fail_threshold=3,
+        alert_cooldown_seconds=0.1,
+        to_email="ops@example.com",
+    )
     mon = UptimeMonitor(checker=checker, email_service=email, config=cfg)
 
     # Drive ticks synchronously
@@ -48,7 +53,12 @@ def test_uptime_monitor_cooldown_prevents_spam():
         return False
 
     email = FakeEmailService()
-    cfg = UptimeMonitorConfig(interval_seconds=0.01, fail_threshold=1, alert_cooldown_seconds=0.2, to_email="ops@example.com")
+    cfg = UptimeMonitorConfig(
+        interval_seconds=0.01,
+        fail_threshold=1,
+        alert_cooldown_seconds=0.2,
+        to_email="ops@example.com",
+    )
     mon = UptimeMonitor(checker=checker, email_service=email, config=cfg)
 
     mon.tick()  # first alert

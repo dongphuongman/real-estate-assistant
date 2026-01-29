@@ -23,7 +23,7 @@ def sample_properties():
             energy_rating="A",
             latitude=52.2297,
             longitude=21.0122,
-            scraped_at=datetime.now()
+            scraped_at=datetime.now(),
         ),
         Property(
             id="2",
@@ -36,7 +36,7 @@ def sample_properties():
             energy_rating="B",
             latitude=50.0647,
             longitude=19.9450,
-            scraped_at=datetime.now()
+            scraped_at=datetime.now(),
         ),
         Property(
             id="3",
@@ -49,9 +49,10 @@ def sample_properties():
             energy_rating="C",
             latitude=52.2297,
             longitude=21.0122,
-            scraped_at=datetime.now()
+            scraped_at=datetime.now(),
         ),
     ]
+
 
 def test_property_collection_filters(sample_properties):
     collection = PropertyCollection(properties=sample_properties, total_count=3)
@@ -76,6 +77,7 @@ def test_property_collection_filters(sample_properties):
     assert len(filtered.properties) == 1
     assert filtered.properties[0].energy_rating == "A"
 
+
 def test_market_insights_filters(sample_properties):
     collection = PropertyCollection(properties=sample_properties, total_count=3)
     insights = MarketInsights(collection)
@@ -99,6 +101,7 @@ def test_market_insights_filters(sample_properties):
     df = insights.filter_properties(energy_ratings=["A"])
     assert len(df) == 1
     assert df.iloc[0]["energy_rating"] == "A"
+
 
 def test_query_analyzer_pro_filters():
     analyzer = get_query_analyzer()

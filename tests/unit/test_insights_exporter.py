@@ -24,4 +24,3 @@ def test_export_monthly_index_json_structure_empty_when_no_timestamps():
     exp = InsightsExporter(insights)
     js = exp.export_monthly_index_json("Warsaw")
     assert "monthly_index" in js
-

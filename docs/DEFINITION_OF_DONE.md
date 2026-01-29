@@ -30,4 +30,3 @@
 - Health checks green; logs structured; basic monitoring notes included.
 - Free‑tier deployment verified; cold‑start impact noted.
  - All CI jobs green after push; any post-push failure is fixed and rechecked locally before marking done.
-

@@ -8,12 +8,20 @@ from vector_store.hybrid_retriever import AdvancedPropertyRetriever
 
 def test_retriever_geo_radius_filters_docs(tmp_path):
     docs = [
-        Document(page_content="Warsaw apt", metadata={"city": "Warsaw", "lat": 52.23, "lon": 21.01, "price": 5000}),
-        Document(page_content="Krakow apt", metadata={"city": "Krakow", "lat": 50.06, "lon": 19.94, "price": 4400}),
+        Document(
+            page_content="Warsaw apt",
+            metadata={"city": "Warsaw", "lat": 52.23, "lon": 21.01, "price": 5000},
+        ),
+        Document(
+            page_content="Krakow apt",
+            metadata={"city": "Krakow", "lat": 50.06, "lon": 19.94, "price": 4400},
+        ),
     ]
     with patch.object(ChromaPropertyStore, "_create_embeddings", return_value=None):
         store = ChromaPropertyStore(persist_directory=str(tmp_path))
-    retr = AdvancedPropertyRetriever(vector_store=store, center_lat=52.23, center_lon=21.01, radius_km=10.0)
+    retr = AdvancedPropertyRetriever(
+        vector_store=store, center_lat=52.23, center_lon=21.01, radius_km=10.0
+    )
     filtered = retr._filter_by_geo(docs)
     assert len(filtered) == 1
     assert filtered[0].metadata["city"] == "Warsaw"
@@ -42,7 +50,9 @@ def test_retriever_sorting_handles_none_and_non_numeric(tmp_path):
     ]
     with patch.object(ChromaPropertyStore, "_create_embeddings", return_value=None):
         store = ChromaPropertyStore(persist_directory=str(tmp_path))
-    retr = AdvancedPropertyRetriever(vector_store=store, sort_by="price_per_sqm", sort_ascending=True)
+    retr = AdvancedPropertyRetriever(
+        vector_store=store, sort_by="price_per_sqm", sort_ascending=True
+    )
     sorted_docs = retr._sort_results(docs)
     assert [d.page_content for d in sorted_docs[:2]] == ["d", "a"]
 

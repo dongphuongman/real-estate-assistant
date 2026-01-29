@@ -123,4 +123,3 @@ def create_web_tools(
             allowlist_domains=web_allowlist_domains,
         ),
     ]
-

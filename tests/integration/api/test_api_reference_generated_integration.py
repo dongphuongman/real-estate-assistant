@@ -18,4 +18,3 @@ def test_generated_api_reference_contains_core_routes(tmp_path: Path) -> None:
     assert "## GET /health" in md
     assert "## POST /api/v1/search" in md
     assert "## POST /api/v1/chat" in md
-

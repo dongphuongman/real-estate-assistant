@@ -4,6 +4,7 @@ from api.main import app
 
 client = TestClient(app)
 
+
 def test_search_accepts_sorting_parameters():
     headers = {"X-API-Key": "dev-secret-key"}
     resp = client.post(

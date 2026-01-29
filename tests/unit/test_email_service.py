@@ -14,7 +14,9 @@ from notifications.email_service import (
 def make_config(provider=EmailProvider.GMAIL):
     return EmailConfig(
         provider=provider,
-        smtp_server="smtp.gmail.com" if provider == EmailProvider.GMAIL else "smtp-mail.outlook.com",
+        smtp_server="smtp.gmail.com"
+        if provider == EmailProvider.GMAIL
+        else "smtp-mail.outlook.com",
         smtp_port=587,
         username="test@example.com",
         password="password",
@@ -62,6 +64,7 @@ def test_send_email_invalid_raises():
 def test_send_bulk_emails_counts():
     svc = EmailService(make_config())
     with patch.object(EmailService, "_send_message", return_value=None):
-        res = svc.send_bulk_emails(["a@example.com", "b@example.com"], "s", "b", html=False, batch_size=1)
+        res = svc.send_bulk_emails(
+            ["a@example.com", "b@example.com"], "s", "b", html=False, batch_size=1
+        )
         assert res["sent"] == 2 and res["failed"] == 0
-

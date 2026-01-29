@@ -57,22 +57,17 @@ class TestSessionTracker:
 
     def test_track_event_basic(self, session_tracker):
         """Test tracking a basic event."""
-        session_tracker.track_event(
-            event_type=EventType.QUERY,
-            data={'query': 'test query'}
-        )
+        session_tracker.track_event(event_type=EventType.QUERY, data={"query": "test query"})
 
         assert len(session_tracker.events) == 1
         event = session_tracker.events[0]
         assert event.event_type == EventType.QUERY
-        assert event.data['query'] == 'test query'
+        assert event.data["query"] == "test query"
 
     def test_track_event_with_duration(self, session_tracker):
         """Test tracking event with duration."""
         session_tracker.track_event(
-            event_type=EventType.QUERY,
-            data={'query': 'test'},
-            duration_ms=250
+            event_type=EventType.QUERY, data={"query": "test"}, duration_ms=250
         )
 
         event = session_tracker.events[0]
@@ -84,103 +79,87 @@ class TestSessionTracker:
             query="Find apartments in Krakow",
             intent="simple_retrieval",
             complexity="simple",
-            processing_time_ms=180
+            processing_time_ms=180,
         )
 
         assert len(session_tracker.events) == 1
         event = session_tracker.events[0]
         assert event.event_type == EventType.QUERY
-        assert event.data['query'] == "Find apartments in Krakow"
-        assert event.data['intent'] == "simple_retrieval"
-        assert event.data['complexity'] == "simple"
+        assert event.data["query"] == "Find apartments in Krakow"
+        assert event.data["intent"] == "simple_retrieval"
+        assert event.data["complexity"] == "simple"
         assert event.duration_ms == 180
 
     def test_track_property_view(self, session_tracker):
         """Test tracking a property view event."""
         session_tracker.track_property_view(
-            property_id="prop123",
-            property_city="Krakow",
-            property_price=950.0
+            property_id="prop123", property_city="Krakow", property_price=950.0
         )
 
         assert len(session_tracker.events) == 1
         event = session_tracker.events[0]
         assert event.event_type == EventType.PROPERTY_VIEW
-        assert event.data['property_id'] == "prop123"
-        assert event.data['city'] == "Krakow"
-        assert event.data['price'] == 950.0
+        assert event.data["property_id"] == "prop123"
+        assert event.data["city"] == "Krakow"
+        assert event.data["price"] == 950.0
 
     def test_track_search(self, session_tracker):
         """Test tracking a search event."""
         session_tracker.track_search(
-            search_criteria={'city': 'Krakow', 'max_price': 1000},
-            results_count=15
+            search_criteria={"city": "Krakow", "max_price": 1000}, results_count=15
         )
 
         event = session_tracker.events[0]
         assert event.event_type == EventType.SEARCH
-        assert event.data['criteria']['city'] == 'Krakow'
-        assert event.data['results_count'] == 15
+        assert event.data["criteria"]["city"] == "Krakow"
+        assert event.data["results_count"] == 15
 
     def test_track_export(self, session_tracker):
         """Test tracking an export event."""
-        session_tracker.track_export(
-            format="excel",
-            property_count=25
-        )
+        session_tracker.track_export(format="excel", property_count=25)
 
         event = session_tracker.events[0]
         assert event.event_type == EventType.EXPORT
-        assert event.data['format'] == "excel"
-        assert event.data['property_count'] == 25
+        assert event.data["format"] == "excel"
+        assert event.data["property_count"] == 25
 
     def test_track_favorite(self, session_tracker):
         """Test tracking a favorite event."""
-        session_tracker.track_favorite(
-            property_id="fav123",
-            action="add"
-        )
+        session_tracker.track_favorite(property_id="fav123", action="add")
 
         event = session_tracker.events[0]
         assert event.event_type == EventType.FAVORITE
-        assert event.data['property_id'] == "fav123"
-        assert event.data['action'] == "add"
+        assert event.data["property_id"] == "fav123"
+        assert event.data["action"] == "add"
 
     def test_track_model_change(self, session_tracker):
         """Test tracking a model change event."""
-        session_tracker.track_model_change(
-            old_model="gpt-3.5-turbo",
-            new_model="gpt-4o"
-        )
+        session_tracker.track_model_change(old_model="gpt-3.5-turbo", new_model="gpt-4o")
 
         event = session_tracker.events[0]
         assert event.event_type == EventType.MODEL_CHANGE
-        assert event.data['old_model'] == "gpt-3.5-turbo"
-        assert event.data['new_model'] == "gpt-4o"
+        assert event.data["old_model"] == "gpt-3.5-turbo"
+        assert event.data["new_model"] == "gpt-4o"
 
     def test_track_tool_use(self, session_tracker):
         """Test tracking a tool use event."""
         session_tracker.track_tool_use(
-            tool_name="mortgage_calculator",
-            parameters={'price': 200000, 'rate': 4.5}
+            tool_name="mortgage_calculator", parameters={"price": 200000, "rate": 4.5}
         )
 
         event = session_tracker.events[0]
         assert event.event_type == EventType.TOOL_USE
-        assert event.data['tool_name'] == "mortgage_calculator"
-        assert event.data['parameters']['price'] == 200000
+        assert event.data["tool_name"] == "mortgage_calculator"
+        assert event.data["parameters"]["price"] == 200000
 
     def test_track_error(self, session_tracker):
         """Test tracking an error event."""
-        session_tracker.track_error(
-            error_type="ValueError",
-            error_message="Invalid input"
-        )
+        session_tracker.track_error(error_type="ValueError", error_message="Invalid input")
 
         event = session_tracker.events[0]
         assert event.event_type == EventType.ERROR
-        assert event.data['error_type'] == "ValueError"
-        assert event.data['error_message'] == "Invalid input"
+        assert event.data["error_type"] == "ValueError"
+        assert event.data["error_message"] == "Invalid input"
 
     def test_multiple_events(self, session_tracker):
         """Test tracking multiple events."""
@@ -240,8 +219,8 @@ class TestSessionTracker:
 
         assert len(popular) <= 3
         # simple_retrieval should be most common (3 occurrences)
-        assert popular[0]['intent'] == 'simple_retrieval'
-        assert popular[0]['count'] == 3
+        assert popular[0]["intent"] == "simple_retrieval"
+        assert popular[0]["count"] == 3
 
     def test_get_popular_queries_empty(self, session_tracker):
         """Test popular queries with no query events."""
@@ -280,7 +259,7 @@ class TestSessionPersistence:
 
         # Force save by tracking 10 events (auto-save threshold)
         for i in range(10):
-            tracker.track_event(EventType.QUERY, data={'test': i})
+            tracker.track_event(EventType.QUERY, data={"test": i})
 
         # Check file exists
         session_file = Path(temp_analytics) / "session_persist_test.json"
@@ -293,16 +272,16 @@ class TestSessionPersistence:
 
         # Trigger save
         for i in range(10):
-            tracker.track_event(EventType.QUERY, data={'test': i})
+            tracker.track_event(EventType.QUERY, data={"test": i})
 
         session_file = Path(temp_analytics) / "session_content_test.json"
-        with open(session_file, 'r') as f:
+        with open(session_file, "r") as f:
             data = json.load(f)
 
-        assert 'session_id' in data
-        assert 'events' in data
-        assert 'stats' in data
-        assert data['session_id'] == "content_test"
+        assert "session_id" in data
+        assert "events" in data
+        assert "stats" in data
+        assert data["session_id"] == "content_test"
 
     def test_finalize_session(self, temp_analytics):
         """Test finalizing session saves data."""
@@ -320,7 +299,7 @@ class TestSessionPersistence:
 
         # Force save
         for i in range(10):
-            tracker.track_event(EventType.QUERY, data={'test': i})
+            tracker.track_event(EventType.QUERY, data={"test": i})
 
         agg_file = Path(temp_analytics) / "aggregate_stats.json"
         assert agg_file.exists()
@@ -333,16 +312,16 @@ class TestSessionPersistence:
 
         # Force save
         for i in range(10):
-            tracker.track_event(EventType.QUERY, data={'test': i})
+            tracker.track_event(EventType.QUERY, data={"test": i})
 
         agg_file = Path(temp_analytics) / "aggregate_stats.json"
-        with open(agg_file, 'r') as f:
+        with open(agg_file, "r") as f:
             data = json.load(f)
 
-        assert 'total_sessions' in data
-        assert 'total_queries' in data
-        assert 'total_exports' in data
-        assert data['total_sessions'] >= 1
+        assert "total_sessions" in data
+        assert "total_queries" in data
+        assert "total_exports" in data
+        assert data["total_sessions"] >= 1
 
     def test_aggregate_stats_accumulation(self, temp_analytics):
         """Test aggregate stats accumulate across sessions."""
@@ -350,22 +329,22 @@ class TestSessionPersistence:
         tracker1 = SessionTracker("agg_sess1", storage_path=temp_analytics)
         tracker1.track_query("query1", "simple", "simple")
         for i in range(10):
-            tracker1.track_event(EventType.QUERY, data={'test': i})
+            tracker1.track_event(EventType.QUERY, data={"test": i})
 
         # Second session
         tracker2 = SessionTracker("agg_sess2", storage_path=temp_analytics)
         tracker2.track_query("query2", "simple", "simple")
         tracker2.track_query("query3", "simple", "simple")
         for i in range(10):
-            tracker2.track_event(EventType.QUERY, data={'test': i})
+            tracker2.track_event(EventType.QUERY, data={"test": i})
 
         agg_file = Path(temp_analytics) / "aggregate_stats.json"
-        with open(agg_file, 'r') as f:
+        with open(agg_file, "r") as f:
             data = json.load(f)
 
         # Should have accumulated from both sessions
-        assert data['total_sessions'] >= 2
-        assert data['total_queries'] >= 3  # 1 from first + 2 from second
+        assert data["total_sessions"] >= 2
+        assert data["total_queries"] >= 3  # 1 from first + 2 from second
 
 
 class TestGetAggregateStats:
@@ -377,22 +356,22 @@ class TestGetAggregateStats:
         tracker = SessionTracker("get_agg", storage_path=temp_analytics)
         tracker.track_query("test", "simple", "simple")
         for i in range(10):
-            tracker.track_event(EventType.QUERY, data={'test': i})
+            tracker.track_event(EventType.QUERY, data={"test": i})
 
         # Get aggregate stats via class method
         stats = SessionTracker.get_aggregate_stats(storage_path=temp_analytics)
 
-        assert 'total_sessions' in stats
-        assert 'total_queries' in stats
-        assert stats['total_sessions'] >= 1
+        assert "total_sessions" in stats
+        assert "total_queries" in stats
+        assert stats["total_sessions"] >= 1
 
     def test_get_aggregate_stats_nonexistent(self, temp_analytics):
         """Test getting aggregate stats when file doesn't exist."""
         stats = SessionTracker.get_aggregate_stats(storage_path=temp_analytics)
 
-        assert stats['total_sessions'] == 0
-        assert stats['total_queries'] == 0
-        assert 'message' in stats
+        assert stats["total_sessions"] == 0
+        assert stats["total_queries"] == 0
+        assert "message" in stats
 
 
 class TestSessionStats:
@@ -412,7 +391,7 @@ class TestSessionStats:
             unique_models_used=["gpt-4o", "claude-3.5"],
             tools_used=["calculator", "comparator"],
             errors_encountered=0,
-            total_duration_minutes=15.5
+            total_duration_minutes=15.5,
         )
 
         assert stats.session_id == "stats_test"
@@ -448,17 +427,15 @@ class TestEdgeCases:
     def test_special_characters_in_data(self, session_tracker):
         """Test tracking events with special characters."""
         session_tracker.track_query(
-            query="Test with special chars: <>&\"'",
-            intent="test",
-            complexity="simple"
+            query="Test with special chars: <>&\"'", intent="test", complexity="simple"
         )
 
         event = session_tracker.events[0]
-        assert "<>&\"'" in event.data['query']
+        assert "<>&\"'" in event.data["query"]
 
     def test_large_data_payload(self, session_tracker):
         """Test tracking event with large data payload."""
-        large_data = {'data': 'x' * 10000}  # 10KB of data
+        large_data = {"data": "x" * 10000}  # 10KB of data
         session_tracker.track_event(EventType.SEARCH, data=large_data)
 
         assert len(session_tracker.events) == 1
@@ -492,12 +469,9 @@ class TestEdgeCases:
     def test_none_values_in_optional_fields(self, session_tracker):
         """Test handling None values in optional fields."""
         session_tracker.track_query(
-            query="test",
-            intent=None,
-            complexity=None,
-            processing_time_ms=None
+            query="test", intent=None, complexity=None, processing_time_ms=None
         )
 
         event = session_tracker.events[0]
-        assert event.data['intent'] is None
+        assert event.data["intent"] is None
         assert event.duration_ms is None

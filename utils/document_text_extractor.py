@@ -47,8 +47,7 @@ def extract_text_segments_from_upload(
         return _extract_pdf_text_segments(data)
 
     if (
-        ctype
-        == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        ctype == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         or name.endswith(".docx")
     ):
         return _extract_docx_text_segments(data)

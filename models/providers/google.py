@@ -47,7 +47,7 @@ class GoogleProvider(RemoteModelProvider):
                 context_window=1000000,
                 pricing=PricingInfo(
                     input_price_per_1m=0.075,  # Pricing when GA
-                    output_price_per_1m=0.30
+                    output_price_per_1m=0.30,
                 ),
                 capabilities=[
                     ModelCapability.STREAMING,
@@ -57,19 +57,15 @@ class GoogleProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Next-generation model with improved capabilities",
-                recommended_for=["latest features", "fast responses", "general purpose"]
+                recommended_for=["latest features", "fast responses", "general purpose"],
             ),
-
             # Gemini 1.5 Series - Proven and stable
             ModelInfo(
                 id="gemini-1.5-pro",
                 display_name="Gemini 1.5 Pro (Recommended)",
                 provider_name=self.display_name,
                 context_window=2000000,  # 2M tokens!
-                pricing=PricingInfo(
-                    input_price_per_1m=1.25,
-                    output_price_per_1m=5.00
-                ),
+                pricing=PricingInfo(input_price_per_1m=1.25, output_price_per_1m=5.00),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -78,17 +74,19 @@ class GoogleProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Most capable Gemini model with massive 2M token context",
-                recommended_for=["long documents", "complex analysis", "multimodal tasks", "large contexts"]
+                recommended_for=[
+                    "long documents",
+                    "complex analysis",
+                    "multimodal tasks",
+                    "large contexts",
+                ],
             ),
             ModelInfo(
                 id="gemini-1.5-flash",
                 display_name="Gemini 1.5 Flash",
                 provider_name=self.display_name,
                 context_window=1000000,  # 1M tokens
-                pricing=PricingInfo(
-                    input_price_per_1m=0.075,
-                    output_price_per_1m=0.30
-                ),
+                pricing=PricingInfo(input_price_per_1m=0.075, output_price_per_1m=0.30),
                 capabilities=[
                     ModelCapability.STREAMING,
                     ModelCapability.FUNCTION_CALLING,
@@ -97,7 +95,12 @@ class GoogleProvider(RemoteModelProvider):
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
                 description="Fast and efficient model with 1M token context",
-                recommended_for=["fast responses", "cost-effective", "high volume", "balanced performance"]
+                recommended_for=[
+                    "fast responses",
+                    "cost-effective",
+                    "high volume",
+                    "balanced performance",
+                ],
             ),
         ]
 
@@ -107,7 +110,7 @@ class GoogleProvider(RemoteModelProvider):
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
         streaming: bool = True,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> BaseChatModel:
         """Create Google model instance."""
         # Validate model exists
@@ -115,8 +118,7 @@ class GoogleProvider(RemoteModelProvider):
         if not model_info:
             available = [m.id for m in self.list_models()]
             raise ValueError(
-                f"Model '{model_id}' not available. "
-                f"Available models: {', '.join(available)}"
+                f"Model '{model_id}' not available. Available models: {', '.join(available)}"
             )
 
         # Validate API key
@@ -133,7 +135,7 @@ class GoogleProvider(RemoteModelProvider):
             temperature=temperature,
             max_tokens=max_tokens,
             api_key=SecretStr(api_key),
-            **kwargs
+            **kwargs,
         )
 
     def validate_connection(self) -> tuple[bool, Optional[str]]:

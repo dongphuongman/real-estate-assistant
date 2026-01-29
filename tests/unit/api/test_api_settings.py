@@ -66,9 +66,7 @@ def test_update_settings(mock_get_settings, mock_prefs_manager):
         "marketing_emails": True,
     }
 
-    response = client.put(
-        "/api/v1/settings/notifications", json=payload, headers=HEADERS
-    )
+    response = client.put("/api/v1/settings/notifications", json=payload, headers=HEADERS)
 
     assert response.status_code == 200
     mock_prefs_manager.get_preferences.assert_called_once_with("u1@example.com")
@@ -87,9 +85,7 @@ def test_update_settings(mock_get_settings, mock_prefs_manager):
 
 @patch("api.routers.settings.PREFS_MANAGER")
 @patch("api.auth.get_settings")
-def test_settings_query_user_email_overrides_header(
-    mock_get_settings, mock_prefs_manager
-):
+def test_settings_query_user_email_overrides_header(mock_get_settings, mock_prefs_manager):
     mock_settings = MagicMock()
     mock_settings.api_access_key = "test-key"
     mock_get_settings.return_value = mock_settings
@@ -126,9 +122,7 @@ def test_get_settings_missing_user_email_returns_400(mock_get_settings, mock_pre
 
 @patch("api.routers.settings.PREFS_MANAGER")
 @patch("api.auth.get_settings")
-def test_update_settings_missing_user_email_returns_400(
-    mock_get_settings, mock_prefs_manager
-):
+def test_update_settings_missing_user_email_returns_400(mock_get_settings, mock_prefs_manager):
     mock_settings = MagicMock()
     mock_settings.api_access_key = "test-key"
     mock_get_settings.return_value = mock_settings
@@ -230,7 +224,9 @@ def test_list_model_catalog(mock_get_settings, mock_factory):
 
 @patch("api.routers.settings.ModelProviderFactory")
 @patch("api.auth.get_settings")
-def test_list_model_catalog_includes_runtime_error_for_local_provider(mock_get_settings, mock_factory):
+def test_list_model_catalog_includes_runtime_error_for_local_provider(
+    mock_get_settings, mock_factory
+):
     mock_settings = MagicMock()
     mock_settings.api_access_key = "test-key"
     mock_get_settings.return_value = mock_settings
@@ -505,7 +501,9 @@ def test_update_model_preferences_requires_provider_when_setting_model(
 
 @patch("api.routers.settings.user_model_preferences.MODEL_PREFS_MANAGER")
 @patch("api.auth.get_settings")
-def test_get_model_preferences_missing_user_email_returns_400(mock_get_settings, mock_model_prefs_manager):
+def test_get_model_preferences_missing_user_email_returns_400(
+    mock_get_settings, mock_model_prefs_manager
+):
     mock_settings = MagicMock()
     mock_settings.api_access_key = "test-key"
     mock_get_settings.return_value = mock_settings
@@ -518,7 +516,9 @@ def test_get_model_preferences_missing_user_email_returns_400(mock_get_settings,
 
 @patch("api.routers.settings.user_model_preferences.MODEL_PREFS_MANAGER")
 @patch("api.auth.get_settings")
-def test_get_model_preferences_returns_400_on_value_error(mock_get_settings, mock_model_prefs_manager):
+def test_get_model_preferences_returns_400_on_value_error(
+    mock_get_settings, mock_model_prefs_manager
+):
     mock_settings = MagicMock()
     mock_settings.api_access_key = "test-key"
     mock_get_settings.return_value = mock_settings
@@ -655,7 +655,9 @@ def test_update_model_preferences_clears_provider_and_model_on_empty_provider(
 
 @patch("api.routers.settings.ModelProviderFactory")
 @patch("api.auth.get_settings")
-def test_list_model_catalog_local_provider_runtime_unavailable_sets_flags(mock_get_settings, mock_factory):
+def test_list_model_catalog_local_provider_runtime_unavailable_sets_flags(
+    mock_get_settings, mock_factory
+):
     mock_settings = MagicMock()
     mock_settings.api_access_key = "test-key"
     mock_get_settings.return_value = mock_settings

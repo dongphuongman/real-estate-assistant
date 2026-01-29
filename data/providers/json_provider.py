@@ -11,13 +11,14 @@ from data.schemas import Property
 
 logger = logging.getLogger(__name__)
 
+
 class JSONDataProvider(BaseDataProvider):
     """Data provider for JSON files or APIs returning JSON lists."""
 
     def _convert_github_url(self, url: str) -> str:
         """Convert GitHub URL to raw content URL."""
-        if 'github.com' in url and '/blob/' in url:
-            return url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/')
+        if "github.com" in url and "/blob/" in url:
+            return url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
         return url
 
     def validate_source(self) -> bool:
@@ -38,7 +39,7 @@ class JSONDataProvider(BaseDataProvider):
             return self._cache
 
         data = self._fetch_json()
-        
+
         # Normalize data: ensure it's a list of dicts
         if isinstance(data, dict):
             # If it's a single dict, maybe wrap it? Or maybe it has a key 'properties'?
@@ -49,9 +50,11 @@ class JSONDataProvider(BaseDataProvider):
             else:
                 # Treat as single item
                 data = [data]
-        
+
         if not isinstance(data, list):
-            raise ValueError(f"JSON data must be a list or contain a list in 'properties'/'data' keys. Got {type(data)}")
+            raise ValueError(
+                f"JSON data must be a list or contain a list in 'properties'/'data' keys. Got {type(data)}"
+            )
 
         df = pd.DataFrame(data)
         self._cache = df
@@ -60,12 +63,12 @@ class JSONDataProvider(BaseDataProvider):
     def get_properties(self) -> List[Property]:
         """Convert loaded data to Property objects."""
         data_list = self._fetch_json()
-        
+
         # Normalize logic repeated here to get raw dicts, or use load_data and to_dict
         # Using load_data() -> DataFrame -> to_dict might lose some nested structure if not careful,
         # but Property schema is flat-ish.
         # Let's use the raw JSON list to avoid DataFrame conversion artifacts (like NaNs for None).
-        
+
         if isinstance(data_list, dict):
             if "properties" in data_list and isinstance(data_list["properties"], list):
                 data_list = data_list["properties"]
@@ -78,7 +81,7 @@ class JSONDataProvider(BaseDataProvider):
         for item in data_list:
             if not isinstance(item, dict):
                 continue
-            
+
             try:
                 # Pydantic handles validation and type conversion
                 prop = Property(**item)
@@ -86,7 +89,7 @@ class JSONDataProvider(BaseDataProvider):
             except Exception as e:
                 logger.warning(f"Skipping invalid property item: {e}")
                 continue
-        
+
         return properties
 
     def _fetch_json(self) -> Any:

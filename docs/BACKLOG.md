@@ -202,4 +202,3 @@ Generated on 26.01.2026.
   - `cd frontend` then `npm ci`
   - `npm run lint`
   - `npm run test -- --ci --coverage`
-

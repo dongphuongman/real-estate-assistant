@@ -1,8 +1,10 @@
 import asyncio
+import json
 from unittest.mock import MagicMock, patch
 
 from fastapi.testclient import TestClient
 
+from agents.query_analyzer import Complexity, QueryAnalysis, QueryIntent, Tool
 from api.dependencies import get_llm, get_vector_store
 from api.main import app
 from config.settings import get_settings
@@ -117,6 +119,74 @@ def test_chat_sse_error_event_on_streaming_failure():
             assert f'"request_id": "{test_request_id}"' in body
             assert "streaming failed" in body
             # Stream should still terminate properly
+            assert "data: [DONE]" in body
+
+    app.dependency_overrides = {}
+
+
+def test_chat_sse_web_path_includes_sanitized_intermediate_steps():
+    settings = get_settings()
+    key = settings.api_access_key
+
+    mock_llm = MagicMock()
+    mock_store = MagicMock()
+    mock_store.get_retriever.return_value = MagicMock()
+    app.dependency_overrides[get_llm] = lambda: mock_llm
+    app.dependency_overrides[get_vector_store] = lambda: mock_store
+
+    analysis = QueryAnalysis(
+        query="Hello",
+        intent=QueryIntent.GENERAL_QUESTION,
+        complexity=Complexity.SIMPLE,
+        requires_external_data=True,
+        tools_needed=[Tool.WEB_SEARCH],
+    )
+
+    class _Analyzer:
+        def __init__(self, value):
+            self._value = value
+
+        def analyze(self, message):
+            return self._value
+
+    class _WebAgent:
+        def __init__(self, value, result):
+            self.analyzer = _Analyzer(value)
+            self._result = result
+
+        def process_query(self, message):
+            return self._result
+
+    result = {
+        "answer": "From web",
+        "sources": [{"content": "Web content", "metadata": {"url": "https://example.com"}}],
+        "intermediate_steps": [{"tool": "search", "input": {"api_key": "sk-abc123"}}],
+    }
+    agent = _WebAgent(analysis, result)
+
+    with patch("api.routers.chat.create_hybrid_agent", return_value=agent):
+        with client.stream(
+            "POST",
+            "/api/v1/chat",
+            json={"message": "Hello", "stream": True, "include_intermediate_steps": True},
+            headers={"X-API-Key": key},
+        ) as r:
+            assert r.status_code == 200
+            body = b"".join(list(r.iter_bytes())).decode("utf-8")
+            lines = [line for line in body.splitlines() if line.strip()]
+            meta_line = next(
+                line for line in lines if line.startswith("data: {") and '"sources"' in line
+            )
+            meta = json.loads(meta_line[len("data: ") :])
+            assert meta["sources"] == [
+                {"content": "Web content", "metadata": {"url": "https://example.com"}}
+            ]
+            assert meta["sources_truncated"] is False
+            assert "intermediate_steps" in meta
+            assert "From web" in body
+            assert "sk-abc123" not in body
+            assert "sk-***" in body
+            assert "event: meta" in body
             assert "data: [DONE]" in body
 
     app.dependency_overrides = {}

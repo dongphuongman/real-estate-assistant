@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+
 @router.post("/chat", response_model=ChatResponse, tags=["Chat"])
 async def chat_endpoint(
     request: ChatRequest,
@@ -46,8 +47,7 @@ async def chat_endpoint(
     try:
         if not store:
             raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="Vector store unavailable"
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Vector store unavailable"
             )
 
         settings = get_settings()
@@ -59,16 +59,16 @@ async def chat_endpoint(
         session_id = request.session_id
         if not session_id:
             session_id = str(uuid.uuid4())
-        
+
         # Initialize Memory with Persistence
         chat_history = get_session_history(session_id)
         memory = ConversationBufferMemory(
             chat_memory=chat_history,
             memory_key="chat_history",
             return_messages=True,
-            output_key="answer"
+            output_key="answer",
         )
-        
+
         # Create Agent
         agent_kwargs = {
             "llm": llm,
@@ -100,7 +100,10 @@ async def chat_endpoint(
             if analyzed is not None:
                 requires_web = bool(
                     getattr(analyzed, "requires_external_data", False)
-                    or any(getattr(t, "value", str(t)) == "web_search" for t in getattr(analyzed, "tools_needed", []) or [])
+                    or any(
+                        getattr(t, "value", str(t)) == "web_search"
+                        for t in getattr(analyzed, "tools_needed", []) or []
+                    )
                 )
 
             async def event_generator():
@@ -117,12 +120,24 @@ async def chat_endpoint(
                         if requires_web:
                             result = agent.process_query(sanitized_message)
                             raw_answer = result.get("answer", "")
-                            answer_text = raw_answer if isinstance(raw_answer, str) else str(raw_answer)
+                            answer_text = (
+                                raw_answer if isinstance(raw_answer, str) else str(raw_answer)
+                            )
                             if answer_text:
                                 yield f"data: {json.dumps({'content': answer_text}, ensure_ascii=False, default=str)}\n\n"
 
-                            raw_sources = result.get("sources") if isinstance(result.get("sources"), list) else []
-                            if raw_sources and isinstance(raw_sources, list) and isinstance(raw_sources[0], dict) and "content" in raw_sources[0] and "metadata" in raw_sources[0]:
+                            raw_sources = (
+                                result.get("sources")
+                                if isinstance(result.get("sources"), list)
+                                else []
+                            )
+                            if (
+                                raw_sources
+                                and isinstance(raw_sources, list)
+                                and isinstance(raw_sources[0], dict)
+                                and "content" in raw_sources[0]
+                                and "metadata" in raw_sources[0]
+                            ):
                                 sources = raw_sources
                                 sources_truncated = False
                             else:
@@ -163,20 +178,14 @@ async def chat_endpoint(
                         yield "data: [DONE]\n\n"
                 except TimeoutError:
                     # Send timeout error event
-                    error_payload = {
-                        "error": "Stream timeout exceeded",
-                        "request_id": request_id
-                    }
+                    error_payload = {"error": "Stream timeout exceeded", "request_id": request_id}
                     yield "event: error\n"
                     yield f"data: {json.dumps(error_payload)}\n\n"
                     yield "data: [DONE]\n\n"
                 except Exception as e:
                     # Log error and send error event for client recovery
                     logger.error(f"Stream error (request_id={request_id}): {e}")
-                    error_payload = {
-                        "error": str(e),
-                        "request_id": request_id
-                    }
+                    error_payload = {"error": str(e), "request_id": request_id}
                     yield "event: error\n"
                     yield f"data: {json.dumps(error_payload)}\n\n"
                     yield "data: [DONE]\n\n"
@@ -184,17 +193,20 @@ async def chat_endpoint(
                     # Always ensure stream terminates
                     pass
 
-            return StreamingResponse(
-                event_generator(),
-                media_type="text/event-stream"
-            )
+            return StreamingResponse(event_generator(), media_type="text/event-stream")
 
         result = agent.process_query(sanitized_message)
-        
+
         answer = result.get("answer", "")
         if "sources" in result and isinstance(result.get("sources"), list):
             raw_sources = result.get("sources") or []
-            if raw_sources and isinstance(raw_sources, list) and isinstance(raw_sources[0], dict) and "content" in raw_sources[0] and "metadata" in raw_sources[0]:
+            if (
+                raw_sources
+                and isinstance(raw_sources, list)
+                and isinstance(raw_sources[0], dict)
+                and "content" in raw_sources[0]
+                and "metadata" in raw_sources[0]
+            ):
                 sources = raw_sources
                 sources_truncated = False
             else:
@@ -211,7 +223,7 @@ async def chat_endpoint(
                 max_content_chars=sources_max_content_chars,
                 max_total_bytes=sources_max_total_bytes,
             )
-        
+
         # Sanitize intermediate steps if requested
         intermediate_steps = None
         if request.include_intermediate_steps:

@@ -24,10 +24,7 @@ class TestMortgageCalculatorTool:
     def test_calculate_valid_input(self):
         """Test mortgage calculation with valid input."""
         result = MortgageCalculatorTool.calculate(
-            property_price=500000,
-            down_payment_percent=20,
-            interest_rate=4.5,
-            loan_years=30
+            property_price=500000, down_payment_percent=20, interest_rate=4.5, loan_years=30
         )
         assert result.monthly_payment > 0
         assert result.total_interest > 0
@@ -42,34 +39,22 @@ class TestMortgageCalculatorTool:
     def test_calculate_invalid_down_payment_raises_error(self):
         """Test that invalid down payment raises ValueError."""
         with pytest.raises(ValueError, match="Down payment must be between 0 and 100"):
-            MortgageCalculatorTool.calculate(
-                property_price=500000,
-                down_payment_percent=150
-            )
+            MortgageCalculatorTool.calculate(property_price=500000, down_payment_percent=150)
 
     def test_calculate_invalid_interest_rate_raises_error(self):
         """Test that negative interest rate raises ValueError."""
         with pytest.raises(ValueError, match="Interest rate cannot be negative"):
-            MortgageCalculatorTool.calculate(
-                property_price=500000,
-                interest_rate=-1
-            )
+            MortgageCalculatorTool.calculate(property_price=500000, interest_rate=-1)
 
     def test_calculate_invalid_loan_term_raises_error(self):
         """Test that invalid loan term raises ValueError."""
         with pytest.raises(ValueError, match="Loan term must be positive"):
-            MortgageCalculatorTool.calculate(
-                property_price=500000,
-                loan_years=0
-            )
+            MortgageCalculatorTool.calculate(property_price=500000, loan_years=0)
 
     def test_run_with_edge_case_zero_interest(self):
         """Test calculation with zero interest rate."""
         result = MortgageCalculatorTool.calculate(
-            property_price=100000,
-            down_payment_percent=10,
-            interest_rate=0,
-            loan_years=10
+            property_price=100000, down_payment_percent=10, interest_rate=0, loan_years=10
         )
         # With 0% interest, monthly payment should be principal / num_payments
         assert result.monthly_payment > 0
@@ -172,7 +157,7 @@ class TestSensitiveDataRedaction:
         data = {
             "api_key": "sk-abc123",
             "user": "john@example.com",
-            "nested": {"token": "ghp_secret"}
+            "nested": {"token": "ghp_secret"},
         }
         redacted = redact_sensitive_data(data)
         assert redacted["api_key"] == "sk-***"
@@ -181,11 +166,7 @@ class TestSensitiveDataRedaction:
 
     def test_redact_list(self):
         """Test that lists are recursively redacted."""
-        data = [
-            {"api_key": "sk-abc123"},
-            "Bearer token123",
-            {"nested": {"pwd": "password123"}}
-        ]
+        data = [{"api_key": "sk-abc123"}, "Bearer token123", {"nested": {"pwd": "password123"}}]
         redacted = redact_sensitive_data(data)
         assert "***" in str(redacted)
         assert "sk-abc123" not in str(redacted)
@@ -205,7 +186,7 @@ class TestSanitizeIntermediateSteps:
         steps = [
             {"tool": "search", "input": {"api_key": "sk-abc123"}},
             {"tool": "api_call", "output": "Bearer token123 response"},
-            {"tool": "login", "input": {"user": "john@example.com", "pwd": "secret"}}
+            {"tool": "login", "input": {"user": "john@example.com", "pwd": "secret"}},
         ]
         result = sanitize_intermediate_steps(steps)
 
@@ -234,7 +215,7 @@ class TestSanitizeIntermediateSteps:
         steps = [
             {
                 "tool": "generate",
-                "output": "x" * 2000  # Very long output
+                "output": "x" * 2000,  # Very long output
             }
         ]
         result = sanitize_intermediate_steps(steps)
@@ -246,6 +227,7 @@ class TestSanitizeIntermediateSteps:
 
     def test_sanitize_handles_invalid_serialization(self):
         """Test that invalid objects are handled gracefully."""
+
         # Create an object that can't be serialized properly
         class Unserializable:
             def __str__(self):

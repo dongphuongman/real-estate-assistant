@@ -12,8 +12,12 @@ def test_hybrid_property_agent_get_sources_for_query_uses_retrieve_documents():
     retriever = MagicMock()
 
     with (
-        patch("agents.hybrid_agent.HybridPropertyAgent._create_rag_chain", return_value=MagicMock()),
-        patch("agents.hybrid_agent.HybridPropertyAgent._create_tool_agent", return_value=MagicMock()),
+        patch(
+            "agents.hybrid_agent.HybridPropertyAgent._create_rag_chain", return_value=MagicMock()
+        ),
+        patch(
+            "agents.hybrid_agent.HybridPropertyAgent._create_tool_agent", return_value=MagicMock()
+        ),
         patch("agents.hybrid_agent.create_property_tools", return_value=[]),
     ):
         agent = HybridPropertyAgent(llm=llm, retriever=retriever)
@@ -38,8 +42,12 @@ def test_hybrid_property_agent_get_sources_for_query_skips_calculation_intent():
     retriever = MagicMock()
 
     with (
-        patch("agents.hybrid_agent.HybridPropertyAgent._create_rag_chain", return_value=MagicMock()),
-        patch("agents.hybrid_agent.HybridPropertyAgent._create_tool_agent", return_value=MagicMock()),
+        patch(
+            "agents.hybrid_agent.HybridPropertyAgent._create_rag_chain", return_value=MagicMock()
+        ),
+        patch(
+            "agents.hybrid_agent.HybridPropertyAgent._create_tool_agent", return_value=MagicMock()
+        ),
         patch("agents.hybrid_agent.create_property_tools", return_value=[]),
     ):
         agent = HybridPropertyAgent(llm=llm, retriever=retriever)
@@ -57,7 +65,9 @@ def test_hybrid_property_agent_get_sources_for_query_skips_calculation_intent():
 def test_simple_rag_agent_get_sources_for_query_returns_empty_on_error():
     retriever = MagicMock()
     retriever.get_relevant_documents.side_effect = RuntimeError("fail")
-    with patch("agents.hybrid_agent.ConversationalRetrievalChain.from_llm", return_value=MagicMock()):
+    with patch(
+        "agents.hybrid_agent.ConversationalRetrievalChain.from_llm", return_value=MagicMock()
+    ):
         agent = SimpleRAGAgent(llm=MagicMock(), retriever=retriever)
     assert agent.get_sources_for_query("q") == []
 
@@ -71,7 +81,9 @@ async def test_hybrid_property_agent_astream_query_hybrid_path():
 
     with (
         patch("agents.hybrid_agent.HybridPropertyAgent._create_rag_chain", return_value=rag_chain),
-        patch("agents.hybrid_agent.HybridPropertyAgent._create_tool_agent", return_value=tool_agent),
+        patch(
+            "agents.hybrid_agent.HybridPropertyAgent._create_tool_agent", return_value=tool_agent
+        ),
         patch("agents.hybrid_agent.create_property_tools", return_value=[]),
     ):
         agent = HybridPropertyAgent(llm=llm, retriever=retriever)
@@ -99,7 +111,9 @@ async def test_hybrid_property_agent_astream_query_fallbacks():
 
     with (
         patch("agents.hybrid_agent.HybridPropertyAgent._create_rag_chain", return_value=rag_chain),
-        patch("agents.hybrid_agent.HybridPropertyAgent._create_tool_agent", return_value=tool_agent),
+        patch(
+            "agents.hybrid_agent.HybridPropertyAgent._create_tool_agent", return_value=tool_agent
+        ),
         patch("agents.hybrid_agent.create_property_tools", return_value=[]),
     ):
         agent = HybridPropertyAgent(llm=llm, retriever=retriever)
@@ -132,7 +146,9 @@ async def test_hybrid_property_agent_astream_with_rag_emits_chunk():
 
     with (
         patch("agents.hybrid_agent.HybridPropertyAgent._create_rag_chain", return_value=rag_chain),
-        patch("agents.hybrid_agent.HybridPropertyAgent._create_tool_agent", return_value=tool_agent),
+        patch(
+            "agents.hybrid_agent.HybridPropertyAgent._create_tool_agent", return_value=tool_agent
+        ),
         patch("agents.hybrid_agent.create_property_tools", return_value=[]),
     ):
         agent = HybridPropertyAgent(llm=llm, retriever=retriever)
@@ -159,15 +175,17 @@ async def test_hybrid_property_agent_astream_with_rag_emits_chunk():
 async def test_hybrid_property_agent_aretrieve_documents_with_filters():
     llm = MagicMock()
     retriever = MagicMock()
-    retriever.asearch_with_filters = AsyncMock(return_value=[
-        Document(page_content="Filtered", metadata={"id": "f1"})
-    ])
+    retriever.asearch_with_filters = AsyncMock(
+        return_value=[Document(page_content="Filtered", metadata={"id": "f1"})]
+    )
     rag_chain = MagicMock()
     tool_agent = MagicMock()
 
     with (
         patch("agents.hybrid_agent.HybridPropertyAgent._create_rag_chain", return_value=rag_chain),
-        patch("agents.hybrid_agent.HybridPropertyAgent._create_tool_agent", return_value=tool_agent),
+        patch(
+            "agents.hybrid_agent.HybridPropertyAgent._create_tool_agent", return_value=tool_agent
+        ),
         patch("agents.hybrid_agent.create_property_tools", return_value=[]),
     ):
         agent = HybridPropertyAgent(llm=llm, retriever=retriever)

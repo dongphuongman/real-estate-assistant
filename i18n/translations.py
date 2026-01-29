@@ -25,7 +25,7 @@ LANGUAGES = {
     "it": "🇮🇹 Italiano",
     "pt": "🇵🇹 Português",
     "ru": "🇷🇺 Русский",
-    "zh": "🇨🇳 中文"
+    "zh": "🇨🇳 中文",
 }
 
 # Translation dictionaries
@@ -34,7 +34,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         # App Title
         "app_title": "AI Real Estate Assistant",
         "app_subtitle": "Find your perfect property with AI-powered search",
-
         # Sidebar
         "sidebar_title": "AI Real Estate Assistant",
         "model_config": "Model Configuration",
@@ -75,7 +74,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "download_expert_digest_pdf": "Download Expert Digest (PDF)",
         "city_indices": "City Indices",
         "monthly_index": "Monthly Index",
-
         # Data Management
         "data_sources": "Data Sources",
         "data_source": "Data Source",
@@ -98,12 +96,10 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "url_success": "Successfully loaded",
         "url_failed": "Failed to load",
         "url_processing": "Processing",
-
         # Session Management
         "session": "Session",
         "clear_chat": "Clear Chat",
         "reset_all": "Reset All",
-
         # Phase 2 Features
         "intelligence_features": "🧠 Intelligence Features",
         "use_hybrid_agent": "Smart AI Assistant",
@@ -113,7 +109,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "use_reranking": "Better Search Results",
         "rerank_better_relevance": "Re-order search results to show the most relevant properties first. Uses AI to understand your needs better.",
         "agent_tools": "Available tools: Mortgage calculator, Property comparison, Price analysis",
-
         # Advanced Settings
         "advanced_settings": "Advanced Settings",
         "controls_randomness": "Controls randomness in responses",
@@ -130,7 +125,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "api_key_updated": "API key updated!",
         "api_key_configured": "API key configured",
         "error_configuring_provider": "Error configuring provider",
-
         # Tabs
         "tab_chat": "💬 Chat",
         "tab_insights": "📈 Market Insights",
@@ -139,7 +133,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "tab_analytics": "📊 Analytics",
         "tab_notifications": "🔔 Notifications",
         "tab_dev_dashboard": "🛠️ Dev Dashboard",
-
         # Chat Tab
         "please_load_data": "👈 Please load property data from the sidebar to get started",
         "features_title": "✨ What You Can Do",
@@ -171,7 +164,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "tools_needed": "Tools needed",
         "extracted_filters": "Extracted filters",
         "should_use_agent": "Should use agent",
-
         # Market Insights Tab
         "please_load_data_insights": "👈 Please load property data from the sidebar to view market insights",
         "market_insights": "Market Insights",
@@ -204,7 +196,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "yoy_by_city_latest": "YoY by City (Latest)",
         "top_gainers": "Top Gainers",
         "top_decliners": "Top Decliners",
-
         # Compare Tab
         "please_load_data_compare": "👈 Please load property data from the sidebar to compare properties",
         "property_comparison": "Property Comparison",
@@ -225,7 +216,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "elevator": "Elevator",
         "furnished": "Furnished",
         "parking": "Parking",
-
         # Export Tab
         "please_load_data_export": "👈 Please load property data from the sidebar to export",
         "export_data": "Export Data",
@@ -243,7 +233,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "export_button": "Export Properties",
         "export_success": "Export successful!",
         "download_file": "Download File",
-
         # Analytics Tab
         "session_analytics": "Session Analytics",
         "current_session": "Current Session",
@@ -261,7 +250,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "total_queries": "Total Queries",
         "total_exports": "Total Exports",
         "session_id": "Session ID",
-
         # Additional UI elements
         "api_key_updated_success": "API key updated!",
         "failed_create_agent": "Failed to create hybrid agent",
@@ -273,7 +261,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "max_properties_report": "Max properties in report",
         "generate_export_button": "🚀 Generate Export",
         "maximum_4_properties": "Maximum 4 properties can be compared at once",
-
         # Notifications Tab
         "notification_settings": "Notification Settings",
         "user_information": "User Information",
@@ -344,7 +331,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "delivery_rate": "Delivery Rate",
         "failed": "Failed",
         "no_notifications_yet": "No notifications sent yet. Configure your preferences above to start receiving alerts!",
-
         # Days of week
         "monday": "Monday",
         "tuesday": "Tuesday",
@@ -353,7 +339,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "friday": "Friday",
         "saturday": "Saturday",
         "sunday": "Sunday",
-
         # Common buttons/actions
         "loading": "Loading...",
         "search": "Search",
@@ -373,7 +358,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "next": "Next",
         "submit": "Submit",
         "reset": "Reset",
-
         # Messages
         "success": "Success!",
         "error_occurred": "An error occurred",
@@ -381,7 +365,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "processing": "Processing...",
         "no_results": "No results found",
         "try_different_search": "Try a different search",
-
         # Ollama Detection & Installation
         "ollama_status": "Ollama Status",
         "ollama_installed": "✅ Ollama is installed",
@@ -398,7 +381,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "ollama_recommended_models": "Recommended Models",
         "ollama_check_status": "Check Ollama Status",
         "ollama_refresh_status": "Refresh Status",
-
         # API Key Management & Validation
         "api_key_management": "API Key Management",
         "api_key_settings": "API Key Settings",
@@ -422,19 +404,16 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "configure_provider": "Configure {provider}",
         "api_key_required": "API key required for {provider}",
         "no_api_key_needed": "No API key needed (local model)",
-
         # Footer
         "powered_by": "Powered by",
         "version": "Version",
         "copyright": "Copyright",
         "made_by": "Made by",
     },
-
     "pl": {
         # App Title
         "app_title": "Asystent Nieruchomości AI",
         "app_subtitle": "Znajdź idealną nieruchomość dzięki wyszukiwaniu AI",
-
         # Sidebar
         "sidebar_title": "Asystent Nieruchomości AI",
         "model_config": "Konfiguracja Modelu",
@@ -451,7 +430,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "theme": "Motyw",
         "light_theme": "☀️ Jasny",
         "dark_theme": "🌙 Ciemny",
-
         # Data Management
         "data_sources": "Źródła Danych",
         "data_source": "Źródło Danych",
@@ -470,12 +448,10 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "documents": "dokumenty",
         "loading_data_url": "Ładowanie danych z URL...",
         "loading_local_files": "Ładowanie plików...",
-
         # Session Management
         "session": "Sesja",
         "clear_chat": "Wyczyść Czat",
         "reset_all": "Resetuj Wszystko",
-
         # Phase 2 Features
         "intelligence_features": "🧠 Funkcje Inteligentne",
         "use_hybrid_agent": "Inteligentny Asystent AI",
@@ -485,7 +461,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "use_reranking": "Lepsze Wyniki Wyszukiwania",
         "rerank_better_relevance": "Uporządkuj wyniki wyszukiwania, aby najpierw pokazać najbardziej odpowiednie nieruchomości. Używa AI do lepszego zrozumienia Twoich potrzeb.",
         "agent_tools": "Dostępne narzędzia: Kalkulator hipoteczny, Porównywanie nieruchomości, Analiza cen",
-
         # Advanced Settings
         "advanced_settings": "Ustawienia Zaawansowane",
         "controls_randomness": "Kontroluje losowość odpowiedzi",
@@ -502,7 +477,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "api_key_updated": "Klucz API zaktualizowany!",
         "api_key_configured": "Klucz API skonfigurowany",
         "error_configuring_provider": "Błąd konfiguracji dostawcy",
-
         # Tabs
         "tab_chat": "💬 Czat",
         "tab_insights": "📈 Analiza Rynku",
@@ -510,7 +484,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "tab_export": "💾 Eksport",
         "tab_analytics": "📊 Analityka",
         "tab_notifications": "🔔 Powiadomienia",
-
         # Chat Tab
         "please_load_data": "👈 Załaduj dane nieruchomości z panelu bocznego aby zacząć",
         "features_title": "✨ Co Możesz Robić",
@@ -539,7 +512,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "complexity": "Złożoność",
         "processing_method": "Metoda Przetwarzania",
         "sources_used": "Użyte Źródła",
-
         # Market Insights Tab
         "please_load_data_insights": "👈 Załaduj dane nieruchomości z panelu bocznego aby zobaczyć analizę rynku",
         "market_insights": "Analiza Rynku",
@@ -571,7 +543,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "property_distribution": "Rozkład Nieruchomości",
         "by_type": "Według Typu",
         "by_city": "Według Miasta",
-
         # Compare Tab
         "please_load_data_compare": "👈 Załaduj dane nieruchomości z panelu bocznego aby porównać nieruchomości",
         "property_comparison": "Porównanie Nieruchomości",
@@ -589,7 +560,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "type": "Typ",
         "city": "Miasto",
         "amenities": "Udogodnienia",
-
         # Export Tab
         "please_load_data_export": "👈 Załaduj dane nieruchomości z panelu bocznego aby eksportować",
         "export_data": "Eksport Danych",
@@ -607,7 +577,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "export_button": "Eksportuj Nieruchomości",
         "export_success": "Eksport zakończony sukcesem!",
         "download_file": "Pobierz Plik",
-
         # Analytics Tab
         "session_analytics": "Analityka Sesji",
         "current_session": "Bieżąca Sesja",
@@ -625,7 +594,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "total_queries": "Wszystkie Zapytania",
         "total_exports": "Wszystkie Eksporty",
         "session_id": "ID Sesji",
-
         # Additional UI elements
         "api_key_updated_success": "Klucz API zaktualizowany!",
         "failed_create_agent": "Nie udało się utworzyć agenta hybrydowego",
@@ -637,7 +605,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "max_properties_report": "Maks nieruchomości w raporcie",
         "generate_export_button": "🚀 Generuj Eksport",
         "maximum_4_properties": "Maksymalnie 4 nieruchomości mogą być porównane na raz",
-
         # Notifications Tab
         "notification_settings": "Ustawienia Powiadomień",
         "user_information": "Informacje Użytkownika",
@@ -707,7 +674,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "delivery_rate": "Wskaźnik Dostarczenia",
         "failed": "Nieudane",
         "no_notifications_yet": "Nie wysłano jeszcze powiadomień. Skonfiguruj preferencje powyżej aby zacząć otrzymywać powiadomienia!",
-
         # Days of week
         "monday": "Poniedziałek",
         "tuesday": "Wtorek",
@@ -716,7 +682,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "friday": "Piątek",
         "saturday": "Sobota",
         "sunday": "Niedziela",
-
         # Common buttons/actions
         "loading": "Ładowanie...",
         "search": "Szukaj",
@@ -736,7 +701,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "next": "Dalej",
         "submit": "Wyślij",
         "reset": "Resetuj",
-
         # Messages
         "success": "Sukces!",
         "error_occurred": "Wystąpił błąd",
@@ -744,7 +708,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "processing": "Przetwarzanie...",
         "no_results": "Nie znaleziono wyników",
         "try_different_search": "Spróbuj innego wyszukiwania",
-
         # Ollama Detection & Installation
         "ollama_status": "Status Ollama",
         "ollama_installed": "✅ Ollama jest zainstalowana",
@@ -761,7 +724,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "ollama_recommended_models": "Zalecane modele",
         "ollama_check_status": "Sprawdź status Ollama",
         "ollama_refresh_status": "Odśwież status",
-
         # API Key Management & Validation
         "api_key_management": "Zarządzanie kluczami API",
         "api_key_settings": "Ustawienia kluczy API",
@@ -785,17 +747,14 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "configure_provider": "Skonfiguruj {provider}",
         "api_key_required": "Wymagany klucz API dla {provider}",
         "no_api_key_needed": "Nie wymaga klucza API (model lokalny)",
-
         # Footer
         "powered_by": "Napędzane przez",
         "version": "Wersja",
     },
-
     "es": {
         # App Title
         "app_title": "Asistente Inmobiliario AI",
         "app_subtitle": "Encuentra tu propiedad perfecta con búsqueda AI",
-
         # Sidebar
         "sidebar_title": "Asistente Inmobiliario AI",
         "model_config": "Configuración del Modelo",
@@ -815,7 +774,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "theme": "Tema",
         "light_theme": "☀️ Claro",
         "dark_theme": "🌙 Oscuro",
-
         # Tabs
         "tab_chat": "💬 Chat",
         "tab_insights": "📈 Análisis de Mercado",
@@ -823,7 +781,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "tab_export": "💾 Exportar",
         "tab_analytics": "📊 Analítica",
         "tab_notifications": "🔔 Notificaciones",
-
         # Chat Tab
         "please_load_data": "👈 Por favor carga datos de propiedades desde la barra lateral para comenzar",
         "features_title": "✨ Lo Que Puedes Hacer",
@@ -852,7 +809,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "complexity": "Complejidad",
         "processing_method": "Método de Procesamiento",
         "sources_used": "Fuentes Utilizadas",
-
         # Market Insights Tab
         "please_load_data_insights": "👈 Por favor carga datos de propiedades desde la barra lateral para ver análisis de mercado",
         "market_insights": "Análisis de Mercado",
@@ -884,7 +840,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "property_distribution": "Distribución de Propiedades",
         "by_type": "Por Tipo",
         "by_city": "Por Ciudad",
-
         # Compare Tab
         "please_load_data_compare": "👈 Por favor carga datos de propiedades desde la barra lateral para comparar propiedades",
         "property_comparison": "Comparación de Propiedades",
@@ -902,7 +857,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "type": "Tipo",
         "city": "Ciudad",
         "amenities": "Comodidades",
-
         # Export Tab
         "please_load_data_export": "👈 Por favor carga datos de propiedades desde la barra lateral para exportar",
         "export_data": "Exportar Datos",
@@ -920,7 +874,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "export_button": "Exportar Propiedades",
         "export_success": "¡Exportación exitosa!",
         "download_file": "Descargar Archivo",
-
         # Analytics Tab
         "session_analytics": "Analítica de Sesión",
         "current_session": "Sesión Actual",
@@ -938,7 +891,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "total_queries": "Total de Consultas",
         "total_exports": "Total de Exportaciones",
         "session_id": "ID de Sesión",
-
         # Additional UI elements
         "api_key_updated_success": "¡Clave API actualizada!",
         "failed_create_agent": "Error al crear agente híbrido",
@@ -950,7 +902,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "max_properties_report": "Máx propiedades en informe",
         "generate_export_button": "🚀 Generar Exportación",
         "maximum_4_properties": "Máximo 4 propiedades pueden ser comparadas a la vez",
-
         # Notifications Tab
         "notification_settings": "Configuración de Notificaciones",
         "user_information": "Información del Usuario",
@@ -1020,7 +971,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "delivery_rate": "Tasa de Entrega",
         "failed": "Fallidas",
         "no_notifications_yet": "No se han enviado notificaciones aún. ¡Configura tus preferencias arriba para comenzar a recibir alertas!",
-
         # Days of week
         "monday": "Lunes",
         "tuesday": "Martes",
@@ -1029,7 +979,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "friday": "Viernes",
         "saturday": "Sábado",
         "sunday": "Domingo",
-
         # Common buttons/actions
         "loading": "Cargando...",
         "search": "Buscar",
@@ -1049,7 +998,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "next": "Siguiente",
         "submit": "Enviar",
         "reset": "Restablecer",
-
         # Messages
         "success": "¡Éxito!",
         "error_occurred": "Ocurrió un error",
@@ -1057,7 +1005,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "processing": "Procesando...",
         "no_results": "No se encontraron resultados",
         "try_different_search": "Prueba una búsqueda diferente",
-
         # Ollama Detection & Installation
         "ollama_status": "Estado de Ollama",
         "ollama_installed": "✅ Ollama está instalado",
@@ -1074,7 +1021,6 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "ollama_recommended_models": "Modelos recomendados",
         "ollama_check_status": "Verificar estado de Ollama",
         "ollama_refresh_status": "Actualizar estado",
-
         # API Key Management & Validation
         "api_key_management": "Gestión de claves API",
         "api_key_settings": "Configuración de claves API",
@@ -1098,11 +1044,9 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         "configure_provider": "Configurar {provider}",
         "api_key_required": "Se requiere clave API para {provider}",
         "no_api_key_needed": "No se necesita clave API (modelo local)",
-
         # Footer
         "powered_by": "Potenciado por",
         "version": "Versión",
-
         # Data Management
         "data_sources": "Fuentes de Datos",
         "data_source": "Fuente de Datos",
@@ -1201,7 +1145,6 @@ TRANSLATIONS["de"] = {
     "no_year_built_data": "Keine Baujahrsdaten verfügbar",
     "no_energy_cert_data": "Keine Energieausweis-Daten verfügbar",
     "success": "Erfolg!",
-
     # Ollama Detection & Installation
     "ollama_status": "Ollama-Status",
     "ollama_installed": "✅ Ollama ist installiert",
@@ -1218,7 +1161,6 @@ TRANSLATIONS["de"] = {
     "ollama_recommended_models": "Empfohlene Modelle",
     "ollama_check_status": "Ollama-Status prüfen",
     "ollama_refresh_status": "Status aktualisieren",
-
     # API Key Management & Validation
     "api_key_management": "API-Schlüsselverwaltung",
     "api_key_settings": "API-Schlüsseleinstellungen",
@@ -1242,7 +1184,6 @@ TRANSLATIONS["de"] = {
     "configure_provider": "{provider} konfigurieren",
     "api_key_required": "API-Schlüssel erforderlich für {provider}",
     "no_api_key_needed": "Kein API-Schlüssel erforderlich (lokales Modell)",
-
     "powered_by": "Angetrieben von",
     "version": "Version",
     "api_key_updated_success": "API-Schlüssel aktualisiert!",
@@ -1425,7 +1366,6 @@ TRANSLATIONS["fr"] = {
     "no_year_built_data": "Aucune donnée sur l'année de construction",
     "no_energy_cert_data": "Aucune donnée sur les certificats énergétiques",
     "success": "Succès!",
-
     # Ollama Detection & Installation
     "ollama_status": "Statut d'Ollama",
     "ollama_installed": "✅ Ollama est installé",
@@ -1442,7 +1382,6 @@ TRANSLATIONS["fr"] = {
     "ollama_recommended_models": "Modèles recommandés",
     "ollama_check_status": "Vérifier le statut d'Ollama",
     "ollama_refresh_status": "Actualiser le statut",
-
     # API Key Management & Validation
     "api_key_management": "Gestion des clés API",
     "api_key_settings": "Paramètres de clé API",
@@ -1466,7 +1405,6 @@ TRANSLATIONS["fr"] = {
     "configure_provider": "Configurer {provider}",
     "api_key_required": "Clé API requise pour {provider}",
     "no_api_key_needed": "Aucune clé API nécessaire (modèle local)",
-
     "powered_by": "Propulsé par",
     "version": "Version",
     "api_key_updated_success": "Clé API mise à jour!",
@@ -1649,7 +1587,6 @@ TRANSLATIONS["it"] = {
     "no_year_built_data": "Nessun dato sull'anno di costruzione",
     "no_energy_cert_data": "Nessun dato sui certificati energetici",
     "success": "Successo!",
-
     # Ollama Detection & Installation
     "ollama_status": "Stato di Ollama",
     "ollama_installed": "✅ Ollama è installato",
@@ -1666,7 +1603,6 @@ TRANSLATIONS["it"] = {
     "ollama_recommended_models": "Modelli consigliati",
     "ollama_check_status": "Verifica stato di Ollama",
     "ollama_refresh_status": "Aggiorna stato",
-
     # API Key Management & Validation
     "api_key_management": "Gestione chiavi API",
     "api_key_settings": "Impostazioni chiave API",
@@ -1690,7 +1626,6 @@ TRANSLATIONS["it"] = {
     "configure_provider": "Configura {provider}",
     "api_key_required": "Chiave API richiesta per {provider}",
     "no_api_key_needed": "Nessuna chiave API necessaria (modello locale)",
-
     "powered_by": "Alimentato da",
     "version": "Versione",
     "api_key_updated_success": "Chiave API aggiornata!",
@@ -1873,7 +1808,6 @@ TRANSLATIONS["pt"] = {
     "no_year_built_data": "Sem dados do ano de construção",
     "no_energy_cert_data": "Sem dados de certificados energéticos",
     "success": "Sucesso!",
-
     # Ollama Detection & Installation
     "ollama_status": "Status do Ollama",
     "ollama_installed": "✅ Ollama está instalado",
@@ -1890,7 +1824,6 @@ TRANSLATIONS["pt"] = {
     "ollama_recommended_models": "Modelos recomendados",
     "ollama_check_status": "Verificar status do Ollama",
     "ollama_refresh_status": "Atualizar status",
-
     # API Key Management & Validation
     "api_key_management": "Gerenciamento de chaves API",
     "api_key_settings": "Configurações de chave API",
@@ -1914,7 +1847,6 @@ TRANSLATIONS["pt"] = {
     "configure_provider": "Configurar {provider}",
     "api_key_required": "Chave API necessária para {provider}",
     "no_api_key_needed": "Nenhuma chave API necessária (modelo local)",
-
     "powered_by": "Desenvolvido por",
     "version": "Versão",
     "api_key_updated_success": "Chave API atualizada!",
@@ -2022,7 +1954,6 @@ TRANSLATIONS["ru"] = {
     # App Title
     "app_title": "AI Помощник по Недвижимости",
     "app_subtitle": "Найдите идеальную недвижимость с помощью AI",
-
     # Sidebar
     "sidebar_title": "AI Помощник по Недвижимости",
     "model_config": "Настройка Модели",
@@ -2042,7 +1973,6 @@ TRANSLATIONS["ru"] = {
     "theme": "Тема",
     "light_theme": "☀️ Светлая",
     "dark_theme": "🌙 Темная",
-
     # Tabs
     "tab_chat": "💬 Чат",
     "tab_insights": "📈 Анализ Рынка",
@@ -2050,7 +1980,6 @@ TRANSLATIONS["ru"] = {
     "tab_export": "💾 Экспорт",
     "tab_analytics": "📊 Аналитика",
     "tab_notifications": "🔔 Уведомления",
-
     # Chat Tab
     "please_load_data": "👈 Загрузите данные об объектах из боковой панели чтобы начать",
     "features_title": "✨ Что Вы Можете Делать",
@@ -2079,7 +2008,6 @@ TRANSLATIONS["ru"] = {
     "complexity": "Сложность",
     "processing_method": "Метод Обработки",
     "sources_used": "Использованные Источники",
-
     # Market Insights Tab
     "please_load_data_insights": "👈 Загрузите данные об объектах из боковой панели для просмотра анализа рынка",
     "market_insights": "Анализ Рынка",
@@ -2109,12 +2037,11 @@ TRANSLATIONS["ru"] = {
     "max_price": "Макс. Цена",
     "total_properties": "Всего Объектов",
     "property_distribution": "Распределение Объектов",
-        "by_type": "По Типу",
-        "by_city": "По Городу",
-        "yoy_by_city_latest": "YoY по городам (последние)",
-        "top_gainers": "Лидеры роста",
-        "top_decliners": "Лидеры падения",
-
+    "by_type": "По Типу",
+    "by_city": "По Городу",
+    "yoy_by_city_latest": "YoY по городам (последние)",
+    "top_gainers": "Лидеры роста",
+    "top_decliners": "Лидеры падения",
     # Compare Tab
     "please_load_data_compare": "👈 Загрузите данные об объектах из боковой панели для сравнения объектов",
     "property_comparison": "Сравнение Объектов",
@@ -2132,7 +2059,6 @@ TRANSLATIONS["ru"] = {
     "type": "Тип",
     "city": "Город",
     "amenities": "Удобства",
-
     # Export Tab
     "please_load_data_export": "👈 Загрузите данные об объектах из боковой панели для экспорта",
     "export_data": "Экспорт Данных",
@@ -2150,7 +2076,6 @@ TRANSLATIONS["ru"] = {
     "export_button": "Экспортировать Объекты",
     "export_success": "Экспорт успешен!",
     "download_file": "Скачать Файл",
-
     # Analytics Tab
     "session_analytics": "Аналитика Сессии",
     "current_session": "Текущая Сессия",
@@ -2168,7 +2093,6 @@ TRANSLATIONS["ru"] = {
     "total_queries": "Всего Запросов",
     "total_exports": "Всего Экспортов",
     "session_id": "ID Сессии",
-
     # Additional UI elements
     "api_key_updated_success": "Ключ API обновлён!",
     "failed_create_agent": "Не удалось создать гибридного агента",
@@ -2180,7 +2104,6 @@ TRANSLATIONS["ru"] = {
     "max_properties_report": "Макс объектов в отчёте",
     "generate_export_button": "🚀 Создать Экспорт",
     "maximum_4_properties": "Максимум 4 объекта можно сравнивать одновременно",
-
     # Notifications Tab
     "notification_settings": "Настройки Уведомлений",
     "user_information": "Информация Пользователя",
@@ -2250,7 +2173,6 @@ TRANSLATIONS["ru"] = {
     "delivery_rate": "Процент Доставки",
     "failed": "Неудачные",
     "no_notifications_yet": "Уведомления еще не отправлялись. Настройте предпочтения выше чтобы начать получать уведомления!",
-
     # Days of week
     "monday": "Понедельник",
     "tuesday": "Вторник",
@@ -2259,7 +2181,6 @@ TRANSLATIONS["ru"] = {
     "friday": "Пятница",
     "saturday": "Суббота",
     "sunday": "Воскресенье",
-
     # Common buttons/actions
     "loading": "Загрузка...",
     "search": "Поиск",
@@ -2279,7 +2200,6 @@ TRANSLATIONS["ru"] = {
     "next": "Далее",
     "submit": "Отправить",
     "reset": "Сбросить",
-
     # Messages
     "success": "Успешно!",
     "error_occurred": "Произошла ошибка",
@@ -2287,7 +2207,6 @@ TRANSLATIONS["ru"] = {
     "processing": "Обработка...",
     "no_results": "Результатов не найдено",
     "try_different_search": "Попробуйте другой поиск",
-
     # Ollama Detection & Installation
     "ollama_status": "Статус Ollama",
     "ollama_installed": "✅ Ollama установлена",
@@ -2304,7 +2223,6 @@ TRANSLATIONS["ru"] = {
     "ollama_recommended_models": "Рекомендуемые модели",
     "ollama_check_status": "Проверить статус Ollama",
     "ollama_refresh_status": "Обновить статус",
-
     # API Key Management & Validation
     "api_key_management": "Управление API-ключами",
     "api_key_settings": "Настройки API-ключа",
@@ -2328,11 +2246,9 @@ TRANSLATIONS["ru"] = {
     "configure_provider": "Настроить {provider}",
     "api_key_required": "Требуется API-ключ для {provider}",
     "no_api_key_needed": "API-ключ не требуется (локальная модель)",
-
     # Footer
     "powered_by": "Работает на",
     "version": "Версия",
-
     # Data Management
     "data_sources": "Источники Данных",
     "data_source": "Источник Данных",
@@ -2354,7 +2270,6 @@ TRANSLATIONS["zh"] = {
     # App Title
     "app_title": "AI房地产助手",
     "app_subtitle": "通过AI搜索找到您的完美房产",
-
     # Sidebar
     "sidebar_title": "AI房地产助手",
     "model_config": "模型配置",
@@ -2374,7 +2289,6 @@ TRANSLATIONS["zh"] = {
     "theme": "主题",
     "light_theme": "☀️ 浅色",
     "dark_theme": "🌙 深色",
-
     # Tabs
     "tab_chat": "💬 聊天",
     "tab_insights": "📈 市场洞察",
@@ -2382,7 +2296,6 @@ TRANSLATIONS["zh"] = {
     "tab_export": "💾 导出",
     "tab_analytics": "📊 分析",
     "tab_notifications": "🔔 通知",
-
     # Chat Tab
     "please_load_data": "👈 请从侧边栏加载房产数据以开始",
     "features_title": "✨ 您可以做什么",
@@ -2411,7 +2324,6 @@ TRANSLATIONS["zh"] = {
     "complexity": "复杂度",
     "processing_method": "处理方法",
     "sources_used": "使用的来源",
-
     # Market Insights Tab
     "please_load_data_insights": "👈 请从侧边栏加载房产数据以查看市场洞察",
     "market_insights": "市场洞察",
@@ -2443,7 +2355,6 @@ TRANSLATIONS["zh"] = {
     "property_distribution": "房产分布",
     "by_type": "按类型",
     "by_city": "按城市",
-
     # Compare Tab
     "please_load_data_compare": "👈 请从侧边栏加载房产数据以比较房产",
     "property_comparison": "房产比较",
@@ -2461,7 +2372,6 @@ TRANSLATIONS["zh"] = {
     "type": "类型",
     "city": "城市",
     "amenities": "设施",
-
     # Export Tab
     "please_load_data_export": "👈 请从侧边栏加载房产数据以导出",
     "export_data": "导出数据",
@@ -2479,7 +2389,6 @@ TRANSLATIONS["zh"] = {
     "export_button": "导出房产",
     "export_success": "导出成功！",
     "download_file": "下载文件",
-
     # Analytics Tab
     "session_analytics": "会话分析",
     "current_session": "当前会话",
@@ -2497,7 +2406,6 @@ TRANSLATIONS["zh"] = {
     "total_queries": "总查询数",
     "total_exports": "总导出数",
     "session_id": "会话ID",
-
     # Additional UI elements
     "api_key_updated_success": "API密钥已更新!",
     "failed_create_agent": "无法创建混合代理",
@@ -2509,7 +2417,6 @@ TRANSLATIONS["zh"] = {
     "max_properties_report": "报告中的最大房产数",
     "generate_export_button": "🚀 生成导出",
     "maximum_4_properties": "最多可以同时比较4个房产",
-
     # Notifications Tab
     "notification_settings": "通知设置",
     "user_information": "用户信息",
@@ -2579,7 +2486,6 @@ TRANSLATIONS["zh"] = {
     "delivery_rate": "送达率",
     "failed": "失败",
     "no_notifications_yet": "尚未发送通知。在上面配置您的偏好以开始接收提醒！",
-
     # Days of week
     "monday": "星期一",
     "tuesday": "星期二",
@@ -2588,7 +2494,6 @@ TRANSLATIONS["zh"] = {
     "friday": "星期五",
     "saturday": "星期六",
     "sunday": "星期日",
-
     # Common buttons/actions
     "loading": "加载中...",
     "search": "搜索",
@@ -2608,7 +2513,6 @@ TRANSLATIONS["zh"] = {
     "next": "下一步",
     "submit": "提交",
     "reset": "重置",
-
     # Messages
     "success": "成功！",
     "error_occurred": "发生错误",
@@ -2616,7 +2520,6 @@ TRANSLATIONS["zh"] = {
     "processing": "处理中...",
     "no_results": "未找到结果",
     "try_different_search": "尝试不同的搜索",
-
     # Ollama Detection & Installation
     "ollama_status": "Ollama 状态",
     "ollama_installed": "✅ 已安装 Ollama",
@@ -2633,7 +2536,6 @@ TRANSLATIONS["zh"] = {
     "ollama_recommended_models": "推荐模型",
     "ollama_check_status": "检查 Ollama 状态",
     "ollama_refresh_status": "刷新状态",
-
     # API Key Management & Validation
     "api_key_management": "API 密钥管理",
     "api_key_settings": "API 密钥设置",
@@ -2657,11 +2559,9 @@ TRANSLATIONS["zh"] = {
     "configure_provider": "配置 {provider}",
     "api_key_required": "{provider} 需要 API 密钥",
     "no_api_key_needed": "无需 API 密钥（本地模型）",
-
     # Footer
     "powered_by": "技术支持",
     "version": "版本",
-
     # Data Management
     "data_sources": "数据源",
     "data_source": "数据源",
@@ -2677,6 +2577,7 @@ TRANSLATIONS["zh"] = {
     "loading_data_url": "正在从URL加载数据...",
     "loading_local_files": "正在加载文件...",
 }
+
 
 def _normalize_translations(translations: Dict[str, Dict[str, Any]], base_lang: str = "en") -> None:
     base = translations.get(base_lang, {})

@@ -18,46 +18,42 @@ from pydantic import BaseModel, Field, PrivateAttr
 
 class MortgageInput(BaseModel):
     """Input for mortgage calculator."""
+
     property_price: float = Field(description="Total property price", gt=0)
     down_payment_percent: float = Field(
-        default=20.0,
-        description="Down payment as percentage (e.g., 20 for 20%)",
-        ge=0, le=100
+        default=20.0, description="Down payment as percentage (e.g., 20 for 20%)", ge=0, le=100
     )
     interest_rate: float = Field(
-        default=4.5,
-        description="Annual interest rate as percentage (e.g., 4.5 for 4.5%)",
-        ge=0
+        default=4.5, description="Annual interest rate as percentage (e.g., 4.5 for 4.5%)", ge=0
     )
     loan_years: int = Field(default=30, description="Loan term in years", gt=0, le=50)
 
 
 class PropertyComparisonInput(BaseModel):
     """Input for property comparison tool."""
+
     property_ids: str = Field(
-        description="Comma-separated list of property IDs to compare",
-        min_length=1
+        description="Comma-separated list of property IDs to compare", min_length=1
     )
 
 
 class PriceAnalysisInput(BaseModel):
     """Input for price analysis tool."""
+
     query: str = Field(
-        description="Search query for price analysis (e.g., 'apartments in Madrid')",
-        min_length=1
+        description="Search query for price analysis (e.g., 'apartments in Madrid')", min_length=1
     )
 
 
 class LocationAnalysisInput(BaseModel):
     """Input for location analysis tool."""
-    property_id: str = Field(
-        description="Property ID to analyze",
-        min_length=1
-    )
+
+    property_id: str = Field(description="Property ID to analyze", min_length=1)
 
 
 class MortgageResult(BaseModel):
     """Result from mortgage calculator."""
+
     monthly_payment: float
     total_interest: float
     total_cost: float
@@ -81,7 +77,7 @@ class MortgageCalculatorTool(BaseTool):
         property_price: float,
         down_payment_percent: float = 20.0,
         interest_rate: float = 4.5,
-        loan_years: int = 30
+        loan_years: int = 30,
     ) -> MortgageResult:
         """Pure calculation logic returning structured data."""
         # Validate inputs (raising ValueError instead of returning string error)
@@ -107,9 +103,7 @@ class MortgageCalculatorTool(BaseTool):
             monthly_payment = loan_amount / num_payments
         else:
             monthly_payment = (
-                loan_amount
-                * monthly_rate
-                * math.pow(1 + monthly_rate, num_payments)
+                loan_amount * monthly_rate * math.pow(1 + monthly_rate, num_payments)
             ) / (math.pow(1 + monthly_rate, num_payments) - 1)
 
         # Total costs
@@ -126,8 +120,8 @@ class MortgageCalculatorTool(BaseTool):
             breakdown={
                 "principal": loan_amount,
                 "interest": total_interest,
-                "down_payment": down_payment
-            }
+                "down_payment": down_payment,
+            },
         )
 
     def _run(
@@ -135,16 +129,11 @@ class MortgageCalculatorTool(BaseTool):
         property_price: float,
         down_payment_percent: float = 20.0,
         interest_rate: float = 4.5,
-        loan_years: int = 30
+        loan_years: int = 30,
     ) -> str:
         """Execute mortgage calculation."""
         try:
-            result = self.calculate(
-                property_price, 
-                down_payment_percent, 
-                interest_rate, 
-                loan_years
-            )
+            result = self.calculate(property_price, down_payment_percent, interest_rate, loan_years)
 
             # Format result
             formatted = f"""
@@ -211,33 +200,41 @@ class PropertyComparisonTool(BaseTool):
 
             # Parse IDs
             ids = [pid.strip() for pid in property_ids.split(",") if pid.strip()]
-            
+
             if not ids:
                 return "Please provide at least one property ID to compare."
-            
+
             # Fetch properties
             if hasattr(self._vector_store, "get_properties_by_ids"):
                 docs = self._vector_store.get_properties_by_ids(ids)
             else:
                 return "Vector store does not support retrieving by IDs."
-                
+
             if not docs:
                 return f"No properties found for IDs: {property_ids}"
-                
+
             # Build comparison
             comparison = ["Property Comparison:"]
-            
+
             # Extract common fields
             fields = [
-                "price", "price_per_sqm", "city", "rooms", "bathrooms", 
-                "area_sqm", "year_built", "property_type"
+                "price",
+                "price_per_sqm",
+                "city",
+                "rooms",
+                "bathrooms",
+                "area_sqm",
+                "year_built",
+                "property_type",
             ]
-            
+
             # Header
-            header = f"{'Feature':<20} | " + " | ".join([f"{d.metadata.get('id', 'Unknown')[:10]:<15}" for d in docs])
+            header = f"{'Feature':<20} | " + " | ".join(
+                [f"{d.metadata.get('id', 'Unknown')[:10]:<15}" for d in docs]
+            )
             comparison.append(header)
             comparison.append("-" * len(header))
-            
+
             for field in fields:
                 row = f"{field.replace('_', ' ').title():<20} | "
                 values = []
@@ -252,16 +249,20 @@ class PropertyComparisonTool(BaseTool):
                     values.append(f"{str(val):<15}")
                 row += " | ".join(values)
                 comparison.append(row)
-                
+
             # Add Pros/Cons placeholder or analysis
             comparison.append("\nSummary:")
-            prices = [d.metadata.get("price", 0) for d in docs if isinstance(d.metadata.get("price"), (int, float))]
+            prices = [
+                d.metadata.get("price", 0)
+                for d in docs
+                if isinstance(d.metadata.get("price"), (int, float))
+            ]
             if prices:
                 min_price = min(prices)
                 max_price = max(prices)
                 diff = max_price - min_price
                 comparison.append(f"Price difference: ${diff:,.0f}")
-            
+
             return "\n".join(comparison)
 
         except Exception as e:
@@ -309,12 +310,12 @@ class PriceAnalysisTool(BaseTool):
 
             # Search for properties (fetch more for stats)
             results = self._vector_store.search(query, k=20)
-            
+
             if not results:
                 return f"No properties found for analysis: {query}"
-                
+
             docs = [doc for doc, _ in results]
-            
+
             # Extract prices
             prices: List[float] = []
             for d in docs:
@@ -335,34 +336,34 @@ class PriceAnalysisTool(BaseTool):
                     sqm_prices.append(float(raw_ppsqm))
                 except (TypeError, ValueError):
                     continue
-            
+
             if not prices:
                 return "Found properties but no price data available."
-                
+
             # Calculate stats
             stats_output = [f"Price Analysis for '{query}' (based on {len(prices)} listings):"]
-            
+
             stats_output.append("\nTotal Prices:")
             stats_output.append(f"- Average: ${statistics.mean(prices):,.2f}")
             stats_output.append(f"- Median: ${statistics.median(prices):,.2f}")
             stats_output.append(f"- Min: ${min(prices):,.2f}")
             stats_output.append(f"- Max: ${max(prices):,.2f}")
-            
+
             if sqm_prices:
                 stats_output.append("\nPrice per m²:")
                 stats_output.append(f"- Average: ${statistics.mean(sqm_prices):,.2f}/m²")
                 stats_output.append(f"- Median: ${statistics.median(sqm_prices):,.2f}/m²")
-            
+
             # Distribution by type
             types: Dict[str, int] = {}
             for d in docs:
                 ptype = d.metadata.get("property_type", "Unknown")
                 types[ptype] = types.get(ptype, 0) + 1
-                
+
             stats_output.append("\nDistribution by Type:")
             for ptype, count in types.items():
                 stats_output.append(f"- {ptype}: {count}")
-                
+
             return "\n".join(stats_output)
 
         except Exception as e:
@@ -411,23 +412,23 @@ class LocationAnalysisTool(BaseTool):
                 docs = self._vector_store.get_properties_by_ids([property_id])
             else:
                 return "Vector store does not support retrieving by IDs."
-                
+
             if not docs:
                 return f"Property not found: {property_id}"
-                
+
             target = docs[0]
             lat = target.metadata.get("lat")
             lon = target.metadata.get("lon")
             city = target.metadata.get("city", "Unknown")
-            
+
             analysis = [f"Location Analysis for Property {property_id}:"]
             analysis.append(f"City: {city}")
             if target.metadata.get("neighborhood"):
                 analysis.append(f"Neighborhood: {target.metadata.get('neighborhood')}")
-            
+
             if lat and lon:
                 analysis.append(f"Coordinates: {lat}, {lon}")
-                
+
                 # Find nearby properties (if hybrid search supports geo filtering)
                 # We can't easily do a "nearby" query without a proper geo-filter constructed.
                 # But we can try to search for properties in the same city.
@@ -436,7 +437,7 @@ class LocationAnalysisTool(BaseTool):
                 analysis.append("\nGeospatial data available. Use map view for nearby amenities.")
             else:
                 analysis.append("Exact coordinates not available.")
-            
+
             return "\n".join(analysis)
 
         except Exception as e:
@@ -451,9 +452,9 @@ class LocationAnalysisTool(BaseTool):
 def create_property_tools(vector_store: Any = None) -> List[BaseTool]:
     """
     Create all property-related tools.
-    
+
     Args:
-        vector_store: Optional vector store for data access. 
+        vector_store: Optional vector store for data access.
                       Required for comparison, price, and location tools.
 
     Returns:

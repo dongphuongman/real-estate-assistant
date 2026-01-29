@@ -131,18 +131,22 @@ def test_admin_ingest_enforces_max_properties_limit(
 
     loader = MagicMock()
     # Create a DataFrame with 5 rows, but max_properties is 2
-    loader.load_df.return_value = pd.DataFrame([
-        {"city": "Warsaw"},
-        {"city": "Krakow"},
-        {"city": "Gdansk"},
-        {"city": "Poznan"},
-        {"city": "Wroclaw"}
-    ])
+    loader.load_df.return_value = pd.DataFrame(
+        [
+            {"city": "Warsaw"},
+            {"city": "Krakow"},
+            {"city": "Gdansk"},
+            {"city": "Poznan"},
+            {"city": "Wroclaw"},
+        ]
+    )
     # Track rows_count passed to format_df
     format_df_calls = []
+
     def _format_df(df, rows_count=None):
         format_df_calls.append(rows_count)
         return df.head(rows_count) if rows_count else df
+
     loader.load_format_df.side_effect = _format_df
     mock_loader_cls.return_value = loader
 
@@ -349,7 +353,9 @@ def test_admin_metrics_returns_500_on_invalid_metrics(mock_get_settings):
 
 
 @patch("api.auth.get_settings")
-def test_admin_notifications_stats_reads_alert_storage_and_scheduler_state(mock_get_settings, tmp_path):
+def test_admin_notifications_stats_reads_alert_storage_and_scheduler_state(
+    mock_get_settings, tmp_path
+):
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
 
     (tmp_path / "sent_alerts.json").write_text(
