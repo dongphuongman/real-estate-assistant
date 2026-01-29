@@ -240,7 +240,7 @@ class ChromaPropertyStore:
         if energy_cert == "":
             energy_cert = None
 
-        metadata = {
+        metadata: Dict[str, Any] = {
             "id": prop.id or "unknown",
             "country": getattr(prop, "country", None),
             "region": getattr(prop, "region", None),
@@ -303,11 +303,7 @@ class ChromaPropertyStore:
                     return v
                 if isinstance(v, (datetime, pd.Timestamp)):
                     return v.isoformat()
-                # numpy types
-                if hasattr(v, "item"):  # type: ignore[unreachable]
-                    return _sanitize_val(v.item())
                 # lists/dicts or other complex types are not allowed in Chroma metadata
-                return None
             except Exception:
                 return None
 
