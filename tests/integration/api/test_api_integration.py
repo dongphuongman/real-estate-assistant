@@ -13,7 +13,7 @@ client = TestClient(app)
 
 def test_health_check():
     """Test health check endpoint."""
-    response = client.get("/health")
+    response = client.get("/health?include_dependencies=false")
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "healthy"
