@@ -35,11 +35,13 @@ Generated on 26.01.2026.
 ### Spartan Audit (MVP vs bloat)
 
 **Keep (MVP):**
+
 - Chat + Search + Tools + Settings + Notifications + Exports + Local RAG
 - BYOK providers (OpenAI key) + local runtime (Ollama) support
 - Request ID correlation + rate limiting + no client-side secrets
 
 **Cut / Defer (Not required for MVP outcome):**
+
 - Multi-region expansion, multilingual query normalization, FX/currency pipelines beyond existing schema
 - Pro-only connectors (CRM deep sync, voice/telephony, proprietary legal/data enrichment services)
 - Heavy performance dashboards/telemetry beyond request IDs + basic metrics endpoints
@@ -49,6 +51,7 @@ Generated on 26.01.2026.
 ## Phase 2 — 3-Level Omni-Tree Decomposition
 
 ### [TASK-001]: API Platform & Security
+
 - **Definition**: Provide a secure, observable, versioned API surface where every response is traceable via `X-Request-ID` and secrets never reach the browser.
 
 - **SUBTASK [TASK-001.1]**: Settings and environment wiring
@@ -74,6 +77,7 @@ Generated on 26.01.2026.
 - **Dependencies**: None
 
 ### [TASK-002]: Retrieval, Data, and Local RAG
+
 - **Definition**: Enable ingest/index/search of property and document data with deterministic results, bounded resource usage, and reliable citations.
 
 - **SUBTASK [TASK-002.1]**: Property data ingestion and normalization
@@ -99,6 +103,7 @@ Generated on 26.01.2026.
 - **Dependencies**: [TASK-001]
 
 ### [TASK-003]: Chat & Tool Orchestration
+
 - **Definition**: Provide a streaming chat experience backed by tools and retrieval, with deterministic testing and safe fallbacks across LLM providers.
 
 - **SUBTASK [TASK-003.1]**: SSE chat contract and streaming reliability
@@ -119,6 +124,7 @@ Generated on 26.01.2026.
 - **Dependencies**: [TASK-001], [TASK-002]
 
 ### [TASK-004]: Frontend UI System (State-First)
+
 - **Definition**: Deliver a resilient Next.js UI that never blocks on missing data, always communicates loading, and provides recovery paths with request IDs.
 
 - **SUBTASK [TASK-004.1]**: Typed API client + uniform error handling
@@ -134,7 +140,7 @@ Generated on 26.01.2026.
 
 - **SUBTASK [TASK-004.3]**: Chat page UI (4 mandated states)
   - **STEP [TASK-004.3.1]**: Empty state (zero-data): suggested prompts and explanation of tools/sources.
-  - **STEP [TASK-004.3.2]**: Loading state: streaming placeholder + “thinking” indicator.
+  - **STEP [TASK-004.3.2]**: Loading state: streaming placeholder + "thinking" indicator.
   - **STEP [TASK-004.3.3]**: Error state: inline assistant apology + retry + `request_id=...`.
   - **STEP [TASK-004.3.4]**: Populated state: message list + sources display + intermediate steps toggle.
 
@@ -149,6 +155,107 @@ Generated on 26.01.2026.
 ---
 
 ## Phase 4 — Execution Handover (Boris Protocol)
+
+### Completed Tasks (MVP V4)
+
+- [TASK-001] API Platform & Security ✅
+- [TASK-002] Retrieval, Data, and Local RAG ✅
+- [TASK-003] Chat & Tool Orchestration ✅
+- [TASK-004] Frontend UI System (State-First) ✅
+
+---
+
+## Phase 5 — Roadmap Tasks (Post-MVP)
+
+### High Priority Tasks
+
+#### [TASK-005] Excel Data Loader Integration
+
+- **Definition**: Extend CSV loader to support .xlsx, .xls, .ods files
+- **Dependencies**: TASK-002
+- **Subtasks**: Excel Loader Implementation, Frontend File Upload UI, Source Tagging and Persistence
+
+#### [TASK-006] Portal/API Integration Framework
+
+- **Definition**: Create adapter system for external real estate portals
+- **Dependencies**: TASK-002
+- **Subtasks**: External Source Adapter Interface, UI Portal Configuration, First Real Portal Adapter, Security and Secrets Management
+
+#### [TASK-017] Production Deployment Optimization
+
+- **Definition**: Optimize for production with caching, monitoring, and performance tuning
+- **Dependencies**: TASK-001, TASK-002, TASK-003, TASK-004
+- **Subtasks**: Caching Strategy, Performance Monitoring, Database Optimization, Auto-scaling Configuration
+
+#### [TASK-018] Security Hardening
+
+- **Definition**: Comprehensive security measures including audit logging and compliance
+- **Dependencies**: TASK-001
+- **Subtasks**: Audit Logging, Security Scanning, Data Protection, Access Control
+
+### Medium Priority Tasks
+
+#### [TASK-007] Geographic Mapping Enhancement
+
+- **Definition**: Integrate Mapbox for heatmaps, clustering, and interactive filters
+- **Dependencies**: TASK-004, TASK-002
+- **Subtasks**: Mapbox Integration Setup, Heatmap Visualization, Map Filters and Interactions, City Overview Map
+
+#### [TASK-008] Neighborhood Quality Index
+
+- **Definition**: Composite scores for safety, green space, schools, and services
+- **Dependencies**: TASK-002
+- **Subtasks**: Data Collection, Index Scoring Algorithm, API Endpoint, UI Display
+
+#### [TASK-009] Commute Time Analysis
+
+- **Definition**: Calculate and visualize commute times with multiple transport modes
+- **Dependencies**: TASK-007, TASK-002
+- **Subtasks**: Routing Integration, Isochrone Generation, User Inputs, Results Ranking
+
+#### [TASK-010] Total Cost of Ownership Calculator
+
+- **Definition**: Extend mortgage calculator with utilities, parking, taxes, insurance
+- **Dependencies**: None
+- **Subtasks**: Cost Categories, Input Form, Calculation Logic, Comparison Mode
+
+### Low Priority Tasks (Feature Growth)
+
+#### [TASK-011] Property Description Generator
+
+- **Definition**: Use LLM to generate descriptions, headlines, and social media summaries
+- **Dependencies**: TASK-003, TASK-001
+
+#### [TASK-012] Lead Scoring System
+
+- **Definition**: Score leads by likelihood to close, budget fit, and urgency
+- **Dependencies**: TASK-004, TASK-001
+
+#### [TASK-014] Agent Performance Analytics
+
+- **Definition**: Track and visualize per-agent metrics
+- **Dependencies**: TASK-012
+
+#### [TASK-015] Market Anomaly Detection
+
+- **Definition**: Detect and alert on unusual market conditions
+- **Dependencies**: TASK-002
+
+### Low Priority Tasks (Expansion)
+
+#### [TASK-013] International Market Support
+
+- **Definition**: Currency conversion, multilingual UI, regional data sources
+- **Dependencies**: TASK-006
+
+#### [TASK-016] E-Signature Integration
+
+- **Definition**: Document generation and e-signature workflow
+- **Dependencies**: TASK-001, TASK-004
+
+---
+
+## Phase 6 — Execution Handover (Boris Protocol)
 
 ### [TASK-001] Technical Contract
 

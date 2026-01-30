@@ -142,15 +142,500 @@
           "3"
         ],
         "updatedAt": "2026-01-27T14:00:00.000Z"
+      },
+      {
+        "id": "5",
+        "title": "[TASK-005] Excel Data Loader Integration",
+        "description": "Definition: Extend the existing CSV data loader to support Excel files (.xlsx, .xls, .ods) for property data ingestion.\n\nSUBTASK [TASK-005.1] Excel Loader Implementation\n- Create ExcelDataLoader class that extends CSV loader patterns\n- Support sheet selection and header row configuration\n- Reuse existing format_df logic for schema normalization\n\nSUBTASK [TASK-005.2] Frontend File Upload UI\n- Add Excel file type support to upload component\n- Show sheet selector when Excel file is detected\n- Display file metadata (source name, row count)\n\nSUBTASK [TASK-005.3] Source Tagging and Persistence\n- Track source type (csv/excel) in PropertyCollection.metadata\n- Implement delete_by_source() for data management\n- Add source filter in search and analytics",
+        "status": "pending",
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 5.1,
+            "title": "[TASK-005.1] Excel Loader Implementation",
+            "status": "pending",
+            "parentId": "5"
+          },
+          {
+            "id": 5.2,
+            "title": "[TASK-005.2] Frontend File Upload UI",
+            "status": "pending",
+            "parentId": "5"
+          },
+          {
+            "id": 5.3,
+            "title": "[TASK-005.3] Source Tagging and Persistence",
+            "status": "pending",
+            "parentId": "5"
+          }
+        ],
+        "dependencies": ["2"],
+        "updatedAt": "2026-01-30T00:00:00.000Z"
+      },
+      {
+        "id": "6",
+        "title": "[TASK-006] Portal/API Integration Framework",
+        "description": "Definition: Create an extensible adapter system for ingesting property data from external real estate portals and APIs.\n\nSUBTASK [TASK-006.1] External Source Adapter Interface\n- Define ExternalSourceAdapter Protocol with fetch() method\n- Create adapter registry for managing available sources\n- Implement error handling for rate limits and partial failures\n\nSUBTASK [TASK-006.2] UI Portal Configuration\n- Add 'Portal' tab in Data Sources section\n- Portal selector, filters (city, price range, rooms, type)\n- Fetch button with progress indication\n\nSUBTASK [TASK-006.3] First Real Portal Adapter\n- Implement adapter for a documented portal API\n- Normalize portal data to internal DataFrame format\n- Wire into existing ingestion pipeline\n\nSUBTASK [TASK-006.4] Security and Secrets Management\n- Store portal API keys in environment variables only\n- Never commit secrets; add to .env.example templates\n- Validate API key presence before attempting connection",
+        "status": "pending",
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 6.1,
+            "title": "[TASK-006.1] External Source Adapter Interface",
+            "status": "pending",
+            "parentId": "6"
+          },
+          {
+            "id": 6.2,
+            "title": "[TASK-006.2] UI Portal Configuration",
+            "status": "pending",
+            "parentId": "6"
+          },
+          {
+            "id": 6.3,
+            "title": "[TASK-006.3] First Real Portal Adapter",
+            "status": "pending",
+            "parentId": "6"
+          },
+          {
+            "id": 6.4,
+            "title": "[TASK-006.4] Security and Secrets Management",
+            "status": "pending",
+            "parentId": "6"
+          }
+        ],
+        "dependencies": ["2"],
+        "updatedAt": "2026-01-30T00:00:00.000Z"
+      },
+      {
+        "id": "7",
+        "title": "[TASK-007] Geographic Mapping Enhancement",
+        "description": "Definition: Integrate professional mapping services (Mapbox) for property visualization with heatmaps, clustering, and interactive filters.\n\nSUBTASK [TASK-007.1] Mapbox Integration Setup\n- Add Mapbox GL JS dependency to frontend\n- Configure Mapbox API key via environment variable\n- Create base map component with property markers\n\nSUBTASK [TASK-007.2] Heatmap Visualization\n- Price heatmap mode (gradient by price/sqm)\n- Yield heatmap for investment properties\n- Toggle between heatmap and cluster modes\n\nSUBTASK [TASK-007.3] Map Filters and Interactions\n- Filter by price range, rooms, type on map\n- Click marker to show property card preview\n- Draw polygon/bounding box for geo-search\n\nSUBTASK [TASK-007.4] City Overview Map\n- Aggregate statistics by district/neighborhood\n- Show neighborhood boundaries and labels\n- Click district to filter search results",
+        "status": "pending",
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 7.1,
+            "title": "[TASK-007.1] Mapbox Integration Setup",
+            "status": "pending",
+            "parentId": "7"
+          },
+          {
+            "id": 7.2,
+            "title": "[TASK-007.2] Heatmap Visualization",
+            "status": "pending",
+            "parentId": "7"
+          },
+          {
+            "id": 7.3,
+            "title": "[TASK-007.3] Map Filters and Interactions",
+            "status": "pending",
+            "parentId": "7"
+          },
+          {
+            "id": 7.4,
+            "title": "[TASK-007.4] City Overview Map",
+            "status": "pending",
+            "parentId": "7"
+          }
+        ],
+        "dependencies": ["4", "2"],
+        "updatedAt": "2026-01-30T00:00:00.000Z"
+      },
+      {
+        "id": "8",
+        "title": "[TASK-008] Neighborhood Quality Index",
+        "description": "Definition: Create composite neighborhood scores combining safety, green space, schools, and services data.\n\nSUBTASK [TASK-008.1] Data Collection\n- Integrate OpenStreetMap POI data for amenities\n- Fetch government/open data for school ratings\n- Collect park/green space locations\n\nSUBTASK [TASK-008.2] Index Scoring Algorithm\n- Weight each factor (safety, schools, parks, services)\n- Normalize scores to 0-100 scale\n- Generate narrative explanation per neighborhood\n\nSUBTASK [TASK-008.3] API Endpoint\n- GET /api/v1/neighborhoods/{city}/scores\n- Return scores with breakdown by factor\n- Cache results daily to minimize API calls\n\nSUBTASK [TASK-008.4] UI Display\n- Neighborhood score cards in search results\n- Color-coded badges (excellent/good/fair)\n- Detailed breakdown panel on click",
+        "status": "pending",
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 8.1,
+            "title": "[TASK-008.1] Data Collection",
+            "status": "pending",
+            "parentId": "8"
+          },
+          {
+            "id": 8.2,
+            "title": "[TASK-008.2] Index Scoring Algorithm",
+            "status": "pending",
+            "parentId": "8"
+          },
+          {
+            "id": 8.3,
+            "title": "[TASK-008.3] API Endpoint",
+            "status": "pending",
+            "parentId": "8"
+          },
+          {
+            "id": 8.4,
+            "title": "[TASK-008.4] UI Display",
+            "status": "pending",
+            "parentId": "8"
+          }
+        ],
+        "dependencies": ["2"],
+        "updatedAt": "2026-01-30T00:00:00.000Z"
+      },
+      {
+        "id": "9",
+        "title": "[TASK-009] Commute Time Analysis",
+        "description": "Definition: Calculate and visualize commute times from properties to user-defined destinations using multiple transport modes.\n\nSUBTASK [TASK-009.1] Routing Integration\n- Integrate OpenRouteService or similar API\n- Support car, public transport, bike, walking modes\n- Handle rate limits and caching\n\nSUBTASK [TASK-009.2] Isochrone Generation\n- Generate '30-minute commute' polygons\n- Overlay on property map\n- Calculate actual commute time for each property\n\nSUBTASK [TASK-009.3] User Inputs\n- Add work/school address input\n- Transport mode selector\n- Maximum commute time filter\n\nSUBTASK [TASK-009.4] Results Ranking\n- Sort properties by commute convenience\n- Show commute time in property cards\n- Highlight 'commute-friendly' properties",
+        "status": "pending",
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 9.1,
+            "title": "[TASK-009.1] Routing Integration",
+            "status": "pending",
+            "parentId": "9"
+          },
+          {
+            "id": 9.2,
+            "title": "[TASK-009.2] Isochrone Generation",
+            "status": "pending",
+            "parentId": "9"
+          },
+          {
+            "id": 9.3,
+            "title": "[TASK-009.3] User Inputs",
+            "status": "pending",
+            "parentId": "9"
+          },
+          {
+            "id": 9.4,
+            "title": "[TASK-009.4] Results Ranking",
+            "status": "pending",
+            "parentId": "9"
+          }
+        ],
+        "dependencies": ["7", "2"],
+        "updatedAt": "2026-01-30T00:00:00.000Z"
+      },
+      {
+        "id": "10",
+        "title": "[TASK-010] Total Cost of Ownership Calculator",
+        "description": "Definition: Extend mortgage calculator to include utilities, parking, taxes, insurance, and other ownership costs.\n\nSUBTASK [TASK-010.1] Cost Categories\n- Utilities (electricity, gas, water, internet)\n- Parking (rented or owned)\n- Property tax and insurance\n- Maintenance reserves (1-2% of value annually)\n\nSUBTASK [TASK-010.2] Input Form\n- Add monthly cost fields to calculator\n- Location-based defaults (tax rates by region)\n- Optional vs required cost categories\n\nSUBTASK [TASK-010.3] Calculation Logic\n- Sum all monthly costs with mortgage\n- Calculate total monthly and annual cost\n- Generate cost breakdown pie chart\n\nSUBTASK [TASK-010.4] Comparison Mode\n- Compare 'central small flat' vs 'suburban larger'\n- Show trade-off analysis\n- Recommend based on user priorities",
+        "status": "pending",
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 10.1,
+            "title": "[TASK-010.1] Cost Categories",
+            "status": "pending",
+            "parentId": "10"
+          },
+          {
+            "id": 10.2,
+            "title": "[TASK-010.2] Input Form",
+            "status": "pending",
+            "parentId": "10"
+          },
+          {
+            "id": 10.3,
+            "title": "[TASK-010.3] Calculation Logic",
+            "status": "pending",
+            "parentId": "10"
+          },
+          {
+            "id": 10.4,
+            "title": "[TASK-010.4] Comparison Mode",
+            "status": "pending",
+            "parentId": "10"
+          }
+        ],
+        "dependencies": [],
+        "updatedAt": "2026-01-30T00:00:00.000Z"
+      },
+      {
+        "id": "11",
+        "title": "[TASK-011] Property Description Generator",
+        "description": "Definition: Use LLM to generate listing descriptions, headline variants, and social media summaries from structured property data.\n\nSUBTASK [TASK-011.1] Prompt Engineering\n- Create description generation prompt templates\n- Handle tone variations (professional, casual, luxury)\n- Include all key property facts\n\nSUBTASK [TASK-011.2] API Endpoint\n- POST /api/v1/tools/generate-description\n- Input: property data fields\n- Output: full description, headlines, summary\n\nSUBTASK [TASK-011.3] UI Integration\n- Add 'Generate Description' button in property details\n- Show generated text with edit capability\n- Tone selector for different outputs\n\nSUBTASK [TASK-011.4] Platform Variants\n- Generate different lengths for portal vs social\n- Adapt tone per platform guidelines\n- Keep core facts consistent across variants",
+        "status": "pending",
+        "priority": "low",
+        "subtasks": [
+          {
+            "id": 11.1,
+            "title": "[TASK-011.1] Prompt Engineering",
+            "status": "pending",
+            "parentId": "11"
+          },
+          {
+            "id": 11.2,
+            "title": "[TASK-011.2] API Endpoint",
+            "status": "pending",
+            "parentId": "11"
+          },
+          {
+            "id": 11.3,
+            "title": "[TASK-011.3] UI Integration",
+            "status": "pending",
+            "parentId": "11"
+          },
+          {
+            "id": 11.4,
+            "title": "[TASK-011.4] Platform Variants",
+            "status": "pending",
+            "parentId": "11"
+          }
+        ],
+        "dependencies": ["3", "1"],
+        "updatedAt": "2026-01-30T00:00:00.000Z"
+      },
+      {
+        "id": "12",
+        "title": "[TASK-012] Lead Scoring System",
+        "description": "Definition: Score incoming leads by likelihood to close, budget fit, and urgency to help agents prioritize.\n\nSUBTASK [TASK-012.1] Scoring Model\n- Define scoring factors (budget match, urgency, readiness)\n- Weight factors based on historical data\n- Calculate composite score 0-100\n\nSUBTASK [TASK-012.2] Data Collection\n- Track lead behavior (searches, favorites, inquiries)\n- Capture qualification signals\n- Store lead interactions in database\n\nSUBTASK [TASK-012.3] Dashboard UI\n- Lead list sorted by score\n- Score breakdown for each lead\n- Filter by score ranges\n\nSUBTASK [TASK-012.4] Notifications\n- Alert on high-scoring new leads\n- Daily digest of leads needing attention\n- Integration with existing notification system",
+        "status": "pending",
+        "priority": "low",
+        "subtasks": [
+          {
+            "id": 12.1,
+            "title": "[TASK-012.1] Scoring Model",
+            "status": "pending",
+            "parentId": "12"
+          },
+          {
+            "id": 12.2,
+            "title": "[TASK-012.2] Data Collection",
+            "status": "pending",
+            "parentId": "12"
+          },
+          {
+            "id": 12.3,
+            "title": "[TASK-012.3] Dashboard UI",
+            "status": "pending",
+            "parentId": "12"
+          },
+          {
+            "id": 12.4,
+            "title": "[TASK-012.4] Notifications",
+            "status": "pending",
+            "parentId": "12"
+          }
+        ],
+        "dependencies": ["4", "1"],
+        "updatedAt": "2026-01-30T00:00:00.000Z"
+      },
+      {
+        "id": "13",
+        "title": "[TASK-013] International Market Support",
+        "description": "Definition: Extend platform to support international markets with currency conversion, multilingual UI, and regional data sources.\n\nSUBTASK [TASK-013.1] Currency System\n- Add currency field to property schema\n- Integrate FX rate API (ECB for Europe)\n- Auto-convert prices to user's preferred currency\n- Cache rates daily\n\nSUBTASK [TASK-013.2] Multilingual UI\n- Add i18n framework (next-i18next)\n- Translate core UI elements\n- Support EN, PL, RU, TR, AR, FR, DE, ES, IT, PT\n- Language selector in settings\n\nSUBTASK [TASK-013.3] Regional Data Sources\n- Portal adapters for major EU/US sites\n- Handle different address formats\n- Normalize property types across regions\n\nSUBTASK [TASK-013.4] Regional Settings\n- Date/number format per locale\n- Units (sqm vs sqft, EUR vs USD)\n- Default currency by region",
+        "status": "pending",
+        "priority": "low",
+        "subtasks": [
+          {
+            "id": 13.1,
+            "title": "[TASK-013.1] Currency System",
+            "status": "pending",
+            "parentId": "13"
+          },
+          {
+            "id": 13.2,
+            "title": "[TASK-013.2] Multilingual UI",
+            "status": "pending",
+            "parentId": "13"
+          },
+          {
+            "id": 13.3,
+            "title": "[TASK-013.3] Regional Data Sources",
+            "status": "pending",
+            "parentId": "13"
+          },
+          {
+            "id": 13.4,
+            "title": "[TASK-013.4] Regional Settings",
+            "status": "pending",
+            "parentId": "13"
+          }
+        ],
+        "dependencies": ["6"],
+        "updatedAt": "2026-01-30T00:00:00.000Z"
+      },
+      {
+        "id": "14",
+        "title": "[TASK-014] Agent Performance Analytics",
+        "description": "Definition: Track and visualize per-agent metrics including leads, deals, time to close, and conversion rates.\n\nSUBTASK [TASK-014.1] Data Model\n- Agent entity with properties\n- Lead assignment tracking\n- Deal outcome tracking\n\nSUBTASK [TASK-014.2] Metrics Calculation\n- Total leads, active deals, closed deals\n- Average time to close\n- Conversion rate by stage\n- Strength analysis (property types, locations)\n\nSUBTASK [TASK-014.3] Analytics Dashboard\n- Agent overview cards with key metrics\n- Performance trends over time\n- Comparison to team averages\n\nSUBTASK [TASK-014.4] Insights\n- Identify top-performing agents\n- Flag agents needing support\n- Suggest coaching topics",
+        "status": "pending",
+        "priority": "low",
+        "subtasks": [
+          {
+            "id": 14.1,
+            "title": "[TASK-014.1] Data Model",
+            "status": "pending",
+            "parentId": "14"
+          },
+          {
+            "id": 14.2,
+            "title": "[TASK-014.2] Metrics Calculation",
+            "status": "pending",
+            "parentId": "14"
+          },
+          {
+            "id": 14.3,
+            "title": "[TASK-014.3] Analytics Dashboard",
+            "status": "pending",
+            "parentId": "14"
+          },
+          {
+            "id": 14.4,
+            "title": "[TASK-014.4] Insights",
+            "status": "pending",
+            "parentId": "14"
+          }
+        ],
+        "dependencies": ["12"],
+        "updatedAt": "2026-01-30T00:00:00.000Z"
+      },
+      {
+        "id": "15",
+        "title": "[TASK-015] Market Anomaly Detection",
+        "description": "Definition: Automatically detect and alert on unusual market conditions including price spikes, drops, and trends.\n\nSUBTASK [TASK-015.1] Anomaly Algorithms\n- Statistical outlier detection (z-score, IQR)\n- Time series anomaly detection\n- Price spike/drop thresholds\n\nSUBTASK [TASK-015.2] Monitoring Engine\n- Daily batch analysis of price changes\n- Continuous monitoring of new listings\n- Comparison to historical baselines\n\nSUBTASK [TASK-015.3] Alerting System\n- Email alerts for significant anomalies\n- In-app notifications for users\n- Threshold configuration per user\n\nSUBTASK [TASK-015.4] Visualization\n- Highlight anomalies in charts\n- Anomaly timeline view\n- Drill-down to affected properties",
+        "status": "pending",
+        "priority": "low",
+        "subtasks": [
+          {
+            "id": 15.1,
+            "title": "[TASK-015.1] Anomaly Algorithms",
+            "status": "pending",
+            "parentId": "15"
+          },
+          {
+            "id": 15.2,
+            "title": "[TASK-015.2] Monitoring Engine",
+            "status": "pending",
+            "parentId": "15"
+          },
+          {
+            "id": 15.3,
+            "title": "[TASK-015.3] Alerting System",
+            "status": "pending",
+            "parentId": "15"
+          },
+          {
+            "id": 15.4,
+            "title": "[TASK-015.4] Visualization",
+            "status": "pending",
+            "parentId": "15"
+          }
+        ],
+        "dependencies": ["2"],
+        "updatedAt": "2026-01-30T00:00:00.000Z"
+      },
+      {
+        "id": "16",
+        "title": "[TASK-016] E-Signature Integration",
+        "description": "Definition: Integrate document generation and e-signature workflow for rental/purchase agreements.\n\nSUBTASK [TASK-016.1] Document Templates\n- Rental agreement template\n- Purchase offer template\n- Lease renewal template\n- Customizable clauses\n\nSUBTASK [TASK-016.2] PDF Generation\n- Fill property and party details\n- Generate professional PDF\n- Include terms and conditions\n\nSUBTASK [TASK-016.3] E-Signature API\n- Integrate DocuSign or similar\n- Signature request workflow\n- Status tracking\n\nSUBTASK [TASK-016.4] Document Management\n- Store signed documents securely\n- Download/view signed agreements\n- Audit log of all actions",
+        "status": "pending",
+        "priority": "low",
+        "subtasks": [
+          {
+            "id": 16.1,
+            "title": "[TASK-016.1] Document Templates",
+            "status": "pending",
+            "parentId": "16"
+          },
+          {
+            "id": 16.2,
+            "title": "[TASK-016.2] PDF Generation",
+            "status": "pending",
+            "parentId": "16"
+          },
+          {
+            "id": 16.3,
+            "title": "[TASK-016.3] E-Signature API",
+            "status": "pending",
+            "parentId": "16"
+          },
+          {
+            "id": 16.4,
+            "title": "[TASK-016.4] Document Management",
+            "status": "pending",
+            "parentId": "16"
+          }
+        ],
+        "dependencies": ["1", "4"],
+        "updatedAt": "2026-01-30T00:00:00.000Z"
+      },
+      {
+        "id": "17",
+        "title": "[TASK-017] Production Deployment Optimization",
+        "description": "Definition: Optimize application for production deployment including caching, monitoring, and performance tuning.\n\nSUBTASK [TASK-017.1] Caching Strategy\n- Redis integration for session cache\n- Response caching for search results\n- Static asset CDN configuration\n- Cache invalidation policies\n\nSUBTASK [TASK-017.2] Performance Monitoring\n- Application Performance Monitoring (APM)\n- Error tracking (Sentry integration)\n- Custom metrics dashboard\n- Performance budgets\n\nSUBTASK [TASK-017.3] Database Optimization\n- Query optimization and indexing\n- Connection pooling configuration\n- Read replica setup for scaling\n- Backup and restore procedures\n\nSUBTASK [TASK-017.4] Auto-scaling Configuration\n- Horizontal scaling rules\n- Load balancer configuration\n- Container orchestration setup\n- Blue-green deployment",
+        "status": "pending",
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 17.1,
+            "title": "[TASK-017.1] Caching Strategy",
+            "status": "pending",
+            "parentId": "17"
+          },
+          {
+            "id": 17.2,
+            "title": "[TASK-017.2] Performance Monitoring",
+            "status": "pending",
+            "parentId": "17"
+          },
+          {
+            "id": 17.3,
+            "title": "[TASK-017.3] Database Optimization",
+            "status": "pending",
+            "parentId": "17"
+          },
+          {
+            "id": 17.4,
+            "title": "[TASK-017.4] Auto-scaling Configuration",
+            "status": "pending",
+            "parentId": "17"
+          }
+        ],
+        "dependencies": ["1", "2", "3", "4"],
+        "updatedAt": "2026-01-30T00:00:00.000Z"
+      },
+      {
+        "id": "18",
+        "title": "[TASK-018] Security Hardening",
+        "description": "Definition: Implement comprehensive security measures including audit logging, penetration testing, and compliance checks.\n\nSUBTASK [TASK-018.1] Audit Logging\n- Log all sensitive operations (data access, changes)\n- Immutable log storage\n- Log analysis and alerting\n- Compliance report generation\n\nSUBTASK [TASK-018.2] Security Scanning\n- Automated dependency scanning\n- SAST/DAST integration in CI\n- Container vulnerability scanning\n- Regular penetration testing\n\nSUBTASK [TASK-018.3] Data Protection\n- Encryption at rest and in transit\n- Data retention policies\n- Right to be forgotten implementation\n- PII redaction in logs\n\nSUBTASK [TASK-018.4] Access Control\n- Role-based access control (RBAC)\n- Multi-factor authentication (MFA)\n- Session management improvements\n- API key rotation policies",
+        "status": "pending",
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 18.1,
+            "title": "[TASK-018.1] Audit Logging",
+            "status": "pending",
+            "parentId": "18"
+          },
+          {
+            "id": 18.2,
+            "title": "[TASK-018.2] Security Scanning",
+            "status": "pending",
+            "parentId": "18"
+          },
+          {
+            "id": 18.3,
+            "title": "[TASK-018.3] Data Protection",
+            "status": "pending",
+            "parentId": "18"
+          },
+          {
+            "id": 18.4,
+            "title": "[TASK-018.4] Access Control",
+            "status": "pending",
+            "parentId": "18"
+          }
+        ],
+        "dependencies": ["1"],
+        "updatedAt": "2026-01-30T00:00:00.000Z"
       }
     ],
     "metadata": {
-      "version": "1.0.0",
-      "lastModified": "2026-01-27T10:00:00.000Z",
-      "taskCount": 4,
-      "completedCount": 0,
+      "version": "1.1.0",
+      "lastModified": "2026-01-30T00:00:00.000Z",
+      "taskCount": 18,
+      "completedCount": 4,
       "tags": [
-        "master"
+        "master",
+        "roadmap"
       ]
     }
   }

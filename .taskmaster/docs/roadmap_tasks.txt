@@ -1,0 +1,551 @@
+# Roadmap Tasks — AI Real Estate Assistant (Post-MVP)
+
+## Overview
+This PRD defines the next phase of tasks for the AI Real Estate Assistant after completing the MVP V4. All tasks focus on production readiness, data integrations, analytics enhancements, and user experience improvements.
+
+---
+
+## TASK-005: Excel Data Loader Integration
+
+### Definition
+Extend the existing CSV data loader to support Excel files (.xlsx, .xls, .ods) for property data ingestion.
+
+### Subtasks
+- [TASK-005.1] Excel Loader Implementation
+  - Create ExcelDataLoader class that extends CSV loader patterns
+  - Support sheet selection and header row configuration
+  - Reuse existing format_df logic for schema normalization
+
+- [TASK-005.2] Frontend File Upload UI
+  - Add Excel file type support to upload component
+  - Show sheet selector when Excel file is detected
+  - Display file metadata (source name, row count)
+
+- [TASK-005.3] Source Tagging and Persistence
+  - Track source type (csv/excel) in PropertyCollection.metadata
+  - Implement delete_by_source() for data management
+  - Add source filter in search and analytics
+
+### Dependencies
+- TASK-002 (Retrieval, Data, and Local RAG) must be complete
+
+### Verification
+- Upload .xlsx file with 100+ properties successfully
+- Properties appear in search with correct source tagging
+- Unit tests for Excel parsing with edge cases (empty sheets, merged cells)
+
+---
+
+## TASK-006: Portal/API Integration Framework
+
+### Definition
+Create an extensible adapter system for ingesting property data from external real estate portals and APIs.
+
+### Subtasks
+- [TASK-006.1] External Source Adapter Interface
+  - Define ExternalSourceAdapter Protocol with fetch() method
+  - Create adapter registry for managing available sources
+  - Implement error handling for rate limits and partial failures
+
+- [TASK-006.2] UI Portal Configuration
+  - Add "Portal" tab in Data Sources section
+  - Portal selector, filters (city, price range, rooms, type)
+  - Fetch button with progress indication
+
+- [TASK-006.3] First Real Portal Adapter
+  - Implement adapter for a documented portal API
+  - Normalize portal data to internal DataFrame format
+  - Wire into existing ingestion pipeline
+
+- [TASK-006.4] Security and Secrets Management
+  - Store portal API keys in environment variables only
+  - Never commit secrets; add to .env.example templates
+  - Validate API key presence before attempting connection
+
+### Dependencies
+- TASK-002 (Retrieval, Data, and Local RAG) must be complete
+- TASK-005 (Excel Data Loader) recommended for data source patterns
+
+### Verification
+- Successfully fetch 50+ properties from test portal
+- Data normalizes correctly through format_df pipeline
+- Portal-sourced properties appear in analytics with source attribution
+
+---
+
+## TASK-007: Geographic Mapping Enhancement
+
+### Definition
+Integrate professional mapping services (Mapbox) for property visualization with heatmaps, clustering, and interactive filters.
+
+### Subtasks
+- [TASK-007.1] Mapbox Integration Setup
+  - Add Mapbox GL JS dependency to frontend
+  - Configure Mapbox API key via environment variable
+  - Create base map component with property markers
+
+- [TASK-007.2] Heatmap Visualization
+  - Price heatmap mode (gradient by price/sqm)
+  - Yield heatmap for investment properties
+  - Toggle between heatmap and cluster modes
+
+- [TASK-007.3] Map Filters and Interactions
+  - Filter by price range, rooms, type on map
+  - Click marker to show property card preview
+  - Draw polygon/bounding box for geo-search
+
+- [TASK-007.4] City Overview Map
+  - Aggregate statistics by district/neighborhood
+  - Show neighborhood boundaries and labels
+  - Click district to filter search results
+
+### Dependencies
+- TASK-004 (Frontend UI System) must be complete
+- TASK-002 (Retrieval with geo filters) must be complete
+
+### Verification
+- Map loads with 1000+ property markers without lag
+- Heatmap renders correctly with color gradient legend
+- Drawing a polygon correctly filters search results
+
+---
+
+## TASK-008: Neighborhood Quality Index
+
+### Definition
+Create composite neighborhood scores combining safety, green space, schools, and services data.
+
+### Subtasks
+- [TASK-008.1] Data Collection
+  - Integrate OpenStreetMap POI data for amenities
+  - Fetch government/open data for school ratings
+  - Collect park/green space locations
+
+- [TASK-008.2] Index Scoring Algorithm
+  - Weight each factor (safety, schools, parks, services)
+  - Normalize scores to 0-100 scale
+  - Generate narrative explanation per neighborhood
+
+- [TASK-008.3] API Endpoint
+  - GET /api/v1/neighborhoods/{city}/scores
+  - Return scores with breakdown by factor
+  - Cache results daily to minimize API calls
+
+- [TASK-008.4] UI Display
+  - Neighborhood score cards in search results
+  - Color-coded badges (excellent/good/fair)
+  - Detailed breakdown panel on click
+
+### Dependencies
+- TASK-002 (Property data with geo fields) must be complete
+
+### Verification
+- 10+ cities have neighborhood scores calculated
+- Scores correlate with human expert assessment (validation)
+- API response time < 500ms for cached results
+
+---
+
+## TASK-009: Commute Time Analysis
+
+### Definition
+Calculate and visualize commute times from properties to user-defined destinations using multiple transport modes.
+
+### Subtasks
+- [TASK-009.1] Routing Integration
+  - Integrate OpenRouteService or similar API
+  - Support car, public transport, bike, walking modes
+  - Handle rate limits and caching
+
+- [TASK-009.2] Isochrone Generation
+  - Generate "30-minute commute" polygons
+  - Overlay on property map
+  - Calculate actual commute time for each property
+
+- [TASK-009.3] User Inputs
+  - Add work/school address input
+  - Transport mode selector
+  - Maximum commute time filter
+
+- [TASK-009.4] Results Ranking
+  - Sort properties by commute convenience
+  - Show commute time in property cards
+  - Highlight "commute-friendly" properties
+
+### Dependencies
+- TASK-007 (Geographic Mapping) must be complete
+- TASK-002 (Geo property data) must be complete
+
+### Verification
+- Isochrone polygon renders accurately on map
+- Commute times match realistic expectations
+- Sorting by commute time works correctly
+
+---
+
+## TASK-010: Total Cost of Ownership Calculator
+
+### Definition
+Extend mortgage calculator to include utilities, parking, taxes, insurance, and other ownership costs.
+
+### Subtasks
+- [TASK-010.1] Cost Categories
+  - Utilities (electricity, gas, water, internet)
+  - Parking (rented or owned)
+  - Property tax and insurance
+  - Maintenance reserves (1-2% of value annually)
+
+- [TASK-010.2] Input Form
+  - Add monthly cost fields to calculator
+  - Location-based defaults (tax rates by region)
+  - Optional vs required cost categories
+
+- [TASK-010.3] Calculation Logic
+  - Sum all monthly costs with mortgage
+  - Calculate total monthly and annual cost
+  - Generate cost breakdown pie chart
+
+- [TASK-010.4] Comparison Mode
+  - Compare "central small flat" vs "suburban larger"
+  - Show trade-off analysis
+  - Recommend based on user priorities
+
+### Dependencies
+- Existing mortgage calculator tool
+
+### Verification
+- Total cost matches manual calculation for test cases
+- Comparison mode produces logical recommendations
+- UI handles missing optional costs gracefully
+
+---
+
+## TASK-011: Property Description Generator
+
+### Definition
+Use LLM to generate listing descriptions, headline variants, and social media summaries from structured property data.
+
+### Subtasks
+- [TASK-011.1] Prompt Engineering
+  - Create description generation prompt templates
+  - Handle tone variations (professional, casual, luxury)
+  - Include all key property facts
+
+- [TASK-011.2] API Endpoint
+  - POST /api/v1/tools/generate-description
+  - Input: property data fields
+  - Output: full description, headlines, summary
+
+- [TASK-011.3] UI Integration
+  - Add "Generate Description" button in property details
+  - Show generated text with edit capability
+  - Tone selector for different outputs
+
+- [TASK-011.4] Platform Variants
+  - Generate different lengths for portal vs social
+  - Adapt tone per platform guidelines
+  - Keep core facts consistent across variants
+
+### Dependencies
+- TASK-003 (Chat & Tool Orchestration) must be complete
+- TASK-001 (API Platform) must be complete
+
+### Verification
+- Generated descriptions are factually accurate
+- Different tones produce appropriate variations
+- Character limits respected for each platform
+
+---
+
+## TASK-012: Lead Scoring System
+
+### Definition
+Score incoming leads by likelihood to close, budget fit, and urgency to help agents prioritize.
+
+### Subtasks
+- [TASK-012.1] Scoring Model
+  - Define scoring factors (budget match, urgency, readiness)
+  - Weight factors based on historical data
+  - Calculate composite score 0-100
+
+- [TASK-012.2] Data Collection
+  - Track lead behavior (searches, favorites, inquiries)
+  - Capture qualification signals
+  - Store lead interactions in database
+
+- [TASK-012.3] Dashboard UI
+  - Lead list sorted by score
+  - Score breakdown for each lead
+  - Filter by score ranges
+
+- [TASK-012.4] Notifications
+  - Alert on high-scoring new leads
+  - Daily digest of leads needing attention
+  - Integration with existing notification system
+
+### Dependencies
+- TASK-004 (Frontend UI) must be complete
+- TASK-001 (Notification pipeline) must be complete
+
+### Verification
+- Scores predict lead conversion with >70% accuracy
+- Agents report improved prioritization
+- High-score leads generate more viewings
+
+---
+
+## TASK-013: International Market Support
+
+### Definition
+Extend platform to support international markets with currency conversion, multilingual UI, and regional data sources.
+
+### Subtasks
+- [TASK-013.1] Currency System
+  - Add currency field to property schema
+  - Integrate FX rate API (ECB for Europe)
+  - Auto-convert prices to user's preferred currency
+  - Cache rates daily
+
+- [TASK-013.2] Multilingual UI
+  - Add i18n framework (next-i18next)
+  - Translate core UI elements
+  - Support EN, PL, RU, TR, AR, FR, DE, ES, IT, PT
+  - Language selector in settings
+
+- [TASK-013.3] Regional Data Sources
+  - Portal adapters for major EU/US sites
+  - Handle different address formats
+  - Normalize property types across regions
+
+- [TASK-013.4] Regional Settings
+  - Date/number format per locale
+  - Units (sqm vs sqft, EUR vs USD)
+  - Default currency by region
+
+### Dependencies
+- TASK-006 (Portal Integration Framework) recommended
+- TASK-002 (Schema extension for currency) required
+
+### Verification
+- Prices display correctly in selected currency
+- UI translations are complete and accurate
+- Regional data sources populate property listings
+
+---
+
+## TASK-014: Agent Performance Analytics
+
+### Definition
+Track and visualize per-agent metrics including leads, deals, time to close, and conversion rates.
+
+### Subtasks
+- [TASK-014.1] Data Model
+  - Agent entity with properties
+  - Lead assignment tracking
+  - Deal outcome tracking
+
+- [TASK-014.2] Metrics Calculation
+  - Total leads, active deals, closed deals
+  - Average time to close
+  - Conversion rate by stage
+  - Strength analysis (property types, locations)
+
+- [TASK-014.3] Analytics Dashboard
+  - Agent overview cards with key metrics
+  - Performance trends over time
+  - Comparison to team averages
+
+- [TASK-014.4] Insights
+  - Identify top-performing agents
+  - Flag agents needing support
+  - Suggest coaching topics
+
+### Dependencies
+- TASK-012 (Lead Scoring) recommended
+
+### Verification
+- Metrics match CRM data (integration test)
+- Dashboard loads in < 2 seconds
+- Actionable insights are accurate
+
+---
+
+## TASK-015: Market Anomaly Detection
+
+### Definition
+Automatically detect and alert on unusual market conditions including price spikes, drops, and trends.
+
+### Subtasks
+- [TASK-015.1] Anomaly Algorithms
+  - Statistical outlier detection (z-score, IQR)
+  - Time series anomaly detection
+  - Price spike/drop thresholds
+
+- [TASK-015.2] Monitoring Engine
+  - Daily batch analysis of price changes
+  - Continuous monitoring of new listings
+  - Comparison to historical baselines
+
+- [TASK-015.3] Alerting System
+  - Email alerts for significant anomalies
+  - In-app notifications for users
+  - Threshold configuration per user
+
+- [TASK-015.4] Visualization
+  - Highlight anomalies in charts
+  - Anomaly timeline view
+  - Drill-down to affected properties
+
+### Dependencies
+- TASK-002 (Market indices and trends) required
+
+### Verification
+- Detects known historical anomalies
+- False positive rate < 10%
+- Alerts sent within 1 hour of detection
+
+---
+
+## TASK-016: E-Signature Integration
+
+### Definition
+Integrate document generation and e-signature workflow for rental/purchase agreements.
+
+### Subtasks
+- [TASK-016.1] Document Templates
+  - Rental agreement template
+  - Purchase offer template
+  - Lease renewal template
+  - Customizable clauses
+
+- [TASK-016.2] PDF Generation
+  - Fill property and party details
+  - Generate professional PDF
+  - Include terms and conditions
+
+- [TASK-016.3] E-Signature API
+  - Integrate DocuSign or similar
+  - Signature request workflow
+  - Status tracking
+
+- [TASK-016.4] Document Management
+  - Store signed documents securely
+  - Download/view signed agreements
+  - Audit log of all actions
+
+### Dependencies
+- TASK-001 (API Platform) required
+- TASK-004 (Frontend UI) required
+
+### Verification
+- Generated documents are legally valid
+- Signature workflow completes successfully
+- Documents persist and are retrievable
+
+---
+
+## TASK-017: Production Deployment Optimization
+
+### Definition
+Optimize application for production deployment including caching, monitoring, and performance tuning.
+
+### Subtasks
+- [TASK-017.1] Caching Strategy
+  - Redis integration for session cache
+  - Response caching for search results
+  - Static asset CDN configuration
+  - Cache invalidation policies
+
+- [TASK-017.2] Performance Monitoring
+  - Application Performance Monitoring (APM)
+  - Error tracking (Sentry integration)
+  - Custom metrics dashboard
+  - Performance budgets
+
+- [TASK-017.3] Database Optimization
+  - Query optimization and indexing
+  - Connection pooling configuration
+  - Read replica setup for scaling
+  - Backup and restore procedures
+
+- [TASK-017.4] Auto-scaling Configuration
+  - Horizontal scaling rules
+  - Load balancer configuration
+  - Container orchestration setup
+  - Blue-green deployment
+
+### Dependencies
+- TASK-001 through TASK-004 (all MVP tasks) required
+
+### Verification
+- p95 latency < 2s for search, < 8s for chat
+- System handles 1000 concurrent users
+- Auto-scaling activates under load
+- Backups restore successfully
+
+---
+
+## TASK-018: Security Hardening
+
+### Definition
+Implement comprehensive security measures including audit logging, penetration testing, and compliance checks.
+
+### Subtasks
+- [TASK-018.1] Audit Logging
+  - Log all sensitive operations (data access, changes)
+  - Immutable log storage
+  - Log analysis and alerting
+  - Compliance report generation
+
+- [TASK-018.2] Security Scanning
+  - Automated dependency scanning
+  - SAST/DAST integration in CI
+  - Container vulnerability scanning
+  - Regular penetration testing
+
+- [TASK-018.3] Data Protection
+  - Encryption at rest and in transit
+  - Data retention policies
+  - Right to be forgotten implementation
+  - PII redaction in logs
+
+- [TASK-018.4] Access Control
+  - Role-based access control (RBAC)
+  - Multi-factor authentication (MFA)
+  - Session management improvements
+  - API key rotation policies
+
+### Dependencies
+- TASK-001 (API Platform & Security) required
+
+### Verification
+- Passes third-party security audit
+- No critical/high vulnerabilities in scan results
+- Compliance documentation complete
+- Audit logs capture all required events
+
+---
+
+## Task Priority Order
+
+### Phase 1 (High Priority, 4-6 weeks)
+1. TASK-005: Excel Data Loader
+2. TASK-006: Portal Integration Framework
+3. TASK-017: Production Deployment Optimization
+4. TASK-018: Security Hardening
+
+### Phase 2 (Medium Priority, 6-10 weeks)
+5. TASK-007: Geographic Mapping Enhancement
+6. TASK-008: Neighborhood Quality Index
+7. TASK-009: Commute Time Analysis
+8. TASK-010: Total Cost of Ownership
+
+### Phase 3 (Feature Growth, 8-12 weeks)
+9. TASK-011: Property Description Generator
+10. TASK-012: Lead Scoring System
+11. TASK-014: Agent Performance Analytics
+12. TASK-015: Market Anomaly Detection
+
+### Phase 4 (Expansion, 10-16 weeks)
+13. TASK-013: International Market Support
+14. TASK-016: E-Signature Integration
