@@ -344,9 +344,12 @@ async def fetch_from_portal(request: PortalFiltersRequest):
         # Get the adapter
         adapter = get_adapter(request.portal)
         if not adapter:
+            available = ", ".join(_get_available_portal_names())
             raise HTTPException(
                 status_code=404,
-                detail=f"Portal adapter '{request.portal}' not found. Available portals: {', '.join(_get_available_portal_names())}",
+                detail=(
+                    f"Portal adapter '{request.portal}' not found. Available portals: {available}"
+                ),
             )
 
         # Build filters

@@ -11,6 +11,9 @@ import {
   MortgageInput,
   MortgageResult,
   NotificationSettings,
+  PortalFiltersRequest,
+  PortalIngestResponse,
+  PortalAdaptersResponse,
   RagQaRequest,
   RagQaResponse,
   RagResetResponse,
@@ -512,4 +515,24 @@ export async function getExcelSheets(request: ExcelSheetsRequest): Promise<Excel
     body: JSON.stringify(request),
   });
   return handleResponse<ExcelSheetsResponse>(response);
+}
+
+// Portal/API Integration functions for TASK-006
+export async function listPortals(): Promise<PortalAdaptersResponse> {
+  const response = await fetch(`${getApiUrl()}/admin/portals`, {
+    method: "GET",
+    headers: buildHeaders(),
+  });
+  return handleResponse<PortalAdaptersResponse>(response);
+}
+
+export async function fetchFromPortal(
+  request: PortalFiltersRequest
+): Promise<PortalIngestResponse> {
+  const response = await fetch(`${getApiUrl()}/admin/portals/fetch`, {
+    method: "POST",
+    headers: buildHeaders(),
+    body: JSON.stringify(request),
+  });
+  return handleResponse<PortalIngestResponse>(response);
 }

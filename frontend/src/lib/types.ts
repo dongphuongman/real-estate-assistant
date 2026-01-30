@@ -240,3 +240,41 @@ export interface ExcelSheetsResponse {
   default_sheet?: string;
   row_count: Record<string, number>;
 }
+
+// Portal/API Integration types for TASK-006
+export interface PortalAdapterInfo {
+  name: string;
+  display_name: string;
+  configured: boolean;
+  has_api_key: boolean;
+  rate_limit?: { requests: number; window_seconds: number } | null;
+}
+
+export interface PortalAdaptersResponse {
+  adapters: PortalAdapterInfo[];
+  count: number;
+}
+
+export interface PortalFiltersRequest {
+  portal: string;
+  city?: string;
+  min_price?: number;
+  max_price?: number;
+  min_rooms?: number;
+  max_rooms?: number;
+  property_type?: string;
+  listing_type?: string;
+  limit?: number;
+  source_name?: string;
+}
+
+export interface PortalIngestResponse {
+  success: boolean;
+  message: string;
+  portal: string;
+  properties_processed: number;
+  source_type: string;
+  source_name?: string;
+  errors: string[];
+  filters_applied?: Record<string, unknown>;
+}
