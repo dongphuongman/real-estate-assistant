@@ -6,7 +6,7 @@ allowing dynamic registration and lookup.
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Callable, Dict, List, Optional, Type
 
 from data.adapters.base import ExternalSourceAdapter
 
@@ -149,7 +149,10 @@ class AdapterRegistry:
 
 def register_adapter(
     adapter_class: Type[ExternalSourceAdapter],
-) -> Type[ExternalSourceAdapter]:
+) -> (
+    Type[ExternalSourceAdapter]
+    | Callable[[Type[ExternalSourceAdapter]], Type[ExternalSourceAdapter]]
+):
     """
     Decorator to register an adapter class.
 

@@ -325,13 +325,16 @@ class PropertyCollection(BaseModel):
     loaded_at: datetime = Field(default_factory=datetime.now)
 
     @classmethod
-    def from_dataframe(cls, df: pd.DataFrame, source: Optional[str] = None) -> "PropertyCollection":
+    def from_dataframe(
+        cls, df: pd.DataFrame, source: Optional[str] = None, source_type: Optional[str] = None
+    ) -> "PropertyCollection":
         """
         Create PropertyCollection from pandas DataFrame.
 
         Args:
             df: DataFrame containing property data
             source: Optional source identifier
+            source_type: Optional source type (csv, excel, url, portal, unknown)
 
         Returns:
             PropertyCollection instance with validated properties
@@ -357,7 +360,12 @@ class PropertyCollection(BaseModel):
                 logger.warning("Skipping row %s due to validation error: %s", idx, e)
                 continue
 
-        return cls(properties=properties, total_count=len(properties), source=source)
+        return cls(
+            properties=properties,
+            total_count=len(properties),
+            source=source,
+            source_type=source_type or "unknown",
+        )
 
     def to_dataframe(self) -> pd.DataFrame:
         """

@@ -81,6 +81,7 @@ def _is_tool_available(cmd: list[str]) -> bool:
 
 
 def _run_step(results: list[StepResult], name: str, fn) -> bool:
+    print(f"Running {name}...", end="", flush=True)
     started = time.time()
     try:
         status, details = fn()
@@ -89,6 +90,7 @@ def _run_step(results: list[StepResult], name: str, fn) -> bool:
         details = f"exception: {exc}"
     duration = time.time() - started
     results.append(StepResult(name=name, status=status, duration_seconds=duration, details=details))
+    print(f" {status.upper()} ({duration:.1f}s)")
     return status in {"passed", "skipped"}
 
 

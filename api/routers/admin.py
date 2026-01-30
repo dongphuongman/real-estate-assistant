@@ -15,6 +15,7 @@ from api.models import (
     IngestRequest,
     IngestResponse,
     NotificationsAdminStats,
+    PortalAdapterInfo,
     PortalAdaptersResponse,
     PortalFiltersRequest,
     PortalIngestResponse,
@@ -63,7 +64,7 @@ async def ingest_data(request: IngestRequest):
     try:
         all_properties = []
         errors = []
-        max_props = settings.max_props
+        max_properties = settings.max_properties
 
         for url in urls:
             try:
@@ -84,7 +85,7 @@ async def ingest_data(request: IngestRequest):
                 df = loader.load_df()
                 # Enforce max_properties limit via rows_count parameter
                 # Calculate remaining capacity to stay within limit
-                remaining_capacity = max(0, max_props - len(all_properties))
+                remaining_capacity = max(0, max_properties - len(all_properties))
                 df_formatted = loader.load_format_df(df, rows_count=remaining_capacity)
 
                 # Convert to Property objects
@@ -109,9 +110,9 @@ async def ingest_data(request: IngestRequest):
                 logger.info(f"Loaded {len(props)} properties from {url}")
 
                 # Stop if we've reached the limit
-                if len(all_properties) >= max_props:
+                if len(all_properties) >= max_properties:
                     logger.warning(
-                        f"Reached maximum property limit ({max_props}), stopping ingestion"
+                        f"Reached maximum property limit ({max_properties}), stopping ingestion"
                     )
                     break
             except Exception as e:
@@ -140,8 +141,8 @@ async def ingest_data(request: IngestRequest):
         save_collection(collection)
 
         message = "Ingestion successful"
-        if len(all_properties) >= max_props:
-            message += f" (reached maximum property limit of {max_props})"
+        if len(all_properties) >= max_properties:
+            message += f" (reached maximum property limit of {max_properties})"
 
         return IngestResponse(
             message=message,
@@ -231,7 +232,7 @@ async def reindex_data(
         if not store:
             raise HTTPException(status_code=503, detail="Vector store unavailable")
 
-        store.add_documents(collection.properties)
+        store.add_properties(collection.properties)
 
         return ReindexResponse(message="Reindexing successful", count=len(collection.properties))
     except HTTPException:
@@ -320,7 +321,17 @@ async def list_portals():
         adapters_info = AdapterRegistry.get_all_info()
 
         return PortalAdaptersResponse(
-            adapters=[info for info in adapters_info if info is not None],
+            adapters=[
+                PortalAdapterInfo(
+                    name=info.get("name", ""),
+                    display_name=info.get("display_name", ""),
+                    configured=info.get("configured", False),
+                    has_api_key=info.get("has_api_key", False),
+                    rate_limit=info.get("rate_limit"),
+                )
+                for info in adapters_info
+                if info is not None
+            ],
             count=len([info for info in adapters_info if info is not None]),
         )
     except Exception as e:
@@ -380,7 +391,7 @@ async def fetch_from_portal(request: PortalFiltersRequest):
         # Convert to Property objects
         all_properties = []
         errors = result.errors.copy()
-        max_props = settings.max_props
+        max_properties = settings.max_properties
 
         for record in result.properties:
             try:
@@ -395,8 +406,8 @@ async def fetch_from_portal(request: PortalFiltersRequest):
                 all_properties.append(prop)
 
                 # Stop if we've reached the limit
-                if len(all_properties) >= max_props:
-                    logger.warning(f"Reached maximum property limit ({max_props})")
+                if len(all_properties) >= max_properties:
+                    logger.warning(f"Reached maximum property limit ({max_properties})")
                     break
             except Exception as e:
                 msg = f"Failed to validate property: {str(e)}"
@@ -425,8 +436,8 @@ async def fetch_from_portal(request: PortalFiltersRequest):
         save_collection(collection)
 
         message = f"Successfully fetched {len(all_properties)} properties from {request.portal}"
-        if len(all_properties) >= max_props:
-            message += f" (reached maximum property limit of {max_props})"
+        if len(all_properties) >= max_properties:
+            message += f" (reached maximum property limit of {max_properties})"
 
         return PortalIngestResponse(
             success=True,
