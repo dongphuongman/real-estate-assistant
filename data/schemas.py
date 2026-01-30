@@ -319,6 +319,9 @@ class PropertyCollection(BaseModel):
     properties: List[Property]
     total_count: int
     source: Optional[str] = None
+    source_type: Optional[str] = Field(
+        None, description="Source type: csv, excel, url, portal, unknown"
+    )
     loaded_at: datetime = Field(default_factory=datetime.now)
 
     @classmethod
@@ -381,6 +384,8 @@ class PropertyCollection(BaseModel):
         year_built_max: Optional[int] = None,
         energy_ratings: Optional[List[str]] = None,
         property_type: Optional[PropertyType] = None,
+        source: Optional[str] = None,
+        source_type: Optional[str] = None,
     ) -> "PropertyCollection":
         """
         Filter properties by various criteria.
@@ -400,6 +405,8 @@ class PropertyCollection(BaseModel):
             year_built_max: Maximum year built
             energy_ratings: List of allowed energy ratings
             property_type: Filter by property type
+            source: Filter by source identifier
+            source_type: Filter by source type (csv, excel, url, portal)
 
         Returns:
             Filtered PropertyCollection
@@ -454,8 +461,73 @@ class PropertyCollection(BaseModel):
         if property_type is not None:
             filtered = [p for p in filtered if p.property_type == property_type]
 
+        if source:
+            filtered = [p for p in filtered if p.source_url and source in p.source_url]
+
+        if source_type:
+            filtered = [
+                p
+                for p in filtered
+                if p.source_platform and source_type.lower() in p.source_platform.lower()
+            ]
+
         return PropertyCollection(
-            properties=filtered, total_count=len(filtered), source=self.source
+            properties=filtered,
+            total_count=len(filtered),
+            source=self.source,
+            source_type=self.source_type,
+        )
+
+    def delete_by_source(self, source: str) -> "PropertyCollection":
+        """
+        Remove properties from a specific source.
+
+        Args:
+            source: Source identifier to remove
+
+        Returns:
+            New PropertyCollection with properties from source removed
+        """
+        filtered = [p for p in self.properties if not (p.source_url and source in p.source_url)]
+
+        logger.info(
+            f"Deleted {len(self.properties) - len(filtered)} properties from source '{source}'. "
+            f"Remaining: {len(filtered)}"
+        )
+
+        return PropertyCollection(
+            properties=filtered,
+            total_count=len(filtered),
+            source=self.source,
+            source_type=self.source_type,
+        )
+
+    def delete_by_source_type(self, source_type: str) -> "PropertyCollection":
+        """
+        Remove properties from a specific source type.
+
+        Args:
+            source_type: Source type to remove (csv, excel, url, portal)
+
+        Returns:
+            New PropertyCollection with properties from source type removed
+        """
+        filtered = [
+            p
+            for p in self.properties
+            if not (p.source_platform and source_type.lower() in p.source_platform.lower())
+        ]
+
+        logger.info(
+            f"Deleted {len(self.properties) - len(filtered)} properties from source_type '{source_type}'. "
+            f"Remaining: {len(filtered)}"
+        )
+
+        return PropertyCollection(
+            properties=filtered,
+            total_count=len(filtered),
+            source=self.source,
+            source_type=self.source_type,
         )
 
 

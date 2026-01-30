@@ -12,6 +12,7 @@ client = TestClient(app)
 HEADERS = {"X-API-Key": "test-key"}
 
 
+@patch("api.routers.admin.DataLoaderExcel")
 @patch("api.routers.admin.DataLoaderCsv")
 @patch("api.routers.admin.save_collection")
 @patch("api.routers.admin.settings")
@@ -20,22 +21,30 @@ def test_admin_ingest_uses_defaults_and_returns_success(
     mock_get_settings,
     mock_settings,
     mock_save_collection,
-    mock_loader_cls,
+    mock_loader_csv_cls,
+    mock_loader_excel_cls,
 ):
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
     mock_settings.default_datasets = ["http://example.com/test.csv"]
-    mock_settings.max_properties = 100
+    mock_settings.max_props = 100  # type: ignore
+    mock_loader_excel_cls.detect_source_type.return_value = "csv"
+
+    def _mock_load_format_df(df, rows_count=None):
+        # Handle rows_count safely - only use head() if it's a positive int
+        if rows_count is not None and isinstance(rows_count, int) and rows_count > 0:
+            return df.head(rows_count)
+        return df
 
     loader = MagicMock()
-    loader.load_df.return_value = pd.DataFrame([{"city": "Warsaw"}, {"bad": "row"}])
-    loader.load_format_df.side_effect = lambda df, rows_count=None: df
-    mock_loader_cls.return_value = loader
+    loader.load_df.return_value = pd.DataFrame([{"city": "Warsaw"}, {"city": "Krakow"}])
+    loader.load_format_df.side_effect = _mock_load_format_df
+    mock_loader_csv_cls.return_value = loader
 
     resp = client.post("/api/v1/admin/ingest", json={}, headers=HEADERS)
     assert resp.status_code == 200
     data = resp.json()
     assert data["message"] == "Ingestion successful"
-    assert data["properties_processed"] == 1
+    assert data["properties_processed"] == 2
     assert data["errors"] == []
     assert mock_save_collection.called
 
@@ -55,6 +64,7 @@ def test_admin_ingest_returns_400_when_no_urls_and_no_defaults(
     assert not mock_loader_cls.called
 
 
+@patch("api.routers.admin.DataLoaderExcel")
 @patch("api.routers.admin.DataLoaderCsv")
 @patch("api.routers.admin.save_collection")
 @patch("api.routers.admin.settings")
@@ -63,16 +73,24 @@ def test_admin_ingest_returns_500_when_no_properties_loaded(
     mock_get_settings,
     mock_settings,
     mock_save_collection,
-    mock_loader_cls,
+    mock_loader_csv_cls,
+    mock_loader_excel_cls,
 ):
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
     mock_settings.default_datasets = ["http://example.com/empty.csv"]
-    mock_settings.max_properties = 100
+    mock_settings.max_props = 100  # type: ignore
+    mock_loader_excel_cls.detect_source_type.return_value = "csv"
+
+    def _mock_load_format_df(df, rows_count=None):
+        if rows_count is not None and isinstance(rows_count, int) and rows_count > 0:
+            return df.head(rows_count)
+        return df
 
     loader = MagicMock()
+    # DataFrame without required 'city' field, so no properties will be created
     loader.load_df.return_value = pd.DataFrame([{"bad": "row"}])
-    loader.load_format_df.side_effect = lambda df, rows_count=None: df
-    mock_loader_cls.return_value = loader
+    loader.load_format_df.side_effect = _mock_load_format_df
+    mock_loader_csv_cls.return_value = loader
 
     resp = client.post("/api/v1/admin/ingest", json={}, headers=HEADERS)
     assert resp.status_code == 500
@@ -80,6 +98,7 @@ def test_admin_ingest_returns_500_when_no_properties_loaded(
     assert not mock_save_collection.called
 
 
+@patch("api.routers.admin.DataLoaderExcel")
 @patch("api.routers.admin.DataLoaderCsv")
 @patch("api.routers.admin.save_collection")
 @patch("api.routers.admin.settings")
@@ -88,23 +107,30 @@ def test_admin_ingest_returns_errors_when_some_urls_fail(
     mock_get_settings,
     mock_settings,
     mock_save_collection,
-    mock_loader_cls,
+    mock_loader_csv_cls,
+    mock_loader_excel_cls,
 ):
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
     urls = ["http://example.com/ok.csv", "http://example.com/bad.csv"]
     mock_settings.default_datasets = urls
-    mock_settings.max_properties = 100
+    mock_settings.max_props = 100  # type: ignore
+    mock_loader_excel_cls.detect_source_type.return_value = "csv"
+
+    def _mock_load_format_df(df, rows_count=None):
+        if rows_count is not None and isinstance(rows_count, int) and rows_count > 0:
+            return df.head(rows_count)
+        return df
 
     ok_loader = MagicMock()
     ok_loader.load_df.return_value = pd.DataFrame([{"city": "Warsaw"}])
-    ok_loader.load_format_df.side_effect = lambda df, rows_count=None: df
+    ok_loader.load_format_df.side_effect = _mock_load_format_df
 
     def _loader(url: str):
         if url.endswith("bad.csv"):
             raise RuntimeError("network down")
         return ok_loader
 
-    mock_loader_cls.side_effect = _loader
+    mock_loader_csv_cls.side_effect = _loader
 
     resp = client.post("/api/v1/admin/ingest", json={}, headers=HEADERS)
     assert resp.status_code == 200
@@ -115,6 +141,7 @@ def test_admin_ingest_returns_errors_when_some_urls_fail(
     assert mock_save_collection.called
 
 
+@patch("api.routers.admin.DataLoaderExcel")
 @patch("api.routers.admin.DataLoaderCsv")
 @patch("api.routers.admin.save_collection")
 @patch("api.routers.admin.settings")
@@ -123,11 +150,22 @@ def test_admin_ingest_enforces_max_properties_limit(
     mock_get_settings,
     mock_settings,
     mock_save_collection,
-    mock_loader_cls,
+    mock_loader_csv_cls,
+    mock_loader_excel_cls,
 ):
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
-    mock_settings.max_properties = 2
+    mock_settings.max_props = 2  # type: ignore
     mock_settings.default_datasets = ["http://example.com/test.csv"]
+    mock_loader_excel_cls.detect_source_type.return_value = "csv"
+
+    # Track rows_count passed to format_df
+    format_df_calls = []
+
+    def _format_df(df, rows_count=None):
+        format_df_calls.append(rows_count)
+        if rows_count is not None and isinstance(rows_count, int) and rows_count > 0:
+            return df.head(rows_count)
+        return df
 
     loader = MagicMock()
     # Create a DataFrame with 5 rows, but max_properties is 2
@@ -140,15 +178,8 @@ def test_admin_ingest_enforces_max_properties_limit(
             {"city": "Wroclaw"},
         ]
     )
-    # Track rows_count passed to format_df
-    format_df_calls = []
-
-    def _format_df(df, rows_count=None):
-        format_df_calls.append(rows_count)
-        return df.head(rows_count) if rows_count else df
-
     loader.load_format_df.side_effect = _format_df
-    mock_loader_cls.return_value = loader
+    mock_loader_csv_cls.return_value = loader
 
     resp = client.post("/api/v1/admin/ingest", json={}, headers=HEADERS)
     assert resp.status_code == 200
@@ -162,6 +193,7 @@ def test_admin_ingest_enforces_max_properties_limit(
     assert mock_save_collection.called
 
 
+@patch("api.routers.admin.DataLoaderExcel")
 @patch("api.routers.admin.DataLoaderCsv")
 @patch("api.routers.admin.save_collection")
 @patch("api.routers.admin.settings")
@@ -170,16 +202,23 @@ def test_admin_ingest_returns_500_on_unhandled_exception(
     mock_get_settings,
     mock_settings,
     mock_save_collection,
-    mock_loader_cls,
+    mock_loader_csv_cls,
+    mock_loader_excel_cls,
 ):
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
     mock_settings.default_datasets = ["http://example.com/test.csv"]
-    mock_settings.max_properties = 100
+    mock_settings.max_props = 100  # type: ignore
+    mock_loader_excel_cls.detect_source_type.return_value = "csv"
+
+    def _mock_load_format_df(df, rows_count=None):
+        if rows_count is not None and isinstance(rows_count, int) and rows_count > 0:
+            return df.head(rows_count)
+        return df
 
     loader = MagicMock()
     loader.load_df.return_value = pd.DataFrame([{"city": "Warsaw"}])
-    loader.load_format_df.side_effect = lambda df, rows_count=None: df
-    mock_loader_cls.return_value = loader
+    loader.load_format_df.side_effect = _mock_load_format_df
+    mock_loader_csv_cls.return_value = loader
     mock_save_collection.side_effect = RuntimeError("disk full")
 
     resp = client.post("/api/v1/admin/ingest", json={}, headers=HEADERS)

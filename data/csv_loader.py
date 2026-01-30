@@ -1,6 +1,7 @@
 import logging
 import re
 from pathlib import Path
+from typing import List, Literal, Optional
 from urllib.parse import urlparse
 
 import numpy as np
@@ -17,6 +18,9 @@ fake_pl = Faker("pl_PL")
 
 # Set the pandas option to opt into future behavior
 pd.options.future.no_silent_downcasting = True
+
+# Source type constants for tracking
+SourceType = Literal["csv", "excel", "url", "unknown"]
 
 
 class DataLoaderCsv:
@@ -115,9 +119,9 @@ class DataLoaderCsv:
         logger.info(f"Data frame loaded from {csv_url}, rows: {len(df)}")
         return df
 
-    def load_format_df(self, df: pd.DataFrame) -> pd.DataFrame:
+    def load_format_df(self, df: pd.DataFrame, rows_count: int | None = None) -> pd.DataFrame:
         """Returns the DataFrame. If not loaded, loads and prepares the data first."""
-        df_formatted = self.format_df(df)
+        df_formatted = self.format_df(df, rows_count=rows_count)
         logger.info(f"Data frame formatted from {self.csv_path}")
         return df_formatted
 
@@ -403,3 +407,181 @@ class DataLoaderCsv:
         logger.info(f"Formatted data frame rows: {len(df_final)}")
 
         return df_final
+
+
+class DataLoaderExcel(DataLoaderCsv):
+    """
+    Enhanced Excel loader with sheet selection and source tracking.
+
+    Supports .xlsx, .xls, and .ods files with:
+    - Sheet detection and selection
+    - Header row configuration
+    - Source type tracking
+    """
+
+    def __init__(
+        self,
+        file_path: Path | str,
+        sheet_name: Optional[str] = None,
+        header_row: Optional[int] = 0,
+        source_type: SourceType = "excel",
+    ):
+        """
+        Initialize Excel loader.
+
+        Args:
+            file_path: Path to Excel file (.xlsx, .xls, .ods)
+            sheet_name: Specific sheet name to load (None = first sheet)
+            header_row: Row number to use as header (0-indexed)
+            source_type: Source type for tracking
+        """
+        super().__init__(file_path)
+        self.sheet_name = sheet_name
+        self.header_row = header_row
+        self.source_type = source_type
+
+    def get_sheet_names(self) -> List[str]:
+        """
+        Get list of sheet names from Excel file.
+
+        Returns:
+            List of sheet names
+
+        Raises:
+            ImportError: If required Excel libraries not installed
+            Exception: If file cannot be read
+        """
+        if self.csv_path is None:
+            return []
+
+        file_path = str(self.csv_path)
+        suffix = Path(file_path).suffix.lower()
+
+        try:
+            if suffix == ".xlsx":
+                import openpyxl
+
+                wb = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
+                sheet_names = wb.sheetnames
+                wb.close()
+                return sheet_names
+            elif suffix == ".xls":
+                import xlrd
+
+                workbook = xlrd.open_workbook(file_path)
+                sheet_names = workbook.sheet_names()
+                return sheet_names
+            elif suffix == ".ods":
+                try:
+                    from odf.opendocument import load
+
+                    doc = load(file_path)
+                    return doc.spreadsheets.keys()
+                except ImportError:
+                    # Fallback to pandas ExcelFile
+                    excel_file = pd.ExcelFile(file_path, engine="odf")
+                    sheet_names = excel_file.sheet_names
+                    excel_file.close()
+                    return sheet_names
+            else:
+                return pd.ExcelFile(file_path).sheet_names
+        except ImportError as e:
+            raise ImportError(
+                f"Excel file reading requires optional dependencies. "
+                f"For .xlsx: openpyxl (already installed). "
+                f"For .xls: xlrd. "
+                f"For .ods: odfpy or ezodf. "
+                f"Error: {e}"
+            ) from e
+
+    def load_df(self) -> pd.DataFrame:
+        """
+        Load Excel data with sheet selection and header configuration.
+
+        Returns:
+            DataFrame with loaded data
+
+        Raises:
+            ValueError: If file path not provided or sheet not found
+            Exception: If file cannot be loaded
+        """
+        if self.csv_path is None:
+            raise ValueError("No Excel file path provided")
+
+        file_path = str(self.csv_path)
+        suffix = Path(file_path).suffix.lower()
+        is_excel = suffix in {".xlsx", ".xls", ".ods"}
+
+        if not is_excel:
+            raise ValueError(
+                f"Unsupported file format: {suffix}. Excel loader supports .xlsx, .xls, .ods files."
+            )
+
+        try:
+            # Build kwargs for pd.read_excel
+            read_kwargs = {}
+
+            if self.sheet_name:
+                read_kwargs["sheet_name"] = self.sheet_name
+            if self.header_row is not None:
+                read_kwargs["header"] = self.header_row
+
+            # Select appropriate engine based on file type
+            if suffix == ".xlsx":
+                read_kwargs["engine"] = "openpyxl"
+            elif suffix == ".xls":
+                import importlib.util
+
+                if importlib.util.find_spec("xlrd"):
+                    read_kwargs["engine"] = "xlrd"
+            elif suffix == ".ods":
+                import importlib.util
+
+                if importlib.util.find_spec("odf"):
+                    read_kwargs["engine"] = "odf"
+
+            df = pd.read_excel(file_path, **read_kwargs)
+
+            logger.info(
+                f"Excel data loaded from {file_path}"
+                f" (sheet: {self.sheet_name or 'default'}, rows: {len(df)})"
+            )
+            return df
+
+        except ImportError as e:
+            raise ImportError(
+                "Excel input requires optional dependencies: "
+                "openpyxl (.xlsx), xlrd (.xls), or odfpy (.ods)."
+            ) from e
+        except Exception as e:
+            raise Exception(f"Failed to load Excel file: {str(e)}") from e
+
+    @classmethod
+    def detect_source_type(cls, file_path: Path | str) -> SourceType:
+        """
+        Detect source type from file path.
+
+        Args:
+            file_path: Path to file
+
+        Returns:
+            Source type: "csv", "excel", "url", or "unknown"
+        """
+        path_str = str(file_path)
+
+        # Check if URL
+        if isinstance(file_path, URL) or urlparse(path_str).scheme in {"http", "https"}:
+            path_str = cls.convert_github_url_to_raw(path_str)
+            suffix = Path(urlparse(path_str).path).suffix.lower()
+            if suffix in {".xlsx", ".xls", ".ods"}:
+                return "url"  # URL pointing to Excel
+            return "url"  # URL pointing to CSV
+
+        # Check file extension
+        suffix = Path(path_str).suffix.lower()
+        if suffix == ".csv":
+            return "csv"
+        elif suffix in {".xlsx", ".xls", ".ods"}:
+            return "excel"
+
+        return "unknown"

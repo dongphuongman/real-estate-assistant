@@ -139,6 +139,16 @@ class IngestRequest(BaseModel):
 
     file_urls: Optional[List[str]] = None
     force: bool = False
+    # Excel-specific options
+    sheet_name: Optional[str] = Field(
+        None, description="Excel sheet name to load (for .xlsx, .xls, .ods files)"
+    )
+    header_row: Optional[int] = Field(
+        0, ge=0, description="Header row number for Excel files (0-indexed)"
+    )
+    source_name: Optional[str] = Field(
+        None, description="Optional source name for tracking (e.g., 'properties_2024_q1')"
+    )
 
 
 class IngestResponse(BaseModel):
@@ -147,6 +157,23 @@ class IngestResponse(BaseModel):
     message: str
     properties_processed: int
     errors: List[str] = []
+    source_type: Optional[str] = None
+    source_name: Optional[str] = None
+
+
+class ExcelSheetsRequest(BaseModel):
+    """Request model for getting Excel sheet names."""
+
+    file_url: str = Field(..., description="URL to Excel file")
+
+
+class ExcelSheetsResponse(BaseModel):
+    """Response model for Excel sheet names."""
+
+    file_url: str
+    sheet_names: List[str]
+    default_sheet: Optional[str] = None
+    row_count: Dict[str, int] = Field(default_factory=dict, description="Row count per sheet")
 
 
 class ReindexRequest(BaseModel):
@@ -393,3 +420,51 @@ class SSEMetaEvent(BaseModel):
     session_id: str
     request_id: Optional[str] = None
     intermediate_steps: Optional[List[Dict[str, Any]]] = None
+
+
+# Portal/API Integration Models for TASK-006
+class PortalFiltersRequest(BaseModel):
+    """Request model for portal data fetching with filters."""
+
+    portal: str = Field(..., description="Portal adapter name (e.g., 'otodom', 'idealista')")
+    city: Optional[str] = Field(None, description="City to search in")
+    min_price: Optional[float] = Field(None, ge=0, description="Minimum price filter")
+    max_price: Optional[float] = Field(None, ge=0, description="Maximum price filter")
+    min_rooms: Optional[float] = Field(None, ge=0, description="Minimum number of rooms")
+    max_rooms: Optional[float] = Field(None, ge=0, description="Maximum number of rooms")
+    property_type: Optional[str] = Field(None, description="Property type (apartment, house, etc.)")
+    listing_type: Optional[str] = Field("rent", description="Listing type (rent, sale)")
+    limit: int = Field(100, ge=1, le=500, description="Maximum results to fetch")
+    source_name: Optional[str] = Field(
+        None, description="Optional source name for tracking (e.g., 'warsaw_rentals')"
+    )
+
+
+class PortalIngestResponse(BaseModel):
+    """Response model for portal data ingestion."""
+
+    success: bool
+    message: str
+    portal: str
+    properties_processed: int
+    source_type: str = "portal"
+    source_name: Optional[str] = None
+    errors: List[str] = Field(default_factory=list)
+    filters_applied: Optional[Dict[str, Any]] = None
+
+
+class PortalAdapterInfo(BaseModel):
+    """Information about a portal adapter."""
+
+    name: str
+    display_name: str
+    configured: bool
+    has_api_key: bool = False
+    rate_limit: Optional[Dict[str, int]] = None
+
+
+class PortalAdaptersResponse(BaseModel):
+    """Response model for listing available portal adapters."""
+
+    adapters: List[PortalAdapterInfo]
+    count: int
