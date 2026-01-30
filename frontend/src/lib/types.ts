@@ -212,3 +212,31 @@ export interface PromptTemplateApplyResponse {
   template_id: string;
   rendered_text: string;
 }
+
+// Admin API types for data ingestion
+export interface IngestRequest {
+  file_urls?: string[];
+  force?: boolean;
+  sheet_name?: string;
+  header_row?: number;
+  source_name?: string;
+}
+
+export interface IngestResponse {
+  message: string;
+  properties_processed: number;
+  errors: string[];
+  source_type?: string;
+  source_name?: string;
+}
+
+export interface ExcelSheetsRequest {
+  file_url: string;
+}
+
+export interface ExcelSheetsResponse {
+  file_url: string;
+  sheet_names: string[];
+  default_sheet?: string;
+  row_count: Record<string, number>;
+}

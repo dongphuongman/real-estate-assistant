@@ -1,6 +1,10 @@
 import {
   ChatRequest,
   ChatResponse,
+  ExcelSheetsRequest,
+  ExcelSheetsResponse,
+  IngestRequest,
+  IngestResponse,
   ModelProviderCatalog,
   ModelPreferences,
   ModelRuntimeTestResponse,
@@ -489,4 +493,23 @@ export async function exportPropertiesByIds(
   options?: Pick<ExportPropertiesRequest, "columns" | "include_header" | "csv_delimiter" | "csv_decimal">
 ): Promise<{ filename: string; blob: Blob }> {
   return exportProperties({ format, property_ids: propertyIds, ...(options || {}) });
+}
+
+// Admin API functions for data ingestion
+export async function ingestData(request: IngestRequest): Promise<IngestResponse> {
+  const response = await fetch(`${getApiUrl()}/admin/ingest`, {
+    method: "POST",
+    headers: buildHeaders(),
+    body: JSON.stringify(request),
+  });
+  return handleResponse<IngestResponse>(response);
+}
+
+export async function getExcelSheets(request: ExcelSheetsRequest): Promise<ExcelSheetsResponse> {
+  const response = await fetch(`${getApiUrl()}/admin/excel/sheets`, {
+    method: "POST",
+    headers: buildHeaders(),
+    body: JSON.stringify(request),
+  });
+  return handleResponse<ExcelSheetsResponse>(response);
 }
