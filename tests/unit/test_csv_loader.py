@@ -4,7 +4,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from data.csv_loader import DataLoaderCsv
+from data.csv_loader import DataLoaderCsv, DataLoaderExcel
+from yarl import URL
 
 
 def test_convert_github_url_to_raw():
@@ -62,3 +63,77 @@ def test_load_df_reads_excel_from_path():
 
     assert list(df_out.columns) == ["city", "price", "rooms"]
     assert len(df_out) == 1
+
+
+def test_excel_get_sheet_names_xlsx(monkeypatch):
+    class Workbook:
+        sheetnames = ["Sheet1", "Sheet2"]
+
+        def close(self):
+            return None
+
+    import openpyxl
+
+    monkeypatch.setattr(openpyxl, "load_workbook", lambda *_args, **_kwargs: Workbook())
+    loader = DataLoaderExcel("fake.xlsx")
+    assert loader.get_sheet_names() == ["Sheet1", "Sheet2"]
+
+
+def test_excel_get_sheet_names_xls(monkeypatch):
+    class Workbook:
+        def sheet_names(self):
+            return ["SheetA"]
+
+    import xlrd
+
+    monkeypatch.setattr(xlrd, "open_workbook", lambda *_args, **_kwargs: Workbook())
+    loader = DataLoaderExcel("fake.xls")
+    assert loader.get_sheet_names() == ["SheetA"]
+
+
+def test_excel_get_sheet_names_ods_fallback(monkeypatch):
+    class ExcelFile:
+        sheet_names = ["ODS1"]
+
+        def close(self):
+            return None
+
+    import odf.opendocument
+
+    monkeypatch.setattr(odf.opendocument, "load", lambda *_args, **_kwargs: (_ for _ in ()).throw(ImportError()))
+    monkeypatch.setattr(pd, "ExcelFile", lambda *_args, **_kwargs: ExcelFile())
+    loader = DataLoaderExcel("fake.ods")
+    assert loader.get_sheet_names() == ["ODS1"]
+
+
+def test_excel_get_sheet_names_other_suffix(monkeypatch):
+    class ExcelFile:
+        sheet_names = ["MacroSheet"]
+
+        def close(self):
+            return None
+
+    monkeypatch.setattr(pd, "ExcelFile", lambda *_args, **_kwargs: ExcelFile())
+    loader = DataLoaderExcel("fake.xlsm")
+    assert loader.get_sheet_names() == ["MacroSheet"]
+
+
+def test_excel_load_df_builds_kwargs(monkeypatch):
+    captured = {}
+
+    def fake_read_excel(_path, **kwargs):
+        captured.update(kwargs)
+        return pd.DataFrame({"city": ["Wroclaw"], "price": [1000], "rooms": [2]})
+
+    monkeypatch.setattr(pd, "read_excel", fake_read_excel)
+    loader = DataLoaderExcel("fake.xlsx", sheet_name="Sheet1", header_row=1)
+    df_out = loader.load_df()
+    assert captured["engine"] == "openpyxl"
+    assert captured["sheet_name"] == "Sheet1"
+    assert captured["header"] == 1
+    assert len(df_out) == 1
+
+
+def test_detect_source_type_with_url_instance():
+    url = URL("https://example.com/data.xlsx")
+    assert DataLoaderExcel.detect_source_type(url) == "url"

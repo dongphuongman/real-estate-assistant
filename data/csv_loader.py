@@ -1,7 +1,7 @@
 import logging
 import re
 from pathlib import Path
-from typing import List, Literal, Optional
+from typing import Any, List, Literal, Optional
 from urllib.parse import urlparse
 
 import numpy as np
@@ -462,29 +462,32 @@ class DataLoaderExcel(DataLoaderCsv):
                 import openpyxl
 
                 wb = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
-                sheet_names = wb.sheetnames
+                sheet_names = list(wb.sheetnames)
                 wb.close()
                 return sheet_names
             elif suffix == ".xls":
                 import xlrd
 
                 workbook = xlrd.open_workbook(file_path)
-                sheet_names = workbook.sheet_names()
+                sheet_names = list(workbook.sheet_names())
                 return sheet_names
             elif suffix == ".ods":
                 try:
                     from odf.opendocument import load
 
                     doc = load(file_path)
-                    return doc.spreadsheets.keys()
+                    return list(doc.spreadsheets.keys())
                 except ImportError:
                     # Fallback to pandas ExcelFile
                     excel_file = pd.ExcelFile(file_path, engine="odf")
-                    sheet_names = excel_file.sheet_names
+                    sheet_names = list(excel_file.sheet_names)
                     excel_file.close()
                     return sheet_names
             else:
-                return pd.ExcelFile(file_path).sheet_names
+                excel_file = pd.ExcelFile(file_path)
+                sheet_names = list(excel_file.sheet_names)
+                excel_file.close()
+                return sheet_names
         except ImportError as e:
             raise ImportError(
                 f"Excel file reading requires optional dependencies. "
@@ -519,7 +522,7 @@ class DataLoaderExcel(DataLoaderCsv):
 
         try:
             # Build kwargs for pd.read_excel
-            read_kwargs = {}
+            read_kwargs: dict[str, Any] = {}
 
             if self.sheet_name:
                 read_kwargs["sheet_name"] = self.sheet_name
@@ -557,7 +560,7 @@ class DataLoaderExcel(DataLoaderCsv):
             raise Exception(f"Failed to load Excel file: {str(e)}") from e
 
     @classmethod
-    def detect_source_type(cls, file_path: Path | str) -> SourceType:
+    def detect_source_type(cls, file_path: Path | str | URL) -> SourceType:
         """
         Detect source type from file path.
 

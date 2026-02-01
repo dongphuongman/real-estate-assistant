@@ -2,7 +2,10 @@
 Pytest configuration and shared fixtures.
 """
 
+import importlib.util
 import os
+import sys
+import types
 
 import pytest
 from langchain_core.documents import Document
@@ -12,9 +15,31 @@ from data.schemas import Property, PropertyCollection, PropertyType
 from vector_store.reranker import PropertyReranker
 
 
+def _install_stub_module(module_name: str, attrs: dict[str, object] | None = None) -> None:
+    if module_name in sys.modules:
+        return
+    module = types.ModuleType(module_name)
+    if module_name == "odf":
+        module.__path__ = []
+    if attrs:
+        for key, value in attrs.items():
+            setattr(module, key, value)
+    sys.modules[module_name] = module
+
+
+def _ensure_optional_excel_modules() -> None:
+    if importlib.util.find_spec("xlrd") is None:
+        _install_stub_module("xlrd", {"open_workbook": lambda *_args, **_kwargs: None})
+    if importlib.util.find_spec("odf") is None:
+        _install_stub_module("odf")
+    if importlib.util.find_spec("odf.opendocument") is None:
+        _install_stub_module("odf.opendocument", {"load": lambda *_args, **_kwargs: None})
+
+
 def pytest_configure() -> None:
     os.environ.setdefault("ENVIRONMENT", "test")
     os.environ["API_ACCESS_KEY"] = "dev-secret-key"
+    _ensure_optional_excel_modules()
 
 
 @pytest.fixture

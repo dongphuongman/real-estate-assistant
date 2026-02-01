@@ -257,6 +257,26 @@ Example response:
 
 ### Endpoints
 
+## POST /api/v1/admin/excel/sheets
+
+**Summary**: Get Excel Sheets
+
+**Tags**: Admin
+
+Get sheet names from an Excel file. Returns available sheets and their row counts for sheet selection UI.
+
+**Request Body**
+
+- Required: yes
+- application/json: ExcelSheetsRequest
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | ExcelSheetsResponse |
+| 422 | Validation Error | HTTPValidationError |
+
 ## GET /api/v1/admin/health
 
 **Summary**: Admin Health Check
@@ -277,7 +297,7 @@ Detailed health check for admin.
 
 **Tags**: Admin
 
-Trigger data ingestion from URLs. Downloads CSVs, processes them, and saves to local cache. Does NOT automatically reindex vector store (call /reindex for that). Enforces max_properties limit from settings.
+Trigger data ingestion from URLs. Downloads CSV/Excel files, processes them, and saves to local cache. Does NOT automatically reindex vector store (call /reindex for that). Enforces max_properties limit from settings.
 
 **Request Body**
 
@@ -316,6 +336,40 @@ Return simple API metrics.
 | Status | Description | Body (application/json) |
 |---|---|---|
 | 200 | Successful Response | NotificationsAdminStats |
+
+## GET /api/v1/admin/portals
+
+**Summary**: List Portals
+
+**Tags**: Admin
+
+List all available portal adapters. Returns information about each portal including: - Whether it's configured (has API key if required) - Rate limit information
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | PortalAdaptersResponse |
+
+## POST /api/v1/admin/portals/fetch
+
+**Summary**: Fetch From Portal
+
+**Tags**: Admin
+
+Fetch property data from an external portal. Uses the specified portal adapter to fetch properties based on filters. The fetched data is automatically ingested into the property cache.
+
+**Request Body**
+
+- Required: yes
+- application/json: PortalFiltersRequest
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | PortalIngestResponse |
+| 422 | Validation Error | HTTPValidationError |
 
 ## POST /api/v1/admin/reindex
 

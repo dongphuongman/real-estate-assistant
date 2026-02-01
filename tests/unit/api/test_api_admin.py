@@ -1,4 +1,5 @@
 import json
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
@@ -6,6 +7,7 @@ from fastapi.testclient import TestClient
 
 from api.dependencies import get_vector_store
 from api.main import app
+from data.adapters.base import PortalFetchResult
 
 client = TestClient(app)
 
@@ -26,7 +28,7 @@ def test_admin_ingest_uses_defaults_and_returns_success(
 ):
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
     mock_settings.default_datasets = ["http://example.com/test.csv"]
-    mock_settings.max_props = 100  # type: ignore
+    mock_settings.max_properties = 100  # type: ignore
     mock_loader_excel_cls.detect_source_type.return_value = "csv"
 
     def _mock_load_format_df(df, rows_count=None):
@@ -78,7 +80,7 @@ def test_admin_ingest_returns_500_when_no_properties_loaded(
 ):
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
     mock_settings.default_datasets = ["http://example.com/empty.csv"]
-    mock_settings.max_props = 100  # type: ignore
+    mock_settings.max_properties = 100  # type: ignore
     mock_loader_excel_cls.detect_source_type.return_value = "csv"
 
     def _mock_load_format_df(df, rows_count=None):
@@ -113,7 +115,7 @@ def test_admin_ingest_returns_errors_when_some_urls_fail(
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
     urls = ["http://example.com/ok.csv", "http://example.com/bad.csv"]
     mock_settings.default_datasets = urls
-    mock_settings.max_props = 100  # type: ignore
+    mock_settings.max_properties = 100  # type: ignore
     mock_loader_excel_cls.detect_source_type.return_value = "csv"
 
     def _mock_load_format_df(df, rows_count=None):
@@ -154,7 +156,7 @@ def test_admin_ingest_enforces_max_properties_limit(
     mock_loader_excel_cls,
 ):
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
-    mock_settings.max_props = 2  # type: ignore
+    mock_settings.max_properties = 2  # type: ignore
     mock_settings.default_datasets = ["http://example.com/test.csv"]
     mock_loader_excel_cls.detect_source_type.return_value = "csv"
 
@@ -207,7 +209,7 @@ def test_admin_ingest_returns_500_on_unhandled_exception(
 ):
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
     mock_settings.default_datasets = ["http://example.com/test.csv"]
-    mock_settings.max_props = 100  # type: ignore
+    mock_settings.max_properties = 100  # type: ignore
     mock_loader_excel_cls.detect_source_type.return_value = "csv"
 
     def _mock_load_format_df(df, rows_count=None):
@@ -270,7 +272,7 @@ def test_admin_reindex_success(mock_get_settings, mock_load_collection):
     data = resp.json()
     assert data["message"] == "Reindexing successful"
     assert data["count"] == 2
-    store.add_documents.assert_called_once()
+    store.add_properties.assert_called_once()
 
 
 @patch("api.routers.admin.load_collection")
@@ -435,3 +437,370 @@ def test_admin_notifications_stats_reads_alert_storage_and_scheduler_state(
     assert data["sent_alerts_total"] == 1
     assert data["pending_alerts_total"] == 1
     assert data["pending_alerts_by_type"]["new_property"] == 1
+
+
+@patch("api.routers.admin.DataLoaderExcel")
+@patch("api.auth.get_settings")
+def test_admin_excel_sheets_returns_rows_and_default_sheet(
+    mock_get_settings, mock_loader_excel_cls
+):
+    mock_get_settings.return_value = MagicMock(api_access_key="test-key")
+    sheet_names = ["SheetA", "SheetB"]
+
+    root_loader = MagicMock()
+    root_loader.get_sheet_names.return_value = sheet_names
+
+    sheet_a_loader = MagicMock()
+    sheet_a_loader.load_df.return_value = pd.DataFrame([{"city": "Warsaw"}])
+
+    sheet_b_loader = MagicMock()
+    sheet_b_loader.load_df.return_value = pd.DataFrame([])
+
+    def _loader_factory(_url, sheet_name=None, **_kwargs):
+        if sheet_name is None:
+            return root_loader
+        if sheet_name == "SheetA":
+            return sheet_a_loader
+        return sheet_b_loader
+
+    mock_loader_excel_cls.side_effect = _loader_factory
+
+    resp = client.post(
+        "/api/v1/admin/excel/sheets",
+        json={"file_url": "http://example.com/test.xlsx"},
+        headers=HEADERS,
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["sheet_names"] == sheet_names
+    assert data["default_sheet"] == "SheetA"
+    assert data["row_count"]["SheetA"] == 1
+    assert data["row_count"]["SheetB"] == 0
+
+
+@patch("api.routers.admin.DataLoaderExcel")
+@patch("api.auth.get_settings")
+def test_admin_excel_sheets_returns_400_on_import_error(mock_get_settings, mock_loader_excel_cls):
+    mock_get_settings.return_value = MagicMock(api_access_key="test-key")
+    loader = MagicMock()
+    loader.get_sheet_names.side_effect = ImportError("missing")
+    mock_loader_excel_cls.return_value = loader
+
+    resp = client.post(
+        "/api/v1/admin/excel/sheets",
+        json={"file_url": "http://example.com/test.xlsx"},
+        headers=HEADERS,
+    )
+    assert resp.status_code == 400
+    assert "Excel libraries not available" in resp.json()["detail"]
+
+
+@patch("data.adapters.registry.AdapterRegistry.get_all_info")
+@patch("api.auth.get_settings")
+def test_admin_portals_list_success(mock_get_settings, mock_get_all_info):
+    mock_get_settings.return_value = MagicMock(api_access_key="test-key")
+    mock_get_all_info.return_value = [
+        {
+            "name": "p1",
+            "display_name": "Portal One",
+            "configured": True,
+            "has_api_key": True,
+            "rate_limit": {"rpm": 10},
+        },
+        None,
+    ]
+
+    resp = client.get("/api/v1/admin/portals", headers=HEADERS)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["count"] == 1
+    assert data["adapters"][0]["name"] == "p1"
+    assert data["adapters"][0]["display_name"] == "Portal One"
+
+
+@patch("data.adapters.registry.AdapterRegistry.list_adapters")
+@patch("data.adapters.get_adapter")
+@patch("api.auth.get_settings")
+def test_admin_portal_fetch_returns_404_when_adapter_missing(
+    mock_get_settings, mock_get_adapter, mock_list_adapters
+):
+    mock_get_settings.return_value = MagicMock(api_access_key="test-key")
+    mock_get_adapter.return_value = None
+    mock_list_adapters.return_value = ["p1"]
+
+    resp = client.post(
+        "/api/v1/admin/portals/fetch",
+        json={"portal": "missing"},
+        headers=HEADERS,
+    )
+    assert resp.status_code == 404
+    assert "Available portals" in resp.json()["detail"]
+
+
+@patch("api.routers.admin.save_collection")
+@patch("api.routers.admin.settings")
+@patch("data.adapters.get_adapter")
+@patch("api.auth.get_settings")
+def test_admin_portal_fetch_returns_success(
+    mock_get_settings, mock_get_adapter, mock_settings, mock_save_collection
+):
+    mock_get_settings.return_value = MagicMock(api_access_key="test-key")
+    mock_settings.max_properties = 100
+
+    result = PortalFetchResult(
+        success=True,
+        properties=[{"city": "Warsaw"}],
+        count=1,
+        source="portal-source",
+        source_type="portal",
+        errors=[],
+    )
+    adapter = MagicMock()
+    adapter.fetch.return_value = result
+    mock_get_adapter.return_value = adapter
+
+    resp = client.post(
+        "/api/v1/admin/portals/fetch",
+        json={"portal": "p1", "city": "Warsaw", "source_name": "custom-source"},
+        headers=HEADERS,
+    )
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["success"] is True
+    assert data["portal"] == "p1"
+    assert data["properties_processed"] == 1
+    assert data["source_type"] == "portal"
+    assert data["source_name"] == "custom-source"
+    assert data["errors"] == []
+    assert data["filters_applied"]["city"] == "Warsaw"
+    assert mock_save_collection.called
+
+
+@patch("api.routers.admin.save_collection")
+@patch("data.adapters.get_adapter")
+@patch("api.auth.get_settings")
+def test_admin_portal_fetch_returns_failed_result_when_adapter_errors(
+    mock_get_settings, mock_get_adapter, mock_save_collection
+):
+    mock_get_settings.return_value = MagicMock(api_access_key="test-key")
+
+    result = PortalFetchResult(
+        success=False,
+        properties=[],
+        count=0,
+        source="portal-source",
+        source_type="portal",
+        errors=["boom"],
+    )
+    adapter = MagicMock()
+    adapter.fetch.return_value = result
+    mock_get_adapter.return_value = adapter
+
+    resp = client.post(
+        "/api/v1/admin/portals/fetch",
+        json={"portal": "p1", "city": "Warsaw"},
+        headers=HEADERS,
+    )
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["success"] is False
+    assert data["message"] == "Failed to fetch from portal: boom"
+    assert data["errors"] == ["boom"]
+    assert data["properties_processed"] == 0
+    assert not mock_save_collection.called
+
+
+@patch("api.routers.admin.save_collection")
+@patch("api.routers.admin.settings")
+@patch("data.adapters.get_adapter")
+@patch("api.auth.get_settings")
+def test_admin_portal_fetch_returns_no_valid_properties_when_validation_fails(
+    mock_get_settings, mock_get_adapter, mock_settings, mock_save_collection
+):
+    mock_get_settings.return_value = MagicMock(api_access_key="test-key")
+    mock_settings.max_properties = 100
+
+    result = PortalFetchResult(
+        success=True,
+        properties=[{"bad": "record"}],
+        count=1,
+        source="portal-source",
+        source_type="portal",
+        errors=[],
+    )
+    adapter = MagicMock()
+    adapter.fetch.return_value = result
+    mock_get_adapter.return_value = adapter
+
+    resp = client.post(
+        "/api/v1/admin/portals/fetch",
+        json={"portal": "p1", "city": "Warsaw"},
+        headers=HEADERS,
+    )
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["success"] is False
+    assert data["message"] == "No valid properties could be fetched from portal"
+    assert data["properties_processed"] == 0
+    assert data["errors"]
+    assert not mock_save_collection.called
+
+
+@patch("data.adapters.get_adapter")
+@patch("api.auth.get_settings")
+def test_admin_portal_fetch_returns_500_on_adapter_exception(mock_get_settings, mock_get_adapter):
+    mock_get_settings.return_value = MagicMock(api_access_key="test-key")
+    adapter = MagicMock()
+    adapter.fetch.side_effect = RuntimeError("fetch failed")
+    mock_get_adapter.return_value = adapter
+
+    resp = client.post(
+        "/api/v1/admin/portals/fetch",
+        json={"portal": "p1", "city": "Warsaw"},
+        headers=HEADERS,
+    )
+    assert resp.status_code == 500
+    assert resp.json()["detail"] == "fetch failed"
+
+
+@patch("data.adapters.registry.AdapterRegistry.get_all_info")
+@patch("api.auth.get_settings")
+def test_admin_portals_list_returns_500_on_failure(mock_get_settings, mock_get_all_info):
+    mock_get_settings.return_value = MagicMock(api_access_key="test-key")
+    mock_get_all_info.side_effect = RuntimeError("registry down")
+
+    resp = client.get("/api/v1/admin/portals", headers=HEADERS)
+    assert resp.status_code == 500
+    assert resp.json()["detail"] == "registry down"
+
+
+@patch("api.routers.admin.settings")
+@patch("api.auth.get_settings")
+def test_admin_version_uses_real_python_version(mock_get_settings, mock_settings):
+    mock_get_settings.return_value = MagicMock(api_access_key="test-key")
+    mock_settings.version = "1.0.0"
+    mock_settings.environment = "test"
+    mock_settings.app_title = "Test App"
+
+    resp = client.get("/api/v1/admin/version", headers=HEADERS)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["version"] == "1.0.0"
+    assert data["environment"] == "test"
+    assert data["app_title"] == "Test App"
+    assert isinstance(data["python_version"], str)
+    assert data["python_version"]
+    assert isinstance(data["platform"], str)
+
+
+@patch("api.routers.admin.DataLoaderExcel")
+@patch("api.routers.admin.DataLoaderCsv")
+@patch("api.routers.admin.save_collection")
+@patch("api.routers.admin.settings")
+@patch("api.auth.get_settings")
+def test_admin_ingest_excel_path_includes_sheet_and_header(
+    mock_get_settings,
+    mock_settings,
+    mock_save_collection,
+    mock_loader_csv_cls,
+    mock_loader_excel_cls,
+):
+    mock_get_settings.return_value = MagicMock(api_access_key="test-key")
+    mock_settings.default_datasets = ["http://example.com/test.xlsx"]
+    mock_settings.max_properties = 50
+    mock_loader_excel_cls.detect_source_type.return_value = "excel"
+
+    loader = MagicMock()
+    loader.load_df.return_value = pd.DataFrame([{"city": "Warsaw"}])
+    loader.load_format_df.side_effect = lambda df, rows_count=None: df
+    mock_loader_excel_cls.return_value = loader
+
+    resp = client.post(
+        "/api/v1/admin/ingest",
+        json={"sheet_name": "Sheet1", "header_row": 2},
+        headers=HEADERS,
+    )
+
+    assert resp.status_code == 200
+    assert mock_loader_excel_cls.called
+    mock_loader_csv_cls.assert_not_called()
+    assert mock_save_collection.called
+
+
+@patch("api.routers.admin.DataLoaderExcel")
+@patch("api.auth.get_settings")
+def test_admin_excel_sheets_defaults_to_first_sheet_when_all_empty(
+    mock_get_settings, mock_loader_excel_cls
+):
+    mock_get_settings.return_value = MagicMock(api_access_key="test-key")
+    sheet_names = ["SheetA", "SheetB"]
+
+    root_loader = MagicMock()
+    root_loader.get_sheet_names.return_value = sheet_names
+
+    failing_loader = MagicMock()
+    failing_loader.load_df.side_effect = RuntimeError("read error")
+
+    def _loader_factory(_url, sheet_name=None, **_kwargs):
+        if sheet_name is None:
+            return root_loader
+        return failing_loader
+
+    mock_loader_excel_cls.side_effect = _loader_factory
+
+    resp = client.post(
+        "/api/v1/admin/excel/sheets",
+        json={"file_url": "http://example.com/test.xlsx"},
+        headers=HEADERS,
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["default_sheet"] == "SheetA"
+    assert data["row_count"]["SheetA"] == 0
+    assert data["row_count"]["SheetB"] == 0
+
+
+@patch("api.routers.admin.load_alert_storage_summary")
+@patch("api.auth.get_settings")
+def test_admin_notifications_stats_without_scheduler_uses_default_path(
+    mock_get_settings, mock_summary
+):
+    mock_get_settings.return_value = MagicMock(api_access_key="test-key")
+    mock_summary.return_value = SimpleNamespace(
+        sent_total=2,
+        pending_total=1,
+        pending_by_type={"price_drop": 1},
+        pending_oldest_created_at="2026-01-24T10:00:00",
+        pending_newest_created_at="2026-01-24T10:00:10",
+    )
+
+    resp = client.get("/api/v1/admin/notifications-stats", headers=HEADERS)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["scheduler_running"] is False
+    assert data["alerts_storage_path"] == ".alerts"
+    assert data["sent_alerts_total"] == 2
+    assert data["pending_alerts_total"] == 1
+
+
+@patch("api.routers.admin.load_alert_storage_summary")
+@patch("api.auth.get_settings")
+def test_admin_notifications_stats_returns_500_on_summary_error(mock_get_settings, mock_summary):
+    mock_get_settings.return_value = MagicMock(api_access_key="test-key")
+    mock_summary.side_effect = RuntimeError("summary failed")
+
+    resp = client.get("/api/v1/admin/notifications-stats", headers=HEADERS)
+    assert resp.status_code == 500
+    assert resp.json()["detail"] == "summary failed"
+
+
+def test_admin_get_available_portals_returns_empty_on_error():
+    import api.routers.admin as admin_router
+
+    with patch(
+        "data.adapters.registry.AdapterRegistry.list_adapters", side_effect=RuntimeError("boom")
+    ):
+        assert admin_router._get_available_portal_names() == []

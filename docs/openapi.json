@@ -407,6 +407,62 @@
         "title": "DataEnrichmentResponse",
         "type": "object"
       },
+      "ExcelSheetsRequest": {
+        "description": "Request model for getting Excel sheet names.",
+        "properties": {
+          "file_url": {
+            "description": "URL to Excel file",
+            "title": "File Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_url"
+        ],
+        "title": "ExcelSheetsRequest",
+        "type": "object"
+      },
+      "ExcelSheetsResponse": {
+        "description": "Response model for Excel sheet names.",
+        "properties": {
+          "default_sheet": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Sheet"
+          },
+          "file_url": {
+            "title": "File Url",
+            "type": "string"
+          },
+          "row_count": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Row count per sheet",
+            "title": "Row Count",
+            "type": "object"
+          },
+          "sheet_names": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Sheet Names",
+            "type": "array"
+          }
+        },
+        "required": [
+          "file_url",
+          "sheet_names"
+        ],
+        "title": "ExcelSheetsResponse",
+        "type": "object"
+      },
       "ExportFormat": {
         "description": "Supported export formats.",
         "enum": [
@@ -568,6 +624,44 @@
             "default": false,
             "title": "Force",
             "type": "boolean"
+          },
+          "header_row": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": 0,
+            "description": "Header row number for Excel files (0-indexed)",
+            "title": "Header Row"
+          },
+          "sheet_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Excel sheet name to load (for .xlsx, .xls, .ods files)",
+            "title": "Sheet Name"
+          },
+          "source_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional source name for tracking (e.g., 'properties_2024_q1')",
+            "title": "Source Name"
           }
         },
         "title": "IngestRequest",
@@ -591,6 +685,28 @@
           "properties_processed": {
             "title": "Properties Processed",
             "type": "integer"
+          },
+          "source_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Name"
+          },
+          "source_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Type"
           }
         },
         "required": [
@@ -1203,6 +1319,259 @@
           "distance_meters"
         ],
         "title": "PointOfInterest",
+        "type": "object"
+      },
+      "PortalAdapterInfo": {
+        "description": "Information about a portal adapter.",
+        "properties": {
+          "configured": {
+            "title": "Configured",
+            "type": "boolean"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "has_api_key": {
+            "default": false,
+            "title": "Has Api Key",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "rate_limit": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate Limit"
+          }
+        },
+        "required": [
+          "name",
+          "display_name",
+          "configured"
+        ],
+        "title": "PortalAdapterInfo",
+        "type": "object"
+      },
+      "PortalAdaptersResponse": {
+        "description": "Response model for listing available portal adapters.",
+        "properties": {
+          "adapters": {
+            "items": {
+              "$ref": "#/components/schemas/PortalAdapterInfo"
+            },
+            "title": "Adapters",
+            "type": "array"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "adapters",
+          "count"
+        ],
+        "title": "PortalAdaptersResponse",
+        "type": "object"
+      },
+      "PortalFiltersRequest": {
+        "description": "Request model for portal data fetching with filters.",
+        "properties": {
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "City to search in",
+            "title": "City"
+          },
+          "limit": {
+            "default": 100,
+            "description": "Maximum results to fetch",
+            "maximum": 500.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "listing_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "rent",
+            "description": "Listing type (rent, sale)",
+            "title": "Listing Type"
+          },
+          "max_price": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Maximum price filter",
+            "title": "Max Price"
+          },
+          "max_rooms": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Maximum number of rooms",
+            "title": "Max Rooms"
+          },
+          "min_price": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Minimum price filter",
+            "title": "Min Price"
+          },
+          "min_rooms": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Minimum number of rooms",
+            "title": "Min Rooms"
+          },
+          "portal": {
+            "description": "Portal adapter name (e.g., 'otodom', 'idealista')",
+            "title": "Portal",
+            "type": "string"
+          },
+          "property_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Property type (apartment, house, etc.)",
+            "title": "Property Type"
+          },
+          "source_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional source name for tracking (e.g., 'warsaw_rentals')",
+            "title": "Source Name"
+          }
+        },
+        "required": [
+          "portal"
+        ],
+        "title": "PortalFiltersRequest",
+        "type": "object"
+      },
+      "PortalIngestResponse": {
+        "description": "Response model for portal data ingestion.",
+        "properties": {
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Errors",
+            "type": "array"
+          },
+          "filters_applied": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filters Applied"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "portal": {
+            "title": "Portal",
+            "type": "string"
+          },
+          "properties_processed": {
+            "title": "Properties Processed",
+            "type": "integer"
+          },
+          "source_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Name"
+          },
+          "source_type": {
+            "default": "portal",
+            "title": "Source Type",
+            "type": "string"
+          },
+          "success": {
+            "title": "Success",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success",
+          "message",
+          "portal",
+          "properties_processed"
+        ],
+        "title": "PortalIngestResponse",
         "type": "object"
       },
       "PriceAnalysisRequest": {
@@ -2556,6 +2925,53 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/admin/excel/sheets": {
+      "post": {
+        "description": "Get sheet names from an Excel file.\n\nReturns available sheets and their row counts for sheet selection UI.",
+        "operationId": "get_excel_sheets_api_v1_admin_excel_sheets_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExcelSheetsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExcelSheetsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Get Excel Sheets",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
     "/api/v1/admin/health": {
       "get": {
         "description": "Detailed health check for admin.",
@@ -2585,7 +3001,7 @@
     },
     "/api/v1/admin/ingest": {
       "post": {
-        "description": "Trigger data ingestion from URLs.\nDownloads CSVs, processes them, and saves to local cache.\nDoes NOT automatically reindex vector store (call /reindex for that).\nEnforces max_properties limit from settings.",
+        "description": "Trigger data ingestion from URLs.\nDownloads CSV/Excel files, processes them, and saves to local cache.\nDoes NOT automatically reindex vector store (call /reindex for that).\nEnforces max_properties limit from settings.",
         "operationId": "ingest_data_api_v1_admin_ingest_post",
         "requestBody": {
           "content": {
@@ -2680,6 +3096,80 @@
           }
         ],
         "summary": "Admin Notifications Stats",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/api/v1/admin/portals": {
+      "get": {
+        "description": "List all available portal adapters.\n\nReturns information about each portal including:\n- Whether it's configured (has API key if required)\n- Rate limit information",
+        "operationId": "list_portals_api_v1_admin_portals_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalAdaptersResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "List Portals",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/api/v1/admin/portals/fetch": {
+      "post": {
+        "description": "Fetch property data from an external portal.\n\nUses the specified portal adapter to fetch properties based on filters.\nThe fetched data is automatically ingested into the property cache.",
+        "operationId": "fetch_from_portal_api_v1_admin_portals_fetch_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalFiltersRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalIngestResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Fetch From Portal",
         "tags": [
           "Admin"
         ]

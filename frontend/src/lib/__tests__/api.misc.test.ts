@@ -3,6 +3,17 @@ import {
   searchProperties,
   chatMessage,
   exportPropertiesBySearch,
+  exportPropertiesByIds,
+  getModelPreferences,
+  updateModelPreferences,
+  testModelRuntime,
+  listPromptTemplates,
+  applyPromptTemplate,
+  resetRagKnowledge,
+  ingestData,
+  getExcelSheets,
+  listPortals,
+  fetchFromPortal,
 } from "../api";
 
 global.fetch = jest.fn(async (input: RequestInfo | URL) => {
@@ -43,5 +54,43 @@ describe("api misc", () => {
   it("exports properties by search", async () => {
     const res = await exportPropertiesBySearch({ query: "Warsaw", limit: 5, filters: {}, alpha: 0.7 }, "csv");
     expect(res.filename).toBe("properties.csv");
+  });
+  it("exports properties by ids", async () => {
+    const res = await exportPropertiesByIds(["1", "2"], "csv");
+    expect(res.filename).toBe("properties.csv");
+  });
+  it("gets and updates model preferences", async () => {
+    await getModelPreferences();
+    await updateModelPreferences({ preferred_provider: "openai" });
+    expect(global.fetch).toHaveBeenCalled();
+  });
+  it("tests model runtime", async () => {
+    await testModelRuntime("openai");
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/settings/test-runtime?provider=openai"),
+      expect.objectContaining({ method: "GET" })
+    );
+  });
+  it("lists and applies prompt templates", async () => {
+    await listPromptTemplates();
+    await applyPromptTemplate("template-1", { city: "Warsaw" });
+    expect(global.fetch).toHaveBeenCalled();
+  });
+  it("resets rag knowledge", async () => {
+    await resetRagKnowledge();
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/rag/reset"),
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+  it("ingests data and lists excel sheets", async () => {
+    await ingestData({ source_type: "url", source: "https://example.com/data.csv", source_name: "demo" });
+    await getExcelSheets({ source_url: "https://example.com/data.xlsx" });
+    expect(global.fetch).toHaveBeenCalled();
+  });
+  it("lists portals and fetches from portal", async () => {
+    await listPortals();
+    await fetchFromPortal({ portal: "overpass", city: "Warsaw" });
+    expect(global.fetch).toHaveBeenCalled();
   });
 });

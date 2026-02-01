@@ -54,6 +54,7 @@ ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/integration/api/test_cors_integration.py" = ["I001"]
+"tests/unit/test_csv_loader.py" = ["I001"]
 "api/routers/*.py" = ["B008"]
 "api/routers/tools.py" = ["I001"]
 "agents/services/__init__.py" = ["I001", "F401"]
