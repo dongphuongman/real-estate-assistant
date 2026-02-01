@@ -17,7 +17,10 @@ HTTP_METHOD_ORDER: list[str] = [
 
 
 def load_openapi_schema(schema_path: Path) -> dict[str, Any]:
-    return json.loads(schema_path.read_text(encoding="utf-8"))
+    data = json.loads(schema_path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise TypeError(f"Expected JSON object, got {type(data).__name__}")
+    return data
 
 
 def export_api_reference_markdown(
@@ -79,7 +82,7 @@ def serialize_endpoints_markdown(schema: dict[str, Any]) -> str:
 def iter_openapi_operations(schema: dict[str, Any]) -> Iterable[tuple[str, str, dict[str, Any]]]:
     paths = schema.get("paths", {})
     if not isinstance(paths, dict):
-        return []
+        return
 
     for path in sorted(paths.keys()):
         item = paths.get(path, {})

@@ -189,3 +189,81 @@ def test_serialize_web_sources_uses_content_when_snippet_missing():
         max_total_bytes=10_000,
     )
     assert sources[0]["content"] == "From content field"
+
+
+def test_serialize_chat_sources_handles_none_in_docs():
+    """Test that serialize_chat_sources stops when encountering None in docs."""
+    docs = [
+        Document(page_content="a", metadata={"id": "1"}),
+        None,
+        Document(page_content="b", metadata={"id": "2"}),
+    ]
+    sources, truncated = serialize_chat_sources(
+        docs,
+        max_items=10,
+        max_content_chars=100,
+        max_total_bytes=10_000,
+    )
+    # Should only get the first doc before hitting None
+    assert len(sources) == 1
+    assert sources[0]["metadata"]["id"] == "1"
+    assert truncated is False
+
+
+def test_serialize_chat_sources_max_items_sets_truncated_flag():
+    """Test that hitting max_items limit sets truncated flag."""
+    docs = [
+        Document(page_content="a", metadata={"id": "1"}),
+        Document(page_content="b", metadata={"id": "2"}),
+        Document(page_content="c", metadata={"id": "3"}),
+    ]
+    sources, truncated = serialize_chat_sources(
+        docs,
+        max_items=2,
+        max_content_chars=100,
+        max_total_bytes=10_000,
+    )
+    # Should get first 2 docs, truncated flag should be True
+    assert len(sources) == 2
+    assert sources[0]["metadata"]["id"] == "1"
+    assert sources[1]["metadata"]["id"] == "2"
+    assert truncated is True
+
+
+def test_serialize_web_sources_handles_none_in_sources():
+    """Test that serialize_web_sources stops when encountering None in sources."""
+    web_sources = [
+        {"url": "https://example.com/1", "snippet": "A"},
+        None,
+        {"url": "https://example.com/2", "snippet": "B"},
+    ]
+    sources, truncated = serialize_web_sources(
+        web_sources,
+        max_items=10,
+        max_content_chars=100,
+        max_total_bytes=10_000,
+    )
+    # Should only get the first source before hitting None
+    assert len(sources) == 1
+    assert sources[0]["content"] == "A"
+    assert truncated is False
+
+
+def test_serialize_web_sources_max_items_sets_truncated_flag():
+    """Test that hitting max_items limit sets truncated flag for web sources."""
+    web_sources = [
+        {"url": "https://example.com/1", "snippet": "A"},
+        {"url": "https://example.com/2", "snippet": "B"},
+        {"url": "https://example.com/3", "snippet": "C"},
+    ]
+    sources, truncated = serialize_web_sources(
+        web_sources,
+        max_items=2,
+        max_content_chars=100,
+        max_total_bytes=10_000,
+    )
+    # Should get first 2 sources, truncated flag should be True
+    assert len(sources) == 2
+    assert sources[0]["content"] == "A"
+    assert sources[1]["content"] == "B"
+    assert truncated is True

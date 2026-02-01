@@ -213,7 +213,9 @@ def sanitize_property_id(property_id: str) -> str:
     return property_id
 
 
-def validate_json_fields(data: dict, allowed_fields: set, max_field_length: int = 1000) -> dict:
+def validate_json_fields(
+    data: dict[str, Any], allowed_fields: set[str], max_field_length: int = 1000
+) -> dict[str, Any]:
     """
     Validate JSON request body fields.
 
@@ -236,7 +238,7 @@ def validate_json_fields(data: dict, allowed_fields: set, max_field_length: int 
     if unexpected:
         raise ValueError(f"Unexpected fields in request: {', '.join(unexpected)}")
 
-    validated = {}
+    validated: dict[str, Any] = {}
     for key, value in data.items():
         if isinstance(value, str):
             if len(value) > max_field_length:

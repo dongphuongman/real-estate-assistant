@@ -20,13 +20,12 @@ def serialize_chat_sources(
     truncated = False
 
     iterator = iter(docs)
-    while True:
+    for doc in iterator:
+        # Check max_items limit
         if max_items and len(sources) >= max_items:
-            if next(iterator, None) is not None:
-                truncated = True
+            truncated = True
             break
 
-        doc = next(iterator, None)
         if doc is None:
             break
 
@@ -77,13 +76,12 @@ def serialize_web_sources(
     truncated = False
 
     iterator = iter(web_sources)
-    while True:
+    for raw in iterator:
+        # Check max_items limit
         if max_items and len(sources) >= max_items:
-            if next(iterator, None) is not None:
-                truncated = True
+            truncated = True
             break
 
-        raw = next(iterator, None)
         if raw is None:
             break
         if not isinstance(raw, dict):

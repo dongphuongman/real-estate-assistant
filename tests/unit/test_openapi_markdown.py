@@ -7,12 +7,14 @@ import pytest
 from api.openapi_markdown import (
     export_api_reference_markdown,
     iter_openapi_operations,
+    load_openapi_schema,
     render_operation_block,
     render_parameters_table,
     render_request_body,
     render_responses,
     schema_type,
     serialize_api_reference_markdown,
+    serialize_endpoints_markdown,
 )
 
 
@@ -129,6 +131,18 @@ def test_render_parameters_table_escapes_pipes_and_skips_invalid_entries() -> No
     assert "line1 line2" in table
 
 
+def test_render_parameters_table_returns_empty_when_no_valid_params() -> None:
+    """Test that render_parameters_table returns empty string when all params are invalid."""
+    table = render_parameters_table(
+        [
+            "not-a-dict",
+            {"name": "", "in": "query"},  # empty name
+            {"in": "query"},  # missing name
+        ]
+    )
+    assert table == ""
+
+
 def test_render_request_body_returns_empty_when_no_content() -> None:
     assert render_request_body({"required": True, "content": {}}) == ""
 
@@ -186,3 +200,37 @@ def test_export_api_reference_markdown_check_passes_when_in_sync(tmp_path: Path)
     out = tmp_path / "API_REFERENCE.generated.md"
     export_api_reference_markdown(schema_path=schema_path, output_path=out, check=False)
     export_api_reference_markdown(schema_path=schema_path, output_path=out, check=True)
+
+
+def test_load_openapi_schema_raises_type_error_for_non_dict(tmp_path: Path) -> None:
+    """Test that load_openapi_schema raises TypeError when JSON is not a dict."""
+    schema_path = tmp_path / "openapi.json"
+    # Write a JSON array instead of object
+    schema_path.write_text('["not", "a", "dict"]\n', encoding="utf-8")
+    with pytest.raises(TypeError, match="Expected JSON object, got list"):
+        load_openapi_schema(schema_path)
+
+
+def test_iter_openapi_operations_returns_empty_for_non_dict_paths() -> None:
+    """Test that iter_openapi_operations returns early when paths is not a dict."""
+    schema = {"paths": "not a dict"}
+    result = list(iter_openapi_operations(schema))
+    assert result == []
+
+
+def test_serialize_endpoints_markdown_includes_operations() -> None:
+    """Test that serialize_endpoints_markdown generates markdown with operations."""
+    schema = {
+        "info": {"title": "Test API", "version": "1.0.0"},
+        "paths": {
+            "/health": {
+                "get": {
+                    "summary": "Health check",
+                    "responses": {"200": {"description": "OK"}},
+                }
+            },
+        },
+    }
+    md = serialize_endpoints_markdown(schema)
+    assert "## GET /health" in md
+    assert "**Summary**: Health check" in md
