@@ -281,7 +281,7 @@ def test_admin_reindex_returns_500_when_store_fails(mock_get_settings, mock_load
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
     mock_load_collection.return_value = MagicMock(properties=[MagicMock()])
     store = MagicMock()
-    store.add_documents.side_effect = RuntimeError("boom")
+    store.add_properties.side_effect = RuntimeError("boom")
     app.dependency_overrides[get_vector_store] = lambda: store
 
     try:

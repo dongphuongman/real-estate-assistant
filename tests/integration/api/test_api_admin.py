@@ -102,7 +102,7 @@ def test_admin_reindex(valid_headers, mock_vector_store):
         assert data["message"] == "Reindexing successful"
         assert data["count"] == 1
 
-        mock_vector_store.add_documents.assert_called_once()
+        mock_vector_store.add_properties.assert_called_once()
 
     app.dependency_overrides = {}
 
