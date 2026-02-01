@@ -202,6 +202,14 @@ def test_export_api_reference_markdown_check_passes_when_in_sync(tmp_path: Path)
     export_api_reference_markdown(schema_path=schema_path, output_path=out, check=True)
 
 
+def test_load_openapi_schema_returns_dict_for_valid_json(tmp_path: Path) -> None:
+    """Test that load_openapi_schema returns dict for valid JSON object."""
+    schema_path = tmp_path / "openapi.json"
+    schema_path.write_text('{"openapi":"3.0.0","info":{"title":"Test"}}\n', encoding="utf-8")
+    result = load_openapi_schema(schema_path)
+    assert result == {"openapi": "3.0.0", "info": {"title": "Test"}}
+
+
 def test_load_openapi_schema_raises_type_error_for_non_dict(tmp_path: Path) -> None:
     """Test that load_openapi_schema raises TypeError when JSON is not a dict."""
     schema_path = tmp_path / "openapi.json"
