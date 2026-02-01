@@ -32,15 +32,39 @@ def _run(
     env: Mapping[str, str] | None = None,
     log_file: Path | None = None,
 ) -> int:
+    import platform
+
+    # On Windows, use shell=True for external executables to resolve PATH issues
+    # Python module invocations (sys.executable -m) work fine without shell
+    use_shell = False
+    if platform.system() == "Windows" and cmd:
+        # Use shell for external commands (npm, docker, trivy, etc.)
+        # but not for Python module invocations
+        exe = cmd[0].lower() if cmd[0] else ""
+        use_shell = not (
+            exe.endswith(".exe")
+            or exe.endswith("python")
+            or exe.endswith("python3")
+            or "python" in Path(exe).parts
+            or (len(cmd) > 1 and cmd[0].endswith(sys.executable))
+        )
+
     if log_file:
         log_file.parent.mkdir(parents=True, exist_ok=True)
         with log_file.open("wb") as fh:
             return int(
                 subprocess.run(
-                    cmd, cwd=str(cwd) if cwd else None, env=env, stdout=fh, stderr=fh
+                    cmd,
+                    cwd=str(cwd) if cwd else None,
+                    env=env,
+                    stdout=fh,
+                    stderr=fh,
+                    shell=use_shell,  # nosec B602: commands are trusted/hardcoded in CI
                 ).returncode
             )
-    return int(subprocess.run(cmd, cwd=str(cwd) if cwd else None, env=env).returncode)
+    return int(
+        subprocess.run(cmd, cwd=str(cwd) if cwd else None, env=env, shell=use_shell).returncode
+    )  # nosec B602
 
 
 def _ensure_repo_root() -> Path:
@@ -311,6 +335,11 @@ def main(argv: list[str] | None = None) -> int:
             return "skipped", "--skip-e2e"
         if ns.mode != "local":
             return "skipped", f"mode={ns.mode}"
+        # Skip E2E tests on Windows due to FastEmbed/Vector store being disabled
+        import platform
+
+        if platform.system() == "Windows":
+            return "skipped", "Windows: FastEmbed disabled, E2E tests require vector store"
 
         uvicorn_log = logs_dir / "e2e_backend_uvicorn.log"
         uvicorn_log.parent.mkdir(parents=True, exist_ok=True)
