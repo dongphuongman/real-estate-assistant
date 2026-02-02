@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import platform
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -93,7 +94,10 @@ def build_pip_audit_cmd(python_exe: str) -> list[str]:
 
 
 def build_unit_tests_cmd(python_exe: str) -> list[str]:
-    return [
+    # On Windows, pytest-xdist can cause MemoryError due to file locking
+    # Skip parallel execution on Windows (TASK-017: Production Deployment Optimization)
+    is_windows = platform.system() == "Windows"
+    cmd = [
         python_exe,
         "-m",
         "pytest",
@@ -101,9 +105,10 @@ def build_unit_tests_cmd(python_exe: str) -> list[str]:
         "--cov=.",
         "--cov-report=xml",
         "--cov-report=term",
-        "-n",
-        "auto",
     ]
+    if not is_windows:
+        cmd.extend(["-n", "auto"])
+    return cmd
 
 
 def build_integration_tests_cmd(python_exe: str) -> list[str]:

@@ -939,3 +939,17 @@ Health check endpoint to verify API status. Args: include_dependencies: Whether 
 |---|---|---|
 | 200 | Successful Response | object |
 | 422 | Validation Error | HTTPValidationError |
+
+## GET /metrics
+
+**Summary**: Metrics Endpoint
+
+**Tags**: System
+
+Prometheus-compatible metrics endpoint (TASK-017). Returns application metrics in Prometheus text format.
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | object |

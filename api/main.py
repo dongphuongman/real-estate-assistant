@@ -28,7 +28,9 @@ from notifications.uptime_monitor import (
     UptimeMonitorConfig,
     make_http_checker,
 )
+from utils.connection_pool import get_connection_pool_manager
 from utils.json_logging import configure_json_logging
+from utils.response_cache import CacheConfig, ResponseCache
 
 configure_json_logging(logging.INFO)
 logger = logging.getLogger(__name__)
@@ -60,6 +62,10 @@ SHUTDOWN_MAX_WAIT_SECONDS = int(os.getenv("SHUTDOWN_MAX_WAIT_SECONDS", "60"))
 async def startup_event():
     """Initialize application services on startup and setup signal handlers."""
     global scheduler
+    from time import time
+
+    # Set application start time for uptime metrics
+    app.state.start_time = time()
 
     # Setup signal handlers for graceful shutdown (only in main thread)
     import threading
@@ -145,6 +151,32 @@ async def startup_event():
     except Exception as e:
         logger.error(f"Failed to start Uptime Monitor: {e}")
 
+    # 5. Initialize Response Cache (TASK-017: Production Deployment Optimization)
+    logger.info("Initializing Response Cache...")
+    try:
+        cache_settings = CacheConfig(
+            enabled=getattr(settings, "cache_enabled", True),
+            ttl_seconds=getattr(settings, "cache_ttl_seconds", 300),
+            prefix=getattr(settings, "cache_prefix", "api_cache"),
+            max_memory_mb=getattr(settings, "cache_max_memory_mb", 100),
+            stale_while_revalidate=getattr(settings, "cache_stale_while_revalidate", False),
+        )
+        redis_url = getattr(settings, "cache_redis_url", None)
+        response_cache = ResponseCache(config=cache_settings, redis_url=redis_url)
+        app.state.response_cache = response_cache
+        logger.info("Response Cache initialized: %s", response_cache.get_stats())
+    except Exception as e:
+        logger.warning(f"Failed to initialize Response Cache: {e}")
+
+    # 6. Initialize Connection Pool Manager (TASK-017)
+    logger.info("Initializing Connection Pool Manager...")
+    try:
+        pool_manager = get_connection_pool_manager()
+        app.state.pool_manager = pool_manager
+        logger.info("Connection Pool Manager initialized: %s", pool_manager.get_stats())
+    except Exception as e:
+        logger.warning(f"Failed to initialize Connection Pool Manager: {e}")
+
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -217,6 +249,26 @@ async def shutdown_event():
                 logger.info("Redis connection closed.")
             except Exception as e:
                 logger.error(f"Error closing Redis connection: {e}")
+
+    # Step 7: Clear response cache (TASK-017)
+    response_cache = getattr(app.state, "response_cache", None)
+    if response_cache:
+        logger.info("Clearing Response Cache...")
+        try:
+            await response_cache.clear_all()
+            logger.info("Response Cache cleared.")
+        except Exception as e:
+            logger.error(f"Error clearing Response Cache: {e}")
+
+    # Step 8: Close connection pools (TASK-017)
+    pool_manager = getattr(app.state, "pool_manager", None)
+    if pool_manager:
+        logger.info("Closing connection pools...")
+        try:
+            pool_manager.close_all()
+            logger.info("Connection pools closed.")
+        except Exception as e:
+            logger.error(f"Error closing connection pools: {e}")
 
     shutdown_elapsed = asyncio.get_event_loop().time() - shutdown_start_time
     logger.info(f"Graceful shutdown completed in {shutdown_elapsed:.2f}s")
@@ -300,3 +352,45 @@ async def verify_auth():
     Verify API key authentication.
     """
     return {"message": "Authenticated successfully", "valid": True}
+
+
+@app.get("/metrics", tags=["System"])
+async def metrics_endpoint():
+    """
+    Prometheus-compatible metrics endpoint (TASK-017).
+
+    Returns application metrics in Prometheus text format.
+    """
+    from time import time
+
+    metrics = []
+    metrics.append("# HELP api_requests_total Total number of API requests")
+    metrics.append("# TYPE api_requests_total counter")
+
+    # Get request metrics from app state
+    if hasattr(app.state, "metrics"):
+        for key, count in app.state.metrics.items():
+            method, path = key.split(" ", 1) if " " in key else ("UNKNOWN", key)
+            # Sanitize path for Prometheus label
+            safe_path = path.replace("/", "_").strip("_") or "root"
+            metrics.append(f'api_requests_total{{method="{method}",path="{safe_path}"}} {count}')
+
+    # Add cache metrics if available
+    response_cache = getattr(app.state, "response_cache", None)
+    if response_cache:
+        cache_stats = response_cache.get_stats()
+        metrics.append("\n# HELP api_cache_size Current number of cached entries")
+        metrics.append("# TYPE api_cache_size gauge")
+        metrics.append(f"api_cache_size {cache_stats.get('size', 0)}")
+        metrics.append("\n# HELP api_cache_enabled Whether caching is enabled")
+        metrics.append("# TYPE api_cache_enabled gauge")
+        metrics.append(f"api_cache_enabled {1 if cache_stats.get('enabled') else 0}")
+
+    # Add uptime metric
+    if hasattr(app.state, "start_time"):
+        uptime = time() - app.state.start_time
+        metrics.append("\n# HELP api_uptime_seconds Application uptime in seconds")
+        metrics.append("# TYPE api_uptime_seconds gauge")
+        metrics.append(f"api_uptime_seconds {uptime:.2f}")
+
+    return "\n".join(metrics), 200, {"Content-Type": "text/plain; version=0.0.4"}

@@ -4661,6 +4661,26 @@
           "System"
         ]
       }
+    },
+    "/metrics": {
+      "get": {
+        "description": "Prometheus-compatible metrics endpoint (TASK-017).\n\nReturns application metrics in Prometheus text format.",
+        "operationId": "metrics_endpoint_metrics_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Metrics Endpoint",
+        "tags": [
+          "System"
+        ]
+      }
     }
   }
 }

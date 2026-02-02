@@ -151,6 +151,47 @@ class AppSettings(BaseModel):
         default_factory=lambda: int(os.getenv("REQUEST_MAX_UPLOAD_SIZE_MB", "25"))
     )
 
+    # Response Caching (TASK-017: Production Deployment Optimization)
+    cache_enabled: bool = Field(
+        default_factory=lambda: os.getenv("CACHE_ENABLED", "true").strip().lower()
+        in {"1", "true", "yes", "on"}
+    )
+    cache_ttl_seconds: int = Field(
+        default_factory=lambda: int(os.getenv("CACHE_TTL_SECONDS", "300"))
+    )
+    cache_redis_url: Optional[str] = Field(
+        default_factory=lambda: os.getenv("CACHE_REDIS_URL") or os.getenv("REDIS_URL")
+    )
+    cache_prefix: str = Field(default_factory=lambda: os.getenv("CACHE_PREFIX", "api_cache"))
+    cache_max_memory_mb: int = Field(
+        default_factory=lambda: int(os.getenv("CACHE_MAX_MEMORY_MB", "100"))
+    )
+    cache_stale_while_revalidate: bool = Field(
+        default_factory=lambda: os.getenv("CACHE_STALE_WHILE_REVALIDATE", "false").strip().lower()
+        in {"1", "true", "yes", "on"}
+    )
+
+    # Performance Monitoring (TASK-017: Production Deployment Optimization)
+    metrics_enabled: bool = Field(
+        default_factory=lambda: os.getenv("METRICS_ENABLED", "true").strip().lower()
+        in {"1", "true", "yes", "on"}
+    )
+    metrics_path: str = Field(default_factory=lambda: os.getenv("METRICS_PATH", "/metrics"))
+    prometheus_enabled: bool = Field(
+        default_factory=lambda: os.getenv("PROMETHEUS_ENABLED", "false").strip().lower()
+        in {"1", "true", "yes", "on"}
+    )
+
+    # Database Connection Pooling (TASK-017: Production Deployment Optimization)
+    db_pool_size: int = Field(default_factory=lambda: int(os.getenv("DB_POOL_SIZE", "10")))
+    db_max_overflow: int = Field(default_factory=lambda: int(os.getenv("DB_MAX_OVERFLOW", "20")))
+    db_pool_timeout_seconds: int = Field(
+        default_factory=lambda: int(os.getenv("DB_POOL_TIMEOUT_SECONDS", "30"))
+    )
+    db_pool_recycle_seconds: int = Field(
+        default_factory=lambda: int(os.getenv("DB_POOL_RECYCLE_SECONDS", "3600"))
+    )
+
     # Data Loading
     max_properties: int = 2000
     batch_size: int = 100
