@@ -57,14 +57,13 @@ def build_bandit_cmd(python_exe: str) -> list[str]:
         "models",
         "notifications",
         "rules",
-        "scripts",
         "tools",
         "utils",
         "vector_store",
         "workflows",
     ]
     existing_targets = [target for target in targets if Path(target).exists()]
-    return [
+    cmd = [
         python_exe,
         "-m",
         "bandit",
@@ -73,6 +72,10 @@ def build_bandit_cmd(python_exe: str) -> list[str]:
         "-lll",
         "-iii",
     ]
+    # Exclude scripts/ci from Bandit scanning (CI code uses shell=True for trusted commands)
+    if Path("scripts/ci").exists():
+        cmd.extend(["-x", "scripts/ci"])
+    return cmd
 
 
 def build_pip_audit_cmd(python_exe: str) -> list[str]:

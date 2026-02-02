@@ -1,0 +1,109 @@
+# AI Real Estate Assistant - Phase 1 Remaining Tasks
+
+## TASK-005: Excel Data Loader Integration
+
+Extend the existing CSV data loader to support Excel files (.xlsx, .xls, .ods) for property data ingestion.
+
+### Subtasks
+- [TASK-005.1] Excel Loader Implementation
+  - Create ExcelDataLoader class that extends CSV loader patterns
+  - Support sheet selection and header row configuration
+  - Reuse existing format_df logic for schema normalization
+
+- [TASK-005.2] Frontend File Upload UI
+  - Add Excel file type support to upload component
+  - Show sheet selector when Excel file is detected
+  - Display file metadata (source name, row count)
+
+- [TASK-005.3] Source Tagging and Persistence
+  - Track source type (csv/excel) in PropertyCollection.metadata
+  - Implement delete_by_source() for data management
+  - Add source filter in search and analytics
+
+### Dependencies
+- TASK-002 (Retrieval, Data, and Local RAG) must be complete
+
+### Verification
+- Upload .xlsx file with 100+ properties successfully
+- Properties appear in search with correct source tagging
+- Unit tests for Excel parsing with edge cases
+
+---
+
+## TASK-017: Production Deployment Optimization
+
+Optimize application for production deployment including caching, monitoring, and performance tuning.
+
+### Subtasks
+- [TASK-017.1] Caching Strategy
+  - Redis integration for session cache
+  - Response caching for search results
+  - Static asset CDN configuration
+  - Cache invalidation policies
+
+- [TASK-017.2] Performance Monitoring
+  - Application Performance Monitoring (APM)
+  - Error tracking (Sentry integration)
+  - Custom metrics dashboard
+  - Performance budgets
+
+- [TASK-017.3] Database Optimization
+  - Query optimization and indexing
+  - Connection pooling configuration
+  - Read replica setup for scaling
+  - Backup and restore procedures
+
+- [TASK-017.4] Auto-scaling Configuration
+  - Horizontal scaling rules
+  - Load balancer configuration
+  - Container orchestration setup
+  - Blue-green deployment
+
+### Dependencies
+- TASK-001 through TASK-004 (all MVP tasks) required
+
+### Verification
+- p95 latency < 2s for search, < 8s for chat
+- System handles 1000 concurrent users
+- Auto-scaling activates under load
+- Backups restore successfully
+
+---
+
+## TASK-018: Security Hardening
+
+Implement comprehensive security measures including audit logging, penetration testing, and compliance checks.
+
+### Subtasks
+- [TASK-018.1] Audit Logging
+  - Log all sensitive operations (data access, changes)
+  - Immutable log storage
+  - Log analysis and alerting
+  - Compliance report generation
+
+- [TASK-018.2] Security Scanning
+  - Automated dependency scanning
+  - SAST/DAST integration in CI
+  - Container vulnerability scanning
+  - Regular penetration testing
+
+- [TASK-018.3] Data Protection
+  - Encryption at rest and in transit
+  - Data retention policies
+  - Right to be forgotten implementation
+  - PII redaction in logs
+
+- [TASK-018.4] Access Control
+  - Role-based access control (RBAC)
+  - Multi-factor authentication (MFA)
+  - Session management improvements
+  - API key rotation policies
+
+### Dependencies
+- TASK-001 (API Platform & Security) required
+
+### Verification
+- Passes third-party security audit
+- No critical/high vulnerabilities in scan results
+- Compliance documentation complete
+- Audit logs capture all required events

@@ -62,9 +62,9 @@ def _run(
                     shell=use_shell,  # nosec B602: commands are trusted/hardcoded in CI
                 ).returncode
             )
-    return int(
+    return int(  # nosec B602: commands are trusted/hardcoded in CI
         subprocess.run(cmd, cwd=str(cwd) if cwd else None, env=env, shell=use_shell).returncode
-    )  # nosec B602
+    )
 
 
 def _ensure_repo_root() -> Path:
