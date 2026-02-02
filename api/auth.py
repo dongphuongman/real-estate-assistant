@@ -4,9 +4,11 @@ import logging
 from fastapi import HTTPException, Request, Security, status
 from fastapi.security.api_key import APIKeyHeader
 
+from api.audit import AuditEvent, AuditEventType, AuditLevel, get_audit_logger
 from config.settings import get_settings
 
 logger = logging.getLogger(__name__)
+audit_logger = get_audit_logger()
 
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
@@ -51,6 +53,12 @@ async def get_api_key(
                 "method": request.method,
             },
         )
+        audit_logger.log_auth_failure(
+            reason="missing_api_key",
+            request_id=request_id,
+            path=request.url.path,
+            method=request.method,
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials",
@@ -79,9 +87,21 @@ async def get_api_key(
                     "request_id": request_id,
                 },
             )
+            audit_logger.log(
+                event=AuditEvent(
+                    event_type=AuditEventType.AUTH_PRODUCTION_MISCONFIG,
+                    level=AuditLevel.CRITICAL,
+                    result="failure",
+                    request_id=request_id,
+                )
+            )
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
 
     if _is_valid_api_key(candidate, normalized_keys):
+        audit_logger.log_auth_success(
+            client_id=candidate,
+            request_id=getattr(request.state, "request_id", "unknown"),
+        )
         return candidate
 
     # Log failed auth attempt without exposing the key
@@ -96,6 +116,13 @@ async def get_api_key(
             # Only log first 4 chars of key for debugging (safe)
             "key_prefix": candidate[:4] if len(candidate) >= 4 else candidate,
         },
+    )
+    audit_logger.log_auth_failure(
+        reason="invalid_credentials",
+        request_id=request_id,
+        path=request.url.path,
+        method=request.method,
+        key_prefix=candidate[:4] if len(candidate) >= 4 else candidate,
     )
 
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")

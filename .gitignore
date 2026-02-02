@@ -195,6 +195,11 @@ venv.bak/
 # mypy
 .mypy_cache/
 .dmypy.json
+
+# Temporary/Garbage files
+=43.0.0
+git-error-*
+
 dmypy.json
 
 # Pyre type checker

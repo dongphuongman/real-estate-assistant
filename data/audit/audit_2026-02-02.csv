@@ -1,0 +1,412 @@
+timestamp,event_type,level,user_id,client_id,resource,action,result,ip_address,request_id,user_agent,metadata
+2026-02-02T20:03:02.233040+00:00,auth.failure,HIGH,,,/api/v1/verify-auth,GET,failure,,e134e3db5dde4884b0274d46fdc82ba0,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:03:02.236106+00:00,auth.success,MEDIUM,,3c1926cc058bf49d,,,success,,d15f262aa9514df180b9c56249680bbf,,{}
+2026-02-02T20:08:16.368754+00:00,auth.failure,HIGH,,,/api/v1/verify-auth,GET,failure,,35c2dfdda5cc4905b2083414723a8940,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:08:16.371791+00:00,auth.success,MEDIUM,,3c1926cc058bf49d,,,success,,7ef72828d1e14aaabfe2046291594f57,,{}
+2026-02-02T20:13:20.354750+00:00,auth.failure,HIGH,,,/api/v1/verify-auth,GET,failure,,c5e733cffff342f1858ac130d1cf68f9,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:13:20.358281+00:00,auth.success,MEDIUM,,3c1926cc058bf49d,,,success,,749e847458504742ad233a50e3f0b183,,{}
+2026-02-02T20:17:07.191777+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,7371dffea74e4d2dac2c7718026c0ad7,,{}
+2026-02-02T20:17:07.213577+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,a25f3c51609b4e25939b3f985b248c8e,,{}
+2026-02-02T20:17:07.230548+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,f17cb041c1b741829ddc2194a0c81b8e,,{}
+2026-02-02T20:17:07.245268+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,d9eac49bc91a4a5989d7e4dccf594df6,,{}
+2026-02-02T20:17:07.262034+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,4d8e6a44bde541adaac73e9fce5132ea,,{}
+2026-02-02T20:17:07.280251+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,18b80cd2e6ca48c2bf42b3a30b1040ce,,{}
+2026-02-02T20:17:07.298543+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,c328f346feaf48cd95e77fdbe8137981,,{}
+2026-02-02T20:17:07.436227+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,93873f0b0753495e955530ebdd84fd0b,,{}
+2026-02-02T20:17:07.454185+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,5f2bee8908df480ba94baea8539ebea3,,{}
+2026-02-02T20:17:07.469493+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,4df3e22952da4e82857f2e586da00bd8,,{}
+2026-02-02T20:17:07.482776+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,ee37365fbd25468db4f44e2cb91fd1b4,,{}
+2026-02-02T20:17:07.492268+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,098b0eeba0904fe1a187b44b904f579a,,{}
+2026-02-02T20:17:07.504255+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,8c6b5eabe6a7439194d458b53c46eb95,,{}
+2026-02-02T20:17:07.515233+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,5724028fb63f48c8a6595d447965f55f,,{}
+2026-02-02T20:17:07.525590+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,513c524eff9f436a982381dbdb6a4ebc,,{}
+2026-02-02T20:17:07.542721+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,ee0a30665fd04ab6b338a94d7b112157,,{}
+2026-02-02T20:17:07.561651+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,32e00f7562bd41bfafe4f2073d408c17,,{}
+2026-02-02T20:17:07.572308+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,fba46f3f6c4d4ce2ace0fdee63ff0879,,{}
+2026-02-02T20:17:07.580433+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,a7df1c55e469419fa00aa75d49eb659c,,{}
+2026-02-02T20:17:07.597047+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,fe5d2cb4922b4d7986f073c61b3cd768,,{}
+2026-02-02T20:17:07.607981+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,70ed3ddce9f447c69b3f2defb25d5683,,{}
+2026-02-02T20:17:07.618678+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,386aa433e173415cb14bddc288e1b178,,{}
+2026-02-02T20:17:07.631424+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,d4af60a7d89f4d01bc040501cb92f4b9,,{}
+2026-02-02T20:17:07.641775+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,a28c1da765a24982a6e0cb2ecded779a,,{}
+2026-02-02T20:17:07.650834+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,f237d15803ad426cbc9048d5ee0ce596,,{}
+2026-02-02T20:17:07.658970+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,eed4b38fdecd4a0d9c8275026388b349,,{}
+2026-02-02T20:17:07.764605+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,527097860d69452b8adbf855fbbe7ef1,,{}
+2026-02-02T20:17:07.777177+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,7064df5ea9c14554b8666574b61d93e9,,{}
+2026-02-02T20:17:07.785887+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,57dd93ca92ee407b81e2d1c790c8584c,,{}
+2026-02-02T20:17:07.794516+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,f46f1bcb9109492b9f7cebbbd8537a45,,{}
+2026-02-02T20:17:07.803643+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,test-request-id,,{}
+2026-02-02T20:17:07.809683+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,test-request-id,,{}
+2026-02-02T20:17:07.815232+00:00,auth.success,MEDIUM,,7c36b0a9dedde119,,,success,,test-request-id,,{}
+2026-02-02T20:17:07.820029+00:00,auth.success,MEDIUM,,1d076cc0fec32a6b,,,success,,test-request-id,,{}
+2026-02-02T20:17:07.822567+00:00,auth.success,MEDIUM,,a0687108ff13441b,,,success,,test-request-id,,{}
+2026-02-02T20:17:07.827783+00:00,auth.failure,HIGH,,,/api/v1/test,GET,failure,,test-request-id,,"{'reason': 'invalid_credentials', 'key_prefix': 'wron'}"
+2026-02-02T20:17:07.833864+00:00,auth.failure,HIGH,,,/api/v1/test,GET,failure,,test-request-id,,"{'reason': 'invalid_credentials', 'key_prefix': 'c'}"
+2026-02-02T20:17:07.838910+00:00,auth.failure,HIGH,,,/api/v1/test,GET,failure,,test-request-id,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:17:07.845447+00:00,auth.production_misconfig,CRITICAL,,,,,failure,,test-request-id,,{}
+2026-02-02T20:17:07.850502+00:00,auth.production_misconfig,CRITICAL,,,,,failure,,test-request-id,,{}
+2026-02-02T20:17:07.868849+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,2a43129ed2364a9c915f72d4bb999598,,{}
+2026-02-02T20:17:07.894872+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,ccd84dd7394f4ea49914cc3cff89803b,,{}
+2026-02-02T20:17:07.907028+00:00,auth.failure,HIGH,,,/api/v1/chat,POST,failure,,9f72472dfb584e2285838c9fc3a46af3,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:17:07.958182+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,83fd58fd3bfa42a18e7ea4ed88e6ff6e,,{}
+2026-02-02T20:17:07.971842+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,f77f6a171bfe48528530e844b09a7676,,{}
+2026-02-02T20:17:07.981764+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,444627c6e7904886a5b48e0a52b27ee8,,{}
+2026-02-02T20:17:07.991911+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,915da8636b1f4aa593c5f3e0f1dea3e0,,{}
+2026-02-02T20:17:08.001335+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,b473093ab74b4db08f88d39d3c901d35,,{}
+2026-02-02T20:17:08.011776+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,c0f804896aaa4aebbe83b289f3edf4f3,,{}
+2026-02-02T20:17:08.022780+00:00,auth.failure,HIGH,,,/api/v1/export/properties,POST,failure,,fe74a33ff62346768cac4697b5cd50c4,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:17:08.033337+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,46a0a3e497904cc08e9581ea1b617b56,,{}
+2026-02-02T20:17:08.044659+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,ff23e00849044d7b9dad03be985ced2c,,{}
+2026-02-02T20:17:08.057933+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,418c0c4517144dc286835a9f1b90f394,,{}
+2026-02-02T20:17:08.072505+00:00,auth.failure,HIGH,,,/api/v1/prompt-templates,GET,failure,,48eca2191d554affbd4d76c9c8e67799,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:17:08.079305+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,b871556a332d4a9aab2c80daa235ad27,,{}
+2026-02-02T20:17:08.087428+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,9821e7680511426ead609b801308f38f,,{}
+2026-02-02T20:17:08.096301+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,3a7a538c5d7c40bab82a3d19584db185,,{}
+2026-02-02T20:17:08.103183+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,61e85a990e9943f5bea28767bd47fc8d,,{}
+2026-02-02T20:17:08.118395+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,bda163bb94544e7db137567debbe24ce,,{}
+2026-02-02T20:17:08.130980+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,199e567a21ce4725a840a485f702a971,,{}
+2026-02-02T20:17:08.144150+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,22247e36b89b44d6ba211939e873e995,,{}
+2026-02-02T20:17:08.157941+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,efdda252109a498eac7df9296afdd37b,,{}
+2026-02-02T20:17:08.169591+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,ef19b87b5cbe44068164dac5021dc61b,,{}
+2026-02-02T20:17:08.181389+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,153e2c1726f44a51b014c0cf384062b5,,{}
+2026-02-02T20:17:08.192015+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,d88b77411ff949efb0ab481c1c278345,,{}
+2026-02-02T20:17:08.202554+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,e19eaa0079cf4bd6a5d9f9460dda4704,,{}
+2026-02-02T20:17:08.215596+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,7750913bad51485b896c2f11dc1d1d44,,{}
+2026-02-02T20:17:08.227974+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,015380375d8e4389bee5885c384711cc,,{}
+2026-02-02T20:17:08.242024+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,a21d7156450747aeada88cfe5eb609af,,{}
+2026-02-02T20:17:08.253496+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,8da969b9d75148359d253c46e8cac773,,{}
+2026-02-02T20:17:08.266142+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,88c5ee68183a45f6aadafa991800176e,,{}
+2026-02-02T20:17:12.362524+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,c1a6317839d940bb8a4f2730f4fa4055,,{}
+2026-02-02T20:17:16.453205+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,0c2090c8230b46f49d0376b13445ca9a,,{}
+2026-02-02T20:17:16.469550+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,4b0f3e5f6cbe4b13944a1180c6b43d04,,{}
+2026-02-02T20:17:16.492032+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,b73207ca21834db88a1eefb4b6b7c6eb,,{}
+2026-02-02T20:17:16.502806+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,5e7af76af4874a14aff3628896ca7a42,,{}
+2026-02-02T20:17:20.585469+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,9724d1e3fdfd49899e0e805b481138e7,,{}
+2026-02-02T20:17:20.592374+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,cce332e3c71645cb80b2452470c7741e,,{}
+2026-02-02T20:17:20.604554+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,4cb6631ccd254f41bc63507ab4cf9419,,{}
+2026-02-02T20:17:20.621359+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,931b40bc9b9a4a21a9d1c5e3769b820e,,{}
+2026-02-02T20:17:20.641776+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,95d2497564d54326a49570ca0ea8f402,,{}
+2026-02-02T20:17:20.658084+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,6e016968f10d44eb8372348a91dc4fb0,,{}
+2026-02-02T20:17:20.671607+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,476e557a11244aa98498179458fc9a52,,{}
+2026-02-02T20:17:20.683170+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,0c63a635854b467b87bfdc55d610b6d7,,{}
+2026-02-02T20:17:20.693765+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,f81caf1e62724a7793571e29a7955ba2,,{}
+2026-02-02T20:17:20.703497+00:00,auth.failure,HIGH,,,/api/v1/search,POST,failure,,2f13cacbe61b4d5590036e795a5a7602,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:17:20.712872+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,973e3464384741738a712b1f26833ea6,,{}
+2026-02-02T20:17:20.724753+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,d25185da57c04121a7fd19c419d412a1,,{}
+2026-02-02T20:17:20.736881+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,22606b3ca5964f928270d5138051957d,,{}
+2026-02-02T20:17:20.752180+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,9fe668326fb9405799f0d14e78e8a191,,{}
+2026-02-02T20:17:20.765023+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,910e95a393ed44b79121ef0bd7c9e6c0,,{}
+2026-02-02T20:17:20.775606+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,f865a2c1ce934252a842ed5fd9c226e6,,{}
+2026-02-02T20:17:20.785781+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,bb846170058b4c3980c4348148db4458,,{}
+2026-02-02T20:17:20.795973+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,25ab6372bf7746a88f7f12316af5cfbe,,{}
+2026-02-02T20:17:20.810081+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,2f9ca2ed399146a493ef9b351e438e69,,{}
+2026-02-02T20:17:20.821301+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,0b43a68a10384507a16757d66202b73c,,{}
+2026-02-02T20:17:20.832493+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,61d306af88e24e83a155e9b6e50b5b4e,,{}
+2026-02-02T20:17:20.843554+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,6daa81fde9994b068ab62d1c2b6b468a,,{}
+2026-02-02T20:17:20.854261+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,38845cb5606a4dd69c8873604f184d4d,,{}
+2026-02-02T20:17:20.864562+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,29c8273ed4c44f8491ddb3071b28257a,,{}
+2026-02-02T20:17:20.874755+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,58610c63187d4478a08ad26b5189ccf9,,{}
+2026-02-02T20:17:20.884673+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,ffe62792e4484edda78fc1d51927b4f6,,{}
+2026-02-02T20:17:20.894223+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,b9d7877607954c16a21ff03e9f222ea5,,{}
+2026-02-02T20:17:20.904670+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,14c1b54096b44f64acd209f1d8b9359a,,{}
+2026-02-02T20:17:20.913824+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,ea63bb821b5c41228c5a8cdacd831a9b,,{}
+2026-02-02T20:17:20.923024+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,3e034e1f42b042d484632cc2c5f92cf9,,{}
+2026-02-02T20:17:20.935727+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,e8b3ec1b95ec4b0283352eb26642247a,,{}
+2026-02-02T20:17:20.945752+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,4828ec8adac942988406981a651ddc36,,{}
+2026-02-02T20:17:20.957041+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,cac312811141465eb45480484ca92287,,{}
+2026-02-02T20:17:20.968588+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,c887679c777346008acd897734e80a39,,{}
+2026-02-02T20:17:20.978589+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,4af47d0331fc45e389a39993e2b7b9a8,,{}
+2026-02-02T20:17:20.990802+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,690f7441b281414c86cab272c36ea7a1,,{}
+2026-02-02T20:17:21.002595+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,bb8f2234160a41508dc8155427ec203f,,{}
+2026-02-02T20:17:21.013607+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,a2fb1c135ea44fdcad93acbfb95c44cc,,{}
+2026-02-02T20:17:21.024534+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,1e491a33eb024342a53915bca91ee879,,{}
+2026-02-02T20:17:21.035414+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,71b0e90664564fa7b20d5b288ccf14a3,,{}
+2026-02-02T20:17:21.051712+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,203361debb074d60a67e4bfa742c1d4c,,{}
+2026-02-02T20:17:21.074869+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,bca2572512444507b30e0baf96784198,,{}
+2026-02-02T20:17:21.095347+00:00,auth.failure,HIGH,,,/api/v1/chat,POST,failure,,8834086ece2b4dd4a70f01cc24ce248e,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:17:21.105483+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,86fa24e6a2fa448789fb03b7a0602c37,,{}
+2026-02-02T20:17:21.114857+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,d94310b94fa54531a511f94dd9027a8d,,{}
+2026-02-02T20:17:21.125169+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,96188874966442e08a96ea8d33836ece,,{}
+2026-02-02T20:17:21.133034+00:00,auth.failure,HIGH,,,/api/v1/tools,GET,failure,,6a476aafac7a44fbb321503e168b9307,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:17:21.143723+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,826b5a227cae4643a15f2ffb96f2b8ba,,{}
+2026-02-02T20:17:21.154737+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,eca4eddfb4574ad5b3a72dbc92e5615d,,{}
+2026-02-02T20:17:21.166324+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,da3c1548405b4743a270e86edaeda27e,,{}
+2026-02-02T20:17:21.177973+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,f44efeb03360416e959725ade7931407,,{}
+2026-02-02T20:17:21.190960+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,0c2d90762e1040e085085904cb2b177e,,{}
+2026-02-02T20:17:21.201134+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,c77e108611b447a893402a748e50c7fc,,{}
+2026-02-02T20:17:21.213083+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,b281822edcbe4e7fb6db7799e83429a6,,{}
+2026-02-02T20:17:21.225302+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,f10726534c7d408a82b5df3da0aba97e,,{}
+2026-02-02T20:17:21.239441+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,77125cb142e144a1b41db55f643f5fc5,,{}
+2026-02-02T20:17:21.254340+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,e47ce69f030b4a4895b0a9678c88c040,,{}
+2026-02-02T20:17:21.270956+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,be25e2709ade49e987b9ade2ae563e87,,{}
+2026-02-02T20:17:21.291909+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,52440631dcf44f4cb9fd6881bdee0a9b,,{}
+2026-02-02T20:17:21.308477+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,87dc1b67426a487fb81182bdbc8cabee,,{}
+2026-02-02T20:17:21.323564+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,5dc07fd8551c456382088af053f0a067,,{}
+2026-02-02T20:17:21.338875+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,0b401956211d4935859bf93123acb761,,{}
+2026-02-02T20:17:21.352234+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,affee32a69ac4a65989042267c5c9f1a,,{}
+2026-02-02T20:17:21.365180+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,a98e58d03f6741ac8c43d9617638b7d3,,{}
+2026-02-02T20:17:21.384159+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,434c0b7233f64adab226b76e24827081,,{}
+2026-02-02T20:17:21.402313+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,85022cbced014199a43ad042b46e8fef,,{}
+2026-02-02T20:17:21.420458+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,6edf6ffb03e947bfba1d97c1c9c6db2d,,{}
+2026-02-02T20:17:21.432839+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,8217ed1e432f44ca8111867ff5d3430c,,{}
+2026-02-02T20:17:21.446304+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,fc66e6636a8d4815bc93ab81c1f08a2a,,{}
+2026-02-02T20:17:21.458463+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,0217a8482ca04925bf1e70c7d5ac5db2,,{}
+2026-02-02T20:17:21.468998+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,6d69ddf39ef441e5953fd1553e29c7e9,,{}
+2026-02-02T20:17:21.481366+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,e344cf051bad4c5da508c566b1b38171,,{}
+2026-02-02T20:17:21.492202+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,683ac87d081949e59dc65970031a1c9b,,{}
+2026-02-02T20:17:21.503903+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,46a452b1f9194d938ed5f8d323e0f003,,{}
+2026-02-02T20:27:19.146462+00:00,authz.denied,HIGH,,9f86d081884c7d65,role:Role.ADMIN,,denied,,,,"{'required_role': <Role.ADMIN: 'admin'>, 'user_roles': [<Role.READ_ONLY: 'read_only'>]}"
+2026-02-02T20:27:19.148495+00:00,authz.denied,HIGH,,9f86d081884c7d65,permission:Permission.DATA_DELETE,,denied,,,,"{'required_permission': <Permission.DATA_DELETE: 'data.delete'>, 'user_permissions': [<Permission.DATA_READ: 'data.read'>]}"
+2026-02-02T20:27:19.162910+00:00,authz.denied,HIGH,,0294ca19ae0ca5bf,role:Role.ADMIN,,denied,,req-123,,"{'required_role': <Role.ADMIN: 'admin'>, 'user_roles': [<Role.USER: 'user'>]}"
+2026-02-02T20:33:57.652127+00:00,authz.denied,HIGH,,9f86d081884c7d65,role:Role.ADMIN,,denied,,,,"{'required_role': <Role.ADMIN: 'admin'>, 'user_roles': [<Role.READ_ONLY: 'read_only'>]}"
+2026-02-02T20:33:57.654653+00:00,authz.denied,HIGH,,9f86d081884c7d65,permission:Permission.DATA_DELETE,,denied,,,,"{'required_permission': <Permission.DATA_DELETE: 'data.delete'>, 'user_permissions': [<Permission.DATA_READ: 'data.read'>]}"
+2026-02-02T20:33:57.669578+00:00,authz.denied,HIGH,,0294ca19ae0ca5bf,role:Role.ADMIN,,denied,,req-123,,"{'required_role': <Role.ADMIN: 'admin'>, 'user_roles': [<Role.USER: 'user'>]}"
+2026-02-02T20:36:35.896443+00:00,authz.denied,HIGH,,9f86d081884c7d65,role:Role.ADMIN,,denied,,,,"{'required_role': <Role.ADMIN: 'admin'>, 'user_roles': [<Role.READ_ONLY: 'read_only'>]}"
+2026-02-02T20:36:35.899455+00:00,authz.denied,HIGH,,9f86d081884c7d65,permission:Permission.DATA_DELETE,,denied,,,,"{'required_permission': <Permission.DATA_DELETE: 'data.delete'>, 'user_permissions': [<Permission.DATA_READ: 'data.read'>]}"
+2026-02-02T20:36:35.927787+00:00,authz.denied,HIGH,,0294ca19ae0ca5bf,role:Role.ADMIN,,denied,,req-123,,"{'required_role': <Role.ADMIN: 'admin'>, 'user_roles': [<Role.USER: 'user'>]}"
+2026-02-02T20:37:28.764072+00:00,authz.denied,HIGH,,9f86d081884c7d65,role:Role.ADMIN,,denied,,,,"{'required_role': <Role.ADMIN: 'admin'>, 'user_roles': [<Role.READ_ONLY: 'read_only'>]}"
+2026-02-02T20:37:28.765782+00:00,authz.denied,HIGH,,9f86d081884c7d65,permission:Permission.DATA_DELETE,,denied,,,,"{'required_permission': <Permission.DATA_DELETE: 'data.delete'>, 'user_permissions': [<Permission.DATA_READ: 'data.read'>]}"
+2026-02-02T20:37:28.784308+00:00,authz.denied,HIGH,,0294ca19ae0ca5bf,role:Role.ADMIN,,denied,,req-123,,"{'required_role': <Role.ADMIN: 'admin'>, 'user_roles': [<Role.USER: 'user'>]}"
+2026-02-02T20:37:56.608181+00:00,auth.failure,HIGH,,,/api/v1/verify-auth,GET,failure,,6e631d8411f642298377c7fa3b19be49,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:37:56.611194+00:00,auth.success,MEDIUM,,3c1926cc058bf49d,,,success,,3bf91d4346d940cd8f3b8bffbd47db7a,,{}
+2026-02-02T20:41:24.877164+00:00,auth.failure,HIGH,,,/api/v1/verify-auth,GET,failure,,5ec78899419544dd9667011edd633cb4,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:41:24.881207+00:00,auth.success,MEDIUM,,3c1926cc058bf49d,,,success,,7087e4c9ef624aae8d1471f4292cfb02,,{}
+2026-02-02T20:44:31.829846+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,7058d7236fa84c8380c1632c4b2f1366,,{}
+2026-02-02T20:44:31.852910+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,798780a1c999413593ad486a32c1346c,,{}
+2026-02-02T20:44:31.867090+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,ba5f167f2f4b4b12926baaf16d609036,,{}
+2026-02-02T20:44:31.882283+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,76ec297bf7c54e5ab06d7b48b9e698a3,,{}
+2026-02-02T20:44:31.897611+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,7a7325d84fc24c4aa4df8d09d9fb2da0,,{}
+2026-02-02T20:44:31.912293+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,aece8d79513848b1bbbfe90eb3a04c1e,,{}
+2026-02-02T20:44:31.931897+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,eeeaa70071a2432fb244cbbd469f48c3,,{}
+2026-02-02T20:44:31.951663+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,3c433ddcbb284f9e8ac04257691d1277,,{}
+2026-02-02T20:44:31.971658+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,757e8f976a03412e9644c91e0cf43808,,{}
+2026-02-02T20:44:31.987215+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,490e0de3f4e446158fbbc7dea0127582,,{}
+2026-02-02T20:44:32.010979+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,e7d96924c4204afeb92553291cd76912,,{}
+2026-02-02T20:44:32.030729+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,8ac2ab49192c482d8af08202627f442b,,{}
+2026-02-02T20:44:32.048134+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,c4bffae2f10e4bebacc9bf4b2baf8868,,{}
+2026-02-02T20:44:32.064472+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,a3703c4331774145a48c7c7b5db1aa1e,,{}
+2026-02-02T20:44:32.080077+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,7d925b33e0d248f6b3ab20d7050853bd,,{}
+2026-02-02T20:44:32.101007+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,4429875b2c3a410b93c1c0ee9752f611,,{}
+2026-02-02T20:44:32.124958+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,dfa4968d29fa46d5a3fddeb63c7a8507,,{}
+2026-02-02T20:44:32.142943+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,e86152694436439488921910791255bb,,{}
+2026-02-02T20:44:32.157084+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,ad1e0ef4e69c4a2faeff8ba2aec7203c,,{}
+2026-02-02T20:44:32.173405+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,2cd2595e205a46249ae81f67f9492f1b,,{}
+2026-02-02T20:44:32.188191+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,01fe2c9e90af4fd99c5a804415aa08fb,,{}
+2026-02-02T20:44:32.201075+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,dc8fb97486b5450fba4c48c614451ae5,,{}
+2026-02-02T20:44:32.216074+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,ffd4358c43ce40ac99d2a728af044891,,{}
+2026-02-02T20:44:32.230993+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,d09a2172f2dd4afaa18dc2cd5741cff0,,{}
+2026-02-02T20:44:32.245840+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,a6b445027303449989716effc90837c1,,{}
+2026-02-02T20:44:32.259726+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,6549423ed9c14ae0b5bd03d37594a7a2,,{}
+2026-02-02T20:44:32.373981+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,4eb83b2a21e5414d9cfa4fd640ec2c8e,,{}
+2026-02-02T20:44:32.389372+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,c3dea90a3fe24a5db18196c20ae7351c,,{}
+2026-02-02T20:44:32.406587+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,ec28ce8fc31d4bc08dd74b28302bf395,,{}
+2026-02-02T20:44:32.419497+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,0b7cd4db40854ca98157fd3e399606e6,,{}
+2026-02-02T20:44:32.434095+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,test-request-id,,{}
+2026-02-02T20:44:32.443419+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,test-request-id,,{}
+2026-02-02T20:44:32.451785+00:00,auth.success,MEDIUM,,7c36b0a9dedde119,,,success,,test-request-id,,{}
+2026-02-02T20:44:32.461001+00:00,auth.success,MEDIUM,,1d076cc0fec32a6b,,,success,,test-request-id,,{}
+2026-02-02T20:44:32.465125+00:00,auth.success,MEDIUM,,a0687108ff13441b,,,success,,test-request-id,,{}
+2026-02-02T20:44:32.475129+00:00,auth.failure,HIGH,,,/api/v1/test,GET,failure,,test-request-id,,"{'reason': 'invalid_credentials', 'key_prefix': 'wron'}"
+2026-02-02T20:44:32.484802+00:00,auth.failure,HIGH,,,/api/v1/test,GET,failure,,test-request-id,,"{'reason': 'invalid_credentials', 'key_prefix': 'c'}"
+2026-02-02T20:44:32.493603+00:00,auth.failure,HIGH,,,/api/v1/test,GET,failure,,test-request-id,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:44:32.501429+00:00,auth.production_misconfig,CRITICAL,,,,,failure,,test-request-id,,{}
+2026-02-02T20:44:32.509694+00:00,auth.production_misconfig,CRITICAL,,,,,failure,,test-request-id,,{}
+2026-02-02T20:44:32.533950+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,5a728e2180e24bd5a8be1a4f4a666fd5,,{}
+2026-02-02T20:44:32.568935+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,b0aed623ae8945b19544175b1a3f9530,,{}
+2026-02-02T20:44:32.589942+00:00,auth.failure,HIGH,,,/api/v1/chat,POST,failure,,8d635622b1b24950a240b71e68795027,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:44:32.652899+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,49e3b03e749a4053a94a75ae99107018,,{}
+2026-02-02T20:44:32.670159+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,5a267fc31bae4e408061d232025d44b2,,{}
+2026-02-02T20:44:32.685361+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,faf927307dd54577b4c0cd29f3a4d025,,{}
+2026-02-02T20:44:32.699789+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,5a44067cbaa44493b0c0cabb75b7915a,,{}
+2026-02-02T20:44:32.716861+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,a7480ed2d5bc4c94975857bff67bc8da,,{}
+2026-02-02T20:44:32.732120+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,d5c7dd74242b43a1a86ba852cfb3b8a8,,{}
+2026-02-02T20:44:32.746137+00:00,auth.failure,HIGH,,,/api/v1/export/properties,POST,failure,,63dd065ec12f4058a923e41b08ba36c9,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:44:32.761577+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,3901946229cb485fab836424bedc7be1,,{}
+2026-02-02T20:44:32.779107+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,3a144c521d4849c8babbb18cad436dcf,,{}
+2026-02-02T20:44:32.797998+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,ea851ebfd158438694ea89cd9c2271f5,,{}
+2026-02-02T20:44:32.819447+00:00,auth.failure,HIGH,,,/api/v1/prompt-templates,GET,failure,,1b1375ecd4fb45178d0785c3048a8c10,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:44:32.833195+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,eee8ba4f6721464e8808031806633fcb,,{}
+2026-02-02T20:44:32.846497+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,fc2476291a0f45259191bf7ef0048a3b,,{}
+2026-02-02T20:44:32.858635+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,ad627dc6c625470cade1393baa0d1214,,{}
+2026-02-02T20:44:32.872394+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,967d85061e2a417f96b8510935489acb,,{}
+2026-02-02T20:44:32.892624+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,3dc00969747344dc84266dc34d2a88ba,,{}
+2026-02-02T20:44:32.912413+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,017929ca3aaf4d2ba2ce3df7251c6368,,{}
+2026-02-02T20:44:32.928344+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,67a7aa5c340544cd842331e532ada9c0,,{}
+2026-02-02T20:44:32.945290+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,73db5a01af70403db56acf1ccd255331,,{}
+2026-02-02T20:44:32.961128+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,9179a11209ed4601b5a676700115e12e,,{}
+2026-02-02T20:44:32.977552+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,97b47581f460448d960a2b42ebd5495a,,{}
+2026-02-02T20:44:32.997943+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,39faee4b16c2479e9924bd98ab68fc47,,{}
+2026-02-02T20:44:33.018017+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,5e8350d971ce46fa8d2d351bd2733841,,{}
+2026-02-02T20:44:33.040344+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,9f75d8d488774854a6a06bacc5ab29fd,,{}
+2026-02-02T20:44:33.060325+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,cf85a6a800b84939b1abb8f47faf334f,,{}
+2026-02-02T20:44:33.084502+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,977f9117c1534da5bdee983a8690601f,,{}
+2026-02-02T20:44:33.106467+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,48ceae452de144a98b858a8bd61748e4,,{}
+2026-02-02T20:44:33.132065+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,22e4440ba4364c378fb004dfeba979bf,,{}
+2026-02-02T20:44:37.255820+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,108921ef6eb64db89ccdf0e45eb3e7f5,,{}
+2026-02-02T20:44:41.366311+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,c89cae324d9a4fb78677d1f58d659931,,{}
+2026-02-02T20:44:41.387390+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,143708ce0a23433eac0b77f601370f21,,{}
+2026-02-02T20:44:41.414655+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,ced5060eaa8d4b4da586c4eb7dc77f7c,,{}
+2026-02-02T20:44:41.434083+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,d19133466792425f9cae8971e4cccdf9,,{}
+2026-02-02T20:44:45.533296+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,e39dc79a578947a0b87aa7d5e0f03058,,{}
+2026-02-02T20:44:45.543802+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,e8be29d6d5a64965ac86e392ce3d630e,,{}
+2026-02-02T20:44:45.563213+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,8ea3eca9c6be4df3bc74d61b894a7479,,{}
+2026-02-02T20:44:45.585352+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,c732a58c2b7143ee8113cf6679657344,,{}
+2026-02-02T20:44:45.608400+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,56d69b82e60a41d59a552d6154ea2c25,,{}
+2026-02-02T20:44:45.629275+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,9310a9c9af0a4031986d0634eedba3cf,,{}
+2026-02-02T20:44:45.648203+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,6c4d70034412406f90e1266aebdd74d5,,{}
+2026-02-02T20:44:45.666102+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,e9d525d103e54b498134eecb2a386cae,,{}
+2026-02-02T20:44:45.682560+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,6b7c98955bb14122ac24259e2376522c,,{}
+2026-02-02T20:44:45.699227+00:00,auth.failure,HIGH,,,/api/v1/search,POST,failure,,c343cac0b70e42c4a5676eb158cd785a,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:44:45.715271+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,c47ebbd94c1c4bcaab92a2ab5a9a04db,,{}
+2026-02-02T20:44:45.734858+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,f03374b9cff746be921c735d6bc88231,,{}
+2026-02-02T20:44:45.757059+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,c3bea129c6814c3fa4a7d6bd3bd97bb5,,{}
+2026-02-02T20:44:45.778114+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,fe24837a4e844ba4b286262df9e44e69,,{}
+2026-02-02T20:44:45.795989+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,a41e560ef3c94c86a1daaf5c66f8b286,,{}
+2026-02-02T20:44:45.811650+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,71278fa394f44ccabda9a061e3acfce3,,{}
+2026-02-02T20:44:45.829529+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,0db5e776fecc426189dd6e5866f29649,,{}
+2026-02-02T20:44:45.847989+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,33d75a4863ff40149d0415a601bae211,,{}
+2026-02-02T20:44:45.869383+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,989c0153af2146909b83909d872d2ed9,,{}
+2026-02-02T20:44:45.886093+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,5706c342a1a740b0b9c6363318ddf1be,,{}
+2026-02-02T20:44:45.900828+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,1ddae9e208434aba8792d5a6aed9ed21,,{}
+2026-02-02T20:44:45.915661+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,bd620a26b379487482f0fa3e3125e7f3,,{}
+2026-02-02T20:44:45.928471+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,b122dc5dde2b4dc7883a2ac9bb62cde2,,{}
+2026-02-02T20:44:45.944949+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,10b38bca8e674f1aaa5b361474d0ef23,,{}
+2026-02-02T20:44:45.963173+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,ce24bd282eec4cd7ba29bd0288301623,,{}
+2026-02-02T20:44:45.980700+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,65995406c3e247668dcd83684cd42305,,{}
+2026-02-02T20:44:45.997705+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,f123cb43d48849d88409cbf2c06935bc,,{}
+2026-02-02T20:44:46.013029+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,400ce3f6b7eb413286ff477bf167ee55,,{}
+2026-02-02T20:44:46.027466+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,4465bad883dd41c5a9b70a0edf090657,,{}
+2026-02-02T20:44:46.042775+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,1a1230c5879a4f2d93fb0c24d0b47c09,,{}
+2026-02-02T20:44:46.059442+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,f133ff840034499483c2f5102c3ca247,,{}
+2026-02-02T20:44:46.073436+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,bc26a6552bcb4719b6a31dca84b6d93f,,{}
+2026-02-02T20:44:46.086523+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,f0ab566212414ceb88e797cccb043b52,,{}
+2026-02-02T20:44:46.103022+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,9c373ab052ca4782bd2da792d66e02b7,,{}
+2026-02-02T20:44:46.121026+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,dbc0e60a8ce0414eae332e5fe86fb6b3,,{}
+2026-02-02T20:44:46.138637+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,ad159cc691ba4f029a1e293b28da9877,,{}
+2026-02-02T20:44:46.161259+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,ebea90fc42f544b68e830f80db1c10cf,,{}
+2026-02-02T20:44:46.180187+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,d7db19092dc4429692f4114b6e067f89,,{}
+2026-02-02T20:44:46.197751+00:00,auth.success,MEDIUM,,62af8704764faf8e,,,success,,1f4cdd15dbca405b8fb63296e8ce5ddd,,{}
+2026-02-02T20:44:46.218348+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,ce776a2c5bc441de9af51e641249c611,,{}
+2026-02-02T20:44:46.249396+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,e1ec9db0b5914d47be2dcf58e9c2bb12,,{}
+2026-02-02T20:44:46.275381+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,f28a0377dcc14f17a46f94e769b06b45,,{}
+2026-02-02T20:44:46.296237+00:00,auth.failure,HIGH,,,/api/v1/chat,POST,failure,,8b05e610a7a742deb7e028abee989191,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:44:46.308849+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,21baddc7f4e143d1a5854a528b8447a2,,{}
+2026-02-02T20:44:46.322617+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,77308613d2d14f0c8f4492ffec7a036c,,{}
+2026-02-02T20:44:46.336255+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,e080ad8aeab54630be66ba29fcc1b7ac,,{}
+2026-02-02T20:44:46.349105+00:00,auth.failure,HIGH,,,/api/v1/tools,GET,failure,,68c1b83ec6694f25ab051f6473cfbc27,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:44:46.368776+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,237c5234089942c59111aecbda155ee3,,{}
+2026-02-02T20:44:46.383427+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,b858a4001eaa4e64b5f45b9907b4a4ad,,{}
+2026-02-02T20:44:46.398118+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,b1cabb14f6884e7c8af1dd969a0deb8d,,{}
+2026-02-02T20:44:46.412626+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,c9a8c113dced48cea95c00734225afe0,,{}
+2026-02-02T20:44:46.428391+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,361c01dd911f472d81080015b048117d,,{}
+2026-02-02T20:44:46.444499+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,dddb519d46134eb6a62e3ffd8db4d888,,{}
+2026-02-02T20:44:46.460861+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,b3df13f4e3ca4dcea091b86150c584c8,,{}
+2026-02-02T20:44:46.475986+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,e67180df63ff4794bb4db8867c787e9c,,{}
+2026-02-02T20:44:46.492494+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,3e03de28a09b460b9a96cf33675cde6b,,{}
+2026-02-02T20:44:46.508443+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,a9f7923439384d68ac6240308ed0a5ca,,{}
+2026-02-02T20:44:46.524675+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,f886d8b376ee420abbb1d0e65caeca9c,,{}
+2026-02-02T20:44:46.540290+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,2cc500a80e444a80b9d13c933741326a,,{}
+2026-02-02T20:44:46.554271+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,2658612e9ef24c3f9256c3aa76c8b2d8,,{}
+2026-02-02T20:44:46.568332+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,1f5618d4a51e464290cba01e831ab493,,{}
+2026-02-02T20:44:46.584154+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,e15e8cf9e7a24b578538dee5e7720481,,{}
+2026-02-02T20:44:46.602818+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,c6a9fe70d21d4373aee47b6408c3da53,,{}
+2026-02-02T20:44:46.622587+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,e96f1a9f4e99442ca29923e1ccc10468,,{}
+2026-02-02T20:44:46.641067+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,64b5f5d4a0b84a8bbda2ee3d76bd101b,,{}
+2026-02-02T20:44:46.662275+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,a612854b9c584cfd97c60b44b4f0553a,,{}
+2026-02-02T20:44:46.686296+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,f740d4cf72084d6bba854d55567ad13c,,{}
+2026-02-02T20:44:46.707614+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,64995573f69c451f8fa25b468cc4c88f,,{}
+2026-02-02T20:44:46.726655+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,dc59397041864d30b13c316adfb72190,,{}
+2026-02-02T20:44:46.747183+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,d3c9bcac121e4828b70b62fcf586b0ad,,{}
+2026-02-02T20:44:46.765071+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,3013be803aff4748bd3c2aefcd7701c8,,{}
+2026-02-02T20:44:46.783876+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,c5b22d14c87a49d2aaa13bd1c115771e,,{}
+2026-02-02T20:44:46.799672+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,9f31738f1cfe419cad3ad250ba1db587,,{}
+2026-02-02T20:44:46.815955+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,711a88553c4549379817da03b00141ef,,{}
+2026-02-02T20:46:17.096111+00:00,authz.denied,HIGH,,9f86d081884c7d65,role:Role.ADMIN,,denied,,,,"{'required_role': <Role.ADMIN: 'admin'>, 'user_roles': [<Role.READ_ONLY: 'read_only'>]}"
+2026-02-02T20:46:17.100882+00:00,authz.denied,HIGH,,9f86d081884c7d65,permission:Permission.DATA_DELETE,,denied,,,,"{'required_permission': <Permission.DATA_DELETE: 'data.delete'>, 'user_permissions': [<Permission.DATA_READ: 'data.read'>]}"
+2026-02-02T20:46:17.116676+00:00,authz.denied,HIGH,,0294ca19ae0ca5bf,role:Role.ADMIN,,denied,,req-123,,"{'required_role': <Role.ADMIN: 'admin'>, 'user_roles': [<Role.USER: 'user'>]}"
+2026-02-02T20:47:23.464184+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,97c86f433c564c728a4ae854da3ff8bd,,{}
+2026-02-02T20:47:23.476743+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,a6eac7e7428346d6a293582e41f8084f,,{}
+2026-02-02T20:47:23.735887+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,c177bb0c661e43cc82a8565002d89a08,,{}
+2026-02-02T20:47:23.758772+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,d3d623d609754dbdb496b0cfccd1ff8f,,{}
+2026-02-02T20:47:23.771139+00:00,auth.failure,HIGH,,,/api/v1/admin/health,GET,failure,,4f7f1fd0ad64414c9a60a1cc81868333,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:47:23.781076+00:00,auth.failure,HIGH,,,/api/v1/admin/version,GET,failure,,8c69393a29a144008b6f013daa692fee,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:47:23.794738+00:00,auth.failure,HIGH,,,/api/v1/admin/ingest,POST,failure,,1ada36991934424fad35c5190b2d5914,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:47:23.806605+00:00,auth.failure,HIGH,,,/api/v1/admin/reindex,POST,failure,,a3b3e1d1c8d040e2b4fd76c62914e185,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:47:23.819574+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,706ccf34dedf49969c9002dd478c6306,,{}
+2026-02-02T20:47:23.833284+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,5bb39338c62840f6902e6edd2730c77e,,{}
+2026-02-02T20:47:23.849361+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,46edd2e297044a7c8a243b9cc13d4448,,{}
+2026-02-02T20:47:23.869710+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,0c01638baac64a4080591755ebcd993f,,{}
+2026-02-02T20:47:23.902240+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,test-req-12345,,{}
+2026-02-02T20:47:23.920412+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,test-req-failed,,{}
+2026-02-02T20:47:23.939128+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,bf79c12b24ec4bcb9476d12b7db1ba17,,{}
+2026-02-02T20:47:23.982433+00:00,auth.failure,HIGH,,,/api/v1/export/properties,POST,failure,,da998e7da45e40c1ac636d634881b9a8,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:47:23.991065+00:00,auth.failure,HIGH,,,/api/v1/export/properties,POST,failure,,5e3672c132aa472d9419282e6f9e6c78,,"{'reason': 'invalid_credentials', 'key_prefix': 'wron'}"
+2026-02-02T20:47:24.002145+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,c9ecb1340c854ee9918a71817ec1ccfc,,{}
+2026-02-02T20:47:24.012588+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,ab35e8586ffb4c0aabeda8b13c3fe81d,,{}
+2026-02-02T20:47:24.338993+00:00,auth.failure,HIGH,,,/api/v1/verify-auth,GET,failure,,7c26478b55d14228965873d4cac79316,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:47:24.349200+00:00,auth.failure,HIGH,,,/api/v1/verify-auth,GET,failure,,00fd31c22ce2422d84af2ff85780337f,,"{'reason': 'invalid_credentials', 'key_prefix': 'wron'}"
+2026-02-02T20:47:24.360198+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,2392b72b6579460ab780db5911b911f4,,{}
+2026-02-02T20:47:24.369996+00:00,auth.success,MEDIUM,,7c36b0a9dedde119,,,success,,7cdfdb8ad7fa4ad0a1182da48e4b8c30,,{}
+2026-02-02T20:47:29.747082+00:00,auth.failure,HIGH,,,/api/v1/verify-auth,GET,failure,,test-req-err,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:47:29.758610+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,858b49d1ce664ef79a45e2ddf2878f47,,{}
+2026-02-02T20:47:29.772867+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,35c2746491364868922ecb8fb1024385,,{}
+2026-02-02T20:47:29.802782+00:00,auth.failure,HIGH,,,/api/v1/tools/price-analysis,POST,failure,,ac08f8a10e3f46dcb7ac825c6ce8e1df,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:47:29.818686+00:00,auth.failure,HIGH,,,/api/v1/tools/price-analysis,POST,failure,,b6f404f3769d40d59e251179db99636b,,"{'reason': 'invalid_credentials', 'key_prefix': 'wron'}"
+2026-02-02T20:47:29.842286+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,757cd456e4594a1b8bc9de4427c9af82,,{}
+2026-02-02T20:47:29.872937+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,0da93d4b7cec453785999353a56124e4,,{}
+2026-02-02T20:47:29.891780+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,8560f1afd9244c83a33db1aa74ab4c26,,{}
+2026-02-02T20:47:29.911690+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,f611b0123c494a47ac0054b630b52a33,,{}
+2026-02-02T20:47:29.926844+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,018ab30449af4d51ba22541ab441aaca,,{}
+2026-02-02T20:47:29.947503+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,6e2bf1f8b18b481d99214ebd7d5bc364,,{}
+2026-02-02T20:47:29.964293+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,ba4ed03c5ddf479fba7a585226775995,,{}
+2026-02-02T20:47:29.984803+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,6c50a0785ead41c4b28db398f8c4b747,,{}
+2026-02-02T20:47:34.107124+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,d99cdc30d10b42d6a7c0f14f85b21600,,{}
+2026-02-02T20:47:38.195646+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,47b30985755d40e4956bde1b815f76da,,{}
+2026-02-02T20:47:38.205025+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,be7ba71fe3044d959925f41c81d4a3a4,,{}
+2026-02-02T20:47:38.224372+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,70e67036ad3b4b4aa535dc0194bbb3a8,,{}
+2026-02-02T20:47:38.238888+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,86bc4e72358f452cbb47f834ec943f4c,,{}
+2026-02-02T20:47:38.262166+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,342936d92a8c478ca3976b9da949fb91,,{}
+2026-02-02T20:47:38.287199+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,7ad861163f0b46ee873045516b813e15,,{}
+2026-02-02T20:47:38.300768+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,0928af6758ab43639229ff7eaa44cd03,,{}
+2026-02-02T20:47:38.314348+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,92b7f56394b3447b9ed8345de97e78e6,,{}
+2026-02-02T20:47:38.328162+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,524ecadfe4a04d8a88f781542afc5a2f,,{}
+2026-02-02T20:47:38.344465+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,c7337e19da8a4a598cfba1118a2f6961,,{}
+2026-02-02T20:47:38.363079+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,4229ab8a5e084cecac4172e4b6b5fdad,,{}
+2026-02-02T20:47:38.389903+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,c6b9ef24892b4ca9966afb9cfce8eecc,,{}
+2026-02-02T20:47:38.409216+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,ede5582357ea4205884c189e0cf22c69,,{}
+2026-02-02T20:47:42.526581+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,69e2521116174213ad524f054fe72d0a,,{}
+2026-02-02T20:47:42.540098+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,1693aa3a9b4a4dc6a72a769e630cdbce,,{}
+2026-02-02T20:47:46.654677+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,f5d4453eeb154f2eaff617eb14fb93ee,,{}
+2026-02-02T20:47:46.665423+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,5593f6009d50409ca169b3cb064555e6,,{}
+2026-02-02T20:47:46.682579+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,22fce093a1b740d683c6363cba37130a,,{}
+2026-02-02T20:47:50.800033+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,3ded1b0c98d7424e984b07d4acbaa63d,,{}
+2026-02-02T20:47:54.895153+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,b1671cfcb0db4b58a5ecb8dacafbed94,,{}
+2026-02-02T20:47:54.911101+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,402ddb0672ae4ca8b47d4c817db18c5c,,{}
+2026-02-02T20:47:54.933141+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,28f417b182ec441ba439badbbb5baf00,,{}
+2026-02-02T20:47:54.955012+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,49d57b15676648008c72ad5a3b9f0bf5,,{}
+2026-02-02T20:47:54.977742+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,249ab34ade2c4217be9f97c973a93d75,,{}
+2026-02-02T20:47:55.000760+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,3a12604d2ecb40ae872b8835f56df474,,{}
+2026-02-02T20:47:55.022789+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,93c24279d31e485c99b18457e6fa0648,,{}
+2026-02-02T20:47:55.043560+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,cb77f41f90bb4b1d884ca7bb04a63128,,{}
+2026-02-02T20:47:55.452394+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,57dd2e59cd06431d8653e77c1bcfc5ca,,{}
+2026-02-02T20:47:55.467364+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,65300a58a06e4451941083825d645fba,,{}
+2026-02-02T20:47:55.483751+00:00,auth.failure,HIGH,,,/api/v1/search,POST,failure,,2254534d72cb480b88562c7c66531557,,"{'reason': 'missing_api_key', 'key_prefix': None}"
+2026-02-02T20:47:55.496987+00:00,auth.failure,HIGH,,,/api/v1/search,POST,failure,,8c45711323bf4ab79df41ebeffc7b695,,"{'reason': 'invalid_credentials', 'key_prefix': 'wron'}"
+2026-02-02T20:47:55.510190+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,4c567b6e675848feb4c39f5acdd77fc3,,{}
+2026-02-02T20:47:55.524365+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,610d10b4abbb4258b9e93635cdad6401,,{}
+2026-02-02T20:47:55.541400+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,4379935f1b094a79a9dd93e0043e79e4,,{}
+2026-02-02T20:47:55.557713+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,bbb3e061e12f41a999995a037956f96c,,{}
+2026-02-02T20:47:55.577281+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,4d0f2fa0da494fbeadbfce3e2e08968d,,{}
+2026-02-02T20:47:55.595354+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,133897cd6a4a49c3ac8c937f68de076d,,{}
+2026-02-02T20:47:55.616235+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,44fd96936f8e4d339f0a6868d573711f,,{}
+2026-02-02T20:47:55.632556+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,d1264dc3e9d24523b55a221a781820e7,,{}
+2026-02-02T20:47:55.651308+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,a411fb6b06064e468cfd1dbec57d4a84,,{}
+2026-02-02T20:47:55.666539+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,e0a36584f0bc4c0aba33d2b369283d6e,,{}
+2026-02-02T20:47:55.682927+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,ae89785b0f724c458d75bec18fbe5012,,{}
+2026-02-02T20:47:55.699178+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,4143c3b84efa4a18a42c5ddbcddf2a83,,{}
+2026-02-02T20:47:55.716923+00:00,auth.success,MEDIUM,,0537dfd229ccd644,,,success,,1415aee03254409baf4f1e2a1e3fa9ab,,{}
+2026-02-02T20:48:29.177685+00:00,auth.success,MEDIUM,,625faa3fbbc3d2bd,,,success,,c405d752fc694ec79bb60b21a96dd074,,{}
+2026-02-02T20:48:29.189965+00:00,auth.success,MEDIUM,,92d9fbe10796650a,,,success,,d2975b8270974de6931e8f8be65e6d67,,{}
+2026-02-02T20:48:29.206525+00:00,auth.success,MEDIUM,,b7305a3d4980930b,,,success,,9058e1b0a83b47448eaef95ee95a6a28,,{}
+2026-02-02T20:48:29.224316+00:00,auth.success,MEDIUM,,64a04c6ee432d0c9,,,success,,89e1e740b43f49878a172ecb210f3a72,,{}
+2026-02-02T20:48:29.241310+00:00,auth.success,MEDIUM,,7964817d0f3d4ec2,,,success,,73d05389f33547d6b985cc59f2a78992,,{}
