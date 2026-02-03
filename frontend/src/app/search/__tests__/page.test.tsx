@@ -327,4 +327,5 @@ describe("SearchPage", () => {
       expect(screen.getByRole("alert")).toHaveTextContent(/Failed to export/);
     });
   })
+
 })

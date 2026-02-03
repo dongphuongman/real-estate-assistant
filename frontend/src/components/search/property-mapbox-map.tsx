@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl, { type LngLatBoundsLike, type Map as MapboxMap } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import type { FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
 
 import { computeBounds, computeCenter, type PropertyMapPoint } from "./property-map-utils";
-import { clusterMapPoints } from "./property-map-clustering";
+import { clusterMapPoints, type ClusteredMapItem } from "./property-map-clustering";
 
 interface MapboxPropertyMapProps {
   points: PropertyMapPoint[];
@@ -113,7 +114,7 @@ export default function PropertyMapboxMap({
 
     // Add heatmap layer if enabled
     if (showHeatmap && points.length > 1) {
-      const heatData = {
+      const heatData: FeatureCollection<Geometry, GeoJsonProperties> = {
         type: "FeatureCollection",
         features: points.map((point) => ({
           type: "Feature",
@@ -187,7 +188,7 @@ export default function PropertyMapboxMap({
           .addTo(mapInstance);
       } else {
         // Cluster
-        const cluster = item;
+        const cluster = item as Extract<ClusteredMapItem, { kind: "cluster" }>;
         const el = document.createElement("div");
         el.className = "cursor-pointer";
         el.innerHTML = `<div style="min-width:30px;height:30px;padding:0 8px;background:#1d4ed8;color:white;border-radius:9999px;border:2px solid white;box-shadow:0 1px 2px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;line-height:1">${cluster.count}</div>`;
