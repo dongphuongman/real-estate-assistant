@@ -187,6 +187,7 @@ class OllamaProvider(LocalModelProvider):
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
         streaming: bool = True,
+        request_timeout: Optional[float] = None,
         **kwargs: Any,
     ) -> BaseChatModel:
         """Create Ollama model instance."""
@@ -195,12 +196,22 @@ class OllamaProvider(LocalModelProvider):
 
         base_url = self.config.get("base_url", "http://localhost:11434")
 
-        # Create model
+        # Get timeout from config or use default from settings
+        timeout = request_timeout
+        if timeout is None:
+            timeout = self.config.get("request_timeout")
+        if timeout is None:
+            from config.settings import get_settings
+
+            timeout = get_settings().llm_request_timeout_seconds
+
+        # Create model with timeout
         return ChatOllama(
             model=model_id,
             temperature=temperature,
             num_predict=max_tokens,
             base_url=base_url,
+            timeout=timeout,
             **kwargs,
         )
 

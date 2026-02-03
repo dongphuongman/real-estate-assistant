@@ -102,9 +102,17 @@ async def ingest_data(request: IngestRequest):
                         ):
                             record["source_platform"] = source_type
                         props.append(Property(**record))
-                    except Exception:
-                        # Skip invalid records but log?
-                        pass
+                    except Exception as e:
+                        # Log skipped records for debugging (sanitize to avoid PII exposure)
+                        record_id = record.get("id", record.get("title", "unknown"))
+                        logger.warning(
+                            "Skipped invalid property record during ingestion",
+                            extra={
+                                "record_id": str(record_id)[:50],
+                                "error_type": type(e).__name__,
+                                "error": str(e)[:200],
+                            },
+                        )
 
                 all_properties.extend(props)
                 logger.info(f"Loaded {len(props)} properties from {url}")
@@ -410,9 +418,17 @@ async def fetch_from_portal(request: PortalFiltersRequest):
                     logger.warning(f"Reached maximum property limit ({max_properties})")
                     break
             except Exception as e:
-                msg = f"Failed to validate property: {str(e)}"
-                logger.warning(msg)
-                errors.append(msg)
+                record_id = record.get("id", record.get("title", "unknown"))
+                logger.warning(
+                    "Skipped invalid property record from portal",
+                    extra={
+                        "record_id": str(record_id)[:50],
+                        "portal": request.portal,
+                        "error_type": type(e).__name__,
+                        "error": str(e)[:200],
+                    },
+                )
+                errors.append(f"Failed to validate property: {type(e).__name__}")
 
         if not all_properties:
             return PortalIngestResponse(

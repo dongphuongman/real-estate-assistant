@@ -16,6 +16,10 @@ def mock_settings_env():
                 return "sk-ant-test"
             if key == "GOOGLE_API_KEY":
                 return "AIza-test"
+            if key == "XAI_API_KEY":
+                return "xai-test-key"
+            if key == "DEEPSEEK_API_KEY":
+                return "sk-deepseek-test"
             return default
 
         mock_getenv.side_effect = get_env
@@ -25,45 +29,38 @@ def mock_settings_env():
             mock_settings.openai_api_key = "sk-test-openai"
             mock_settings.anthropic_api_key = "sk-ant-test"
             mock_settings.google_api_key = "AIza-test"
+            mock_settings.xai_api_key = "xai-test-key"
+            mock_settings.deepseek_api_key = "sk-deepseek-test"
             mock_settings.default_temperature = 0.5
             mock_settings.default_max_tokens = 2048
             yield mock_settings
 
 
 def test_list_all_models_integration(mock_settings_env):
-    # We need to mock the actual API calls to list_models inside the providers
-    # because we don't want to make real network requests with fake keys.
+    """
+    Test listing all models from all providers without mocking the list_models method.
+    This ensures that the list_models code in each provider is executed (coverage).
+    """
+    ModelProviderFactory.clear_cache()
 
-    with (
-        patch("models.providers.openai.OpenAIProvider.list_models") as mock_openai_list,
-        patch("models.providers.anthropic.AnthropicProvider.list_models") as mock_anthropic_list,
-    ):
-        # Setup mocks to return dummy models
-        from models.providers.base import ModelInfo
+    # We do NOT mock list_models here, so it executes the real code in providers.
+    # Since list_models methods are static (return hardcoded lists), they don't need network.
 
-        mock_openai_list.return_value = [
-            ModelInfo(
-                id="gpt-4o", display_name="GPT-4o", provider_name="openai", context_window=128000
-            )
-        ]
-        mock_anthropic_list.return_value = [
-            ModelInfo(
-                id="claude-3-5-sonnet",
-                display_name="Claude 3.5",
-                provider_name="anthropic",
-                context_window=200000,
-            )
-        ]
+    all_models = ModelProviderFactory.list_all_models(include_unavailable=True)
 
-        ModelProviderFactory.clear_cache()
+    # Verify we got models from multiple providers
+    provider_names = {m.provider_name for m in all_models}
 
-        all_models = ModelProviderFactory.list_all_models(include_unavailable=True)
+    # Check for presence of key providers
+    assert "OpenAI" in provider_names or "openai" in provider_names
+    assert "Anthropic (Claude)" in provider_names or "anthropic" in provider_names
+    assert "Google (Gemini)" in provider_names or "google" in provider_names
+    assert "Grok (xAI)" in provider_names or "grok" in provider_names
+    assert "DeepSeek" in provider_names or "deepseek" in provider_names
+    assert "Ollama (Local)" in provider_names or "ollama" in provider_names
 
-        # Verify we got models from multiple providers
-        provider_names = {m.provider_name for m in all_models}
-        assert "openai" in provider_names
-        assert "anthropic" in provider_names
-        assert len(all_models) >= 2
+    # Check that we have a significant number of models
+    assert len(all_models) >= 10  # We have many models across providers
 
 
 def test_factory_creates_providers_with_settings(mock_settings_env):
@@ -76,3 +73,15 @@ def test_factory_creates_providers_with_settings(mock_settings_env):
     # Anthropic
     anthropic_provider = ModelProviderFactory.get_provider("anthropic")
     assert anthropic_provider.config["api_key"] == "sk-ant-test"
+
+    # Google
+    google_provider = ModelProviderFactory.get_provider("google")
+    assert google_provider.config["api_key"] == "AIza-test"
+
+    # Grok
+    grok_provider = ModelProviderFactory.get_provider("grok")
+    assert grok_provider.config["api_key"] == "xai-test-key"
+
+    # DeepSeek
+    deepseek_provider = ModelProviderFactory.get_provider("deepseek")
+    assert deepseek_provider.config["api_key"] == "sk-deepseek-test"

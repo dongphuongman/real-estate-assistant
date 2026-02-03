@@ -112,6 +112,7 @@ class DeepSeekProvider(RemoteModelProvider):
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
         streaming: bool = True,
+        request_timeout: Optional[float] = None,
         **kwargs: Any,
     ) -> BaseChatModel:
         """Create DeepSeek model instance using OpenAI-compatible client."""
@@ -131,12 +132,22 @@ class DeepSeekProvider(RemoteModelProvider):
                 "Set DEEPSEEK_API_KEY environment variable or provide in config."
             )
 
+        # Get timeout from config or use default from settings
+        timeout = request_timeout
+        if timeout is None:
+            timeout = self.config.get("request_timeout")
+        if timeout is None:
+            from config.settings import get_settings
+
+            timeout = get_settings().llm_request_timeout_seconds
+
         llm = ChatOpenAI(
             model=model_id,
             temperature=temperature,
             streaming=streaming,
             api_key=SecretStr(api_key),
             base_url=self.config.get("base_url", "https://api.deepseek.com"),
+            request_timeout=timeout,
             **kwargs,
         )
         if max_tokens is not None:

@@ -110,6 +110,7 @@ class GoogleProvider(RemoteModelProvider):
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
         streaming: bool = True,
+        request_timeout: Optional[float] = None,
         **kwargs: Any,
     ) -> BaseChatModel:
         """Create Google model instance."""
@@ -129,12 +130,22 @@ class GoogleProvider(RemoteModelProvider):
                 "Set GOOGLE_API_KEY environment variable or provide in config."
             )
 
-        # Create model
+        # Get timeout from config or use default from settings
+        timeout = request_timeout
+        if timeout is None:
+            timeout = self.config.get("request_timeout")
+        if timeout is None:
+            from config.settings import get_settings
+
+            timeout = get_settings().llm_request_timeout_seconds
+
+        # Create model with timeout
         return ChatGoogleGenerativeAI(
             model=model_id,
             temperature=temperature,
             max_tokens=max_tokens,
             api_key=SecretStr(api_key),
+            timeout=timeout,
             **kwargs,
         )
 

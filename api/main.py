@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.auth import get_api_key
 from api.dependencies import get_vector_store
 from api.health import get_git_info, get_health_status
+from api.middleware.error_handler import add_error_handlers
 from api.middleware.request_size import add_request_size_limits
 from api.middleware.security import add_security_headers
 from api.observability import REQUEST_ID_HEADER, add_observability
@@ -49,6 +50,7 @@ app = FastAPI(
 add_observability(app, logger)
 add_security_headers(app)
 add_request_size_limits(app)
+add_error_handlers(app)
 
 # Global scheduler instance
 scheduler = None

@@ -95,6 +95,16 @@ class AppSettings(BaseModel):
     default_temperature: float = 0.0
     default_max_tokens: int = 4096
     default_k_results: int = 5
+
+    # LLM Request Timeouts
+    llm_request_timeout_seconds: float = Field(
+        default_factory=lambda: float(os.getenv("LLM_REQUEST_TIMEOUT_SECONDS", "120")),
+        description="Timeout in seconds for LLM API requests (default: 120s)",
+    )
+    llm_connect_timeout_seconds: float = Field(
+        default_factory=lambda: float(os.getenv("LLM_CONNECT_TIMEOUT_SECONDS", "30")),
+        description="Timeout in seconds for connecting to LLM APIs (default: 30s)",
+    )
     ollama_default_model: str = Field(
         default_factory=lambda: os.getenv("OLLAMA_DEFAULT_MODEL", "llama3.2:3b")
     )

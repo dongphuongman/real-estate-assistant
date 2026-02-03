@@ -122,6 +122,7 @@ class AnthropicProvider(RemoteModelProvider):
         temperature: float = 0.0,
         max_tokens: Optional[int] = None,
         streaming: bool = True,
+        request_timeout: Optional[float] = None,
         **kwargs: Any,
     ) -> BaseChatModel:
         """Create Anthropic model instance."""
@@ -145,8 +146,21 @@ class AnthropicProvider(RemoteModelProvider):
         if max_tokens is None:
             max_tokens = 4096
 
+        # Get timeout from config or use default from settings
+        timeout = request_timeout
+        if timeout is None:
+            timeout = self.config.get("request_timeout")
+        if timeout is None:
+            from config.settings import get_settings
+
+            timeout = get_settings().llm_request_timeout_seconds
+
         llm = ChatAnthropic(
-            temperature=temperature, streaming=streaming, api_key=SecretStr(api_key), **kwargs
+            temperature=temperature,
+            streaming=streaming,
+            api_key=SecretStr(api_key),
+            default_request_timeout=timeout,
+            **kwargs,
         )
         llm.model = model_id
         llm.max_tokens = max_tokens
