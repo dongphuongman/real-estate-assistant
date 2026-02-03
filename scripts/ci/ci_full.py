@@ -260,8 +260,9 @@ def main(argv: list[str] | None = None) -> int:
     def compose_smoke():
         if ns.skip_compose:
             return "skipped", "--skip-compose"
-        if not _is_tool_available(["docker", "--version"]):
-            return "skipped", "docker not available"
+        # Check if Docker daemon is actually running, not just CLI installed
+        if not _is_tool_available(["docker", "info"]):
+            return "skipped", "docker daemon not running"
         log_file = logs_dir / "compose_smoke.log"
         rc = _run(
             [
