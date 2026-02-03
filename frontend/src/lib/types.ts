@@ -122,6 +122,52 @@ export interface MortgageResult {
   breakdown: Record<string, number>;
 }
 
+export interface TCOInput {
+  property_price: number;
+  down_payment_percent?: number;
+  interest_rate?: number;
+  loan_years?: number;
+  monthly_hoa?: number;
+  annual_property_tax?: number;
+  annual_insurance?: number;
+  monthly_utilities?: number;
+  monthly_internet?: number;
+  monthly_parking?: number;
+  maintenance_percent?: number;
+}
+
+export interface TCOResult {
+  // Mortgage components
+  monthly_payment: number;
+  total_interest: number;
+  down_payment: number;
+  loan_amount: number;
+  // TCO components (monthly)
+  monthly_mortgage: number;
+  monthly_property_tax: number;
+  monthly_insurance: number;
+  monthly_hoa: number;
+  monthly_utilities: number;
+  monthly_internet: number;
+  monthly_parking: number;
+  monthly_maintenance: number;
+  monthly_tco: number;
+  // TCO components (annual)
+  annual_mortgage: number;
+  annual_property_tax: number;
+  annual_insurance: number;
+  annual_hoa: number;
+  annual_utilities: number;
+  annual_internet: number;
+  annual_parking: number;
+  annual_maintenance: number;
+  annual_tco: number;
+  // Total over loan term
+  total_ownership_cost: number;
+  total_all_costs: number;
+  breakdown: Record<string, number>;
+}
+
 export interface NotificationSettings {
   email_digest: boolean;
   frequency: "daily" | "weekly";

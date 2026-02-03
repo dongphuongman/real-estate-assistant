@@ -643,6 +643,26 @@ Calculate mortgage payments.
 | 200 | Successful Response | PriceAnalysisResponse |
 | 422 | Validation Error | HTTPValidationError |
 
+## POST /api/v1/tools/tco-calculator
+
+**Summary**: Calculate Tco
+
+**Tags**: Tools
+
+Calculate Total Cost of Ownership for a property. Includes mortgage, property taxes, insurance, HOA fees, utilities, maintenance, and parking.
+
+**Request Body**
+
+- Required: yes
+- application/json: TCOInput
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | TCOResult |
+| 422 | Validation Error | HTTPValidationError |
+
 ## POST /api/v1/tools/valuation
 
 **Summary**: Valuation

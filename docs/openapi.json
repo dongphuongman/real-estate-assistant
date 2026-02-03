@@ -2808,6 +2808,232 @@
         "title": "SortOrder",
         "type": "string"
       },
+      "TCOInput": {
+        "description": "Input for Total Cost of Ownership calculator.",
+        "properties": {
+          "annual_insurance": {
+            "default": 0.0,
+            "description": "Annual home insurance",
+            "minimum": 0.0,
+            "title": "Annual Insurance",
+            "type": "number"
+          },
+          "annual_property_tax": {
+            "default": 0.0,
+            "description": "Annual property tax",
+            "minimum": 0.0,
+            "title": "Annual Property Tax",
+            "type": "number"
+          },
+          "down_payment_percent": {
+            "default": 20.0,
+            "description": "Down payment as percentage (e.g., 20 for 20%)",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Down Payment Percent",
+            "type": "number"
+          },
+          "interest_rate": {
+            "default": 4.5,
+            "description": "Annual interest rate as percentage (e.g., 4.5 for 4.5%)",
+            "minimum": 0.0,
+            "title": "Interest Rate",
+            "type": "number"
+          },
+          "loan_years": {
+            "default": 30,
+            "description": "Loan term in years",
+            "exclusiveMinimum": 0.0,
+            "maximum": 50.0,
+            "title": "Loan Years",
+            "type": "integer"
+          },
+          "maintenance_percent": {
+            "default": 1.0,
+            "description": "Annual maintenance as % of property value",
+            "maximum": 5.0,
+            "minimum": 0.0,
+            "title": "Maintenance Percent",
+            "type": "number"
+          },
+          "monthly_hoa": {
+            "default": 0.0,
+            "description": "Monthly HOA/condo fees",
+            "minimum": 0.0,
+            "title": "Monthly Hoa",
+            "type": "number"
+          },
+          "monthly_internet": {
+            "default": 0.0,
+            "description": "Monthly internet/cable",
+            "minimum": 0.0,
+            "title": "Monthly Internet",
+            "type": "number"
+          },
+          "monthly_parking": {
+            "default": 0.0,
+            "description": "Monthly parking cost",
+            "minimum": 0.0,
+            "title": "Monthly Parking",
+            "type": "number"
+          },
+          "monthly_utilities": {
+            "default": 0.0,
+            "description": "Monthly utilities (electric, gas, water)",
+            "minimum": 0.0,
+            "title": "Monthly Utilities",
+            "type": "number"
+          },
+          "property_price": {
+            "description": "Total property price",
+            "exclusiveMinimum": 0.0,
+            "title": "Property Price",
+            "type": "number"
+          }
+        },
+        "required": [
+          "property_price"
+        ],
+        "title": "TCOInput",
+        "type": "object"
+      },
+      "TCOResult": {
+        "description": "Result from Total Cost of Ownership calculator.",
+        "properties": {
+          "annual_hoa": {
+            "title": "Annual Hoa",
+            "type": "number"
+          },
+          "annual_insurance": {
+            "title": "Annual Insurance",
+            "type": "number"
+          },
+          "annual_internet": {
+            "title": "Annual Internet",
+            "type": "number"
+          },
+          "annual_maintenance": {
+            "title": "Annual Maintenance",
+            "type": "number"
+          },
+          "annual_mortgage": {
+            "title": "Annual Mortgage",
+            "type": "number"
+          },
+          "annual_parking": {
+            "title": "Annual Parking",
+            "type": "number"
+          },
+          "annual_property_tax": {
+            "title": "Annual Property Tax",
+            "type": "number"
+          },
+          "annual_tco": {
+            "title": "Annual Tco",
+            "type": "number"
+          },
+          "annual_utilities": {
+            "title": "Annual Utilities",
+            "type": "number"
+          },
+          "breakdown": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "Breakdown",
+            "type": "object"
+          },
+          "down_payment": {
+            "title": "Down Payment",
+            "type": "number"
+          },
+          "loan_amount": {
+            "title": "Loan Amount",
+            "type": "number"
+          },
+          "monthly_hoa": {
+            "title": "Monthly Hoa",
+            "type": "number"
+          },
+          "monthly_insurance": {
+            "title": "Monthly Insurance",
+            "type": "number"
+          },
+          "monthly_internet": {
+            "title": "Monthly Internet",
+            "type": "number"
+          },
+          "monthly_maintenance": {
+            "title": "Monthly Maintenance",
+            "type": "number"
+          },
+          "monthly_mortgage": {
+            "title": "Monthly Mortgage",
+            "type": "number"
+          },
+          "monthly_parking": {
+            "title": "Monthly Parking",
+            "type": "number"
+          },
+          "monthly_payment": {
+            "title": "Monthly Payment",
+            "type": "number"
+          },
+          "monthly_property_tax": {
+            "title": "Monthly Property Tax",
+            "type": "number"
+          },
+          "monthly_tco": {
+            "title": "Monthly Tco",
+            "type": "number"
+          },
+          "monthly_utilities": {
+            "title": "Monthly Utilities",
+            "type": "number"
+          },
+          "total_all_costs": {
+            "title": "Total All Costs",
+            "type": "number"
+          },
+          "total_interest": {
+            "title": "Total Interest",
+            "type": "number"
+          },
+          "total_ownership_cost": {
+            "title": "Total Ownership Cost",
+            "type": "number"
+          }
+        },
+        "required": [
+          "monthly_payment",
+          "total_interest",
+          "down_payment",
+          "loan_amount",
+          "monthly_mortgage",
+          "monthly_property_tax",
+          "monthly_insurance",
+          "monthly_hoa",
+          "monthly_utilities",
+          "monthly_internet",
+          "monthly_parking",
+          "monthly_maintenance",
+          "monthly_tco",
+          "annual_mortgage",
+          "annual_property_tax",
+          "annual_insurance",
+          "annual_hoa",
+          "annual_utilities",
+          "annual_internet",
+          "annual_parking",
+          "annual_maintenance",
+          "annual_tco",
+          "total_ownership_cost",
+          "total_all_costs",
+          "breakdown"
+        ],
+        "title": "TCOResult",
+        "type": "object"
+      },
       "ToolInfo": {
         "description": "Information about an available tool.",
         "properties": {
@@ -4544,6 +4770,53 @@
           }
         ],
         "summary": "Price Analysis",
+        "tags": [
+          "Tools"
+        ]
+      }
+    },
+    "/api/v1/tools/tco-calculator": {
+      "post": {
+        "description": "Calculate Total Cost of Ownership for a property.\nIncludes mortgage, property taxes, insurance, HOA fees, utilities, maintenance, and parking.",
+        "operationId": "calculate_tco_api_v1_tools_tco_calculator_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TCOInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TCOResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Calculate Tco",
         "tags": [
           "Tools"
         ]

@@ -8,6 +8,7 @@ from tools.property_tools import (
     MortgageCalculatorTool,
     PriceAnalysisTool,
     PropertyComparisonTool,
+    TCOCalculatorTool,
     create_property_tools,
 )
 
@@ -78,11 +79,12 @@ def mock_vector_store():
 
 def test_create_property_tools(mock_vector_store):
     tools = create_property_tools(mock_vector_store)
-    assert len(tools) == 4
+    assert len(tools) == 5
     assert isinstance(tools[0], MortgageCalculatorTool)
-    assert isinstance(tools[1], PropertyComparisonTool)
-    assert isinstance(tools[2], PriceAnalysisTool)
-    assert isinstance(tools[3], LocationAnalysisTool)
+    assert isinstance(tools[1], TCOCalculatorTool)
+    assert isinstance(tools[2], PropertyComparisonTool)
+    assert isinstance(tools[3], PriceAnalysisTool)
+    assert isinstance(tools[4], LocationAnalysisTool)
 
 
 def test_mortgage_tool():
@@ -131,3 +133,49 @@ def test_location_analysis_tool(mock_vector_store):
     assert "Location Analysis for Property prop1" in result
     assert "City: Madrid" in result
     assert "Coordinates: 40.4168, -3.7038" in result
+
+
+def test_tco_calculator_tool():
+    tool = TCOCalculatorTool()
+    # Test valid calculation with all optional costs
+    result = tool._run(
+        property_price=300000,
+        down_payment_percent=20,
+        interest_rate=4.5,
+        loan_years=30,
+        monthly_hoa=200,
+        annual_property_tax=3600,
+        annual_insurance=1200,
+        monthly_utilities=150,
+        monthly_internet=50,
+        monthly_parking=100,
+        maintenance_percent=1.0,
+    )
+
+    assert "Total Cost of Ownership" in result
+    assert "Monthly Costs" in result
+    assert "Mortgage Payment:" in result
+    assert "Property Tax:" in result
+    assert "Home Insurance:" in result
+    assert "HOA Fees:" in result
+    assert "Utilities:" in result
+    assert "Internet/Cable:" in result
+    assert "Parking:" in result
+    assert "MONTHLY TCO:" in result
+    assert "Annual Costs" in result
+    assert "ANNUAL TCO:" in result
+
+    # Test with minimal inputs (just mortgage)
+    result_minimal = tool._run(
+        property_price=200000,
+        down_payment_percent=15,
+        interest_rate=5.0,
+        loan_years=20,
+    )
+
+    assert "Total Cost of Ownership" in result_minimal
+    assert "$200,000" in result_minimal
+
+    # Test invalid input
+    result_err = tool._run(property_price=-100)
+    assert "Error:" in result_err

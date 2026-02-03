@@ -62,6 +62,71 @@ class MortgageResult(BaseModel):
     breakdown: Dict[str, float]
 
 
+class TCOInput(BaseModel):
+    """Input for Total Cost of Ownership calculator."""
+
+    # Mortgage inputs (required)
+    property_price: float = Field(description="Total property price", gt=0)
+    down_payment_percent: float = Field(
+        default=20.0, description="Down payment as percentage (e.g., 20 for 20%)", ge=0, le=100
+    )
+    interest_rate: float = Field(
+        default=4.5, description="Annual interest rate as percentage (e.g., 4.5 for 4.5%)", ge=0
+    )
+    loan_years: int = Field(default=30, description="Loan term in years", gt=0, le=50)
+
+    # Additional ownership costs (optional, default to 0)
+    monthly_hoa: float = Field(default=0.0, description="Monthly HOA/condo fees", ge=0)
+    annual_property_tax: float = Field(default=0.0, description="Annual property tax", ge=0)
+    annual_insurance: float = Field(default=0.0, description="Annual home insurance", ge=0)
+    monthly_utilities: float = Field(
+        default=0.0, description="Monthly utilities (electric, gas, water)", ge=0
+    )
+    monthly_internet: float = Field(default=0.0, description="Monthly internet/cable", ge=0)
+    monthly_parking: float = Field(default=0.0, description="Monthly parking cost", ge=0)
+    maintenance_percent: float = Field(
+        default=1.0, description="Annual maintenance as % of property value", ge=0, le=5
+    )
+
+
+class TCOResult(BaseModel):
+    """Result from Total Cost of Ownership calculator."""
+
+    # Mortgage components
+    monthly_payment: float
+    total_interest: float
+    down_payment: float
+    loan_amount: float
+
+    # TCO components (monthly)
+    monthly_mortgage: float
+    monthly_property_tax: float
+    monthly_insurance: float
+    monthly_hoa: float
+    monthly_utilities: float
+    monthly_internet: float
+    monthly_parking: float
+    monthly_maintenance: float
+    monthly_tco: float
+
+    # TCO components (annual)
+    annual_mortgage: float
+    annual_property_tax: float
+    annual_insurance: float
+    annual_hoa: float
+    annual_utilities: float
+    annual_internet: float
+    annual_parking: float
+    annual_maintenance: float
+    annual_tco: float
+
+    # Total over loan term
+    total_ownership_cost: float
+    total_all_costs: float  # Including down payment
+
+    breakdown: Dict[str, float]
+
+
 class MortgageCalculatorTool(BaseTool):
     """Tool for calculating mortgage payments and costs."""
 
@@ -160,6 +225,183 @@ Breakdown:
             return f"Error: {str(e)}"
         except Exception as e:
             return f"Error calculating mortgage: {str(e)}"
+
+    async def _arun(self, *args: Any, **kwargs: Any) -> str:
+        """Async version."""
+        return self._run(*args, **kwargs)
+
+
+class TCOCalculatorTool(BaseTool):
+    """Tool for calculating Total Cost of Ownership."""
+
+    name: str = "tco_calculator"
+    description: str = (
+        "Calculate the Total Cost of Ownership for a property. "
+        "Includes mortgage, property taxes, insurance, HOA fees, utilities, maintenance, and parking. "
+        "Returns monthly and annual breakdowns."
+    )
+    args_schema: type[TCOInput] = TCOInput
+
+    @staticmethod
+    def calculate(
+        property_price: float,
+        down_payment_percent: float = 20.0,
+        interest_rate: float = 4.5,
+        loan_years: int = 30,
+        monthly_hoa: float = 0.0,
+        annual_property_tax: float = 0.0,
+        annual_insurance: float = 0.0,
+        monthly_utilities: float = 0.0,
+        monthly_internet: float = 0.0,
+        monthly_parking: float = 0.0,
+        maintenance_percent: float = 1.0,
+    ) -> TCOResult:
+        """Calculate Total Cost of Ownership."""
+        # First, calculate mortgage components
+        mortgage_result = MortgageCalculatorTool.calculate(
+            property_price, down_payment_percent, interest_rate, loan_years
+        )
+
+        # Calculate monthly ownership costs
+        monthly_property_tax = annual_property_tax / 12
+        monthly_insurance = annual_insurance / 12
+        monthly_maintenance = (property_price * maintenance_percent / 100) / 12
+
+        # Total monthly TCO (excluding down payment)
+        monthly_tco = (
+            mortgage_result.monthly_payment
+            + monthly_property_tax
+            + monthly_insurance
+            + monthly_hoa
+            + monthly_utilities
+            + monthly_internet
+            + monthly_parking
+            + monthly_maintenance
+        )
+
+        # Calculate annual totals
+        annual_mortgage = mortgage_result.monthly_payment * 12
+        annual_hoa = monthly_hoa * 12
+        annual_utilities = monthly_utilities * 12
+        annual_internet = monthly_internet * 12
+        annual_parking = monthly_parking * 12
+        annual_maintenance = monthly_maintenance * 12
+        annual_tco = monthly_tco * 12
+
+        # Total over loan term
+        total_ownership_cost = annual_tco * loan_years
+        total_all_costs = total_ownership_cost + mortgage_result.down_payment
+
+        return TCOResult(
+            # Mortgage components
+            monthly_payment=mortgage_result.monthly_payment,
+            total_interest=mortgage_result.total_interest,
+            down_payment=mortgage_result.down_payment,
+            loan_amount=mortgage_result.loan_amount,
+            # TCO components (monthly)
+            monthly_mortgage=mortgage_result.monthly_payment,
+            monthly_property_tax=monthly_property_tax,
+            monthly_insurance=monthly_insurance,
+            monthly_hoa=monthly_hoa,
+            monthly_utilities=monthly_utilities,
+            monthly_internet=monthly_internet,
+            monthly_parking=monthly_parking,
+            monthly_maintenance=monthly_maintenance,
+            monthly_tco=monthly_tco,
+            # TCO components (annual)
+            annual_mortgage=annual_mortgage,
+            annual_property_tax=annual_property_tax,
+            annual_insurance=annual_insurance,
+            annual_hoa=annual_hoa,
+            annual_utilities=annual_utilities,
+            annual_internet=annual_internet,
+            annual_parking=annual_parking,
+            annual_maintenance=annual_maintenance,
+            annual_tco=annual_tco,
+            # Total over loan term
+            total_ownership_cost=total_ownership_cost,
+            total_all_costs=total_all_costs,
+            breakdown={
+                "mortgage": mortgage_result.monthly_payment,
+                "property_tax": monthly_property_tax,
+                "insurance": monthly_insurance,
+                "hoa": monthly_hoa,
+                "utilities": monthly_utilities,
+                "internet": monthly_internet,
+                "parking": monthly_parking,
+                "maintenance": monthly_maintenance,
+            },
+        )
+
+    def _run(
+        self,
+        property_price: float,
+        down_payment_percent: float = 20.0,
+        interest_rate: float = 4.5,
+        loan_years: int = 30,
+        monthly_hoa: float = 0.0,
+        annual_property_tax: float = 0.0,
+        annual_insurance: float = 0.0,
+        monthly_utilities: float = 0.0,
+        monthly_internet: float = 0.0,
+        monthly_parking: float = 0.0,
+        maintenance_percent: float = 1.0,
+    ) -> str:
+        """Execute TCO calculation."""
+        try:
+            result = self.calculate(
+                property_price,
+                down_payment_percent,
+                interest_rate,
+                loan_years,
+                monthly_hoa,
+                annual_property_tax,
+                annual_insurance,
+                monthly_utilities,
+                monthly_internet,
+                monthly_parking,
+                maintenance_percent,
+            )
+
+            formatted = f"""
+Total Cost of Ownership for ${property_price:,.2f} Property:
+
+=== Monthly Costs ===
+Mortgage Payment:        ${result.monthly_mortgage:,.2f}
+Property Tax:            ${result.monthly_property_tax:,.2f}
+Home Insurance:          ${result.monthly_insurance:,.2f}
+HOA Fees:                ${result.monthly_hoa:,.2f}
+Utilities:               ${result.monthly_utilities:,.2f}
+Internet/Cable:          ${result.monthly_internet:,.2f}
+Parking:                 ${result.monthly_parking:,.2f}
+Maintenance (1% rule):   ${result.monthly_maintenance:,.2f}
+─────────────────────────────────────────
+MONTHLY TCO:             ${result.monthly_tco:,.2f}
+
+=== Annual Costs ===
+Annual Mortgage:         ${result.annual_mortgage:,.2f}
+Annual Property Tax:     ${result.annual_property_tax:,.2f}
+Annual Insurance:        ${result.annual_insurance:,.2f}
+Annual HOA:              ${result.annual_hoa:,.2f}
+Annual Utilities:        ${result.annual_utilities:,.2f}
+Annual Internet:         ${result.annual_internet:,.2f}
+Annual Parking:          ${result.annual_parking:,.2f}
+Annual Maintenance:      ${result.annual_maintenance:,.2f}
+─────────────────────────────────────────
+ANNUAL TCO:              ${result.annual_tco:,.2f}
+
+=== Total Over {loan_years} Years ===
+Total Ownership Cost:    ${result.total_ownership_cost:,.2f}
+Plus Down Payment:       ${result.down_payment:,.2f}
+─────────────────────────────────────────
+TOTAL ALL-IN COST:       ${result.total_all_costs:,.2f}
+"""
+            return formatted.strip()
+
+        except ValueError as e:
+            return f"Error: {str(e)}"
+        except Exception as e:
+            return f"Error calculating TCO: {str(e)}"
 
     async def _arun(self, *args: Any, **kwargs: Any) -> str:
         """Async version."""
@@ -462,6 +704,7 @@ def create_property_tools(vector_store: Any = None) -> List[BaseTool]:
     """
     return [
         MortgageCalculatorTool(),
+        TCOCalculatorTool(),
         PropertyComparisonTool(vector_store=vector_store),
         PriceAnalysisTool(vector_store=vector_store),
         LocationAnalysisTool(vector_store=vector_store),

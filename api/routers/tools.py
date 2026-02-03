@@ -33,6 +33,9 @@ from tools.property_tools import (
     MortgageCalculatorTool,
     MortgageInput,
     MortgageResult,
+    TCOCalculatorTool,
+    TCOInput,
+    TCOResult,
     create_property_tools,
 )
 from vector_store.chroma_store import ChromaPropertyStore
@@ -86,6 +89,35 @@ async def calculate_mortgage(input_data: MortgageInput):
             down_payment_percent=input_data.down_payment_percent,
             interest_rate=input_data.interest_rate,
             loan_years=input_data.loan_years,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Calculation failed: {str(e)}",
+        ) from e
+
+
+@router.post("/tools/tco-calculator", response_model=TCOResult, tags=["Tools"])
+async def calculate_tco(input_data: TCOInput):
+    """
+    Calculate Total Cost of Ownership for a property.
+    Includes mortgage, property taxes, insurance, HOA fees, utilities, maintenance, and parking.
+    """
+    try:
+        return TCOCalculatorTool.calculate(
+            property_price=input_data.property_price,
+            down_payment_percent=input_data.down_payment_percent,
+            interest_rate=input_data.interest_rate,
+            loan_years=input_data.loan_years,
+            monthly_hoa=input_data.monthly_hoa,
+            annual_property_tax=input_data.annual_property_tax,
+            annual_insurance=input_data.annual_insurance,
+            monthly_utilities=input_data.monthly_utilities,
+            monthly_internet=input_data.monthly_internet,
+            monthly_parking=input_data.monthly_parking,
+            maintenance_percent=input_data.maintenance_percent,
         )
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e

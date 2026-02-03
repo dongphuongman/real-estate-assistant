@@ -10,6 +10,8 @@ import {
   ModelRuntimeTestResponse,
   MortgageInput,
   MortgageResult,
+  TCOInput,
+  TCOResult,
   NotificationSettings,
   PortalFiltersRequest,
   PortalIngestResponse,
@@ -280,6 +282,15 @@ export async function calculateMortgage(input: MortgageInput): Promise<MortgageR
     body: JSON.stringify(input),
   });
   return handleResponse<MortgageResult>(response);
+}
+
+export async function calculateTCO(input: TCOInput): Promise<TCOResult> {
+  const response = await fetch(`${getApiUrl()}/tools/tco-calculator`, {
+    method: "POST",
+    headers: buildHeaders(),
+    body: JSON.stringify(input),
+  });
+  return handleResponse<TCOResult>(response);
 }
 
 export async function comparePropertiesApi(propertyIds: string[]) {

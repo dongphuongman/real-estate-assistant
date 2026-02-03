@@ -5,9 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { calculateMortgage, ApiError } from "@/lib/api";
-import { MortgageResult } from "@/lib/types";
-import { Loader2, AlertCircle, RefreshCw, Calculator } from "lucide-react";
+import { calculateMortgage, calculateTCO, ApiError } from "@/lib/api";
+import { MortgageResult, TCOResult } from "@/lib/types";
+import { Loader2, AlertCircle, RefreshCw, Calculator, ChevronDown, ChevronUp } from "lucide-react";
 
 interface ErrorState {
   message: string;
@@ -34,13 +34,23 @@ export function MortgageCalculator() {
   const [loading, setLoading] = useState(false);
   const [errorState, setErrorState] = useState<ErrorState | null>(null);
   const [result, setResult] = useState<MortgageResult | null>(null);
+  const [tcoResult, setTcoResult] = useState<TCOResult | null>(null);
   const [lastFormData, setLastFormData] = useState<typeof formData | null>(null);
+  const [showTcoOptions, setShowTcoOptions] = useState(false);
 
   const [formData, setFormData] = useState({
     property_price: 500000,
     down_payment_percent: 20,
     interest_rate: 4.5,
     loan_years: 30,
+    // TCO fields
+    monthly_hoa: 0,
+    annual_property_tax: 0,
+    annual_insurance: 0,
+    monthly_utilities: 0,
+    monthly_internet: 0,
+    monthly_parking: 0,
+    maintenance_percent: 1,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,8 +68,12 @@ export function MortgageCalculator() {
     setLastFormData(formData);
 
     try {
-      const data = await calculateMortgage(formData);
-      setResult(data);
+      const [mortgageData, tcoData] = await Promise.all([
+        calculateMortgage(formData),
+        calculateTCO(formData),
+      ]);
+      setResult(mortgageData);
+      setTcoResult(tcoData);
     } catch (err: unknown) {
       setErrorState(extractErrorState(err));
     } finally {
@@ -73,8 +87,12 @@ export function MortgageCalculator() {
     setErrorState(null);
 
     try {
-      const data = await calculateMortgage(lastFormData);
-      setResult(data);
+      const [mortgageData, tcoData] = await Promise.all([
+        calculateMortgage(lastFormData),
+        calculateTCO(lastFormData),
+      ]);
+      setResult(mortgageData);
+      setTcoResult(tcoData);
     } catch (err: unknown) {
       setErrorState(extractErrorState(err));
     } finally {
@@ -173,6 +191,124 @@ export function MortgageCalculator() {
               Calculate
             </Button>
 
+            {/* TCO Options Toggle */}
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => setShowTcoOptions(!showTcoOptions)}
+            >
+              {showTcoOptions ? (
+                <>
+                  <ChevronUp className="mr-2 h-4 w-4" />
+                  Hide Total Cost of Ownership Options
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="mr-2 h-4 w-4" />
+                  Add Total Cost of Ownership (Utilities, Taxes, etc.)
+                </>
+              )}
+            </Button>
+
+            {/* TCO Input Fields */}
+            {showTcoOptions && (
+              <div className="space-y-4 pt-4 border-t">
+                <h4 className="text-sm font-semibold">Total Cost of Ownership Options</h4>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="monthly_hoa">Monthly HOA ($)</Label>
+                    <Input
+                      id="monthly_hoa"
+                      name="monthly_hoa"
+                      type="number"
+                      value={formData.monthly_hoa}
+                      onChange={handleChange}
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="annual_property_tax">Annual Property Tax ($)</Label>
+                    <Input
+                      id="annual_property_tax"
+                      name="annual_property_tax"
+                      type="number"
+                      value={formData.annual_property_tax}
+                      onChange={handleChange}
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="annual_insurance">Annual Insurance ($)</Label>
+                    <Input
+                      id="annual_insurance"
+                      name="annual_insurance"
+                      type="number"
+                      value={formData.annual_insurance}
+                      onChange={handleChange}
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="monthly_utilities">Monthly Utilities ($)</Label>
+                    <Input
+                      id="monthly_utilities"
+                      name="monthly_utilities"
+                      type="number"
+                      value={formData.monthly_utilities}
+                      onChange={handleChange}
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="monthly_internet">Monthly Internet ($)</Label>
+                    <Input
+                      id="monthly_internet"
+                      name="monthly_internet"
+                      type="number"
+                      value={formData.monthly_internet}
+                      onChange={handleChange}
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="monthly_parking">Monthly Parking ($)</Label>
+                    <Input
+                      id="monthly_parking"
+                      name="monthly_parking"
+                      type="number"
+                      value={formData.monthly_parking}
+                      onChange={handleChange}
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  <div className="space-y-2 col-span-2">
+                    <Label htmlFor="maintenance_percent">Annual Maintenance (% of property value)</Label>
+                    <Input
+                      id="maintenance_percent"
+                      name="maintenance_percent"
+                      type="number"
+                      value={formData.maintenance_percent}
+                      onChange={handleChange}
+                      min="0"
+                      max="5"
+                      step="0.1"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Common rule: 1-2% of property value per year for maintenance
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* STATE 3: Error state with request_id and retry */}
             {errorState && (
               <div
@@ -214,7 +350,7 @@ export function MortgageCalculator() {
       {result && (
         <Card>
           <CardHeader>
-            <CardTitle>Results</CardTitle>
+            <CardTitle>Mortgage Results</CardTitle>
             <CardDescription>
               Breakdown of your estimated mortgage.
             </CardDescription>
@@ -256,6 +392,85 @@ export function MortgageCalculator() {
                     <span>${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {tcoResult && (
+        <Card className="col-span-full md:col-span-2">
+          <CardHeader>
+            <CardTitle>Total Cost of Ownership</CardTitle>
+            <CardDescription>
+              Complete monthly and annual costs including mortgage, taxes, insurance, utilities, and maintenance.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Monthly TCO Summary */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-primary/5 rounded-lg p-3">
+                <p className="text-xs text-muted-foreground">Monthly TCO</p>
+                <p className="text-xl font-bold text-primary">
+                  ${tcoResult.monthly_tco.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </p>
+              </div>
+              <div className="bg-muted rounded-lg p-3">
+                <p className="text-xs text-muted-foreground">Annual TCO</p>
+                <p className="text-lg font-semibold">
+                  ${tcoResult.annual_tco.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </p>
+              </div>
+              <div className="bg-muted rounded-lg p-3">
+                <p className="text-xs text-muted-foreground">Total Over {formData.loan_years} Years</p>
+                <p className="text-lg font-semibold">
+                  ${tcoResult.total_ownership_cost.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </p>
+              </div>
+              <div className="bg-muted rounded-lg p-3">
+                <p className="text-xs text-muted-foreground">All-In Cost</p>
+                <p className="text-lg font-semibold">
+                  ${tcoResult.total_all_costs.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </p>
+              </div>
+            </div>
+
+            {/* Monthly Breakdown */}
+            <div className="border-t pt-4">
+              <h4 className="text-sm font-medium mb-3">Monthly Cost Breakdown</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="flex justify-between text-sm p-2 bg-muted/50 rounded">
+                  <span className="text-muted-foreground">Mortgage</span>
+                  <span className="font-medium">${tcoResult.monthly_mortgage.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                </div>
+                <div className="flex justify-between text-sm p-2 bg-muted/50 rounded">
+                  <span className="text-muted-foreground">Property Tax</span>
+                  <span className="font-medium">${tcoResult.monthly_property_tax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                </div>
+                <div className="flex justify-between text-sm p-2 bg-muted/50 rounded">
+                  <span className="text-muted-foreground">Insurance</span>
+                  <span className="font-medium">${tcoResult.monthly_insurance.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                </div>
+                <div className="flex justify-between text-sm p-2 bg-muted/50 rounded">
+                  <span className="text-muted-foreground">HOA</span>
+                  <span className="font-medium">${tcoResult.monthly_hoa.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                </div>
+                <div className="flex justify-between text-sm p-2 bg-muted/50 rounded">
+                  <span className="text-muted-foreground">Utilities</span>
+                  <span className="font-medium">${tcoResult.monthly_utilities.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                </div>
+                <div className="flex justify-between text-sm p-2 bg-muted/50 rounded">
+                  <span className="text-muted-foreground">Internet</span>
+                  <span className="font-medium">${tcoResult.monthly_internet.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                </div>
+                <div className="flex justify-between text-sm p-2 bg-muted/50 rounded">
+                  <span className="text-muted-foreground">Parking</span>
+                  <span className="font-medium">${tcoResult.monthly_parking.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                </div>
+                <div className="flex justify-between text-sm p-2 bg-muted/50 rounded">
+                  <span className="text-muted-foreground">Maintenance</span>
+                  <span className="font-medium">${tcoResult.monthly_maintenance.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                </div>
               </div>
             </div>
           </CardContent>
