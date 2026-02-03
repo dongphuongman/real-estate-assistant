@@ -134,13 +134,48 @@
         ],
         "dependencies": [],
         "updatedAt": "2026-02-03T13:20:00.000Z"
+      },
+      {
+        "id": "7",
+        "title": "[TASK-007] Geographic Mapping Enhancement",
+        "description": "Integrate Mapbox for enhanced mapping features including heatmaps, clustering, and interactive map filters.",
+        "status": "done",
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 7.1,
+            "title": "[TASK-007.1] Mapbox Integration Setup",
+            "status": "done",
+            "parentId": "7"
+          },
+          {
+            "id": 7.2,
+            "title": "[TASK-007.2] Heatmap Visualization",
+            "status": "done",
+            "parentId": "7"
+          },
+          {
+            "id": 7.3,
+            "title": "[TASK-007.3] Map Filters and Interactions",
+            "status": "done",
+            "parentId": "7"
+          },
+          {
+            "id": 7.4,
+            "title": "[TASK-007.4] City Overview Map",
+            "status": "done",
+            "parentId": "7"
+          }
+        ],
+        "dependencies": [],
+        "updatedAt": "2026-02-03T23:51:00.000Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-03T13:20:00.000Z",
-      "taskCount": 4,
-      "completedCount": 4,
+      "lastModified": "2026-02-03T23:51:00.000Z",
+      "taskCount": 5,
+      "completedCount": 5,
       "tags": [
         "master"
       ]

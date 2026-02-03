@@ -1,13 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Search as SearchIcon, MapPin, Filter, Download, RefreshCw, AlertCircle } from "lucide-react";
 import { searchProperties, exportPropertiesBySearch, ApiError } from "@/lib/api";
 import { SearchResultItem } from "@/lib/types";
 import { extractMapPoints } from "@/components/search/property-map-utils";
 import dynamic from "next/dynamic";
+import MapControls, { type MapFilterOptions } from "@/components/search/map-controls";
 
 const PropertyMap = dynamic(() => import("@/components/search/property-map"), {
+  ssr: false,
+  loading: () => <div className="h-[420px] w-full bg-muted animate-pulse rounded-lg" />,
+});
+
+const PropertyMapboxMap = dynamic(() => import("@/components/search/property-mapbox-map"), {
   ssr: false,
   loading: () => <div className="h-[420px] w-full bg-muted animate-pulse rounded-lg" />,
 });
@@ -41,8 +47,25 @@ export default function SearchPage() {
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [useMapbox, setUseMapbox] = useState(false);
+  const [mapFilterOptions, setMapFilterOptions] = useState<MapFilterOptions>({
+    showHeatmap: false,
+    heatmapIntensity: 1,
+    showClusters: true,
+    priceRange: undefined,
+    propertyType: undefined,
+  });
 
-  const mapPoints = extractMapPoints(results);
+  const mapPoints = useMemo(() => extractMapPoints(results), [results]);
+
+  const filteredMapPoints = useMemo(() => {
+    let points = mapPoints;
+    if (mapFilterOptions.priceRange) {
+      const [min, max] = mapFilterOptions.priceRange;
+      points = points.filter((p) => p.price !== undefined && p.price >= min && p.price <= max);
+    }
+    return points;
+  }, [mapPoints, mapFilterOptions.priceRange]);
 
   const buildFilters = (): { filters?: Record<string, unknown>; error?: string } => {
     const min = minPrice.trim() ? Number(minPrice) : undefined;
@@ -606,24 +629,59 @@ export default function SearchPage() {
                           Map
                         </button>
                       </div>
+                      {viewMode === "map" && (
+                        <div className="flex items-center gap-2">
+                          <label className="flex items-center gap-2 text-sm">
+                            <input
+                              type="checkbox"
+                              checked={useMapbox}
+                              onChange={(e) => setUseMapbox(e.target.checked)}
+                              className="w-4 h-4 rounded border-gray-300"
+                              aria-label="Use Mapbox"
+                            />
+                            Enhanced Map
+                          </label>
+                        </div>
+                      )}
                       <div className="text-sm text-muted-foreground">
-                        {mapPoints.length} / {results.length} mappable
+                        {filteredMapPoints.length} / {mapPoints.length} / {results.length} shown
                       </div>
                     </div>
 
                     {viewMode === "map" ? (
-                      mapPoints.length ? (
-                        <PropertyMap points={mapPoints} />
-                      ) : (
-                        <div className="flex items-center justify-center h-64 text-center border rounded-lg border-dashed">
-                          <div>
-                            <div className="font-semibold">No mappable results</div>
-                            <div className="text-sm text-muted-foreground mt-1">
-                              These listings do not include latitude/longitude coordinates.
+                      <div className="relative">
+                        {mapPoints.length ? (
+                          useMapbox ? (
+                            <>
+                              <PropertyMapboxMap
+                                points={filteredMapPoints}
+                                mapboxToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+                                showHeatmap={mapFilterOptions.showHeatmap}
+                                heatmapIntensity={mapFilterOptions.heatmapIntensity}
+                                showClusters={mapFilterOptions.showClusters}
+                              />
+                              <MapControls
+                                options={mapFilterOptions}
+                                onChange={setMapFilterOptions}
+                                onZoomIn={() => {/* Handled by Mapbox */}}
+                                onZoomOut={() => {/* Handled by Mapbox */}}
+                                onFitBounds={() => {/* Handled by Mapbox */}}
+                              />
+                            </>
+                          ) : (
+                            <PropertyMap points={filteredMapPoints} />
+                          )
+                        ) : (
+                          <div className="flex items-center justify-center h-64 text-center border rounded-lg border-dashed">
+                            <div>
+                              <div className="font-semibold">No mappable results</div>
+                              <div className="text-sm text-muted-foreground mt-1">
+                                These listings do not include latitude/longitude coordinates.
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      )
+                        )}
+                      </div>
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {results.map((item, index) => {

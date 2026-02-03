@@ -124,4 +124,78 @@ describe("PropertyMap", () => {
       { padding: [24, 24], maxZoom: 14 }
     );
   });
+
+  it("uses default center when no points are provided", () => {
+    render(<PropertyMap points={[]} />);
+
+    expect(screen.getByTestId("map")).toBeInTheDocument();
+    expect(fitBoundsMock).not.toHaveBeenCalled();
+  });
+
+  it("renders cluster with truncated title list", () => {
+    const points = Array.from({ length: 80 }, (_, idx) => ({
+      id: `p-${idx}`,
+      lat: 52.23 + idx * 0.000001,
+      lon: 21.01 + idx * 0.000001,
+      title: `Property ${idx}`,
+      city: "Warsaw",
+      country: "PL",
+    }));
+
+    render(<PropertyMap points={points} />);
+
+    // Should show first 5 titles in cluster popup
+    expect(screen.getByText("Property 0")).toBeInTheDocument();
+    expect(screen.getByText("Property 1")).toBeInTheDocument();
+    expect(screen.getByText("Property 2")).toBeInTheDocument();
+    expect(screen.getByText("Property 3")).toBeInTheDocument();
+    expect(screen.getByText("Property 4")).toBeInTheDocument();
+  });
+
+  it("handles cluster click when no bounds can be computed", () => {
+    const points = Array.from({ length: 80 }, (_, idx) => ({
+      id: `p-${idx}`,
+      lat: 52.23, // All same lat - no bounds
+      lon: 21.01, // All same lon - no bounds
+      title: `Property ${idx}`,
+    }));
+
+    render(<PropertyMap points={points} />);
+
+    const clickButtons = screen.getAllByTestId("marker-click");
+    clickButtons[0].click();
+
+    // Should use setView instead of fitBounds when no bounds (minLat === maxLat and minLon === maxLon)
+    // When all points are the same, computeBounds returns null, so it zooms in
+    expect(fitBoundsMock).toHaveBeenCalledTimes(2); // Initial fit + cluster click (with null bounds defaults to zoom)
+  });
+
+  it("renders cluster without titles when all properties are untitled", () => {
+    const points = Array.from({ length: 80 }, (_, idx) => ({
+      id: `p-${idx}`,
+      lat: 52.23 + idx * 0.000001,
+      lon: 21.01 + idx * 0.000001,
+      city: "Warsaw",
+      country: "PL",
+      // No title - all filtered out as undefined
+    }));
+
+    render(<PropertyMap points={points} />);
+
+    // Should show cluster with count but without individual title list
+    expect(screen.getByText("80 properties in this area")).toBeInTheDocument();
+  });
+
+  it("handles empty city and country in popup", () => {
+    render(
+      <PropertyMap
+        points={[
+          { id: "a", lat: 52.23, lon: 21.01, title: "Test Property" },
+          // No city or country
+        ]}
+      />
+    );
+
+    expect(screen.getByText("Location unavailable")).toBeInTheDocument();
+  });
 });

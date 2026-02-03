@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { BarChart3, BookOpen, Building2, MessageSquare, Moon, Search, Settings, Sun } from "lucide-react";
+import { BarChart3, BookOpen, Building2, MessageSquare, Moon, Search, Settings, Sun, Globe } from "lucide-react";
 
 const THEME_STORAGE_KEY = "theme";
 
@@ -23,6 +23,12 @@ export function MainNav() {
       label: "Search",
       icon: Search,
       active: pathname === "/search",
+    },
+    {
+      href: "/city-overview",
+      label: "Cities",
+      icon: Globe,
+      active: pathname === "/city-overview",
     },
     {
       href: "/chat",
