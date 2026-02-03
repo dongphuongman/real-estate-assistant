@@ -62,8 +62,10 @@ def _run(
                     shell=use_shell,  # nosec B602: commands are trusted/hardcoded in CI
                 ).returncode
             )
-    return int(  # nosec B602: commands are trusted/hardcoded in CI
-        subprocess.run(cmd, cwd=str(cwd) if cwd else None, env=env, shell=use_shell).returncode
+    return int(
+        subprocess.run(  # nosec B602: commands are trusted/hardcoded in CI
+            cmd, cwd=str(cwd) if cwd else None, env=env, shell=use_shell
+        ).returncode
     )
 
 

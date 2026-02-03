@@ -1,6 +1,20 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import CityOverviewPage from "../page";
 
+// Spy on console.error to suppress expected errors during tests
+const originalError = console.error;
+beforeAll(() => {
+  console.error = jest.fn();
+});
+
+afterAll(() => {
+  console.error = originalError;
+});
+
+afterEach(() => {
+  (console.error as jest.Mock).mockClear();
+});
+
 interface MockPoint {
   id: string;
   lat: number;

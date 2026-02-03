@@ -138,9 +138,6 @@ export default function CityOverviewPage() {
             </div>
             <h2 className="text-2xl font-bold mb-2 text-destructive">Failed to Load City Data</h2>
             <p className="text-destructive/90 max-w-md mb-4">{error}</p>
-            {requestId && (
-              <p className="text-xs text-muted-foreground mb-6 font-mono">Request ID: {requestId}</p>
-            )}
           </div>
         )}
 
