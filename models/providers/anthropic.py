@@ -159,7 +159,7 @@ class AnthropicProvider(RemoteModelProvider):
             temperature=temperature,
             streaming=streaming,
             api_key=SecretStr(api_key),
-            default_request_timeout=timeout,
+            default_request_timeout=timeout,  # type: ignore[call-arg]
             **kwargs,
         )
         llm.model = model_id

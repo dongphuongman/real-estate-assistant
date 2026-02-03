@@ -147,7 +147,7 @@ class DeepSeekProvider(RemoteModelProvider):
             streaming=streaming,
             api_key=SecretStr(api_key),
             base_url=self.config.get("base_url", "https://api.deepseek.com"),
-            request_timeout=timeout,
+            request_timeout=timeout,  # type: ignore[call-arg]
             **kwargs,
         )
         if max_tokens is not None:

@@ -1,4 +1,5 @@
 import hashlib
+import inspect
 import logging
 import os
 import re
@@ -306,7 +307,7 @@ def add_observability(app: FastAPI, logger: logging.Logger) -> None:
         start = time.perf_counter()
         try:
             response = await call_next(request)
-        except Exception:
+        except Exception as exc:
             elapsed_ms = (time.perf_counter() - start) * 1000.0
             client_id = client_id_from_api_key(request.headers.get("X-API-Key"))
             logger.exception(
@@ -323,11 +324,19 @@ def add_observability(app: FastAPI, logger: logging.Logger) -> None:
             )
             key = f"{request.method} {request.url.path}"
             app.state.metrics[key] = int(app.state.metrics.get(key, 0)) + 1
-            return JSONResponse(
-                status_code=500,
-                content={"detail": "Internal server error"},
-                headers=response_headers,
-            )
+            handler = app.exception_handlers.get(type(exc)) or app.exception_handlers.get(Exception)
+            if handler is not None:
+                response = handler(request, exc)
+                if inspect.isawaitable(response):
+                    response = await response
+            else:
+                response = JSONResponse(
+                    status_code=500,
+                    content={"detail": "Internal server error"},
+                )
+            for k, v in response_headers.items():
+                response.headers[k] = v
+            return response
 
         elapsed_ms = (time.perf_counter() - start) * 1000.0
 

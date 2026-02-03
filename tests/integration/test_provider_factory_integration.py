@@ -29,7 +29,7 @@ def mock_settings_env():
             mock_settings.openai_api_key = "sk-test-openai"
             mock_settings.anthropic_api_key = "sk-ant-test"
             mock_settings.google_api_key = "AIza-test"
-            mock_settings.xai_api_key = "xai-test-key"
+            mock_settings.grok_api_key = "xai-test-key"  # Fixed: was xai_api_key
             mock_settings.deepseek_api_key = "sk-deepseek-test"
             mock_settings.default_temperature = 0.5
             mock_settings.default_max_tokens = 2048

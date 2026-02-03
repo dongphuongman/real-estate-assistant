@@ -231,7 +231,7 @@ class OpenAIProvider(RemoteModelProvider):
             temperature=temperature,
             streaming=streaming,
             api_key=SecretStr(api_key),
-            request_timeout=timeout,
+            request_timeout=timeout,  # type: ignore[call-arg]
             **kwargs,
         )
         if max_tokens is not None:

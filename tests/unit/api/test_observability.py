@@ -262,3 +262,131 @@ def test_add_observability_sets_request_id_header():
     client = TestClient(app)
     r = client.get("/ping")
     assert "x-request-id" in r.headers
+
+
+def test_exception_uses_registered_custom_handler():
+    """Test that custom exception handlers are called for specific exceptions."""
+    app = FastAPI()
+    logger = logging.getLogger("test")
+    add_observability(app, logger)
+
+    custom_exception_called = []
+
+    async def _custom_handler(request, exc):
+        custom_exception_called.append(True)
+        from fastapi.responses import JSONResponse
+
+        return JSONResponse(status_code=418, content={"detail": "custom handled"})
+
+    # Register custom handler for ValueError
+    app.add_exception_handler(ValueError, _custom_handler)
+
+    @app.get("/custom-error")
+    def _custom_error():
+        raise ValueError("custom error")
+
+    client = TestClient(app)
+    r = client.get("/custom-error")
+    assert r.status_code == 418
+    assert r.json()["detail"] == "custom handled"
+    assert custom_exception_called
+
+
+def test_exception_handler_propagates_response_headers():
+    """Test that response headers are preserved when using custom exception handlers."""
+    app = FastAPI()
+    logger = logging.getLogger("test")
+    add_observability(app, logger)
+
+    async def _custom_handler(request, exc):
+        from fastapi.responses import JSONResponse
+
+        return JSONResponse(
+            status_code=400,
+            content={"detail": "validation failed"},
+            headers={"X-Custom": "custom-value"},
+        )
+
+    app.add_exception_handler(ValueError, _custom_handler)
+
+    @app.get("/validate")
+    def _validate():
+        raise ValueError("invalid")
+
+    client = TestClient(app)
+    r = client.get("/validate")
+    assert r.status_code == 400
+    assert r.headers.get("x-request-id")  # Observability header preserved
+    # Note: handler headers are also preserved
+
+
+def test_exception_fallback_to_generic_500_when_no_handler():
+    """Test that unhandled exceptions fall back to generic 500 response."""
+    app = FastAPI()
+    logger = logging.getLogger("test")
+    add_observability(app, logger)
+
+    @app.get("/unhandled")
+    def _unhandled():
+        raise RuntimeError("unexpected error")
+
+    client = TestClient(app)
+    r = client.get("/unhandled")
+    assert r.status_code == 500
+    assert r.headers.get("x-request-id")
+    assert r.json()["detail"] == "Internal server error"
+
+
+def test_exception_handler_supports_async_handlers():
+    """Test that async exception handlers are properly awaited."""
+    app = FastAPI()
+    logger = logging.getLogger("test")
+    add_observability(app, logger)
+
+    async_handler_called = []
+
+    async def _async_handler(request, exc):
+        async_handler_called.append(True)
+        from fastapi.responses import JSONResponse
+
+        return JSONResponse(status_code=422, content={"detail": "async handled"})
+
+    app.add_exception_handler(TypeError, _async_handler)
+
+    @app.get("/async-error")
+    def _async_error():
+        raise TypeError("type error")
+
+    client = TestClient(app)
+    r = client.get("/async-error")
+    assert r.status_code == 422
+    assert r.json()["detail"] == "async handled"
+    assert async_handler_called
+
+
+def test_exception_handler_checks_base_exception_handler():
+    """Test that base Exception handler is used when specific handler not found."""
+    app = FastAPI()
+    logger = logging.getLogger("test")
+    add_observability(app, logger)
+
+    base_handler_called = []
+
+    async def _base_handler(request, exc):
+        base_handler_called.append(True)
+        from fastapi.responses import JSONResponse
+
+        return JSONResponse(status_code=500, content={"detail": "base handler"})
+
+    # Register base Exception handler
+    app.add_exception_handler(Exception, _base_handler)
+
+    @app.get("/any-error")
+    def _any_error():
+        raise RuntimeError("some error")
+
+    client = TestClient(app)
+    r = client.get("/any-error")
+    assert r.status_code == 500
+    assert r.json()["detail"] == "base handler"
+    assert base_handler_called

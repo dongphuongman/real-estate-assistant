@@ -211,7 +211,7 @@ class OllamaProvider(LocalModelProvider):
             temperature=temperature,
             num_predict=max_tokens,
             base_url=base_url,
-            timeout=timeout,
+            timeout=int(timeout) if timeout is not None else None,
             **kwargs,
         )
 
