@@ -212,31 +212,31 @@
         "id": "20",
         "title": "[TASK-020] Neighborhood Quality Index",
         "description": "Composite neighborhood scoring combining safety, schools, amenities, walkability, and green space. Competitors: NeighborhoodScout, AreaVibes, LocalLogic.",
-        "status": "in-progress",
+        "status": "done",
         "priority": "high",
         "subtasks": [
           {
             "id": 20.1,
             "title": "[TASK-020.1] Data Integration Layer",
-            "status": "pending",
+            "status": "done",
             "parentId": "20"
           },
           {
             "id": 20.2,
             "title": "[TASK-020.2] Scoring Algorithm",
-            "status": "pending",
+            "status": "done",
             "parentId": "20"
           },
           {
             "id": 20.3,
             "title": "[TASK-020.3] API & Endpoints",
-            "status": "pending",
+            "status": "done",
             "parentId": "20"
           },
           {
             "id": 20.4,
             "title": "[TASK-020.4] UI Integration",
-            "status": "pending",
+            "status": "done",
             "parentId": "20"
           },
           {
@@ -254,13 +254,13 @@
           {
             "id": 20.7,
             "title": "[TASK-020.7] Create Neighborhood Data Adapter (data/adapters/neighborhood_adapter.py) 👀",
-            "status": "pending",
+            "status": "done",
             "parentId": "20"
           },
           {
             "id": 20.8,
             "title": "[TASK-020.8] Add Property Card Badge Component 👀",
-            "status": "pending",
+            "status": "done",
             "parentId": "20"
           },
           {
@@ -274,7 +274,7 @@
           "5",
           "7"
         ],
-        "updatedAt": "2026-02-04T17:00:00.000Z"
+        "updatedAt": "2026-02-04T19:40:00.000Z"
       },
       {
         "id": "21",
@@ -426,9 +426,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-04T17:00:00.000Z",
+      "lastModified": "2026-02-04T19:40:00.000Z",
       "taskCount": 11,
-      "completedCount": 7,
+      "completedCount": 8,
       "tags": [
         "master"
       ]

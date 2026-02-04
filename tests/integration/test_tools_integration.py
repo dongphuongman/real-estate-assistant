@@ -4,8 +4,10 @@ import pytest
 from langchain_core.documents import Document
 
 from tools.property_tools import (
+    InvestmentCalculatorTool,
     LocationAnalysisTool,
     MortgageCalculatorTool,
+    NeighborhoodQualityIndexTool,
     PriceAnalysisTool,
     PropertyComparisonTool,
     TCOCalculatorTool,
@@ -79,12 +81,14 @@ def mock_vector_store():
 
 def test_create_property_tools(mock_vector_store):
     tools = create_property_tools(mock_vector_store)
-    assert len(tools) == 5
+    assert len(tools) == 7
     assert isinstance(tools[0], MortgageCalculatorTool)
     assert isinstance(tools[1], TCOCalculatorTool)
-    assert isinstance(tools[2], PropertyComparisonTool)
-    assert isinstance(tools[3], PriceAnalysisTool)
-    assert isinstance(tools[4], LocationAnalysisTool)
+    assert isinstance(tools[2], InvestmentCalculatorTool)
+    assert isinstance(tools[3], NeighborhoodQualityIndexTool)
+    assert isinstance(tools[4], PropertyComparisonTool)
+    assert isinstance(tools[5], PriceAnalysisTool)
+    assert isinstance(tools[6], LocationAnalysisTool)
 
 
 def test_mortgage_tool():

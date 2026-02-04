@@ -2,7 +2,10 @@
 Unit tests for neighborhood quality index tool.
 
 Tests neighborhood scoring algorithm, component calculations, and overall score.
+Also tests the neighborhood adapter integration and fallback behavior.
 """
+
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -116,7 +119,7 @@ class TestNeighborhoodQualityIndexTool:
 
         # Both should include mock and OSM sources
         assert "mock_safety_data" in result_with_coords.data_sources
-        assert "osm_pois" in result_with_coords.data_sources
+        assert "osm_overpass_api" in result_with_coords.data_sources
 
     def test_missing_coordinates_returns_default_scores(self, neighborhood_calc):
         """Test that missing coordinates returns reasonable default scores."""
@@ -249,3 +252,409 @@ class TestNeighborhoodToolFactory:
         }
 
         assert tool_names == expected_names
+
+
+class TestNeighborhoodToolPhase2:
+    """Test Phase 2 OSM integration and fallback behavior."""
+
+    def test_data_sources_reflect_osm_integration(self):
+        """Test data sources include osm_overpass_api for Phase 2."""
+        result = NeighborhoodQualityIndexTool.calculate(
+            property_id="test_phase2",
+            latitude=52.2297,
+            longitude=21.0122,
+        )
+
+        # Phase 2 uses osm_overpass_api instead of osm_pois
+        assert "mock_safety_data" in result.data_sources
+        assert "osm_overpass_api" in result.data_sources
+        assert "geographic_coordinates" in result.data_sources
+
+    def test_adapter_fallback_on_schools_error(self):
+        """Test fallback to mock when adapter fails for schools."""
+        # Patch at the module level where imports are resolved
+        import data.adapters.neighborhood_adapter as na_module
+
+        original_get_adapter = na_module.get_neighborhood_adapter
+
+        try:
+            # Create a mock adapter that raises exception
+            from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+
+            mock_adapter_instance = Mock(spec=NeighborhoodAdapter)
+            mock_adapter_instance.count_schools.side_effect = Exception("API failure")
+            mock_adapter_instance.count_amenities.return_value = 10
+            mock_adapter_instance.calculate_walkability.return_value = 70.0
+            mock_adapter_instance.count_green_spaces.return_value = 3
+
+            # Replace get_neighborhood_adapter to return our mock
+            na_module.get_neighborhood_adapter = Mock(return_value=mock_adapter_instance)
+
+            result = NeighborhoodQualityIndexTool.calculate(
+                property_id="test_fallback_schools",
+                latitude=52.2297,
+                longitude=21.0122,
+            )
+
+            # Should still return a valid score using fallback
+            assert 0 <= result.schools_score <= 100
+            assert result.schools_score >= 50  # Fallback minimum
+        finally:
+            na_module.get_neighborhood_adapter = original_get_adapter
+
+    def test_adapter_fallback_on_amenities_error(self):
+        """Test fallback to mock when adapter fails for amenities."""
+        import data.adapters.neighborhood_adapter as na_module
+
+        original_get_adapter = na_module.get_neighborhood_adapter
+
+        try:
+            from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+
+            mock_adapter_instance = Mock(spec=NeighborhoodAdapter)
+            mock_adapter_instance.count_schools.return_value = 5
+            mock_adapter_instance.count_amenities.side_effect = Exception("API failure")
+            mock_adapter_instance.calculate_walkability.return_value = 70.0
+            mock_adapter_instance.count_green_spaces.return_value = 3
+
+            na_module.get_neighborhood_adapter = Mock(return_value=mock_adapter_instance)
+
+            result = NeighborhoodQualityIndexTool.calculate(
+                property_id="test_fallback_amenities",
+                latitude=52.2297,
+                longitude=21.0122,
+            )
+
+            # Should still return a valid score using fallback
+            assert 0 <= result.amenities_score <= 100
+        finally:
+            na_module.get_neighborhood_adapter = original_get_adapter
+
+    def test_adapter_fallback_on_walkability_error(self):
+        """Test fallback to mock when adapter fails for walkability."""
+        import data.adapters.neighborhood_adapter as na_module
+
+        original_get_adapter = na_module.get_neighborhood_adapter
+
+        try:
+            from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+
+            mock_adapter_instance = Mock(spec=NeighborhoodAdapter)
+            mock_adapter_instance.count_schools.return_value = 5
+            mock_adapter_instance.count_amenities.return_value = 10
+            mock_adapter_instance.calculate_walkability.side_effect = Exception("API failure")
+            mock_adapter_instance.count_green_spaces.return_value = 3
+
+            na_module.get_neighborhood_adapter = Mock(return_value=mock_adapter_instance)
+
+            result = NeighborhoodQualityIndexTool.calculate(
+                property_id="test_fallback_walk",
+                latitude=52.2297,
+                longitude=21.0122,
+            )
+
+            # Should still return a valid score using fallback
+            assert 0 <= result.walkability_score <= 100
+        finally:
+            na_module.get_neighborhood_adapter = original_get_adapter
+
+    def test_adapter_fallback_on_green_space_error(self):
+        """Test fallback to mock when adapter fails for green spaces."""
+        import data.adapters.neighborhood_adapter as na_module
+
+        original_get_adapter = na_module.get_neighborhood_adapter
+
+        try:
+            from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+
+            mock_adapter_instance = Mock(spec=NeighborhoodAdapter)
+            mock_adapter_instance.count_schools.return_value = 5
+            mock_adapter_instance.count_amenities.return_value = 10
+            mock_adapter_instance.calculate_walkability.return_value = 70.0
+            mock_adapter_instance.count_green_spaces.side_effect = Exception("API failure")
+
+            na_module.get_neighborhood_adapter = Mock(return_value=mock_adapter_instance)
+
+            result = NeighborhoodQualityIndexTool.calculate(
+                property_id="test_fallback_green",
+                latitude=52.2297,
+                longitude=21.0122,
+            )
+
+            # Should still return a valid score using fallback
+            assert 0 <= result.green_space_score <= 100
+        finally:
+            na_module.get_neighborhood_adapter = original_get_adapter
+
+    def test_adapter_import_error_fallback(self):
+        """Test fallback when adapter module cannot be imported."""
+        import sys
+
+        # Save the original module and remove it temporarily
+        original_module = sys.modules.get("data.adapters.neighborhood_adapter")
+
+        try:
+            # Remove the module from sys.modules to force ImportError
+            if "data.adapters.neighborhood_adapter" in sys.modules:
+                del sys.modules["data.adapters.neighborhood_adapter"]
+            if "data.adapters" in sys.modules:
+                # Also remove parent package to ensure full re-import failure
+                parent = sys.modules["data.adapters"]
+                if hasattr(parent, "neighborhood_adapter"):
+                    delattr(parent, "neighborhood_adapter")
+
+            result = NeighborhoodQualityIndexTool.calculate(
+                property_id="test_import_error",
+                latitude=52.2297,
+                longitude=21.0122,
+            )
+
+            # Should still return valid scores using hash-based fallback
+            assert 0 <= result.schools_score <= 100
+            assert 0 <= result.amenities_score <= 100
+            assert 0 <= result.walkability_score <= 100
+            assert 0 <= result.green_space_score <= 100
+        finally:
+            # Restore the module
+            if original_module is not None:
+                sys.modules["data.adapters.neighborhood_adapter"] = original_module
+
+    @patch("data.adapters.neighborhood_adapter.get_neighborhood_adapter")
+    def test_real_school_count_translates_to_score(self, mock_get_adapter):
+        """Test that real school counts translate to appropriate scores."""
+        from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+
+        mock_adapter_instance = Mock(spec=NeighborhoodAdapter)
+
+        # Set default return values for all methods
+        mock_adapter_instance.count_amenities.return_value = 10
+        mock_adapter_instance.calculate_walkability.return_value = 70.0
+        mock_adapter_instance.count_green_spaces.return_value = 3
+
+        mock_get_adapter.return_value = mock_adapter_instance
+
+        # Test different school counts
+        test_cases = [
+            (0, 30.0),  # No schools = low score
+            (2, 50.0),  # 2 schools = medium-low
+            (5, 70.0),  # 5 schools = medium-high
+            (8, 85.0),  # 8+ schools = high
+        ]
+
+        for school_count, expected_min_score in test_cases:
+            mock_adapter_instance.count_schools.return_value = school_count
+
+            result = NeighborhoodQualityIndexTool.calculate(
+                property_id=f"test_schools_{school_count}",
+                latitude=52.2297,
+                longitude=21.0122,
+            )
+
+            assert result.schools_score >= expected_min_score
+            assert result.schools_score <= 100
+
+    @patch("data.adapters.neighborhood_adapter.get_neighborhood_adapter")
+    def test_real_amenity_count_translates_to_score(self, mock_get_adapter):
+        """Test that real amenity counts translate to appropriate scores."""
+        from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+
+        mock_adapter_instance = Mock(spec=NeighborhoodAdapter)
+
+        # Set default return values for all methods
+        mock_adapter_instance.count_schools.return_value = 5
+        mock_adapter_instance.calculate_walkability.return_value = 70.0
+        mock_adapter_instance.count_green_spaces.return_value = 3
+
+        mock_get_adapter.return_value = mock_adapter_instance
+
+        # Test different amenity counts
+        test_cases = [
+            (0, 40.0),  # No amenities = low score
+            (5, 60.0),  # 5 amenities = medium
+            (15, 80.0),  # 15 amenities = high
+            (30, 90.0),  # 30+ amenities = very high
+        ]
+
+        for amenity_count, expected_min_score in test_cases:
+            mock_adapter_instance.count_amenities.return_value = amenity_count
+
+            result = NeighborhoodQualityIndexTool.calculate(
+                property_id=f"test_amenities_{amenity_count}",
+                latitude=52.2297,
+                longitude=21.0122,
+            )
+
+            assert result.amenities_score >= expected_min_score
+            assert result.amenities_score <= 100
+
+    @patch("data.adapters.neighborhood_adapter.get_neighborhood_adapter")
+    def test_real_walkability_translates_to_score(self, mock_get_adapter):
+        """Test that real walkability calculation is used."""
+        from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+
+        mock_adapter_instance = Mock(spec=NeighborhoodAdapter)
+
+        # Set default return values for all methods
+        mock_adapter_instance.count_schools.return_value = 5
+        mock_adapter_instance.count_amenities.return_value = 10
+        mock_adapter_instance.count_green_spaces.return_value = 3
+
+        mock_get_adapter.return_value = mock_adapter_instance
+
+        # Test different walkability scores
+        test_walkability = [30.0, 50.0, 70.0, 90.0]
+
+        for walkability in test_walkability:
+            mock_adapter_instance.calculate_walkability.return_value = walkability
+
+            result = NeighborhoodQualityIndexTool.calculate(
+                property_id=f"test_walk_{walkability}",
+                latitude=52.2297,
+                longitude=21.0122,
+            )
+
+            assert result.walkability_score == walkability
+
+    @patch("data.adapters.neighborhood_adapter.get_neighborhood_adapter")
+    def test_real_green_space_count_translates_to_score(self, mock_get_adapter):
+        """Test that real green space counts translate to appropriate scores."""
+        from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+
+        mock_adapter_instance = Mock(spec=NeighborhoodAdapter)
+
+        # Set default return values for all methods
+        mock_adapter_instance.count_schools.return_value = 5
+        mock_adapter_instance.count_amenities.return_value = 10
+        mock_adapter_instance.calculate_walkability.return_value = 70.0
+
+        mock_get_adapter.return_value = mock_adapter_instance
+
+        # Test different green space counts
+        test_cases = [
+            (0, 30.0),  # No green spaces = low score
+            (1, 50.0),  # 1 park = medium
+            (3, 72.5),  # 3 parks = medium-high
+            (6, 85.0),  # 6+ parks = very high (85.0 for 6, more for 7+)
+        ]
+
+        for green_count, expected_min_score in test_cases:
+            mock_adapter_instance.count_green_spaces.return_value = green_count
+
+            result = NeighborhoodQualityIndexTool.calculate(
+                property_id=f"test_green_{green_count}",
+                latitude=52.2297,
+                longitude=21.0122,
+            )
+
+            assert result.green_space_score >= expected_min_score
+            assert result.green_space_score <= 100
+
+
+class TestNeighborhoodAdapter:
+    """Test the NeighborhoodAdapter directly."""
+
+    def test_adapter_initialization(self):
+        """Test adapter can be initialized."""
+        from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+
+        adapter = NeighborhoodAdapter()
+        assert adapter is not None
+        assert adapter._api_url is not None
+
+    def test_adapter_with_custom_url(self):
+        """Test adapter with custom API URL."""
+        from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+
+        custom_url = "https://custom.overpass-api.de/api/interpreter"
+        adapter = NeighborhoodAdapter(api_url=custom_url)
+        assert adapter._api_url == custom_url
+
+    def test_adapter_singleton(self):
+        """Test get_neighborhood_adapter returns singleton instance."""
+        from data.adapters.neighborhood_adapter import get_neighborhood_adapter
+
+        adapter1 = get_neighborhood_adapter()
+        adapter2 = get_neighborhood_adapter()
+        assert adapter1 is adapter2
+
+    def test_adapter_school_tags_defined(self):
+        """Test that school tags are properly defined."""
+        from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+
+        adapter = NeighborhoodAdapter()
+        assert hasattr(adapter, "SCHOOL_TAGS")
+        assert len(adapter.SCHOOL_TAGS) > 0
+        assert "school" in adapter.SCHOOL_TAGS
+
+    def test_adapter_amenity_tags_defined(self):
+        """Test that amenity tags are properly defined."""
+        from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+
+        adapter = NeighborhoodAdapter()
+        assert hasattr(adapter, "AMENITY_TAGS")
+        assert len(adapter.AMENITY_TAGS) > 0
+        assert "restaurant" in adapter.AMENITY_TAGS
+
+    def test_adapter_green_space_tags_defined(self):
+        """Test that green space tags are properly defined."""
+        from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+
+        adapter = NeighborhoodAdapter()
+        assert hasattr(adapter, "GREEN_SPACE_TAGS")
+        assert len(adapter.GREEN_SPACE_TAGS) > 0
+        assert "park" in adapter.GREEN_SPACE_TAGS
+
+    def test_count_schools_returns_non_negative(self):
+        """Test count_schools returns non-negative integer."""
+        from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+
+        adapter = NeighborhoodAdapter()
+
+        # This will use the API or return empty list on error
+        count = adapter.count_schools(52.2297, 21.0122, radius_m=1000)
+        assert isinstance(count, int)
+        assert count >= 0
+
+    def test_count_amenities_returns_non_negative(self):
+        """Test count_amenities returns non-negative integer."""
+        from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+
+        adapter = NeighborhoodAdapter()
+        count = adapter.count_amenities(52.2297, 21.0122, radius_m=500)
+        assert isinstance(count, int)
+        assert count >= 0
+
+    def test_count_green_spaces_returns_non_negative(self):
+        """Test count_green_spaces returns non-negative integer."""
+        from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+
+        adapter = NeighborhoodAdapter()
+        count = adapter.count_green_spaces(52.2297, 21.0122, radius_m=1000)
+        assert isinstance(count, int)
+        assert count >= 0
+
+    def test_calculate_walkability_returns_valid_score(self):
+        """Test calculate_walkability returns score in valid range."""
+        from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+
+        adapter = NeighborhoodAdapter()
+        score = adapter.calculate_walkability(52.2297, 21.0122, radius_m=500)
+        assert isinstance(score, float)
+        assert 0 <= score <= 100
+
+    def test_fetch_pois_returns_dict_with_categories(self):
+        """Test fetch_pois_within_radius returns properly structured dict."""
+        from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+
+        adapter = NeighborhoodAdapter()
+        pois = adapter.fetch_pois_within_radius(52.2297, 21.0122, radius_m=1000)
+
+        assert isinstance(pois, dict)
+        assert "schools" in pois
+        assert "amenities" in pois
+        assert "green_spaces" in pois
+        assert "all" in pois
+        assert isinstance(pois["schools"], list)
+        assert isinstance(pois["amenities"], list)
+        assert isinstance(pois["green_spaces"], list)
+        assert isinstance(pois["all"], list)

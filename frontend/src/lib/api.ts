@@ -319,6 +319,29 @@ export async function neighborhoodQualityApi(
   return handleResponse<NeighborhoodQualityResult>(response);
 }
 
+/**
+ * Convenience function to get neighborhood badge data for a property.
+ * Can be used directly on property cards with property data.
+ *
+ * @param property - Property object with id, latitude, longitude, city, neighborhood
+ * @returns Neighborhood quality result for badge display
+ */
+export async function getNeighborhoodBadge(property: {
+  id?: string;
+  latitude?: number;
+  longitude?: number;
+  city?: string;
+  neighborhood?: string;
+}): Promise<NeighborhoodQualityResult> {
+  return neighborhoodQualityApi({
+    property_id: property.id || "unknown",
+    latitude: property.latitude,
+    longitude: property.longitude,
+    city: property.city,
+    neighborhood: property.neighborhood,
+  });
+}
+
 export async function comparePropertiesApi(propertyIds: string[]) {
   const response = await fetch(`${getApiUrl()}/tools/compare-properties`, {
     method: "POST",
