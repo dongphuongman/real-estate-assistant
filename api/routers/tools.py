@@ -30,6 +30,9 @@ from api.models import (
     ValuationResponse,
 )
 from tools.property_tools import (
+    InvestmentCalculatorTool,
+    InvestmentAnalysisInput,
+    InvestmentAnalysisResult,
     MortgageCalculatorTool,
     MortgageInput,
     MortgageResult,
@@ -118,6 +121,36 @@ async def calculate_tco(input_data: TCOInput):
             monthly_internet=input_data.monthly_internet,
             monthly_parking=input_data.monthly_parking,
             maintenance_percent=input_data.maintenance_percent,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Calculation failed: {str(e)}",
+        ) from e
+
+
+@router.post("/tools/investment-analysis", response_model=InvestmentAnalysisResult, tags=["Tools"])
+async def calculate_investment_analysis(input_data: InvestmentAnalysisInput):
+    """
+    Calculate investment property metrics including ROI, cap rate, cash flow, and rental yield.
+    """
+    try:
+        return InvestmentCalculatorTool.calculate(
+            property_price=input_data.property_price,
+            monthly_rent=input_data.monthly_rent,
+            down_payment_percent=input_data.down_payment_percent,
+            closing_costs=input_data.closing_costs,
+            renovation_costs=input_data.renovation_costs,
+            interest_rate=input_data.interest_rate,
+            loan_years=input_data.loan_years,
+            property_tax_monthly=input_data.property_tax_monthly,
+            insurance_monthly=input_data.insurance_monthly,
+            hoa_monthly=input_data.hoa_monthly,
+            maintenance_percent=input_data.maintenance_percent,
+            vacancy_rate=input_data.vacancy_rate,
+            management_percent=input_data.management_percent,
         )
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e

@@ -276,7 +276,7 @@ class TestToolFactory:
         """Test creating all tools."""
         tools = create_property_tools()
 
-        assert len(tools) == 5
+        assert len(tools) == 6
         assert all(hasattr(tool, "name") for tool in tools)
         assert all(hasattr(tool, "description") for tool in tools)
 
@@ -295,6 +295,7 @@ class TestToolFactory:
         expected_names = {
             "mortgage_calculator",
             "tco_calculator",
+            "investment_analyzer",
             "property_comparator",
             "price_analyzer",
             "location_analyzer",

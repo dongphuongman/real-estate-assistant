@@ -468,3 +468,72 @@ class PortalAdaptersResponse(BaseModel):
 
     adapters: List[PortalAdapterInfo]
     count: int
+
+
+# Investment Analysis Models for TASK-019
+class InvestmentAnalysisRequest(BaseModel):
+    """Request model for investment property analysis."""
+
+    property_price: float = Field(..., gt=0, description="Purchase price of the property")
+    monthly_rent: float = Field(..., gt=0, description="Expected monthly rental income")
+    down_payment_percent: float = Field(
+        default=20.0, ge=0, le=100, description="Down payment percentage"
+    )
+    closing_costs: float = Field(default=0.0, ge=0, description="Closing costs (one-time)")
+    renovation_costs: float = Field(default=0.0, ge=0, description="Renovation costs (one-time)")
+    interest_rate: float = Field(default=4.5, ge=0, description="Annual interest rate percentage")
+    loan_years: int = Field(default=30, gt=0, le=50, description="Loan term in years")
+    property_tax_monthly: float = Field(default=0.0, ge=0, description="Monthly property tax")
+    insurance_monthly: float = Field(default=0.0, ge=0, description="Monthly insurance")
+    hoa_monthly: float = Field(default=0.0, ge=0, description="Monthly HOA fees")
+    maintenance_percent: float = Field(
+        default=1.0, ge=0, description="Annual maintenance percentage of property value"
+    )
+    vacancy_rate: float = Field(default=5.0, ge=0, le=100, description="Vacancy rate percentage")
+    management_percent: float = Field(
+        default=0.0, ge=0, description="Property management fee percentage of rent"
+    )
+
+
+class InvestmentAnalysisResponse(BaseModel):
+    """Response model for investment property analysis."""
+
+    monthly_cash_flow: float
+    annual_cash_flow: float
+    cash_on_cash_roi: float
+    cap_rate: float
+    gross_yield: float
+    net_yield: float
+    total_investment: float
+    monthly_income: float
+    monthly_expenses: float
+    annual_income: float
+    annual_expenses: float
+    monthly_mortgage: float
+    investment_score: float
+    score_breakdown: Dict[str, float]
+
+
+class CompareInvestmentsRequest(BaseModel):
+    """Request model for comparing investment properties."""
+
+    property_ids: List[str]
+
+
+class ComparedInvestmentProperty(BaseModel):
+    """Investment comparison data for a single property."""
+
+    property_id: Optional[str] = None
+    price: Optional[float] = None
+    monthly_rent: Optional[float] = None
+    monthly_cash_flow: Optional[float] = None
+    cash_on_cash_roi: Optional[float] = None
+    cap_rate: Optional[float] = None
+    investment_score: Optional[float] = None
+
+
+class CompareInvestmentsResponse(BaseModel):
+    """Response model for investment property comparison."""
+
+    properties: List[ComparedInvestmentProperty]
+    summary: Dict[str, Any] = Field(default_factory=dict)

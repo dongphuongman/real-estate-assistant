@@ -324,3 +324,56 @@ export interface PortalIngestResponse {
   errors: string[];
   filters_applied?: Record<string, unknown>;
 }
+
+// Investment Analysis types for TASK-019
+export interface InvestmentAnalysisInput {
+  property_price: number;
+  monthly_rent: number;
+  down_payment_percent?: number;
+  closing_costs?: number;
+  renovation_costs?: number;
+  interest_rate?: number;
+  loan_years?: number;
+  property_tax_monthly?: number;
+  insurance_monthly?: number;
+  hoa_monthly?: number;
+  maintenance_percent?: number;
+  vacancy_rate?: number;
+  management_percent?: number;
+}
+
+export interface InvestmentAnalysisResult {
+  monthly_cash_flow: number;
+  annual_cash_flow: number;
+  cash_on_cash_roi: number;
+  cap_rate: number;
+  gross_yield: number;
+  net_yield: number;
+  total_investment: number;
+  monthly_income: number;
+  monthly_expenses: number;
+  annual_income: number;
+  annual_expenses: number;
+  monthly_mortgage: number;
+  investment_score: number;
+  score_breakdown: Record<string, number>;
+}
+
+export interface CompareInvestmentsRequest {
+  property_ids: string[];
+}
+
+export interface ComparedInvestmentProperty {
+  property_id?: string;
+  price?: number;
+  monthly_rent?: number;
+  monthly_cash_flow?: number;
+  cash_on_cash_roi?: number;
+  cap_rate?: number;
+  investment_score?: number;
+}
+
+export interface CompareInvestmentsResponse {
+  properties: ComparedInvestmentProperty[];
+  summary: Record<string, unknown>;
+}

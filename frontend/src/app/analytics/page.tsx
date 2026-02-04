@@ -1,5 +1,6 @@
-import { BarChart3 } from "lucide-react";
+import { BarChart3, TrendingUp } from "lucide-react";
 import { MortgageCalculator } from "@/components/analytics/mortgage-calculator";
+import { InvestmentAnalyzer } from "@/components/analytics/investment-analyzer";
 
 export default function AnalyticsPage() {
   return (
@@ -18,6 +19,14 @@ export default function AnalyticsPage() {
             Mortgage Calculator
           </h2>
           <MortgageCalculator />
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+            <TrendingUp className="h-6 w-6" />
+            Investment Property Analyzer
+          </h2>
+          <InvestmentAnalyzer />
         </section>
 
         <section className="rounded-lg border bg-card p-8 text-center text-muted-foreground">

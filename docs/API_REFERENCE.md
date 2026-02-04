@@ -813,6 +813,26 @@ List available tools.
 | 200 | Successful Response | DataEnrichmentResponse |
 | 422 | Validation Error | HTTPValidationError |
 
+## POST /api/v1/tools/investment-analysis
+
+**Summary**: Calculate Investment Analysis
+
+**Tags**: Tools
+
+Calculate investment property metrics including ROI, cap rate, cash flow, and rental yield.
+
+**Request Body**
+
+- Required: yes
+- application/json: InvestmentAnalysisInput
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | InvestmentAnalysisResult |
+| 422 | Validation Error | HTTPValidationError |
+
 ## POST /api/v1/tools/legal-check
 
 **Summary**: Legal Check

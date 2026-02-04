@@ -690,6 +690,311 @@ class LocationAnalysisTool(BaseTool):
         return self._run(property_id)
 
 
+class InvestmentAnalysisInput(BaseModel):
+    """Input for investment property analysis."""
+
+    # Property basics
+    property_price: float = Field(description="Purchase price of the property", gt=0)
+    monthly_rent: float = Field(description="Expected monthly rental income", gt=0)
+
+    # Purchase costs
+    down_payment_percent: float = Field(
+        default=20.0, description="Down payment as percentage (e.g., 20 for 20%)", ge=0, le=100
+    )
+    closing_costs: float = Field(default=0.0, description="Closing costs (one-time)", ge=0)
+    renovation_costs: float = Field(
+        default=0.0, description="Renovation/buy-and-hold costs (one-time)", ge=0
+    )
+
+    # Financing
+    interest_rate: float = Field(
+        default=4.5, description="Annual interest rate as percentage (e.g., 4.5 for 4.5%)", ge=0
+    )
+    loan_years: int = Field(default=30, description="Loan term in years", gt=0, le=50)
+
+    # Operating expenses (monthly)
+    property_tax_monthly: float = Field(default=0.0, description="Monthly property tax", ge=0)
+    insurance_monthly: float = Field(default=0.0, description="Monthly home insurance", ge=0)
+    hoa_monthly: float = Field(default=0.0, description="Monthly HOA/condo fees", ge=0)
+    maintenance_percent: float = Field(
+        default=1.0, description="Annual maintenance as % of property value", ge=0
+    )
+    vacancy_rate: float = Field(default=5.0, description="Vacancy rate percentage", ge=0, le=100)
+    management_percent: float = Field(
+        default=0.0, description="Property management fee % of rent", ge=0
+    )
+
+
+class InvestmentAnalysisResult(BaseModel):
+    """Result from investment property analysis."""
+
+    # Key metrics
+    monthly_cash_flow: float
+    annual_cash_flow: float
+    cash_on_cash_roi: float
+    cap_rate: float
+    gross_yield: float
+    net_yield: float
+    total_investment: float
+
+    # Breakdowns
+    monthly_income: float
+    monthly_expenses: float
+    annual_income: float
+    annual_expenses: float
+    monthly_mortgage: float
+
+    # Investment scoring
+    investment_score: float
+    score_breakdown: Dict[str, float]
+
+
+class InvestmentCalculatorTool(BaseTool):
+    """Tool for calculating investment property metrics."""
+
+    name: str = "investment_analyzer"
+    description: str = (
+        "Calculate investment property metrics including ROI, cap rate, cash flow, and rental yield. "
+        "Input includes property price, monthly rent, financing details, and operating expenses. "
+        "Returns comprehensive investment analysis with scoring."
+    )
+    args_schema: type[InvestmentAnalysisInput] = InvestmentAnalysisInput
+
+    @staticmethod
+    def calculate(
+        property_price: float,
+        monthly_rent: float,
+        down_payment_percent: float = 20.0,
+        closing_costs: float = 0.0,
+        renovation_costs: float = 0.0,
+        interest_rate: float = 4.5,
+        loan_years: int = 30,
+        property_tax_monthly: float = 0.0,
+        insurance_monthly: float = 0.0,
+        hoa_monthly: float = 0.0,
+        maintenance_percent: float = 1.0,
+        vacancy_rate: float = 5.0,
+        management_percent: float = 0.0,
+    ) -> InvestmentAnalysisResult:
+        """
+        Calculate comprehensive investment property metrics.
+
+        Returns InvestmentAnalysisResult with ROI, cap rate, cash flow, yield, and investment score.
+        """
+        # Calculate mortgage using existing calculator
+        mortgage_result = MortgageCalculatorTool.calculate(
+            property_price=property_price,
+            down_payment_percent=down_payment_percent,
+            interest_rate=interest_rate,
+            loan_years=loan_years,
+        )
+
+        # Total cash invested (down payment + closing costs + renovation)
+        total_investment = mortgage_result.down_payment + closing_costs + renovation_costs
+
+        # Monthly operating expenses
+        monthly_maintenance = (property_price * maintenance_percent / 100) / 12
+        monthly_vacancy = monthly_rent * (vacancy_rate / 100)
+        monthly_management = monthly_rent * (management_percent / 100)
+
+        monthly_operating_expenses = (
+            property_tax_monthly
+            + insurance_monthly
+            + hoa_monthly
+            + monthly_maintenance
+            + monthly_vacancy
+            + monthly_management
+        )
+
+        # Monthly and annual income/expense calculations
+        monthly_income = monthly_rent
+        monthly_expenses = mortgage_result.monthly_payment + monthly_operating_expenses
+        monthly_cash_flow = monthly_income - monthly_expenses
+
+        annual_income = monthly_rent * 12
+        annual_operating_expenses = monthly_operating_expenses * 12
+        annual_mortgage_payment = mortgage_result.monthly_payment * 12
+        annual_cash_flow = monthly_cash_flow * 12
+
+        # NOI (Net Operating Income) = Annual Rent - Annual Operating Expenses (excluding mortgage)
+        noi = annual_income - annual_operating_expenses
+
+        # Cap Rate = NOI / Purchase Price
+        cap_rate = (noi / property_price) * 100 if property_price > 0 else 0
+
+        # Cash on Cash ROI = Annual Cash Flow / Total Cash Invested
+        cash_on_cash_roi = (
+            (annual_cash_flow / total_investment) * 100 if total_investment > 0 else 0
+        )
+
+        # Gross Yield = Annual Rent / Property Price
+        gross_yield = (annual_income / property_price) * 100 if property_price > 0 else 0
+
+        # Net Yield = Annual Cash Flow / Property Price
+        net_yield = (annual_cash_flow / property_price) * 100 if property_price > 0 else 0
+
+        # Investment Score (0-100)
+        score_breakdown = InvestmentCalculatorTool._calculate_score_breakdown(
+            cash_on_cash_roi=cash_on_cash_roi,
+            cap_rate=cap_rate,
+            net_yield=net_yield,
+            monthly_cash_flow=monthly_cash_flow,
+            property_price=property_price,
+        )
+        investment_score = sum(score_breakdown.values())
+
+        return InvestmentAnalysisResult(
+            # Key metrics
+            monthly_cash_flow=round(monthly_cash_flow, 2),
+            annual_cash_flow=round(annual_cash_flow, 2),
+            cash_on_cash_roi=round(cash_on_cash_roi, 2),
+            cap_rate=round(cap_rate, 2),
+            gross_yield=round(gross_yield, 2),
+            net_yield=round(net_yield, 2),
+            total_investment=round(total_investment, 2),
+            # Breakdowns
+            monthly_income=round(monthly_income, 2),
+            monthly_expenses=round(monthly_expenses, 2),
+            annual_income=round(annual_income, 2),
+            annual_expenses=round(annual_operating_expenses + annual_mortgage_payment, 2),
+            monthly_mortgage=round(mortgage_result.monthly_payment, 2),
+            # Investment scoring
+            investment_score=round(investment_score, 1),
+            score_breakdown={k: round(v, 1) for k, v in score_breakdown.items()},
+        )
+
+    @staticmethod
+    def _calculate_score_breakdown(
+        cash_on_cash_roi: float,
+        cap_rate: float,
+        net_yield: float,
+        monthly_cash_flow: float,
+        property_price: float,
+    ) -> Dict[str, float]:
+        """
+        Calculate investment score breakdown (total = 100).
+
+        Scoring components:
+        - Yield score (0-30): Based on cash-on-cash ROI
+        - Cap rate score (0-25): Based on capitalization rate
+        - Cash flow margin (0-20): Positive cash flow ratio
+        - Net yield score (0-15): Based on net yield percentage
+        - Risk factor (0-10): Lower risk for positive cash flow
+        """
+        score: Dict[str, float] = {}
+
+        # Yield score (0-30): Cash on Cash ROI
+        # >15% = 30, 10-15% = 20-30, 5-10% = 10-20, 0-5% = 0-10, negative = 0
+        if cash_on_cash_roi >= 15:
+            score["yield_score"] = 30.0
+        elif cash_on_cash_roi >= 10:
+            score["yield_score"] = 20.0 + (cash_on_cash_roi - 10) * 2
+        elif cash_on_cash_roi >= 5:
+            score["yield_score"] = 10.0 + (cash_on_cash_roi - 5) * 2
+        elif cash_on_cash_roi >= 0:
+            score["yield_score"] = cash_on_cash_roi * 2
+        else:
+            score["yield_score"] = 0.0
+
+        # Cap rate score (0-25)
+        # >10% = 25, 7-10% = 15-25, 4-7% = 5-15, 0-4% = 0-5, negative = 0
+        if cap_rate >= 10:
+            score["cap_rate_score"] = 25.0
+        elif cap_rate >= 7:
+            score["cap_rate_score"] = 15.0 + (cap_rate - 7) * (10 / 3)
+        elif cap_rate >= 4:
+            score["cap_rate_score"] = 5.0 + (cap_rate - 4) * (10 / 3)
+        elif cap_rate >= 0:
+            score["cap_rate_score"] = cap_rate * 1.25
+        else:
+            score["cap_rate_score"] = 0.0
+
+        # Cash flow margin (0-20)
+        # Positive ratio > 20% = 20, 10-20% = 10-20, 0-10% = 0-10, negative = 0
+        if monthly_cash_flow > 0:
+            margin = (monthly_cash_flow / property_price) * 100 if property_price > 0 else 0
+            if margin >= 0.2:  # 0.2% monthly margin
+                score["cash_flow_score"] = 20.0
+            elif margin >= 0.1:
+                score["cash_flow_score"] = 10.0 + (margin - 0.1) * 100
+            else:
+                score["cash_flow_score"] = margin * 100
+        else:
+            score["cash_flow_score"] = 0.0
+
+        # Net yield score (0-15)
+        # >12% = 15, 8-12% = 10-15, 4-8% = 5-10, 0-4% = 0-5, negative = 0
+        if net_yield >= 12:
+            score["net_yield_score"] = 15.0
+        elif net_yield >= 8:
+            score["net_yield_score"] = 10.0 + (net_yield - 8) * 1.25
+        elif net_yield >= 4:
+            score["net_yield_score"] = 5.0 + (net_yield - 4) * 1.25
+        elif net_yield >= 0:
+            score["net_yield_score"] = net_yield * 1.25
+        else:
+            score["net_yield_score"] = 0.0
+
+        # Risk factor (0-10): Positive cash flow reduces risk
+        if monthly_cash_flow > 0 and cash_on_cash_roi > 5:
+            score["risk_score"] = 10.0
+        elif monthly_cash_flow > 0 and cash_on_cash_roi > 0:
+            score["risk_score"] = 5.0 + cash_on_cash_roi
+        elif monthly_cash_flow > 0:
+            score["risk_score"] = 5.0
+        else:
+            score["risk_score"] = 0.0
+
+        return score
+
+    def _run(self, **kwargs: Any) -> str:
+        """Execute investment analysis."""
+        try:
+            result = self.calculate(**kwargs)
+
+            formatted = f"""
+Investment Analysis for ${kwargs.get("property_price", 0):,.2f} Property:
+
+=== KEY METRICS ===
+Monthly Cash Flow:     ${result.monthly_cash_flow:,.2f}
+Annual Cash Flow:      ${result.annual_cash_flow:,.2f}
+Cash on Cash ROI:      {result.cash_on_cash_roi:.2f}%
+Cap Rate:              {result.cap_rate:.2f}%
+Gross Yield:           {result.gross_yield:.2f}%
+Net Yield:             {result.net_yield:.2f}%
+Total Investment:      ${result.total_investment:,.2f}
+
+=== INVESTMENT SCORE: {result.investment_score:.1f}/100 ===
+Breakdown:
+"""
+            for key, value in result.score_breakdown.items():
+                formatted += f"- {key.replace('_', ' ').title()}: {value:.1f}\n"
+
+            formatted += f"""
+=== MONTHLY BREAKDOWN ===
+Income:                ${result.monthly_income:,.2f}
+- Mortgage Payment:    ${result.monthly_mortgage:,.2f}
+- Operating Expenses:  ${result.monthly_expenses - result.monthly_mortgage:,.2f}
+Total Expenses:        ${result.monthly_expenses:,.2f}
+Monthly Cash Flow:     ${result.monthly_cash_flow:,.2f}
+
+=== ANNUAL BREAKDOWN ===
+Annual Income:         ${result.annual_income:,.2f}
+Annual Expenses:       ${result.annual_expenses:,.2f}
+Annual Cash Flow:      ${result.annual_cash_flow:,.2f}
+"""
+            return formatted.strip()
+
+        except ValueError as e:
+            return f"Error: {str(e)}"
+        except Exception as e:
+            return f"Error calculating investment analysis: {str(e)}"
+
+    async def _arun(self, **kwargs: Any) -> str:
+        """Async version."""
+        return self._run(**kwargs)
+
+
 # Factory function to create all tools
 def create_property_tools(vector_store: Any = None) -> List[BaseTool]:
     """
@@ -705,6 +1010,7 @@ def create_property_tools(vector_store: Any = None) -> List[BaseTool]:
     return [
         MortgageCalculatorTool(),
         TCOCalculatorTool(),
+        InvestmentCalculatorTool(),
         PropertyComparisonTool(vector_store=vector_store),
         PriceAnalysisTool(vector_store=vector_store),
         LocationAnalysisTool(vector_store=vector_store),

@@ -716,6 +716,191 @@
         "title": "IngestResponse",
         "type": "object"
       },
+      "InvestmentAnalysisInput": {
+        "description": "Input for investment property analysis.",
+        "properties": {
+          "closing_costs": {
+            "default": 0.0,
+            "description": "Closing costs (one-time)",
+            "minimum": 0.0,
+            "title": "Closing Costs",
+            "type": "number"
+          },
+          "down_payment_percent": {
+            "default": 20.0,
+            "description": "Down payment as percentage (e.g., 20 for 20%)",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Down Payment Percent",
+            "type": "number"
+          },
+          "hoa_monthly": {
+            "default": 0.0,
+            "description": "Monthly HOA/condo fees",
+            "minimum": 0.0,
+            "title": "Hoa Monthly",
+            "type": "number"
+          },
+          "insurance_monthly": {
+            "default": 0.0,
+            "description": "Monthly home insurance",
+            "minimum": 0.0,
+            "title": "Insurance Monthly",
+            "type": "number"
+          },
+          "interest_rate": {
+            "default": 4.5,
+            "description": "Annual interest rate as percentage (e.g., 4.5 for 4.5%)",
+            "minimum": 0.0,
+            "title": "Interest Rate",
+            "type": "number"
+          },
+          "loan_years": {
+            "default": 30,
+            "description": "Loan term in years",
+            "exclusiveMinimum": 0.0,
+            "maximum": 50.0,
+            "title": "Loan Years",
+            "type": "integer"
+          },
+          "maintenance_percent": {
+            "default": 1.0,
+            "description": "Annual maintenance as % of property value",
+            "minimum": 0.0,
+            "title": "Maintenance Percent",
+            "type": "number"
+          },
+          "management_percent": {
+            "default": 0.0,
+            "description": "Property management fee % of rent",
+            "minimum": 0.0,
+            "title": "Management Percent",
+            "type": "number"
+          },
+          "monthly_rent": {
+            "description": "Expected monthly rental income",
+            "exclusiveMinimum": 0.0,
+            "title": "Monthly Rent",
+            "type": "number"
+          },
+          "property_price": {
+            "description": "Purchase price of the property",
+            "exclusiveMinimum": 0.0,
+            "title": "Property Price",
+            "type": "number"
+          },
+          "property_tax_monthly": {
+            "default": 0.0,
+            "description": "Monthly property tax",
+            "minimum": 0.0,
+            "title": "Property Tax Monthly",
+            "type": "number"
+          },
+          "renovation_costs": {
+            "default": 0.0,
+            "description": "Renovation/buy-and-hold costs (one-time)",
+            "minimum": 0.0,
+            "title": "Renovation Costs",
+            "type": "number"
+          },
+          "vacancy_rate": {
+            "default": 5.0,
+            "description": "Vacancy rate percentage",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Vacancy Rate",
+            "type": "number"
+          }
+        },
+        "required": [
+          "property_price",
+          "monthly_rent"
+        ],
+        "title": "InvestmentAnalysisInput",
+        "type": "object"
+      },
+      "InvestmentAnalysisResult": {
+        "description": "Result from investment property analysis.",
+        "properties": {
+          "annual_cash_flow": {
+            "title": "Annual Cash Flow",
+            "type": "number"
+          },
+          "annual_expenses": {
+            "title": "Annual Expenses",
+            "type": "number"
+          },
+          "annual_income": {
+            "title": "Annual Income",
+            "type": "number"
+          },
+          "cap_rate": {
+            "title": "Cap Rate",
+            "type": "number"
+          },
+          "cash_on_cash_roi": {
+            "title": "Cash On Cash Roi",
+            "type": "number"
+          },
+          "gross_yield": {
+            "title": "Gross Yield",
+            "type": "number"
+          },
+          "investment_score": {
+            "title": "Investment Score",
+            "type": "number"
+          },
+          "monthly_cash_flow": {
+            "title": "Monthly Cash Flow",
+            "type": "number"
+          },
+          "monthly_expenses": {
+            "title": "Monthly Expenses",
+            "type": "number"
+          },
+          "monthly_income": {
+            "title": "Monthly Income",
+            "type": "number"
+          },
+          "monthly_mortgage": {
+            "title": "Monthly Mortgage",
+            "type": "number"
+          },
+          "net_yield": {
+            "title": "Net Yield",
+            "type": "number"
+          },
+          "score_breakdown": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "Score Breakdown",
+            "type": "object"
+          },
+          "total_investment": {
+            "title": "Total Investment",
+            "type": "number"
+          }
+        },
+        "required": [
+          "monthly_cash_flow",
+          "annual_cash_flow",
+          "cash_on_cash_roi",
+          "cap_rate",
+          "gross_yield",
+          "net_yield",
+          "total_investment",
+          "monthly_income",
+          "monthly_expenses",
+          "annual_income",
+          "annual_expenses",
+          "monthly_mortgage",
+          "investment_score",
+          "score_breakdown"
+        ],
+        "title": "InvestmentAnalysisResult",
+        "type": "object"
+      },
       "LegalCheckRequest": {
         "properties": {
           "text": {
@@ -4585,6 +4770,53 @@
           }
         ],
         "summary": "Enrich Address",
+        "tags": [
+          "Tools"
+        ]
+      }
+    },
+    "/api/v1/tools/investment-analysis": {
+      "post": {
+        "description": "Calculate investment property metrics including ROI, cap rate, cash flow, and rental yield.",
+        "operationId": "calculate_investment_analysis_api_v1_tools_investment_analysis_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvestmentAnalysisInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvestmentAnalysisResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Calculate Investment Analysis",
         "tags": [
           "Tools"
         ]

@@ -5,6 +5,8 @@ import {
   ExcelSheetsResponse,
   IngestRequest,
   IngestResponse,
+  InvestmentAnalysisInput,
+  InvestmentAnalysisResult,
   ModelProviderCatalog,
   ModelPreferences,
   ModelRuntimeTestResponse,
@@ -291,6 +293,17 @@ export async function calculateTCO(input: TCOInput): Promise<TCOResult> {
     body: JSON.stringify(input),
   });
   return handleResponse<TCOResult>(response);
+}
+
+export async function calculateInvestment(
+  input: InvestmentAnalysisInput
+): Promise<InvestmentAnalysisResult> {
+  const response = await fetch(`${getApiUrl()}/tools/investment-analysis`, {
+    method: "POST",
+    headers: buildHeaders(),
+    body: JSON.stringify(input),
+  });
+  return handleResponse<InvestmentAnalysisResult>(response);
 }
 
 export async function comparePropertiesApi(propertyIds: string[]) {
