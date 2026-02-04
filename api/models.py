@@ -537,3 +537,38 @@ class CompareInvestmentsResponse(BaseModel):
 
     properties: List[ComparedInvestmentProperty]
     summary: Dict[str, Any] = Field(default_factory=dict)
+
+
+# Neighborhood Quality Index Models for TASK-020
+class NeighborhoodQualityRequest(BaseModel):
+    """Request model for neighborhood quality analysis."""
+
+    property_id: str = Field(..., min_length=1, description="Property ID to analyze")
+    latitude: Optional[float] = Field(None, ge=-90, le=90, description="Latitude coordinate")
+    longitude: Optional[float] = Field(None, ge=-180, le=180, description="Longitude coordinate")
+    city: Optional[str] = Field(None, description="City name for data enrichment")
+    neighborhood: Optional[str] = Field(None, description="Neighborhood name")
+
+
+class NeighborhoodQualityResponse(BaseModel):
+    """Response model for neighborhood quality analysis."""
+
+    property_id: str
+    overall_score: float = Field(
+        ..., ge=0, le=100, description="Overall neighborhood quality score (0-100)"
+    )
+    safety_score: float = Field(..., ge=0, le=100, description="Safety score (0-100)")
+    schools_score: float = Field(..., ge=0, le=100, description="Schools score (0-100)")
+    amenities_score: float = Field(..., ge=0, le=100, description="Amenities score (0-100)")
+    walkability_score: float = Field(..., ge=0, le=100, description="Walkability score (0-100)")
+    green_space_score: float = Field(..., ge=0, le=100, description="Green space score (0-100)")
+    score_breakdown: Dict[str, float] = Field(
+        default_factory=dict, description="Detailed scoring breakdown"
+    )
+    data_sources: List[str] = Field(
+        default_factory=list, description="Data sources used for scoring"
+    )
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    city: Optional[str] = None
+    neighborhood: Optional[str] = None

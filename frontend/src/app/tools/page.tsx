@@ -6,6 +6,7 @@ import {
   exportPropertiesByIds,
   priceAnalysisApi,
   locationAnalysisApi,
+  neighborhoodQualityApi,
   valuationApi,
   legalCheckApi,
   enrichAddressApi,
@@ -13,7 +14,7 @@ import {
   applyPromptTemplate,
   listPromptTemplates,
 } from "@/lib/api";
-import type { PromptTemplateInfo } from "@/lib/types";
+import type { PromptTemplateInfo, NeighborhoodQualityResult } from "@/lib/types";
 
 export default function ToolsPage() {
   return (
@@ -23,6 +24,7 @@ export default function ToolsPage() {
       <CompareSection />
       <PriceAnalysisSection />
       <LocationAnalysisSection />
+      <NeighborhoodQualitySection />
       <PromptTemplatesSection />
       <hr className="my-4" />
       <ValuationSection />
@@ -343,6 +345,151 @@ function LocationAnalysisSection() {
         </div>
       )}
     </section>
+  );
+}
+
+function NeighborhoodQualitySection() {
+  const [propertyId, setPropertyId] = useState<string>("");
+  const [lat, setLat] = useState<string>("");
+  const [lon, setLon] = useState<string>("");
+  const [city, setCity] = useState<string>("");
+  const [neighborhood, setNeighborhood] = useState<string>("");
+  const [data, setData] = useState<NeighborhoodQualityResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const hint = error ? getToolHint(error) : null;
+
+  const getScoreColor = (score: number): string => {
+    if (score >= 85) return "text-green-600";
+    if (score >= 70) return "text-lime-600";
+    if (score >= 55) return "text-yellow-600";
+    if (score >= 40) return "text-orange-600";
+    return "text-red-600";
+  };
+
+  const getRatingLabel = (score: number): string => {
+    if (score >= 85) return "Excellent";
+    if (score >= 70) return "Good";
+    if (score >= 55) return "Fair";
+    if (score >= 40) return "Poor";
+    return "Very Poor";
+  };
+
+  return (
+    <section>
+      <h2 className="text-xl font-medium">Neighborhood Quality Index</h2>
+      <div className="grid grid-cols-2 gap-2 my-2">
+        <input
+          className="border p-2"
+          placeholder="Property ID"
+          value={propertyId}
+          onChange={(e) => setPropertyId(e.target.value)}
+        />
+        <input
+          className="border p-2"
+          placeholder="Latitude (optional)"
+          value={lat}
+          onChange={(e) => setLat(e.target.value)}
+        />
+        <input
+          className="border p-2"
+          placeholder="Longitude (optional)"
+          value={lon}
+          onChange={(e) => setLon(e.target.value)}
+        />
+        <input
+          className="border p-2"
+          placeholder="City (optional)"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+        />
+        <input
+          className="border p-2 col-span-2"
+          placeholder="Neighborhood (optional)"
+          value={neighborhood}
+          onChange={(e) => setNeighborhood(e.target.value)}
+        />
+      </div>
+      <button
+        className="bg-black text-white px-3 py-2 rounded"
+        onClick={async () => {
+          setError(null);
+          setLoading(true);
+          try {
+            const res = await neighborhoodQualityApi({
+              property_id: propertyId,
+              latitude: lat ? parseFloat(lat) : undefined,
+              longitude: lon ? parseFloat(lon) : undefined,
+              city: city || undefined,
+              neighborhood: neighborhood || undefined,
+            });
+            setData(res);
+          } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : String(e);
+            setError(msg || "Neighborhood quality analysis failed");
+          } finally {
+            setLoading(false);
+          }
+        }}
+      >
+        {loading ? "Analyzing..." : "Analyze"}
+      </button>
+      {error && <p className="text-red-600 mt-2">{error}</p>}
+      {hint && <p className="text-sm text-gray-600 mt-1">{hint}</p>}
+      {data && (
+        <div className="mt-4 space-y-3">
+          <div className="flex items-center gap-4">
+            <h3 className="text-lg font-semibold">
+              Overall Score: <span className={`${getScoreColor(data.overall_score)} text-2xl`}>{data.overall_score.toFixed(1)}</span>/100
+            </h3>
+            <span className={`px-2 py-1 rounded text-sm ${getScoreColor(data.overall_score)} bg-gray-100`}>
+              {getRatingLabel(data.overall_score)}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <ScoreBar label="Safety" score={data.safety_score} weight="25%" />
+            <ScoreBar label="Schools" score={data.schools_score} weight="20%" />
+            <ScoreBar label="Amenities" score={data.amenities_score} weight="20%" />
+            <ScoreBar label="Walkability" score={data.walkability_score} weight="20%" />
+            <ScoreBar label="Green Space" score={data.green_space_score} weight="15%" />
+          </div>
+
+          <div className="mt-4 p-3 bg-gray-50 rounded text-sm">
+            <p className="font-semibold">Location:</p>
+            <p>City: {data.city || "-"}</p>
+            <p>Neighborhood: {data.neighborhood || "-"}</p>
+            <p>Coordinates: {data.latitude?.toFixed(4) || "-"}, {data.longitude?.toFixed(4) || "-"}</p>
+            <p className="mt-2 text-gray-600">Data Sources: {data.data_sources.join(", ")}</p>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function ScoreBar({ label, score, weight }: { label: string; score: number; weight: string }) {
+  const getScoreColor = (score: number): string => {
+    if (score >= 85) return "bg-green-500";
+    if (score >= 70) return "bg-lime-500";
+    if (score >= 55) return "bg-yellow-500";
+    if (score >= 40) return "bg-orange-500";
+    return "bg-red-500";
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between mb-1">
+        <span className="text-sm font-medium">{label}</span>
+        <span className="text-sm text-gray-600">{score.toFixed(1)}/100 (Weight: {weight})</span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2.5">
+        <div
+          className={`h-2.5 rounded-full ${getScoreColor(score)}`}
+          style={{ width: `${score}%` }}
+        ></div>
+      </div>
+    </div>
   );
 }
 

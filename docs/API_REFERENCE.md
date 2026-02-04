@@ -889,6 +889,26 @@ Calculate mortgage payments.
 | 200 | Successful Response | MortgageResult |
 | 422 | Validation Error | HTTPValidationError |
 
+## POST /api/v1/tools/neighborhood-quality
+
+**Summary**: Neighborhood Quality
+
+**Tags**: Tools
+
+Calculate neighborhood quality index including safety, schools, amenities, walkability, and green space.
+
+**Request Body**
+
+- Required: yes
+- application/json: NeighborhoodQualityInput
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | NeighborhoodQualityResponse |
+| 422 | Validation Error | HTTPValidationError |
+
 ## POST /api/v1/tools/price-analysis
 
 **Summary**: Price Analysis

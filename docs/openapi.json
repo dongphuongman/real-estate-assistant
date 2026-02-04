@@ -1373,6 +1373,196 @@
         "title": "NegotiationRate",
         "type": "string"
       },
+      "NeighborhoodQualityInput": {
+        "description": "Input for neighborhood quality index calculation.",
+        "properties": {
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "City name for data enrichment",
+            "title": "City"
+          },
+          "latitude": {
+            "anyOf": [
+              {
+                "maximum": 90.0,
+                "minimum": -90.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Latitude coordinate",
+            "title": "Latitude"
+          },
+          "longitude": {
+            "anyOf": [
+              {
+                "maximum": 180.0,
+                "minimum": -180.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Longitude coordinate",
+            "title": "Longitude"
+          },
+          "neighborhood": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Neighborhood name",
+            "title": "Neighborhood"
+          },
+          "property_id": {
+            "description": "Property ID to analyze",
+            "minLength": 1,
+            "title": "Property Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "property_id"
+        ],
+        "title": "NeighborhoodQualityInput",
+        "type": "object"
+      },
+      "NeighborhoodQualityResponse": {
+        "description": "Response model for neighborhood quality analysis.",
+        "properties": {
+          "amenities_score": {
+            "description": "Amenities score (0-100)",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Amenities Score",
+            "type": "number"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "data_sources": {
+            "description": "Data sources used for scoring",
+            "items": {
+              "type": "string"
+            },
+            "title": "Data Sources",
+            "type": "array"
+          },
+          "green_space_score": {
+            "description": "Green space score (0-100)",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Green Space Score",
+            "type": "number"
+          },
+          "latitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latitude"
+          },
+          "longitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longitude"
+          },
+          "neighborhood": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Neighborhood"
+          },
+          "overall_score": {
+            "description": "Overall neighborhood quality score (0-100)",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Overall Score",
+            "type": "number"
+          },
+          "property_id": {
+            "title": "Property Id",
+            "type": "string"
+          },
+          "safety_score": {
+            "description": "Safety score (0-100)",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Safety Score",
+            "type": "number"
+          },
+          "schools_score": {
+            "description": "Schools score (0-100)",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Schools Score",
+            "type": "number"
+          },
+          "score_breakdown": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "description": "Detailed scoring breakdown",
+            "title": "Score Breakdown",
+            "type": "object"
+          },
+          "walkability_score": {
+            "description": "Walkability score (0-100)",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Walkability Score",
+            "type": "number"
+          }
+        },
+        "required": [
+          "property_id",
+          "overall_score",
+          "safety_score",
+          "schools_score",
+          "amenities_score",
+          "walkability_score",
+          "green_space_score"
+        ],
+        "title": "NeighborhoodQualityResponse",
+        "type": "object"
+      },
       "NotificationSettings": {
         "description": "User notification settings.",
         "properties": {
@@ -4956,6 +5146,53 @@
           }
         ],
         "summary": "Calculate Mortgage",
+        "tags": [
+          "Tools"
+        ]
+      }
+    },
+    "/api/v1/tools/neighborhood-quality": {
+      "post": {
+        "description": "Calculate neighborhood quality index including safety, schools, amenities, walkability, and green space.",
+        "operationId": "neighborhood_quality_api_v1_tools_neighborhood_quality_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NeighborhoodQualityInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NeighborhoodQualityResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Neighborhood Quality",
         "tags": [
           "Tools"
         ]

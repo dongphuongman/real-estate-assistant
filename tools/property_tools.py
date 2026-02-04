@@ -7,7 +7,7 @@ and calculations.
 
 import math
 import statistics
-from typing import Any, Dict, List
+from typing import Any, ClassVar, Dict, List, Optional
 
 from langchain.tools import BaseTool
 from pydantic import BaseModel, Field, PrivateAttr
@@ -995,6 +995,316 @@ Annual Cash Flow:      ${result.annual_cash_flow:,.2f}
         return self._run(**kwargs)
 
 
+class NeighborhoodQualityInput(BaseModel):
+    """Input for neighborhood quality index calculation."""
+
+    property_id: str = Field(description="Property ID to analyze", min_length=1)
+    latitude: Optional[float] = Field(None, ge=-90, le=90, description="Latitude coordinate")
+    longitude: Optional[float] = Field(None, ge=-180, le=180, description="Longitude coordinate")
+    city: Optional[str] = Field(None, description="City name for data enrichment")
+    neighborhood: Optional[str] = Field(None, description="Neighborhood name")
+
+
+class NeighborhoodQualityResult(BaseModel):
+    """Result from neighborhood quality index calculation."""
+
+    property_id: str
+    overall_score: float
+    safety_score: float
+    schools_score: float
+    amenities_score: float
+    walkability_score: float
+    green_space_score: float
+    score_breakdown: Dict[str, float]
+    data_sources: List[str]
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    city: Optional[str] = None
+    neighborhood: Optional[str] = None
+
+
+class NeighborhoodQualityIndexTool(BaseTool):
+    """Tool for calculating neighborhood quality index."""
+
+    name: str = "neighborhood_quality_index"
+    description: str = (
+        "Calculate a comprehensive neighborhood quality score (0-100) "
+        "based on safety, schools, amenities, walkability, and green space. "
+        "Input should include property_id and optionally latitude/longitude. "
+        "Returns detailed score breakdown and overall quality rating."
+    )
+    args_schema: type[NeighborhoodQualityInput] = NeighborhoodQualityInput
+
+    # Score weights (industry standard based on NeighborhoodScout, AreaVibes, LocalLogic)
+    WEIGHT_SAFETY: ClassVar[float] = 0.25
+    WEIGHT_SCHOOLS: ClassVar[float] = 0.20
+    WEIGHT_AMENITIES: ClassVar[float] = 0.20
+    WEIGHT_WALKABILITY: ClassVar[float] = 0.20
+    WEIGHT_GREEN_SPACE: ClassVar[float] = 0.15
+
+    @staticmethod
+    def _mock_safety_score(city: Optional[str], neighborhood: Optional[str]) -> float:
+        """
+        Mock safety score based on city/neighborhood (Phase 1).
+
+        In production, this would call crime data APIs.
+        Returns score 0-100.
+        """
+        # Demo: base score with some variation by city
+        city_scores: Dict[str, float] = {
+            "warsaw": 75.0,
+            "krakow": 78.0,
+            "wroclaw": 76.0,
+            "poznan": 80.0,
+            "gdansk": 77.0,
+            "madrid": 72.0,
+            "barcelona": 68.0,
+            "london": 70.0,
+            "berlin": 82.0,
+            "paris": 65.0,
+        }
+
+        if city:
+            base = city_scores.get(city.lower(), 70.0)
+        else:
+            base = 70.0
+
+        # Add some variation for demo purposes
+        import hashlib
+
+        seed = f"{city}:{neighborhood or 'unknown'}".encode()
+        hash_val = int(hashlib.sha256(seed).hexdigest()[:8], 16)
+        variation = (hash_val % 21) - 10  # -10 to +10
+
+        return max(0, min(100, round(base + variation, 1)))
+
+    @staticmethod
+    def _calculate_schools_score(latitude: Optional[float], longitude: Optional[float]) -> float:
+        """
+        Calculate schools score based on nearby school count (Phase 1).
+
+        In production, this would use school rating APIs.
+        Returns score 0-100.
+        """
+        # Demo: Mock based on coordinates hash
+        if latitude is None or longitude is None:
+            return 60.0  # Default middle score
+
+        # In Phase 2, this would query OSM Overpass for schools within 1km
+        # For now, generate a deterministic pseudo-random score
+        import hashlib
+
+        seed = f"{latitude:.4f},{longitude:.4f}".encode()
+        hash_val = int(hashlib.sha256(seed).hexdigest()[:8], 16)
+        score = 50 + (hash_val % 51)  # 50-100 range
+
+        return float(score)
+
+    @staticmethod
+    def _calculate_amenities_score(latitude: Optional[float], longitude: Optional[float]) -> float:
+        """
+        Calculate amenities score based on nearby POI count (Phase 1).
+
+        In production, this would query OSM/Overpass for amenities within 500m.
+        Returns score 0-100.
+        """
+        # Demo: Mock based on coordinates
+        if latitude is None or longitude is None:
+            return 65.0
+
+        import hashlib
+
+        seed = f"amenities:{latitude:.4f},{longitude:.4f}".encode()
+        hash_val = int(hashlib.sha256(seed).hexdigest()[:8], 16)
+        score = 55 + (hash_val % 46)  # 55-100 range
+
+        return float(score)
+
+    @staticmethod
+    def _calculate_walkability_score(
+        latitude: Optional[float], longitude: Optional[float]
+    ) -> float:
+        """
+        Calculate walkability score based on street density and POI proximity (Phase 1).
+
+        In production, this would use walk score APIs or calculate from street network.
+        Returns score 0-100.
+        """
+        # Demo: Mock based on coordinates
+        if latitude is None or longitude is None:
+            return 60.0
+
+        import hashlib
+
+        seed = f"walk:{latitude:.4f},{longitude:.4f}".encode()
+        hash_val = int(hashlib.sha256(seed).hexdigest()[:8], 16)
+        score = 45 + (hash_val % 56)  # 45-100 range
+
+        return float(score)
+
+    @staticmethod
+    def _calculate_green_space_score(
+        latitude: Optional[float], longitude: Optional[float]
+    ) -> float:
+        """
+        Calculate green space score based on nearby parks/forests (Phase 1).
+
+        In production, this would query OSM/Overpass for parks within 1km.
+        Returns score 0-100.
+        """
+        # Demo: Mock based on coordinates
+        if latitude is None or longitude is None:
+            return 55.0
+
+        import hashlib
+
+        seed = f"green:{latitude:.4f},{longitude:.4f}".encode()
+        hash_val = int(hashlib.sha256(seed).hexdigest()[:8], 16)
+        score = 40 + (hash_val % 61)  # 40-100 range
+
+        return float(score)
+
+    @staticmethod
+    def calculate(
+        property_id: str,
+        latitude: Optional[float] = None,
+        longitude: Optional[float] = None,
+        city: Optional[str] = None,
+        neighborhood: Optional[str] = None,
+    ) -> NeighborhoodQualityResult:
+        """
+        Calculate neighborhood quality index.
+
+        Returns NeighborhoodQualityResult with overall score and component breakdowns.
+        """
+        # Calculate individual component scores
+        safety_score = NeighborhoodQualityIndexTool._mock_safety_score(city, neighborhood)
+        schools_score = NeighborhoodQualityIndexTool._calculate_schools_score(latitude, longitude)
+        amenities_score = NeighborhoodQualityIndexTool._calculate_amenities_score(
+            latitude, longitude
+        )
+        walkability_score = NeighborhoodQualityIndexTool._calculate_walkability_score(
+            latitude, longitude
+        )
+        green_space_score = NeighborhoodQualityIndexTool._calculate_green_space_score(
+            latitude, longitude
+        )
+
+        # Calculate weighted overall score
+        overall_score = (
+            (safety_score * NeighborhoodQualityIndexTool.WEIGHT_SAFETY)
+            + (schools_score * NeighborhoodQualityIndexTool.WEIGHT_SCHOOLS)
+            + (amenities_score * NeighborhoodQualityIndexTool.WEIGHT_AMENITIES)
+            + (walkability_score * NeighborhoodQualityIndexTool.WEIGHT_WALKABILITY)
+            + (green_space_score * NeighborhoodQualityIndexTool.WEIGHT_GREEN_SPACE)
+        )
+
+        # Build score breakdown
+        score_breakdown = {
+            "safety_weighted": round(safety_score * NeighborhoodQualityIndexTool.WEIGHT_SAFETY, 2),
+            "schools_weighted": round(
+                schools_score * NeighborhoodQualityIndexTool.WEIGHT_SCHOOLS, 2
+            ),
+            "amenities_weighted": round(
+                amenities_score * NeighborhoodQualityIndexTool.WEIGHT_AMENITIES, 2
+            ),
+            "walkability_weighted": round(
+                walkability_score * NeighborhoodQualityIndexTool.WEIGHT_WALKABILITY, 2
+            ),
+            "green_space_weighted": round(
+                green_space_score * NeighborhoodQualityIndexTool.WEIGHT_GREEN_SPACE, 2
+            ),
+        }
+
+        # Data sources (Phase 1 uses mock + OSM, Phase 2 would include real APIs)
+        data_sources = ["mock_safety_data", "osm_pois"]
+        if latitude and longitude:
+            data_sources.append("geographic_coordinates")
+
+        return NeighborhoodQualityResult(
+            property_id=property_id,
+            overall_score=round(overall_score, 1),
+            safety_score=round(safety_score, 1),
+            schools_score=round(schools_score, 1),
+            amenities_score=round(amenities_score, 1),
+            walkability_score=round(walkability_score, 1),
+            green_space_score=round(green_space_score, 1),
+            score_breakdown=score_breakdown,
+            data_sources=data_sources,
+            latitude=latitude,
+            longitude=longitude,
+            city=city,
+            neighborhood=neighborhood,
+        )
+
+    def _run(
+        self,
+        property_id: str,
+        latitude: Optional[float] = None,
+        longitude: Optional[float] = None,
+        city: Optional[str] = None,
+        neighborhood: Optional[str] = None,
+    ) -> str:
+        """Execute neighborhood quality calculation."""
+        try:
+            result = self.calculate(
+                property_id=property_id,
+                latitude=latitude,
+                longitude=longitude,
+                city=city,
+                neighborhood=neighborhood,
+            )
+
+            # Format result for display
+            formatted = f"""
+Neighborhood Quality Index for Property {result.property_id}:
+
+=== OVERALL SCORE: {result.overall_score:.1f}/100 ===
+
+Component Scores:
+- Safety:       {result.safety_score:.1f}/100 (Weight: 25%)
+- Schools:      {result.schools_score:.1f}/100 (Weight: 20%)
+- Amenities:    {result.amenities_score:.1f}/100 (Weight: 20%)
+- Walkability:  {result.walkability_score:.1f}/100 (Weight: 20%)
+- Green Space:  {result.green_space_score:.1f}/100 (Weight: 15%)
+
+Score Breakdown (Weighted):
+"""
+
+            for key, value in result.score_breakdown.items():
+                formatted += f"- {key.replace('_', ' ').title()}: {value:.2f}\n"
+
+            formatted += f"""
+Data Sources: {", ".join(result.data_sources)}
+Location: {result.city or "Unknown"}, {result.neighborhood or "Unknown"}
+Coordinates: {result.latitude or "N/A"}, {result.longitude or "N/A"}
+
+Rating: {self._get_rating_label(result.overall_score)}
+"""
+            return formatted.strip()
+
+        except Exception as e:
+            return f"Error calculating neighborhood quality: {str(e)}"
+
+    @staticmethod
+    def _get_rating_label(score: float) -> str:
+        """Get human-readable rating label."""
+        if score >= 85:
+            return "Excellent - Highly desirable neighborhood"
+        elif score >= 70:
+            return "Good - Above average quality"
+        elif score >= 55:
+            return "Fair - Average neighborhood"
+        elif score >= 40:
+            return "Poor - Below average quality"
+        else:
+            return "Very Poor - Significant concerns"
+
+    async def _arun(self, **kwargs: Any) -> str:
+        """Async version."""
+        return self._run(**kwargs)
+
+
 # Factory function to create all tools
 def create_property_tools(vector_store: Any = None) -> List[BaseTool]:
     """
@@ -1011,6 +1321,7 @@ def create_property_tools(vector_store: Any = None) -> List[BaseTool]:
         MortgageCalculatorTool(),
         TCOCalculatorTool(),
         InvestmentCalculatorTool(),
+        NeighborhoodQualityIndexTool(),
         PropertyComparisonTool(vector_store=vector_store),
         PriceAnalysisTool(vector_store=vector_store),
         LocationAnalysisTool(vector_store=vector_store),

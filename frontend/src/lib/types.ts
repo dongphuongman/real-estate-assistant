@@ -377,3 +377,28 @@ export interface CompareInvestmentsResponse {
   properties: ComparedInvestmentProperty[];
   summary: Record<string, unknown>;
 }
+
+// Neighborhood Quality Index types for TASK-020
+export interface NeighborhoodQualityInput {
+  property_id: string;
+  latitude?: number;
+  longitude?: number;
+  city?: string;
+  neighborhood?: string;
+}
+
+export interface NeighborhoodQualityResult {
+  property_id: string;
+  overall_score: number;
+  safety_score: number;
+  schools_score: number;
+  amenities_score: number;
+  walkability_score: number;
+  green_space_score: number;
+  score_breakdown: Record<string, number>;
+  data_sources: string[];
+  latitude?: number;
+  longitude?: number;
+  city?: string;
+  neighborhood?: string;
+}

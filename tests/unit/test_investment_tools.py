@@ -267,7 +267,7 @@ class TestInvestmentToolFactory:
         tool_names = {tool.name for tool in tools}
 
         assert "investment_analyzer" in tool_names
-        assert len(tools) == 6  # Should have 6 tools now (was 5)
+        assert len(tools) == 7  # Should have 7 tools now (added neighborhood_quality_index)
 
     def test_all_expected_tools_present(self):
         """Test that all expected tools including investment are created."""
@@ -278,6 +278,7 @@ class TestInvestmentToolFactory:
             "mortgage_calculator",
             "tco_calculator",
             "investment_analyzer",
+            "neighborhood_quality_index",
             "property_comparator",
             "price_analyzer",
             "location_analyzer",

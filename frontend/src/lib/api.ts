@@ -14,6 +14,8 @@ import {
   MortgageResult,
   TCOInput,
   TCOResult,
+  NeighborhoodQualityInput,
+  NeighborhoodQualityResult,
   NotificationSettings,
   PortalFiltersRequest,
   PortalIngestResponse,
@@ -304,6 +306,17 @@ export async function calculateInvestment(
     body: JSON.stringify(input),
   });
   return handleResponse<InvestmentAnalysisResult>(response);
+}
+
+export async function neighborhoodQualityApi(
+  input: NeighborhoodQualityInput
+): Promise<NeighborhoodQualityResult> {
+  const response = await fetch(`${getApiUrl()}/tools/neighborhood-quality`, {
+    method: "POST",
+    headers: buildHeaders(),
+    body: JSON.stringify(input),
+  });
+  return handleResponse<NeighborhoodQualityResult>(response);
 }
 
 export async function comparePropertiesApi(propertyIds: string[]) {

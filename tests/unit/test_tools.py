@@ -276,7 +276,7 @@ class TestToolFactory:
         """Test creating all tools."""
         tools = create_property_tools()
 
-        assert len(tools) == 6
+        assert len(tools) == 7  # Added neighborhood_quality_index
         assert all(hasattr(tool, "name") for tool in tools)
         assert all(hasattr(tool, "description") for tool in tools)
 
@@ -296,6 +296,7 @@ class TestToolFactory:
             "mortgage_calculator",
             "tco_calculator",
             "investment_analyzer",
+            "neighborhood_quality_index",  # Added
             "property_comparator",
             "price_analyzer",
             "location_analyzer",

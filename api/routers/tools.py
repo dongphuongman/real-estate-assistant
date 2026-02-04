@@ -24,6 +24,7 @@ from api.models import (
     LegalCheckResponse,
     LocationAnalysisRequest,
     LocationAnalysisResponse,
+    NeighborhoodQualityResponse,
     PriceAnalysisRequest,
     PriceAnalysisResponse,
     ValuationRequest,
@@ -36,6 +37,8 @@ from tools.property_tools import (
     MortgageCalculatorTool,
     MortgageInput,
     MortgageResult,
+    NeighborhoodQualityIndexTool,
+    NeighborhoodQualityInput,
     TCOCalculatorTool,
     TCOInput,
     TCOResult,
@@ -158,6 +161,32 @@ async def calculate_investment_analysis(input_data: InvestmentAnalysisInput):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Calculation failed: {str(e)}",
+        ) from e
+
+
+@router.post(
+    "/tools/neighborhood-quality",
+    response_model=NeighborhoodQualityResponse,
+    tags=["Tools"],
+)
+async def neighborhood_quality(input_data: NeighborhoodQualityInput):
+    """
+    Calculate neighborhood quality index including safety, schools, amenities, walkability, and green space.
+    """
+    try:
+        return NeighborhoodQualityIndexTool.calculate(
+            property_id=input_data.property_id,
+            latitude=input_data.latitude,
+            longitude=input_data.longitude,
+            city=input_data.city,
+            neighborhood=input_data.neighborhood,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Neighborhood quality calculation failed: {str(e)}",
         ) from e
 
 

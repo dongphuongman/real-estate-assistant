@@ -212,7 +212,7 @@
         "id": "20",
         "title": "[TASK-020] Neighborhood Quality Index",
         "description": "Composite neighborhood scoring combining safety, schools, amenities, walkability, and green space. Competitors: NeighborhoodScout, AreaVibes, LocalLogic.",
-        "status": "pending",
+        "status": "in-progress",
         "priority": "high",
         "subtasks": [
           {
@@ -238,13 +238,43 @@
             "title": "[TASK-020.4] UI Integration",
             "status": "pending",
             "parentId": "20"
+          },
+          {
+            "id": 20.5,
+            "title": "[TASK-020.5] Phase 2 - Integrate Real Crime Data APIs 👀",
+            "status": "pending",
+            "parentId": "20"
+          },
+          {
+            "id": 20.6,
+            "title": "[TASK-020.6] Phase 2 - Integrate School Rating APIs 👀",
+            "status": "pending",
+            "parentId": "20"
+          },
+          {
+            "id": 20.7,
+            "title": "[TASK-020.7] Create Neighborhood Data Adapter (data/adapters/neighborhood_adapter.py) 👀",
+            "status": "pending",
+            "parentId": "20"
+          },
+          {
+            "id": 20.8,
+            "title": "[TASK-020.8] Add Property Card Badge Component 👀",
+            "status": "pending",
+            "parentId": "20"
+          },
+          {
+            "id": 20.9,
+            "title": "[TASK-020.9] Increase Test Coverage to 90%+ 👀",
+            "status": "pending",
+            "parentId": "20"
           }
         ],
         "dependencies": [
           "5",
           "7"
         ],
-        "updatedAt": "2026-02-03T20:22:31.416125Z"
+        "updatedAt": "2026-02-04T17:00:00.000Z"
       },
       {
         "id": "21",
@@ -396,7 +426,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-04T15:06:14.000Z",
+      "lastModified": "2026-02-04T17:00:00.000Z",
       "taskCount": 11,
       "completedCount": 7,
       "tags": [
