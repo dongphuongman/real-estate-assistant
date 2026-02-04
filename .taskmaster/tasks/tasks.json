@@ -287,7 +287,7 @@
         "id": "22",
         "title": "[TASK-022] Total Cost of Ownership Calculator",
         "description": "Extend mortgage calculator with utilities, parking, taxes, insurance, maintenance, and HOA.",
-        "status": "pending",
+        "status": "done",
         "priority": "high",
         "subtasks": [
           {
@@ -316,7 +316,7 @@
           }
         ],
         "dependencies": [],
-        "updatedAt": "2026-02-03T20:22:31.416125Z"
+        "updatedAt": "2026-02-04T13:06:40.230Z"
       },
       {
         "id": "23",
@@ -396,9 +396,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-03T20:22:31.416125Z",
+      "lastModified": "2026-02-04T13:06:40.231Z",
       "taskCount": 11,
-      "completedCount": 5,
+      "completedCount": 6,
       "tags": [
         "master"
       ]
