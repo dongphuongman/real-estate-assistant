@@ -225,7 +225,7 @@ cython_debug/
 *.swo
 
 # Local Vercel config (legacy rewrite file may be created by tooling)
-vercel.json
+# vercel.json is now tracked for deployment configuration
 *~
 .DS_Store
 
