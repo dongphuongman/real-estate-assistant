@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Cinzel } from "next/font/google";
 import "./globals.css";
 import { MainNav } from "@/components/layout/main-nav";
 
@@ -10,6 +10,12 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+// Using Cinzel as a stand-in for "Phantom Templar" style
+const fontTemplar = Cinzel({
+  variable: "--font-templar",
   subsets: ["latin"],
 });
 
@@ -46,7 +52,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} ${fontTemplar.variable} antialiased min-h-screen flex flex-col`}
       >
         <header className="border-b bg-background">
           <div className="flex h-16 items-center px-4 container mx-auto">

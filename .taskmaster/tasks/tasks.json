@@ -2,15 +2,16 @@
   "master": {
     "tasks": [
       {
-        "id": 33,
+        "id": "33",
         "title": "Deploy to Versel environment (TOP PRIORITY)",
         "description": "Verify CI changes, check application works locally, then deploy to Versel (Vercel) production environment.",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [],
         "priority": "critical",
         "details": "1. Review and verify recent CI changes:\n   - Check .github/workflows/ci.yml for any recent modifications\n   - Verify all security scripts are working correctly\n   - Confirm pre-commit hooks are functioning\n2. Local validation:\n   - Run backend locally: 'python -m uvicorn api.main:app --reload'\n   - Run frontend locally: 'cd frontend && npm run dev'\n   - Test key functionality (chat API, property search)\n   - Run security scan: 'python security-scan.py'\n   - Run tests: 'python -m pytest'\n3. Prepare for Versel deployment:\n   - Update environment variables for Versel\n   - Configure backend API URL in frontend\n   - Set up production database if needed\n4. Deploy to Versel:\n   - Connect GitHub repository to Versel\n   - Configure build settings (root directory, build command)\n   - Set environment variables in Versel dashboard\n   - Deploy frontend to Versel\n   - Verify deployment is accessible\n5. Post-deployment validation:\n   - Test live application\n   - Monitor logs for errors\n   - Verify API connectivity",
         "testStrategy": "1. Backend runs on port 8000 without errors\n2. Frontend runs on port 3000 without errors\n3. Security scan passes (or acceptable warnings)\n4. Unit tests pass\n5. Application works locally end-to-end\n6. Versel deployment completes successfully\n7. Live application is accessible and functional\n8. API endpoints respond correctly",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-02-05T13:58:27.886Z"
       },
       {
         "id": 25,
