@@ -152,6 +152,34 @@ cd frontend
 npm test
 ```
 
+---
+
+## 🚀 Deployment
+
+### Quick Start
+
+| Component | Platform | Status |
+|-----------|----------|--------|
+| Frontend | [Vercel](https://vercel.com) | Automated from GitHub |
+| Backend | Render, Railway, Fly.io | Manual deployment |
+
+### Environment Variables Matrix
+
+| Environment | `NEXT_PUBLIC_API_URL` | `BACKEND_API_URL` |
+|-------------|----------------------|-------------------|
+| Local | `/api/v1` (uses Next.js proxy) | `http://localhost:8000/api/v1` |
+| Production | `/api/v1` (uses Next.js proxy) | `https://your-backend.com/api/v1` |
+
+### Key Security Design
+
+- **API Access Key**: Set in Vercel dashboard (server-side only), never exposed to browser
+- **API Proxy**: Frontend calls `/api/v1/*` which proxies to backend, injecting `X-API-Key` server-side
+- **No Public Secrets**: `NEXT_PUBLIC_*` variables never contain sensitive data
+
+**For complete deployment instructions**, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
+---
+
 ## 🧹 Maintenance
 
 ### Code Quality

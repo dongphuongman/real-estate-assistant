@@ -50,27 +50,31 @@ This is the Next.js frontend for the AI Real Estate Assistant (V4).
 
 ### Vercel Deployment
 
-The frontend can be deployed to Vercel. The project includes a `vercel.json` configuration file at the project root.
+The frontend is deployed to Vercel following industry-standard monorepo practices.
 
-**Required Environment Variables (Server-Side):**
+**Configuration (Vercel Dashboard):**
 
-- `BACKEND_API_URL` - Your deployed backend API URL (e.g., `https://api.example.com/api/v1`)
-- `API_ACCESS_KEY` - Backend authentication key (must match backend)
+| Setting | Value |
+|---------|-------|
+| **Root Directory** | `frontend` |
+| **Framework** | Next.js (auto-detected) |
+| **Build Command** | `npm run build` |
+| **Output Directory** | `.next` |
 
-**Public Environment Variables (Client-Side):**
+**Environment Variables (Server-Side Only):**
 
-- `NEXT_PUBLIC_API_URL` - API path, uses Next.js proxy (default: `/api/v1`)
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `BACKEND_API_URL` | Deployed backend URL | `https://api.example.com/api/v1` |
+| `API_ACCESS_KEY` | Backend authentication | Your generated key |
 
-**Deployment Steps:**
+**Key Security Design:**
 
-1. Connect your GitHub repository to Vercel
-2. Set root directory to `frontend` (or use project root with custom config)
-3. Configure environment variables in Vercel dashboard:
-   - `BACKEND_API_URL` - Your deployed backend URL
-   - `API_ACCESS_KEY` - Backend authentication key
-4. Deploy
+- The Next.js API proxy at [`/api/v1/[...path]/route.ts`](src/app/api/v1/[...path]/route.ts) forwards requests to the backend
+- `API_ACCESS_KEY` is injected server-side, never exposed to the browser
+- `NEXT_PUBLIC_API_URL` stays as `/api/v1` (uses proxy) in all environments
 
-**Note:** The Next.js API proxy at `/api/v1/*` forwards requests to your backend, keeping the `API_ACCESS_KEY` server-side and secure.
+**For complete deployment guide**, see [DEPLOYMENT.md](../DEPLOYMENT.md).
 
 ## Security Notes
 - Do not expose secrets in the client. Use server-side env vars and the Next.js `/api/v1/*` proxy to inject `X-API-Key`.

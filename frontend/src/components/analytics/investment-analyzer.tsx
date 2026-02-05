@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { calculateInvestment, ApiError } from "@/lib/api";
-import { InvestmentAnalysisResult, InvestmentAnalysisInput } from "@/lib/types";
+import { InvestmentAnalysisResult } from "@/lib/types";
 import { Loader2, AlertCircle, RefreshCw, TrendingUp, ChevronDown, ChevronUp } from "lucide-react";
 
 interface ErrorState {
