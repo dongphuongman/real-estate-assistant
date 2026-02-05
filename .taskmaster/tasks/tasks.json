@@ -352,7 +352,7 @@
         "id": "23",
         "title": "[TASK-023] AI Listing Generator",
         "description": "LLM-powered property description, headline, and social media content generation.",
-        "status": "pending",
+        "status": "done",
         "priority": "medium",
         "subtasks": [
           {
@@ -383,7 +383,7 @@
         "dependencies": [
           "5"
         ],
-        "updatedAt": "2026-02-03T20:22:31.416125Z"
+        "updatedAt": "2026-02-05T12:39:01.162Z"
       },
       {
         "id": "24",
@@ -426,9 +426,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-05T10:55:41.554Z",
+      "lastModified": "2026-02-05T12:39:01.163Z",
       "taskCount": 11,
-      "completedCount": 9,
+      "completedCount": 10,
       "tags": [
         "master"
       ]

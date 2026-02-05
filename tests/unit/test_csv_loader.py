@@ -100,7 +100,9 @@ def test_excel_get_sheet_names_ods_fallback(monkeypatch):
 
     import odf.opendocument
 
-    monkeypatch.setattr(odf.opendocument, "load", lambda *_args, **_kwargs: (_ for _ in ()).throw(ImportError()))
+    monkeypatch.setattr(
+        odf.opendocument, "load", lambda *_args, **_kwargs: (_ for _ in ()).throw(ImportError())
+    )
     monkeypatch.setattr(pd, "ExcelFile", lambda *_args, **_kwargs: ExcelFile())
     loader = DataLoaderExcel("fake.ods")
     assert loader.get_sheet_names() == ["ODS1"]

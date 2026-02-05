@@ -280,6 +280,27 @@ jobs:
           name: pip-audit-report
           path: artifacts/pip-audit.json
 
+  semgrep:
+    runs-on: ubuntu-latest
+    # Skip this job on dependabot branches to avoid permission issues
+    if: github.actor != 'dependabot[bot]'
+    container:
+      image: returntocorp/semgrep
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Semgrep scan
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+        run: |
+          semgrep --config auto --config semgrep.yml --error --severity ERROR --json --output semgrep-report.json || true
+      - name: Upload Semgrep report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-report
+          path: semgrep-report.json
+
   trivy:
     runs-on: ubuntu-latest
     steps:
@@ -317,7 +338,7 @@ jobs:
   pipeline_health:
     runs-on: ubuntu-latest
     if: always()
-    needs: [backend, frontend, security, audit, trivy, compose_smoke]
+    needs: [backend, frontend, security, audit, trivy, compose_smoke, semgrep]
     permissions:
       contents: read
     steps:

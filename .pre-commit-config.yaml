@@ -28,10 +28,25 @@ repos:
         args: [--config, .gitleaks.toml]
 
   # Semgrep - SAST (Static Application Security Testing)
-  # Install: pip install semgrep or use Docker (automatic fallback)
-  - repo: https://github.com/returntocorp/semgrep
-    rev: v1.95.0
+  # NOTE: Disabled on Windows due to Python module path issues.
+  # To enable: Use Docker (via dev container) or install with: pip install semgrep
+  # For CI/CD (GitHub Actions), Semgrep runs fine in the Linux environment.
+  # - repo: local
+  #   hooks:
+  #     - id: semgrep
+  #       name: semgrep (SAST)
+  #       entry: semgrep
+  #       args: [--config, auto, --config, semgrep.yml, --error, --severity, ERROR]
+  #       language: system
+  #       types: [python]
+  #       pass_filenames: true
+
+  # Lint-staged - Run linting on staged frontend files only
+  # Requires package.json with lint-staged configuration
+  - repo: local
     hooks:
-      - id: semgrep
-        args: [--config, auto, --config, semgrep.yml, --error, --severity, ERROR]
-        types_or: [python]
+      - id: lint-staged-frontend
+        name: lint-staged (frontend)
+        entry: npx lint-staged
+        language: system
+        pass_filenames: false

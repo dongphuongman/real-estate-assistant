@@ -435,7 +435,11 @@ class SocialMediaContentGeneratorTool(BaseTool):
 
         hashtag_count = self._get_platform_hashtags(platform, platform)
         emoji_instruction = "Include relevant emojis" if include_emojis else "Do NOT use emojis"
-        cta_instruction = "End with a clear call-to-action" if include_call_to_action else "No call-to-action needed"
+        cta_instruction = (
+            "End with a clear call-to-action"
+            if include_call_to_action
+            else "No call-to-action needed"
+        )
 
         platform_guidance = {
             "facebook": "Facebook-friendly: engaging opener, bullet points for features, community feel",
@@ -454,7 +458,7 @@ Property Details:
 Requirements:
 - Tone: {tone_desc}
 - Format: {guidance}
-- Length: Maximum {constraints['max_length']} characters
+- Length: Maximum {constraints["max_length"]} characters
 - Hashtags: Include {hashtag_count} relevant hashtags at the end
 - Emojis: {emoji_instruction}
 - Call-to-action: {cta_instruction}
@@ -537,7 +541,9 @@ Generate the {platform} post now:"""
         include_call_to_action: bool = True,
     ) -> str:
         """Async version."""
-        return self._run(property_data, platform, tone, language, include_emojis, include_call_to_action)
+        return self._run(
+            property_data, platform, tone, language, include_emojis, include_call_to_action
+        )
 
 
 def create_listing_generator_tools() -> List[BaseTool]:

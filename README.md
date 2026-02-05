@@ -154,11 +154,54 @@ npm test
 
 ## 🧹 Maintenance
 
-The project uses `ruff` for linting and formatting.
+### Code Quality
+
+The project uses `ruff` for Python linting and formatting.
 
 ```bash
 python -m ruff check .
 ```
+
+### Pre-Commit Hooks
+
+This project includes a 3-layer pre-commit security system that runs automatically before each commit:
+
+1. **Gitleaks** - Secret scanning (API keys, passwords, tokens)
+2. **Semgrep** - SAST for Python security vulnerabilities (CI/CD only)
+3. **Lint-staged** - Frontend code quality (Prettier + ESLint)
+
+#### Installation
+
+```bash
+# After cloning, install the hooks
+pre-commit install
+
+# Install required tools
+scoop install gitleaks  # Windows (or use choco)
+pip install semgrep     # Optional: for local SAST
+npm install             # For lint-staged and prettier
+```
+
+#### Running Hooks Manually
+
+```bash
+# Test all files
+pre-commit run --all-files
+
+# Run on staged files (automatic before commit)
+git commit
+
+# Skip temporarily if needed
+git commit --no-verify
+```
+
+#### Configuration Files
+
+- [`.gitleaks.toml`](.gitleaks.toml) - Secret detection rules
+- [`semgrep.yml`](semgrep.yml) - Security scanning rules
+- [`.pre-commit-config.yaml`](.pre-commit-config.yaml) - Hook configuration
+- [`.prettierrc`](.prettierrc) - Code formatting config
+- [`package.json`](package.json) - lint-staged configuration
 
 ---
 
