@@ -280,7 +280,7 @@
         "id": "21",
         "title": "[TASK-021] Commute Time Analysis",
         "description": "Isochrone-based commute analysis using Google Routes API or TravelTime API with property ranking.",
-        "status": "pending",
+        "status": "done",
         "priority": "medium",
         "subtasks": [
           {
@@ -311,7 +311,7 @@
         "dependencies": [
           "7"
         ],
-        "updatedAt": "2026-02-03T20:22:31.416125Z"
+        "updatedAt": "2026-02-05T10:55:41.552Z"
       },
       {
         "id": "22",
@@ -426,9 +426,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-04T19:40:00.000Z",
+      "lastModified": "2026-02-05T10:55:41.554Z",
       "taskCount": 11,
-      "completedCount": 8,
+      "completedCount": 9,
       "tags": [
         "master"
       ]
