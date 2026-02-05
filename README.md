@@ -203,6 +203,42 @@ git commit --no-verify
 - [`.prettierrc`](.prettierrc) - Code formatting config
 - [`package.json`](package.json) - lint-staged configuration
 
+### Local Security Scanning
+
+For full CI/CD security parity, you can run all security checks locally:
+
+```bash
+# Run all security scans (Gitleaks, Semgrep, Bandit, pip-audit)
+python security-scan.py
+
+# Or use the direct path
+python scripts/ci/security_local.py
+
+# Run specific scan only
+python security-scan.py --scan-only=secrets    # Gitleaks
+python security-scan.py --scan-only=semgrep    # Semgrep SAST
+python security-scan.py --scan-only=bandit     # Bandit Python security
+python security-scan.py --scan-only=pip-audit  # Dependency vulnerabilities
+
+# Quick mode (skip slower pip-audit scan)
+python security-scan.py --quick
+
+# Verbose output
+python security-scan.py --verbose
+```
+
+**Docker Fallback:** On Windows, if Gitleaks or Semgrep binaries aren't installed, the script automatically uses Docker containers.
+
+**Tool Installation:**
+
+```bash
+# Optional: Install tools locally for faster execution
+scoop install gitleaks   # Windows (or brew install gitleaks on macOS)
+pip install semgrep       # SAST scanning
+pip install bandit        # Python security (already in dev dependencies)
+pip install pip-audit     # Dependency auditing (already in dev dependencies)
+```
+
 ---
 
 ## ⚙️ Configuration

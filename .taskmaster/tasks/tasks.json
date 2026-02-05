@@ -2,436 +2,134 @@
   "master": {
     "tasks": [
       {
-        "id": "6",
-        "title": "[TASK-006] Portal/API Integration Framework",
-        "description": "Definition: Create an extensible adapter system for ingesting property data from external real estate portals.",
-        "status": "done",
-        "priority": "high",
-        "subtasks": [
-          {
-            "id": 6.1,
-            "title": "[TASK-006.1] External Source Adapter Interface",
-            "status": "done",
-            "parentId": "6"
-          },
-          {
-            "id": 6.2,
-            "title": "[TASK-006.2] UI Portal Configuration",
-            "status": "done",
-            "parentId": "6"
-          },
-          {
-            "id": 6.3,
-            "title": "[TASK-006.3] First Real Portal Adapter",
-            "status": "done",
-            "parentId": "6"
-          },
-          {
-            "id": 6.4,
-            "title": "[TASK-006.4] Security and Secrets Management",
-            "status": "done",
-            "parentId": "6"
-          }
-        ],
-        "dependencies": [],
-        "updatedAt": "2026-01-30T02:00:00.000Z"
-      },
-      {
-        "id": "5",
-        "title": "[TASK-005] Excel Data Loader Integration",
-        "description": "Extend the existing CSV data loader to support Excel files (.xlsx, .xls, .ods) for property data ingestion.",
-        "status": "done",
-        "priority": "high",
-        "subtasks": [
-          {
-            "id": 5.1,
-            "title": "[TASK-005.1] Excel Loader Implementation",
-            "status": "done",
-            "parentId": "5"
-          },
-          {
-            "id": 5.2,
-            "title": "[TASK-005.2] Frontend File Upload UI",
-            "status": "done",
-            "parentId": "5"
-          },
-          {
-            "id": 5.3,
-            "title": "[TASK-005.3] Source Tagging and Persistence",
-            "status": "done",
-            "parentId": "5"
-          }
-        ],
-        "dependencies": [],
-        "updatedAt": "2026-02-02T01:41:47.667Z"
-      },
-      {
-        "id": "17",
-        "title": "[TASK-017] Production Deployment Optimization",
-        "description": "Optimize application for production deployment including caching, monitoring, and performance tuning.",
-        "status": "done",
-        "priority": "high",
-        "subtasks": [
-          {
-            "id": 17.1,
-            "title": "[TASK-017.1] Caching Strategy",
-            "status": "done",
-            "parentId": "17"
-          },
-          {
-            "id": 17.2,
-            "title": "[TASK-017.2] Performance Monitoring",
-            "status": "done",
-            "parentId": "17"
-          },
-          {
-            "id": 17.3,
-            "title": "[TASK-017.3] Database Optimization",
-            "status": "done",
-            "parentId": "17"
-          },
-          {
-            "id": 17.4,
-            "title": "[TASK-017.4] Auto-scaling Configuration",
-            "status": "done",
-            "parentId": "17"
-          }
-        ],
-        "dependencies": [],
-        "updatedAt": "2026-02-02T03:00:00.000Z"
-      },
-      {
-        "id": "18",
-        "title": "[TASK-018] Security Hardening",
-        "description": "Implement comprehensive security measures including audit logging, penetration testing, and compliance checks.",
-        "status": "done",
-        "priority": "high",
-        "subtasks": [
-          {
-            "id": 18.1,
-            "title": "[TASK-018.1] Audit Logging",
-            "status": "done",
-            "parentId": "18"
-          },
-          {
-            "id": 18.2,
-            "title": "[TASK-018.2] Security Scanning",
-            "status": "done",
-            "parentId": "18"
-          },
-          {
-            "id": 18.3,
-            "title": "[TASK-018.3] Data Protection",
-            "status": "done",
-            "parentId": "18"
-          },
-          {
-            "id": 18.4,
-            "title": "[TASK-018.4] Access Control",
-            "status": "done",
-            "parentId": "18"
-          }
-        ],
-        "dependencies": [],
-        "updatedAt": "2026-02-03T13:20:00.000Z"
-      },
-      {
-        "id": "7",
-        "title": "[TASK-007] Geographic Mapping Enhancement",
-        "description": "Integrate Mapbox for enhanced mapping features including heatmaps, clustering, and interactive map filters.",
-        "status": "done",
-        "priority": "medium",
-        "subtasks": [
-          {
-            "id": 7.1,
-            "title": "[TASK-007.1] Mapbox Integration Setup",
-            "status": "done",
-            "parentId": "7"
-          },
-          {
-            "id": 7.2,
-            "title": "[TASK-007.2] Heatmap Visualization",
-            "status": "done",
-            "parentId": "7"
-          },
-          {
-            "id": 7.3,
-            "title": "[TASK-007.3] Map Filters and Interactions",
-            "status": "done",
-            "parentId": "7"
-          },
-          {
-            "id": 7.4,
-            "title": "[TASK-007.4] City Overview Map",
-            "status": "done",
-            "parentId": "7"
-          }
-        ],
-        "dependencies": [],
-        "updatedAt": "2026-02-03T23:51:00.000Z"
-      },
-      {
-        "id": "19",
-        "title": "[TASK-019] Investment Property Analyzer",
-        "description": "Comprehensive investment analysis tools including ROI, cash flow, cap rate, and rental yield calculations. Competitors: DealCheck, Mashvisor.",
-        "status": "done",
-        "priority": "high",
-        "subtasks": [
-          {
-            "id": 19.1,
-            "title": "[TASK-019.1] ROI & Cash Flow Calculator",
-            "status": "done",
-            "parentId": "19"
-          },
-          {
-            "id": 19.2,
-            "title": "[TASK-019.2] Cap Rate & Yield Analysis",
-            "status": "done",
-            "parentId": "19"
-          },
-          {
-            "id": 19.3,
-            "title": "[TASK-019.3] Investment Property Scoring",
-            "status": "done",
-            "parentId": "19"
-          },
-          {
-            "id": 19.4,
-            "title": "[TASK-019.4] Investment Comparison UI",
-            "status": "done",
-            "parentId": "19"
-          }
-        ],
-        "dependencies": [
-          "5",
-          "7"
-        ],
-        "updatedAt": "2026-02-04T15:06:14.000Z"
-      },
-      {
-        "id": "20",
-        "title": "[TASK-020] Neighborhood Quality Index",
-        "description": "Composite neighborhood scoring combining safety, schools, amenities, walkability, and green space. Competitors: NeighborhoodScout, AreaVibes, LocalLogic.",
-        "status": "done",
-        "priority": "high",
-        "subtasks": [
-          {
-            "id": 20.1,
-            "title": "[TASK-020.1] Data Integration Layer",
-            "status": "done",
-            "parentId": "20"
-          },
-          {
-            "id": 20.2,
-            "title": "[TASK-020.2] Scoring Algorithm",
-            "status": "done",
-            "parentId": "20"
-          },
-          {
-            "id": 20.3,
-            "title": "[TASK-020.3] API & Endpoints",
-            "status": "done",
-            "parentId": "20"
-          },
-          {
-            "id": 20.4,
-            "title": "[TASK-020.4] UI Integration",
-            "status": "done",
-            "parentId": "20"
-          },
-          {
-            "id": 20.5,
-            "title": "[TASK-020.5] Phase 2 - Integrate Real Crime Data APIs 👀",
-            "status": "pending",
-            "parentId": "20"
-          },
-          {
-            "id": 20.6,
-            "title": "[TASK-020.6] Phase 2 - Integrate School Rating APIs 👀",
-            "status": "pending",
-            "parentId": "20"
-          },
-          {
-            "id": 20.7,
-            "title": "[TASK-020.7] Create Neighborhood Data Adapter (data/adapters/neighborhood_adapter.py) 👀",
-            "status": "done",
-            "parentId": "20"
-          },
-          {
-            "id": 20.8,
-            "title": "[TASK-020.8] Add Property Card Badge Component 👀",
-            "status": "done",
-            "parentId": "20"
-          },
-          {
-            "id": 20.9,
-            "title": "[TASK-020.9] Increase Test Coverage to 90%+ 👀",
-            "status": "pending",
-            "parentId": "20"
-          }
-        ],
-        "dependencies": [
-          "5",
-          "7"
-        ],
-        "updatedAt": "2026-02-04T19:40:00.000Z"
-      },
-      {
-        "id": "21",
-        "title": "[TASK-021] Commute Time Analysis",
-        "description": "Isochrone-based commute analysis using Google Routes API or TravelTime API with property ranking.",
-        "status": "done",
-        "priority": "medium",
-        "subtasks": [
-          {
-            "id": 21.1,
-            "title": "[TASK-021.1] Isochrone API Integration",
-            "status": "pending",
-            "parentId": "21"
-          },
-          {
-            "id": 21.2,
-            "title": "[TASK-021.2] Property Ranking by Commute",
-            "status": "pending",
-            "parentId": "21"
-          },
-          {
-            "id": 21.3,
-            "title": "[TASK-021.3] Map Visualization",
-            "status": "pending",
-            "parentId": "21"
-          },
-          {
-            "id": 21.4,
-            "title": "[TASK-021.4] UI Components",
-            "status": "pending",
-            "parentId": "21"
-          }
-        ],
-        "dependencies": [
-          "7"
-        ],
-        "updatedAt": "2026-02-05T10:55:41.552Z"
-      },
-      {
-        "id": "22",
-        "title": "[TASK-022] Total Cost of Ownership Calculator",
-        "description": "Extend mortgage calculator with utilities, parking, taxes, insurance, maintenance, and HOA.",
-        "status": "done",
-        "priority": "high",
-        "subtasks": [
-          {
-            "id": 22.1,
-            "title": "[TASK-022.1] Cost Categories Extension",
-            "status": "pending",
-            "parentId": "22"
-          },
-          {
-            "id": 22.2,
-            "title": "[TASK-022.2] Calculation Logic",
-            "status": "pending",
-            "parentId": "22"
-          },
-          {
-            "id": 22.3,
-            "title": "[TASK-022.3] UI Enhancements",
-            "status": "pending",
-            "parentId": "22"
-          },
-          {
-            "id": 22.4,
-            "title": "[TASK-022.4] Export & Sharing",
-            "status": "pending",
-            "parentId": "22"
-          }
-        ],
-        "dependencies": [],
-        "updatedAt": "2026-02-04T13:06:40.230Z"
-      },
-      {
-        "id": "23",
-        "title": "[TASK-023] AI Listing Generator",
-        "description": "LLM-powered property description, headline, and social media content generation.",
-        "status": "done",
-        "priority": "medium",
-        "subtasks": [
-          {
-            "id": 23.1,
-            "title": "[TASK-023.1] Description Generation",
-            "status": "pending",
-            "parentId": "23"
-          },
-          {
-            "id": 23.2,
-            "title": "[TASK-023.2] Headline & Subject Lines",
-            "status": "pending",
-            "parentId": "23"
-          },
-          {
-            "id": 23.3,
-            "title": "[TASK-023.3] Social Media Content",
-            "status": "pending",
-            "parentId": "23"
-          },
-          {
-            "id": 23.4,
-            "title": "[TASK-023.4] Multilingual Support",
-            "status": "pending",
-            "parentId": "23"
-          }
-        ],
-        "dependencies": [
-          "5"
-        ],
-        "updatedAt": "2026-02-05T12:39:01.162Z"
-      },
-      {
-        "id": "24",
-        "title": "[TASK-024] Lead Scoring & Agent Analytics",
-        "description": "Score leads by likelihood to close, track agent performance, and optimize lead distribution.",
+        "id": 33,
+        "title": "Deploy to Versel environment (TOP PRIORITY)",
+        "description": "Verify CI changes, check application works locally, then deploy to Versel (Vercel) production environment.",
         "status": "pending",
+        "dependencies": [],
+        "priority": "critical",
+        "details": "1. Review and verify recent CI changes:\n   - Check .github/workflows/ci.yml for any recent modifications\n   - Verify all security scripts are working correctly\n   - Confirm pre-commit hooks are functioning\n2. Local validation:\n   - Run backend locally: 'python -m uvicorn api.main:app --reload'\n   - Run frontend locally: 'cd frontend && npm run dev'\n   - Test key functionality (chat API, property search)\n   - Run security scan: 'python security-scan.py'\n   - Run tests: 'python -m pytest'\n3. Prepare for Versel deployment:\n   - Update environment variables for Versel\n   - Configure backend API URL in frontend\n   - Set up production database if needed\n4. Deploy to Versel:\n   - Connect GitHub repository to Versel\n   - Configure build settings (root directory, build command)\n   - Set environment variables in Versel dashboard\n   - Deploy frontend to Versel\n   - Verify deployment is accessible\n5. Post-deployment validation:\n   - Test live application\n   - Monitor logs for errors\n   - Verify API connectivity",
+        "testStrategy": "1. Backend runs on port 8000 without errors\n2. Frontend runs on port 3000 without errors\n3. Security scan passes (or acceptable warnings)\n4. Unit tests pass\n5. Application works locally end-to-end\n6. Versel deployment completes successfully\n7. Live application is accessible and functional\n8. API endpoints respond correctly",
+        "subtasks": []
+      },
+      {
+        "id": 25,
+        "title": "Create deploy/ directory structure and move Docker files",
+        "description": "Create the new deploy/ directory with docker/ and compose/ subdirectories, and move all Docker-related files from root and frontend locations to the new structure.",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "details": "1. Create directory structure: deploy/docker/, deploy/compose/, deploy/k8s/\n2. Move Dockerfile.backend (root) to deploy/docker/Dockerfile.backend\n3. Move frontend/Dockerfile.frontend to deploy/docker/Dockerfile.frontend\n4. Move docker-compose.yml (root) to deploy/compose/docker-compose.yml\n5. Create deploy/compose/docker-compose.gpu.yml for GPU variant based on docker-compose.yml\n6. Update all path references in Docker files (e.g., COPY commands, WORKDIR paths) to reflect new project root relative locations\n7. Update docker-compose files to reference Dockerfiles at their new locations (../docker/...)\n8. Create placeholder .gitkeep in deploy/k8s/ for future use",
+        "testStrategy": "1. Verify directory structure matches PRD specification\n2. Run 'docker build -f deploy/docker/Dockerfile.backend .' to ensure backend builds\n3. Run 'docker build -f deploy/docker/Dockerfile.frontend ./frontend' to ensure frontend builds\n4. Run 'docker-compose -f deploy/compose/docker-compose.yml config' to validate compose file syntax\n5. Run 'docker-compose -f deploy/compose/docker-compose.gpu.yml config' to validate GPU variant",
+        "subtasks": []
+      },
+      {
+        "id": 26,
+        "title": "Restructure scripts/ directory into subdirectories",
+        "description": "Reorganize the scripts/ directory by creating subdirectories (ci, dev, docs, security, validation) and moving existing scripts into their appropriate categories.",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "details": "1. Create subdirectories: scripts/ci/, scripts/dev/, scripts/docs/, scripts/security/, scripts/validation/\n2. Move ci-related scripts to scripts/ci/: ci_parity.py, ci_full.py, compose_smoke.py, coverage_gate.py, security_local.py\n3. Move development scripts to scripts/dev/: bootstrap_uv.py, start.py, start.sh, start.ps1, setup.sh, setup.ps1, run-ci-full.ps1, run-pre-commit.ps1, run-docker-cpu.ps1, run-docker-gpu.ps1, run-docker-gpu-internet.ps1, verify_ollama.ps1, sync_claude_mcp_from_trae.ps1\n4. Move documentation scripts to scripts/docs/: export_openapi.py, generate_api_reference.py, update_api_reference_full.py\n5. Move security scripts to scripts/security/: forbidden_tokens_check.py, security_scan.py\n6. Move validation scripts to scripts/validation/: system_validate.py, validate_taskmaster.py\n7. Review any remaining scripts in root scripts/ and categorize appropriately or remove if obsolete",
+        "testStrategy": "1. Verify directory tree matches PRD structure using 'tree scripts/' or similar\n2. For each moved script, verify shebang lines and imports still work\n3. Run 'python -m py_compile' on each Python script to check for syntax errors\n4. Execute a representative script from each category (e.g., scripts/dev/start.py) to verify path resolution",
+        "subtasks": []
+      },
+      {
+        "id": 27,
+        "title": "Update .devcontainer configuration for FastAPI + Next.js",
+        "description": "Update the .devcontainer/devcontainer.json file to reflect the new FastAPI backend and Next.js frontend stack, removing outdated Streamlit references.",
+        "status": "pending",
+        "dependencies": [],
         "priority": "medium",
-        "subtasks": [
-          {
-            "id": 24.1,
-            "title": "[TASK-024.1] Lead Scoring Model",
-            "status": "pending",
-            "parentId": "24"
-          },
-          {
-            "id": 24.2,
-            "title": "[TASK-024.2] Agent Performance Tracking",
-            "status": "pending",
-            "parentId": "24"
-          },
-          {
-            "id": 24.3,
-            "title": "[TASK-024.3] Lead Routing Optimization",
-            "status": "pending",
-            "parentId": "24"
-          },
-          {
-            "id": 24.4,
-            "title": "[TASK-024.4] Analytics Dashboard",
-            "status": "pending",
-            "parentId": "24"
-          }
-        ],
+        "details": "1. Update .devcontainer/devcontainer.json:\n   - Change image to one supporting Python 3.11+ and Node.js\n   - Update extensions: include Python, Prettier, ESLint, Docker extensions\n   - Update forwardPorts: add 8000 (FastAPI), 3000 (Next.js), remove Streamlit ports\n   - Update postCreateCommand to use uv for Python setup and npm/yarn for frontend\n   - Configure workspaceFolder to point to project root\n   - Add environment variables for development mode\n2. Update VS Code settings in devcontainer for Python interpreter and formatting\n3. Add healthcheck commands in lifecycle scripts to verify services are running",
+        "testStrategy": "1. Validate JSON syntax of devcontainer.json\n2. Build the dev container: 'devcontainer build --workspace-folder .'\n3. Reopen in container and verify:\n   - Python 3.11+ is available\n   - Node.js is available\n   - uv is installed\n   - Extensions are loaded\n   - Ports 8000 and 3000 are forwarded\n4. Run postCreateCommand manually to verify setup completes",
+        "subtasks": []
+      },
+      {
+        "id": 28,
+        "title": "Rename and consolidate security scripts",
+        "description": "Rename scripts/ci/security_local.py to scripts/ci/security.py and remove the root-level security-scan.py wrapper script.",
+        "status": "pending",
         "dependencies": [
-          "6",
-          "7"
+          26
         ],
-        "updatedAt": "2026-02-03T20:22:31.416125Z"
+        "priority": "medium",
+        "details": "1. Rename scripts/ci/security_local.py to scripts/ci/security.py using git mv to preserve history\n2. Update any imports or references within security.py if needed\n3. Remove root-level security-scan.py file\n4. Verify security.py can be run directly: 'python scripts/ci/security.py'\n5. Ensure security.py functionality covers all capabilities of the removed wrapper\n6. Update any shebang lines to use proper Python interpreter path",
+        "testStrategy": "1. Verify security_local.py no longer exists\n2. Verify security.py exists in scripts/ci/\n3. Verify root security-scan.py is removed\n4. Run 'python scripts/ci/security.py --help' to verify it executes\n5. Run full security scan to ensure functionality is preserved\n6. Check git log to confirm history was preserved via git mv",
+        "subtasks": []
+      },
+      {
+        "id": 29,
+        "title": "Update CI/CD workflows with new paths",
+        "description": "Update .github/workflows/ci.yml and .github/workflows/semgrep.yml to use the new script paths and Docker file locations.",
+        "status": "pending",
+        "dependencies": [
+          25,
+          26,
+          28
+        ],
+        "priority": "high",
+        "details": "1. Update .github/workflows/ci.yml:\n   - Update script paths: scripts/xxx -> scripts/ci/xxx, scripts/dev/xxx, etc.\n   - Update docker-compose paths: docker-compose.yml -> deploy/compose/docker-compose.yml\n   - Update Dockerfile paths for build steps\n   - Update security scan command to use scripts/ci/security.py\n2. Update .github/workflows/semgrep.yml if it references any moved scripts\n3. Verify all environment variables and secrets references remain valid\n4. Ensure working-directory settings in workflow jobs are correct for new structure\n5. Update any relative path references in workflow commands",
+        "testStrategy": "1. Validate YAML syntax for both workflow files\n2. Dry-run workflow locally using 'act' or similar tool if available\n3. Create a test branch and push to trigger CI workflow\n4. Monitor GitHub Actions logs for path-related errors\n5. Verify all workflow steps complete successfully",
+        "subtasks": []
+      },
+      {
+        "id": 30,
+        "title": "Create Makefile for common commands",
+        "description": "Create a root-level Makefile with convenient targets for security scanning, testing, linting, docker operations, and running full CI locally.",
+        "status": "pending",
+        "dependencies": [
+          26,
+          28,
+          29
+        ],
+        "priority": "medium",
+        "details": "1. Create Makefile with the following targets:\n   - make security: runs 'python scripts/ci/security.py'\n   - make test: runs 'python -m pytest' or equivalent test command\n   - make lint: runs 'ruff check .' and 'ruff format --check .'\n   - make docker-up: runs 'docker-compose -f deploy/compose/docker-compose.yml up -d'\n   - make docker-down: runs 'docker-compose -f deploy/compose/docker-compose.yml down'\n   - make ci: runs full CI locally via scripts/dev/run-ci-full.ps1 or equivalent\n   - make setup: runs scripts/dev/setup.sh (or .ps1 on Windows)\n   - make dev: runs scripts/dev/start.py\n2. Add .PHONY declaration for all targets\n3. Include help target that displays all available commands\n4. Add variables for common paths (DOCKER_COMPOSE_FILE, SCRIPT_DIR, etc.)\n5. Ensure Makefile is cross-platform compatible (or document Windows limitations)",
+        "testStrategy": "1. Run 'make help' to verify all targets are listed\n2. Execute each target individually:\n   - make security\n   - make test\n   - make lint\n   - make docker-up (verify containers start)\n   - make docker-down (verify containers stop)\n   - make ci\n3. Verify targets fail appropriately when dependencies are missing\n4. Test Makefile on both Unix and Windows (with WSL or make equivalent)",
+        "subtasks": []
+      },
+      {
+        "id": 31,
+        "title": "Update documentation with new structure",
+        "description": "Update README.md, CLAUDE.md, and any other documentation files to reflect the new project structure, script locations, and commands.",
+        "status": "pending",
+        "dependencies": [
+          25,
+          26,
+          27,
+          28,
+          29,
+          30
+        ],
+        "priority": "medium",
+        "details": "1. Update README.md:\n   - Update project structure diagram\n   - Update all script path references (old -> new)\n   - Update Docker commands to use new paths\n   - Update development setup instructions\n   - Add Makefile usage examples\n2. Update CLAUDE.md:\n   - Update script paths for AI assistant context\n   - Reflect new directory structure in any path descriptions\n   - Update workflow references\n3. Update any inline documentation or comments in moved files\n4. Update CONTRIBUTING.md if it exists with new command patterns\n5. Search for references to old paths in other .md files and update accordingly",
+        "testStrategy": "1. Use grep to find remaining references to old paths: 'security-scan.py', 'scripts/ci_parity.py', 'Dockerfile.backend' at root\n2. Verify all code examples in documentation are valid\n3. Check that all internal links still work\n4. Have another team member review documentation for clarity",
+        "subtasks": []
+      },
+      {
+        "id": 32,
+        "title": "Final validation and integration testing",
+        "description": "Perform comprehensive validation to ensure all refactored paths work correctly, Docker containers build and run, and all scripts execute without errors.",
+        "status": "pending",
+        "dependencies": [
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ],
+        "priority": "high",
+        "details": "1. Run full CI pipeline to verify all changes work together\n2. Test Docker workflows:\n   - Build backend: 'docker build -f deploy/docker/Dockerfile.backend .'\n   - Build frontend: 'docker build -f deploy/docker/Dockerfile.frontend ./frontend'\n   - Start services: 'docker-compose -f deploy/compose/docker-compose.yml up -d'\n   - Verify services are accessible on expected ports\n3. Test all Makefile targets end-to-end\n4. Run security scan: 'python scripts/ci/security.py' or 'make security'\n5. Test dev container from fresh start:\n   - Delete .devcontainer cache\n   - Rebuild and reopen container\n   - Verify all setup completes\n6. Validate no broken imports or path references in any Python file\n7. Create a smoke test that exercises key functionality",
+        "testStrategy": "1. Full CI/CD pipeline run with green status\n2. All Makefile targets pass without errors\n3. Docker containers start successfully and respond to health checks\n4. All scripts in scripts/ execute without import errors\n5. Dev container builds and setup completes within expected time\n6. No broken links or missing file references found via automated checks\n7. Create validation checklist and verify all items pass",
+        "subtasks": []
       }
     ],
     "metadata": {
-      "version": "1.0.0",
-      "lastModified": "2026-02-05T12:39:01.163Z",
-      "taskCount": 11,
-      "completedCount": 10,
-      "tags": [
-        "master"
-      ]
+      "created": "2026-02-05T13:53:51.002Z",
+      "updated": "2026-02-05T13:53:51.002Z",
+      "description": "Tasks for master context"
     }
   }
 }
