@@ -1,4 +1,4 @@
-FROM node:20-alpine3.20@sha256:fabde88b0d0e5fe3ee2f61c3e5b74b4b48aa7541da887b95dcb61305d8b4e24 AS deps
+FROM node:20-alpine3.20 AS deps
 WORKDIR /app
 # Don't use apk upgrade as it can introduce variability
 RUN apk add --no-cache libc6-compat
@@ -6,13 +6,13 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
-FROM node:20-alpine3.20@sha256:fabde88b0d0e5fe3ee2f61c3e5b74b4b48aa7541da887b95dcb61305d8b4e24 AS builder
+FROM node:20-alpine3.20 AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-FROM node:20-alpine3.20@sha256:fabde88b0d0e5fe3ee2f61c3e5b74b4b48aa7541da887b95dcb61305d8b4e24 AS runner
+FROM node:20-alpine3.20 AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 # Don't use apk upgrade - add specific packages only
