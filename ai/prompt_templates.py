@@ -222,6 +222,271 @@ _TEMPLATES: tuple[PromptTemplate, ...] = (
             ),
         ),
     ),
+    # TASK-023: AI Listing Generator Templates
+    PromptTemplate(
+        id="listing_description_v2_llm",
+        title="Full property description generator",
+        category="listing_description",
+        description="Generates comprehensive property descriptions with customizable tone and language support.",
+        template_text=(
+            "You are a professional real estate copywriter. Write a compelling property description in {{language}}.\n\n"
+            "Property Details:\n"
+            "{{property_data}}\n\n"
+            "Requirements:\n"
+            "- Tone: {{tone_description}}\n"
+            "- Length: {{max_words}} words maximum\n"
+            "- Include: key features, location benefits, and lifestyle appeal\n"
+            "- End with: a clear call-to-action to schedule a viewing\n"
+            "- Format: Use short paragraphs (2-3 sentences each) for readability\n"
+            "- Avoid: overly salesy language, excessive punctuation, clichés\n\n"
+            "Write the property description now:"
+        ),
+        variables=(
+            PromptTemplateVariable(
+                name="property_data",
+                description="Property details as structured text or JSON.",
+                example="2-bed apartment in Krakow, 55m², balcony, 450,000 PLN",
+            ),
+            PromptTemplateVariable(
+                name="language",
+                description="Output language name (English, Polish, Spanish, etc.).",
+                example="English",
+            ),
+            PromptTemplateVariable(
+                name="tone_description",
+                description="Tone description (professional, friendly, luxury).",
+                example="Formal, trustworthy, business-oriented",
+            ),
+            PromptTemplateVariable(
+                name="max_words",
+                description="Maximum word count.",
+                example="150",
+            ),
+        ),
+    ),
+    PromptTemplate(
+        id="headline_generator_v1",
+        title="Property headline generator",
+        category="headline",
+        description="Generates multiple catchy headlines for property listings.",
+        template_text=(
+            "You are a real estate marketing expert. Write {{count}} compelling listing headlines in {{language}}.\n\n"
+            "Property Details:\n"
+            "{{property_data}}\n\n"
+            "Requirements:\n"
+            "- Style: {{style_description}}\n"
+            "- Length: 40-80 characters per headline (ideal for listings)\n"
+            "- Variety: Mix of benefit-focused, feature-focused, and curiosity-driven headlines\n"
+            "- Format: Return as a numbered list\n\n"
+            "Generate {{count}} unique headlines now:"
+        ),
+        variables=(
+            PromptTemplateVariable(
+                name="property_data",
+                description="Property details as structured text or JSON.",
+                example="Luxury penthouse in Warsaw, 3 bedrooms, panoramic view",
+            ),
+            PromptTemplateVariable(
+                name="language",
+                description="Output language name.",
+                example="English",
+            ),
+            PromptTemplateVariable(
+                name="count",
+                description="Number of headlines to generate.",
+                example="5",
+            ),
+            PromptTemplateVariable(
+                name="style_description",
+                description="Headline style description.",
+                example="Attention-grabbing, emotional, uses power words",
+            ),
+        ),
+    ),
+    PromptTemplate(
+        id="social_media_facebook_v1",
+        title="Facebook property post generator",
+        category="social_media",
+        description="Generates Facebook-optimized property posts with hashtags and emojis.",
+        template_text=(
+            "You are a social media expert for real estate. Create a Facebook post in {{language}}.\n\n"
+            "Property Details:\n"
+            "{{property_data}}\n\n"
+            "Requirements:\n"
+            "- Tone: {{tone_description}}\n"
+            "- Facebook-friendly: engaging opener, bullet points for features, community feel\n"
+            "- Length: Maximum 500 characters\n"
+            "- Hashtags: Include 3-5 relevant hashtags at the end\n"
+            "- Emojis: {{emoji_instruction}}\n"
+            "- Call-to-action: {{cta_instruction}}\n\n"
+            "Generate the Facebook post now:"
+        ),
+        variables=(
+            PromptTemplateVariable(
+                name="property_data",
+                description="Property details.",
+                example="Cozy apartment in city center",
+            ),
+            PromptTemplateVariable(
+                name="language",
+                description="Output language name.",
+                example="English",
+            ),
+            PromptTemplateVariable(
+                name="tone_description",
+                description="Content tone description.",
+                example="Energetic, attention-grabbing, interactive",
+            ),
+            PromptTemplateVariable(
+                name="emoji_instruction",
+                description="Whether to include emojis.",
+                example="Include relevant emojis",
+            ),
+            PromptTemplateVariable(
+                name="cta_instruction",
+                description="Call-to-action instruction.",
+                example="End with a clear call-to-action",
+            ),
+        ),
+    ),
+    PromptTemplate(
+        id="social_media_instagram_v1",
+        title="Instagram property post generator",
+        category="social_media",
+        description="Generates Instagram-optimized property captions with hashtags.",
+        template_text=(
+            "You are a social media expert for real estate. Create an Instagram caption in {{language}}.\n\n"
+            "Property Details:\n"
+            "{{property_data}}\n\n"
+            "Requirements:\n"
+            "- Tone: {{tone_description}}\n"
+            "- Instagram-style: visual hooks in text, line breaks for readability, aesthetic focus\n"
+            "- Length: Maximum 1500 characters\n"
+            "- Hashtags: Include 8-15 relevant hashtags at the end\n"
+            "- Emojis: {{emoji_instruction}}\n"
+            "- Call-to-action: {{cta_instruction}}\n\n"
+            "Generate the Instagram caption now:"
+        ),
+        variables=(
+            PromptTemplateVariable(
+                name="property_data",
+                description="Property details.",
+                example="Modern studio with city views",
+            ),
+            PromptTemplateVariable(
+                name="language",
+                description="Output language name.",
+                example="English",
+            ),
+            PromptTemplateVariable(
+                name="tone_description",
+                description="Content tone description.",
+                example="Energetic, attention-grabbing, interactive",
+            ),
+            PromptTemplateVariable(
+                name="emoji_instruction",
+                description="Whether to include emojis.",
+                example="Include relevant emojis",
+            ),
+            PromptTemplateVariable(
+                name="cta_instruction",
+                description="Call-to-action instruction.",
+                example="End with a clear call-to-action",
+            ),
+        ),
+    ),
+    PromptTemplate(
+        id="social_media_linkedin_v1",
+        title="LinkedIn property post generator",
+        category="social_media",
+        description="Generates LinkedIn-optimized property posts with professional tone.",
+        template_text=(
+            "You are a social media expert for real estate. Create a LinkedIn post in {{language}}.\n\n"
+            "Property Details:\n"
+            "{{property_data}}\n\n"
+            "Requirements:\n"
+            "- Tone: {{tone_description}}\n"
+            "- LinkedIn-appropriate: professional tone, industry insights, business value\n"
+            "- Length: Maximum 2000 characters\n"
+            "- Hashtags: Include 3-5 relevant hashtags at the end\n"
+            "- Emojis: Minimal, professional use only - {{emoji_instruction}}\n"
+            "- Call-to-action: {{cta_instruction}}\n\n"
+            "Generate the LinkedIn post now:"
+        ),
+        variables=(
+            PromptTemplateVariable(
+                name="property_data",
+                description="Property details.",
+                example="Premium office space in business district",
+            ),
+            PromptTemplateVariable(
+                name="language",
+                description="Output language name.",
+                example="English",
+            ),
+            PromptTemplateVariable(
+                name="tone_description",
+                description="Content tone description.",
+                example="Professional, business-oriented",
+            ),
+            PromptTemplateVariable(
+                name="emoji_instruction",
+                description="Whether to include emojis.",
+                example="Minimal professional emojis",
+            ),
+            PromptTemplateVariable(
+                name="cta_instruction",
+                description="Call-to-action instruction.",
+                example="End with a clear call-to-action",
+            ),
+        ),
+    ),
+    PromptTemplate(
+        id="social_media_twitter_v1",
+        title="Twitter/X property post generator",
+        category="social_media",
+        description="Generates Twitter-optimized property posts with character limit.",
+        template_text=(
+            "You are a social media expert for real estate. Create a Twitter/X post in {{language}}.\n\n"
+            "Property Details:\n"
+            "{{property_data}}\n\n"
+            "Requirements:\n"
+            "- Tone: {{tone_description}}\n"
+            "- Twitter/X format: concise, punchy, one key highlight, space-saving\n"
+            "- Length: Maximum 280 characters (strictly enforced)\n"
+            "- Hashtags: Include 1-3 relevant hashtags at the end\n"
+            "- Emojis: Minimal - {{emoji_instruction}}\n"
+            "- Call-to-action: {{cta_instruction}}\n\n"
+            "Generate the Twitter post now:"
+        ),
+        variables=(
+            PromptTemplateVariable(
+                name="property_data",
+                description="Property details.",
+                example="Charming apartment near park",
+            ),
+            PromptTemplateVariable(
+                name="language",
+                description="Output language name.",
+                example="English",
+            ),
+            PromptTemplateVariable(
+                name="tone_description",
+                description="Content tone description.",
+                example="Energetic, attention-grabbing",
+            ),
+            PromptTemplateVariable(
+                name="emoji_instruction",
+                description="Whether to include emojis.",
+                example="Minimal emojis",
+            ),
+            PromptTemplateVariable(
+                name="cta_instruction",
+                description="Call-to-action instruction.",
+                example="Include link in bio",
+            ),
+        ),
+    ),
 )
 
 _TEMPLATE_IDS = [t.id for t in _TEMPLATES]

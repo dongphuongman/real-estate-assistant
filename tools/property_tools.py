@@ -9,8 +9,15 @@ import math
 import statistics
 from typing import Any, ClassVar, Dict, List, Optional
 
+# Import AI listing generator tools (TASK-023)
 from langchain.tools import BaseTool
 from pydantic import BaseModel, Field, PrivateAttr
+
+from tools.listing_generator_tools import (
+    HeadlineGeneratorTool,
+    PropertyDescriptionGeneratorTool,
+    SocialMediaContentGeneratorTool,
+)
 
 # We use Any for vector_store to avoid circular imports/tight coupling
 # expected type: vector_store.chroma_store.ChromaPropertyStore
@@ -1725,4 +1732,8 @@ def create_property_tools(vector_store: Any = None) -> List[BaseTool]:
         # TASK-021: Commute Time Analysis
         CommuteTimeAnalysisTool(vector_store=vector_store),
         CommuteRankingTool(vector_store=vector_store),
+        # TASK-023: AI Listing Generator
+        PropertyDescriptionGeneratorTool(),
+        HeadlineGeneratorTool(),
+        SocialMediaContentGeneratorTool(),
     ]

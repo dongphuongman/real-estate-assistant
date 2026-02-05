@@ -18,3 +18,20 @@ repos:
         types_or: [python, pyi]
       - id: ruff-format
         types_or: [python, pyi]
+
+  # Gitleaks - Secret scanning (API keys, passwords, tokens)
+  # Install: scoop install gitleaks (Windows) or brew install gitleaks (macOS)
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.24.0
+    hooks:
+      - id: gitleaks
+        args: [--config, .gitleaks.toml]
+
+  # Semgrep - SAST (Static Application Security Testing)
+  # Install: pip install semgrep or use Docker (automatic fallback)
+  - repo: https://github.com/returntocorp/semgrep
+    rev: v1.95.0
+    hooks:
+      - id: semgrep
+        args: [--config, auto, --config, semgrep.yml, --error, --severity, ERROR]
+        types_or: [python]
