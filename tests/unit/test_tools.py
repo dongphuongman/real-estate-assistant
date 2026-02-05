@@ -276,7 +276,8 @@ class TestToolFactory:
         """Test creating all tools."""
         tools = create_property_tools()
 
-        assert len(tools) == 7  # Added neighborhood_quality_index
+        # TASK-021: Added commute_time_analyzer and commute_ranking
+        assert len(tools) == 9
         assert all(hasattr(tool, "name") for tool in tools)
         assert all(hasattr(tool, "description") for tool in tools)
 
@@ -292,14 +293,17 @@ class TestToolFactory:
         tools = create_property_tools()
         tool_names = {tool.name for tool in tools}
 
+        # TASK-021: Added commute_time_analyzer and commute_ranking
         expected_names = {
             "mortgage_calculator",
             "tco_calculator",
             "investment_analyzer",
-            "neighborhood_quality_index",  # Added
+            "neighborhood_quality_index",
             "property_comparator",
             "price_analyzer",
             "location_analyzer",
+            "commute_time_analyzer",  # TASK-021
+            "commute_ranking",  # TASK-021
         }
 
         assert tool_names == expected_names

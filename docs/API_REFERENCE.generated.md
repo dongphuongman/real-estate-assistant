@@ -515,6 +515,46 @@ List available tools.
 |---|---|---|
 | 200 | Successful Response | array[ToolInfo] |
 
+## POST /api/v1/tools/commute-ranking
+
+**Summary**: Commute Ranking
+
+**Tags**: Tools
+
+Rank multiple properties by commute time to a destination. Compares commute times from multiple properties to a common destination and returns a ranked list from shortest to longest commute.
+
+**Request Body**
+
+- Required: yes
+- application/json: CommuteRankingRequest
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | CommuteRankingResponse |
+| 422 | Validation Error | HTTPValidationError |
+
+## POST /api/v1/tools/commute-time
+
+**Summary**: Commute Time Analysis
+
+**Tags**: Tools
+
+Calculate commute time from a property to a destination. Uses Google Routes API to calculate accurate commute times including real-time traffic conditions and transit schedules.
+
+**Request Body**
+
+- Required: yes
+- application/json: CommuteTimeRequest
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | CommuteTimeResponse |
+| 422 | Validation Error | HTTPValidationError |
+
 ## POST /api/v1/tools/compare-properties
 
 **Summary**: Compare Properties

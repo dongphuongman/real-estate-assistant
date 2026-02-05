@@ -49,6 +49,16 @@ class AppSettings(BaseModel):
     google_api_key: Optional[str] = Field(default_factory=lambda: os.getenv("GOOGLE_API_KEY"))
     grok_api_key: Optional[str] = Field(default_factory=lambda: os.getenv("XAI_API_KEY"))
     deepseek_api_key: Optional[str] = Field(default_factory=lambda: os.getenv("DEEPSEEK_API_KEY"))
+    # Google Routes API for commute time analysis (TASK-021)
+    google_routes_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("GOOGLE_ROUTES_API_KEY"),
+        description="API key for Google Routes API (commute time calculations)",
+    )
+    google_routes_enabled: bool = Field(
+        default_factory=lambda: os.getenv("GOOGLE_ROUTES_ENABLED", "true").strip().lower()
+        in {"1", "true", "yes", "on"},
+        description="Enable Google Routes API for commute time analysis",
+    )
     # API Access Control
     api_access_key: Optional[str] = Field(default_factory=lambda: os.getenv("API_ACCESS_KEY"))
     api_access_keys: list[str] = Field(

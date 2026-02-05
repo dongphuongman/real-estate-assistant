@@ -18,6 +18,11 @@ from api.models import (
     ComparePropertiesResponse,
     CompareSummary,
     ComparedProperty,
+    CommuteRankingRequest,
+    CommuteRankingResponse,
+    CommuteTimeRequest,
+    CommuteTimeResponse,
+    CommuteTimeResult,
     DataEnrichmentRequest,
     DataEnrichmentResponse,
     LegalCheckRequest,
@@ -434,6 +439,222 @@ async def crm_sync_contact(
             detail="CRM sync failed",
         )
     return CRMContactResponse(id=cid)
+
+
+@router.post("/tools/commute-time", response_model=CommuteTimeResponse, tags=["Tools"])
+async def commute_time_analysis(
+    request: CommuteTimeRequest,
+    store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
+):
+    """
+    Calculate commute time from a property to a destination.
+
+    Uses Google Routes API to calculate accurate commute times including
+    real-time traffic conditions and transit schedules.
+    """
+    if not store:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Vector store unavailable",
+        )
+
+    property_id = request.property_id.strip()
+    if not property_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="property_id is required",
+        )
+
+    # Get property coordinates
+    docs = store.get_properties_by_ids([property_id])
+    if not docs:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Property not found",
+        )
+
+    md = docs[0].metadata or {}
+    origin_lat = md.get("lat")
+    origin_lon = md.get("lon")
+
+    if origin_lat is None or origin_lon is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Property coordinates not available",
+        )
+
+    # Parse departure time if provided
+    from datetime import datetime
+
+    parsed_departure_time = None
+    if request.departure_time:
+        try:
+            parsed_departure_time = datetime.fromisoformat(request.departure_time)
+        except ValueError as err:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid departure_time format. Use ISO format (e.g., '2024-01-15T08:30:00').",
+            ) from err
+
+    # Calculate commute time
+    from utils.commute_client import CommuteTimeClient
+
+    client = CommuteTimeClient()
+    result = await client.get_commute_time(
+        property_id=property_id,
+        origin_lat=float(origin_lat),
+        origin_lon=float(origin_lon),
+        destination_lat=request.destination_lat,
+        destination_lon=request.destination_lon,
+        mode=request.mode,
+        destination_name=request.destination_name,
+        departure_time=parsed_departure_time,
+    )
+
+    # Convert datetime fields to ISO strings for JSON response
+    arrival_str = result.arrival_time.isoformat() if result.arrival_time else None
+    departure_str = result.departure_time.isoformat() if result.departure_time else None
+
+    return CommuteTimeResponse(
+        result=CommuteTimeResult(
+            property_id=result.property_id,
+            origin_lat=result.origin_lat,
+            origin_lon=result.origin_lon,
+            destination_lat=result.destination_lat,
+            destination_lon=result.destination_lon,
+            destination_name=result.destination_name,
+            duration_seconds=result.duration_seconds,
+            duration_text=result.duration_text,
+            distance_meters=result.distance_meters,
+            distance_text=result.distance_text,
+            mode=result.mode,
+            polyline=result.polyline,
+            arrival_time=arrival_str,
+            departure_time=departure_str,
+        )
+    )
+
+
+@router.post("/tools/commute-ranking", response_model=CommuteRankingResponse, tags=["Tools"])
+async def commute_ranking(
+    request: CommuteRankingRequest,
+    store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
+):
+    """
+    Rank multiple properties by commute time to a destination.
+
+    Compares commute times from multiple properties to a common destination
+    and returns a ranked list from shortest to longest commute.
+    """
+    if not store:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Vector store unavailable",
+        )
+
+    # Parse property IDs
+    property_ids = [pid.strip() for pid in request.property_ids.split(",") if pid.strip()]
+    if not property_ids:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="At least one property_id is required",
+        )
+
+    # Get property coordinates
+    docs = store.get_properties_by_ids(property_ids)
+    if not docs:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No properties found",
+        )
+
+    properties_lat_lon = {}
+    for doc in docs:
+        md = doc.metadata or {}
+        pid = str(md.get("id", ""))
+        lat = md.get("lat")
+        lon = md.get("lon")
+
+        if pid and lat is not None and lon is not None:
+            properties_lat_lon[pid] = (float(lat), float(lon))
+
+    if not properties_lat_lon:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No properties with valid coordinates found",
+        )
+
+    # Parse departure time if provided
+    from datetime import datetime
+
+    parsed_departure_time = None
+    if request.departure_time:
+        try:
+            parsed_departure_time = datetime.fromisoformat(request.departure_time)
+        except ValueError as err:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid departure_time format. Use ISO format (e.g., '2024-01-15T08:30:00').",
+            ) from err
+
+    # Calculate commute times for all properties
+    from utils.commute_client import CommuteTimeClient
+
+    client = CommuteTimeClient()
+    rankings = await client.rank_properties_by_commute(
+        property_ids=list(properties_lat_lon.keys()),
+        properties_lat_lon=properties_lat_lon,
+        destination_lat=request.destination_lat,
+        destination_lon=request.destination_lon,
+        mode=request.mode,
+        destination_name=request.destination_name,
+        departure_time=parsed_departure_time,
+    )
+
+    if not rankings:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to calculate commute times for any properties",
+        )
+
+    # Calculate summary statistics
+    fastest_duration = rankings[0].duration_seconds if rankings else None
+    slowest_duration = rankings[-1].duration_seconds if rankings else None
+
+    # Convert CommuteTimeResult dataclass to API model (with datetime as strings)
+    ranking_results = []
+    for r in rankings:
+        arrival_str = r.arrival_time.isoformat() if r.arrival_time else None
+        departure_str = r.departure_time.isoformat() if r.departure_time else None
+        ranking_results.append(
+            CommuteTimeResult(
+                property_id=r.property_id,
+                origin_lat=r.origin_lat,
+                origin_lon=r.origin_lon,
+                destination_lat=r.destination_lat,
+                destination_lon=r.destination_lon,
+                destination_name=r.destination_name,
+                duration_seconds=r.duration_seconds,
+                duration_text=r.duration_text,
+                distance_meters=r.distance_meters,
+                distance_text=r.distance_text,
+                mode=r.mode,
+                polyline=r.polyline,
+                arrival_time=arrival_str,
+                departure_time=departure_str,
+            )
+        )
+
+    return CommuteRankingResponse(
+        destination_name=request.destination_name,
+        destination_lat=request.destination_lat,
+        destination_lon=request.destination_lon,
+        mode=request.mode,
+        rankings=ranking_results,
+        count=len(ranking_results),
+        fastest_duration_seconds=fastest_duration,
+        slowest_duration_seconds=slowest_duration,
+    )
 
 
 def _to_float(value: object) -> Optional[float]:

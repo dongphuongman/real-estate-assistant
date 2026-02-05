@@ -188,6 +188,322 @@
         "title": "ChatResponse",
         "type": "object"
       },
+      "CommuteRankingRequest": {
+        "description": "Request model for commute-based property ranking.",
+        "properties": {
+          "departure_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional departure time as ISO string (e.g., '2024-01-15T08:30:00')",
+            "title": "Departure Time"
+          },
+          "destination_lat": {
+            "description": "Destination latitude",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Destination Lat",
+            "type": "number"
+          },
+          "destination_lon": {
+            "description": "Destination longitude",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Destination Lon",
+            "type": "number"
+          },
+          "destination_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional destination name for display",
+            "title": "Destination Name"
+          },
+          "mode": {
+            "default": "transit",
+            "description": "Commute mode: 'driving', 'walking', 'bicycling', or 'transit'",
+            "title": "Mode",
+            "type": "string"
+          },
+          "property_ids": {
+            "description": "Comma-separated list of property IDs to rank",
+            "minLength": 1,
+            "title": "Property Ids",
+            "type": "string"
+          }
+        },
+        "required": [
+          "property_ids",
+          "destination_lat",
+          "destination_lon"
+        ],
+        "title": "CommuteRankingRequest",
+        "type": "object"
+      },
+      "CommuteRankingResponse": {
+        "description": "Response model for commute-based property ranking.",
+        "properties": {
+          "count": {
+            "description": "Number of properties ranked",
+            "title": "Count",
+            "type": "integer"
+          },
+          "destination_lat": {
+            "title": "Destination Lat",
+            "type": "number"
+          },
+          "destination_lon": {
+            "title": "Destination Lon",
+            "type": "number"
+          },
+          "destination_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Destination Name"
+          },
+          "fastest_duration_seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fastest Duration Seconds"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "rankings": {
+            "items": {
+              "$ref": "#/components/schemas/CommuteTimeResult"
+            },
+            "title": "Rankings",
+            "type": "array"
+          },
+          "slowest_duration_seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slowest Duration Seconds"
+          }
+        },
+        "required": [
+          "destination_lat",
+          "destination_lon",
+          "mode",
+          "rankings",
+          "count"
+        ],
+        "title": "CommuteRankingResponse",
+        "type": "object"
+      },
+      "CommuteTimeRequest": {
+        "description": "Request model for commute time analysis.",
+        "properties": {
+          "departure_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional departure time as ISO string (e.g., '2024-01-15T08:30:00')",
+            "title": "Departure Time"
+          },
+          "destination_lat": {
+            "description": "Destination latitude",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Destination Lat",
+            "type": "number"
+          },
+          "destination_lon": {
+            "description": "Destination longitude",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Destination Lon",
+            "type": "number"
+          },
+          "destination_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional destination name for display",
+            "title": "Destination Name"
+          },
+          "mode": {
+            "default": "transit",
+            "description": "Commute mode: 'driving', 'walking', 'bicycling', or 'transit'",
+            "title": "Mode",
+            "type": "string"
+          },
+          "property_id": {
+            "description": "Property ID to analyze commute from",
+            "minLength": 1,
+            "title": "Property Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "property_id",
+          "destination_lat",
+          "destination_lon"
+        ],
+        "title": "CommuteTimeRequest",
+        "type": "object"
+      },
+      "CommuteTimeResponse": {
+        "description": "Response model for commute time analysis.",
+        "properties": {
+          "result": {
+            "$ref": "#/components/schemas/CommuteTimeResult"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "CommuteTimeResponse",
+        "type": "object"
+      },
+      "CommuteTimeResult": {
+        "description": "Single property commute time result.",
+        "properties": {
+          "arrival_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Arrival Time"
+          },
+          "departure_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Departure Time"
+          },
+          "destination_lat": {
+            "title": "Destination Lat",
+            "type": "number"
+          },
+          "destination_lon": {
+            "title": "Destination Lon",
+            "type": "number"
+          },
+          "destination_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Destination Name"
+          },
+          "distance_meters": {
+            "description": "Distance in meters",
+            "title": "Distance Meters",
+            "type": "integer"
+          },
+          "distance_text": {
+            "description": "Human-readable distance (e.g., '12.5km')",
+            "title": "Distance Text",
+            "type": "string"
+          },
+          "duration_seconds": {
+            "description": "Commute duration in seconds",
+            "title": "Duration Seconds",
+            "type": "integer"
+          },
+          "duration_text": {
+            "description": "Human-readable duration (e.g., '45m')",
+            "title": "Duration Text",
+            "type": "string"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "origin_lat": {
+            "title": "Origin Lat",
+            "type": "number"
+          },
+          "origin_lon": {
+            "title": "Origin Lon",
+            "type": "number"
+          },
+          "polyline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Encoded polyline for route visualization",
+            "title": "Polyline"
+          },
+          "property_id": {
+            "title": "Property Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "property_id",
+          "origin_lat",
+          "origin_lon",
+          "destination_lat",
+          "destination_lon",
+          "duration_seconds",
+          "duration_text",
+          "distance_meters",
+          "distance_text",
+          "mode"
+        ],
+        "title": "CommuteTimeResult",
+        "type": "object"
+      },
       "ComparePropertiesRequest": {
         "properties": {
           "property_ids": {
@@ -4822,6 +5138,100 @@
           }
         ],
         "summary": "List Tools",
+        "tags": [
+          "Tools"
+        ]
+      }
+    },
+    "/api/v1/tools/commute-ranking": {
+      "post": {
+        "description": "Rank multiple properties by commute time to a destination.\n\nCompares commute times from multiple properties to a common destination\nand returns a ranked list from shortest to longest commute.",
+        "operationId": "commute_ranking_api_v1_tools_commute_ranking_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommuteRankingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommuteRankingResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Commute Ranking",
+        "tags": [
+          "Tools"
+        ]
+      }
+    },
+    "/api/v1/tools/commute-time": {
+      "post": {
+        "description": "Calculate commute time from a property to a destination.\n\nUses Google Routes API to calculate accurate commute times including\nreal-time traffic conditions and transit schedules.",
+        "operationId": "commute_time_analysis_api_v1_tools_commute_time_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommuteTimeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommuteTimeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Commute Time Analysis",
         "tags": [
           "Tools"
         ]

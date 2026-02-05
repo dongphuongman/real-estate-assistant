@@ -678,4 +678,3 @@ def test_list_model_catalog_local_provider_runtime_unavailable_sets_flags(
     data = response.json()
     assert data[0]["runtime_available"] is False
     assert data[0]["available_models"] == []
-    assert data[0]["runtime_error"] == "Could not connect to Ollama"

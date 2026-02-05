@@ -267,13 +267,15 @@ class TestInvestmentToolFactory:
         tool_names = {tool.name for tool in tools}
 
         assert "investment_analyzer" in tool_names
-        assert len(tools) == 7  # Should have 7 tools now (added neighborhood_quality_index)
+        # TASK-021: Added commute_time_analyzer and commute_ranking (9 total tools)
+        assert len(tools) == 9
 
     def test_all_expected_tools_present(self):
         """Test that all expected tools including investment are created."""
         tools = create_property_tools()
         tool_names = {tool.name for tool in tools}
 
+        # TASK-021: Added commute_time_analyzer and commute_ranking
         expected_names = {
             "mortgage_calculator",
             "tco_calculator",
@@ -282,6 +284,8 @@ class TestInvestmentToolFactory:
             "property_comparator",
             "price_analyzer",
             "location_analyzer",
+            "commute_time_analyzer",
+            "commute_ranking",
         }
 
         assert tool_names == expected_names

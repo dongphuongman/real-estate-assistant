@@ -572,3 +572,84 @@ class NeighborhoodQualityResponse(BaseModel):
     longitude: Optional[float] = None
     city: Optional[str] = None
     neighborhood: Optional[str] = None
+
+
+# ============================================================================
+# TASK-021: Commute Time Analysis Models
+# ============================================================================
+
+
+class CommuteTimeRequest(BaseModel):
+    """Request model for commute time analysis."""
+
+    property_id: str = Field(..., min_length=1, description="Property ID to analyze commute from")
+    destination_lat: float = Field(..., ge=-90, le=90, description="Destination latitude")
+    destination_lon: float = Field(..., ge=-180, le=180, description="Destination longitude")
+    mode: str = Field(
+        default="transit",
+        description="Commute mode: 'driving', 'walking', 'bicycling', or 'transit'",
+    )
+    destination_name: Optional[str] = Field(
+        None, description="Optional destination name for display"
+    )
+    departure_time: Optional[str] = Field(
+        None, description="Optional departure time as ISO string (e.g., '2024-01-15T08:30:00')"
+    )
+
+
+class CommuteTimeResult(BaseModel):
+    """Single property commute time result."""
+
+    property_id: str
+    origin_lat: float
+    origin_lon: float
+    destination_lat: float
+    destination_lon: float
+    destination_name: Optional[str] = None
+    duration_seconds: int = Field(..., description="Commute duration in seconds")
+    duration_text: str = Field(..., description="Human-readable duration (e.g., '45m')")
+    distance_meters: int = Field(..., description="Distance in meters")
+    distance_text: str = Field(..., description="Human-readable distance (e.g., '12.5km')")
+    mode: str
+    polyline: Optional[str] = Field(None, description="Encoded polyline for route visualization")
+    arrival_time: Optional[str] = None
+    departure_time: Optional[str] = None
+
+
+class CommuteTimeResponse(BaseModel):
+    """Response model for commute time analysis."""
+
+    result: CommuteTimeResult
+
+
+class CommuteRankingRequest(BaseModel):
+    """Request model for commute-based property ranking."""
+
+    property_ids: str = Field(
+        ..., min_length=1, description="Comma-separated list of property IDs to rank"
+    )
+    destination_lat: float = Field(..., ge=-90, le=90, description="Destination latitude")
+    destination_lon: float = Field(..., ge=-180, le=180, description="Destination longitude")
+    mode: str = Field(
+        default="transit",
+        description="Commute mode: 'driving', 'walking', 'bicycling', or 'transit'",
+    )
+    destination_name: Optional[str] = Field(
+        None, description="Optional destination name for display"
+    )
+    departure_time: Optional[str] = Field(
+        None, description="Optional departure time as ISO string (e.g., '2024-01-15T08:30:00')"
+    )
+
+
+class CommuteRankingResponse(BaseModel):
+    """Response model for commute-based property ranking."""
+
+    destination_name: Optional[str] = None
+    destination_lat: float
+    destination_lon: float
+    mode: str
+    rankings: List[CommuteTimeResult]
+    count: int = Field(..., description="Number of properties ranked")
+    fastest_duration_seconds: Optional[int] = None
+    slowest_duration_seconds: Optional[int] = None

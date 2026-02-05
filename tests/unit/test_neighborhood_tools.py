@@ -249,6 +249,8 @@ class TestNeighborhoodToolFactory:
             "property_comparator",
             "price_analyzer",
             "location_analyzer",
+            "commute_time_analyzer",  # TASK-021
+            "commute_ranking",  # TASK-021
         }
 
         assert tool_names == expected_names

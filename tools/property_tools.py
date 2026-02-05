@@ -1372,6 +1372,336 @@ Rating: {self._get_rating_label(result.overall_score)}
         return self._run(**kwargs)
 
 
+# ============================================================================
+# TASK-021: Commute Time Analysis Tools
+# ============================================================================
+
+
+class CommuteTimeInput(BaseModel):
+    """Input for commute time analysis tool."""
+
+    property_id: str = Field(description="Property ID to analyze commute from")
+    destination_lat: float = Field(description="Destination latitude", ge=-90, le=90)
+    destination_lon: float = Field(description="Destination longitude", ge=-180, le=180)
+    mode: str = Field(
+        default="transit",
+        description="Commute mode: 'driving', 'walking', 'bicycling', or 'transit'",
+    )
+    destination_name: Optional[str] = Field(default=None, description="Optional destination name")
+    departure_time: Optional[str] = Field(
+        default=None,
+        description="Optional departure time as ISO string (e.g., '2024-01-15T08:30:00')",
+    )
+
+
+class CommuteRankingInput(BaseModel):
+    """Input for commute-based property ranking tool."""
+
+    property_ids: str = Field(description="Comma-separated list of property IDs to rank")
+    destination_lat: float = Field(description="Destination latitude", ge=-90, le=90)
+    destination_lon: float = Field(description="Destination longitude", ge=-180, le=180)
+    mode: str = Field(
+        default="transit",
+        description="Commute mode: 'driving', 'walking', 'bicycling', or 'transit'",
+    )
+    destination_name: Optional[str] = Field(default=None, description="Optional destination name")
+    departure_time: Optional[str] = Field(
+        default=None,
+        description="Optional departure time as ISO string (e.g., '2024-01-15T08:30:00')",
+    )
+
+
+class CommuteTimeAnalysisTool(BaseTool):
+    """
+    Tool for calculating commute time from a property to a destination.
+
+    Uses Google Routes API to calculate accurate commute times including
+    real-time traffic conditions and transit schedules.
+    """
+
+    name: str = "commute_time_analyzer"
+    description: str = (
+        "Calculate commute time from a property to a destination. "
+        "Input: property_id, destination coordinates, mode (driving/walking/bicycling/transit). "
+        "Returns: duration, distance, and route information for the commute."
+    )
+    args_schema: type[BaseModel] = CommuteTimeInput
+
+    _vector_store: Any = PrivateAttr()
+
+    def __init__(self, vector_store: Any = None, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self._vector_store = vector_store
+
+    def _run(
+        self,
+        property_id: str,
+        destination_lat: float,
+        destination_lon: float,
+        mode: str = "transit",
+        destination_name: Optional[str] = None,
+        departure_time: Optional[str] = None,
+    ) -> str:
+        """
+        Calculate commute time from property to destination.
+
+        Args:
+            property_id: Property ID for the origin.
+            destination_lat: Destination latitude.
+            destination_lon: Destination longitude.
+            mode: Travel mode - 'driving', 'walking', 'bicycling', or 'transit'.
+            destination_name: Optional destination name for display.
+            departure_time: Optional departure time for transit scheduling.
+
+        Returns:
+            Formatted string with commute time analysis.
+        """
+        try:
+            from utils.commute_client import CommuteTimeClient
+
+            # Get property coordinates
+            if self._vector_store is None:
+                return (
+                    f"Commute Analysis for '{property_id}':\n"
+                    "Error: Vector store not available. Cannot retrieve property coordinates."
+                )
+
+            docs = self._vector_store.get_properties_by_ids([property_id])
+            if not docs:
+                return f"Commute Analysis for '{property_id}':\nError: Property not found."
+
+            md = docs[0].metadata or {}
+            origin_lat = md.get("lat")
+            origin_lon = md.get("lon")
+
+            if origin_lat is None or origin_lon is None:
+                return (
+                    f"Commute Analysis for '{property_id}':\n"
+                    "Error: Property coordinates not available."
+                )
+
+            # Parse departure time if provided
+            from datetime import datetime
+
+            parsed_departure_time = None
+            if departure_time:
+                try:
+                    parsed_departure_time = datetime.fromisoformat(departure_time)
+                except ValueError:
+                    return "Error: Invalid departure_time format. Use ISO format (e.g., '2024-01-15T08:30:00')."
+
+            # Create client and calculate commute time
+            client = CommuteTimeClient()
+
+            import asyncio
+
+            result = asyncio.run(
+                client.get_commute_time(
+                    property_id=property_id,
+                    origin_lat=float(origin_lat),
+                    origin_lon=float(origin_lon),
+                    destination_lat=destination_lat,
+                    destination_lon=destination_lon,
+                    mode=mode,
+                    destination_name=destination_name,
+                    departure_time=parsed_departure_time,
+                )
+            )
+
+            # Format output
+            dest_display = destination_name or f"({destination_lat:.4f}, {destination_lon:.4f})"
+            mode_display = mode.capitalize()
+
+            output = [
+                f"Commute Analysis for Property '{property_id}':",
+                "",
+                f"Destination: {dest_display}",
+                f"Mode: {mode_display}",
+                "",
+                f"Duration: {result.duration_text}",
+                f"Distance: {result.distance_text}",
+            ]
+
+            if result.arrival_time:
+                output.append(f"Arrival: {result.arrival_time.strftime('%H:%M')}")
+
+            # Add context for the commute duration
+            minutes = result.duration_seconds // 60
+            if minutes < 30:
+                assessment = "Excellent commute time!"
+            elif minutes < 45:
+                assessment = "Reasonable commute time."
+            elif minutes < 60:
+                assessment = "Long commute - consider carefully."
+            else:
+                assessment = "Very long commute - may impact quality of life."
+
+            output.append(f"\nAssessment: {assessment}")
+
+            return "\n".join(output)
+
+        except Exception as e:
+            return (
+                f"Commute Analysis for '{property_id}':\nError calculating commute time: {str(e)}"
+            )
+
+    async def _arun(self, **kwargs: Any) -> str:
+        """Async version."""
+        return self._run(**kwargs)
+
+
+class CommuteRankingTool(BaseTool):
+    """
+    Tool for ranking multiple properties by commute time to a destination.
+
+    Compares commute times from multiple properties to a common destination
+    and returns a ranked list from shortest to longest commute.
+    """
+
+    name: str = "commute_ranking"
+    description: str = (
+        "Rank multiple properties by commute time to a destination. "
+        "Input: comma-separated property_ids, destination coordinates, mode. "
+        "Returns: ranked list of properties sorted by commute duration (shortest first)."
+    )
+    args_schema: type[BaseModel] = CommuteRankingInput
+
+    _vector_store: Any = PrivateAttr()
+
+    def __init__(self, vector_store: Any = None, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self._vector_store = vector_store
+
+    def _run(
+        self,
+        property_ids: str,
+        destination_lat: float,
+        destination_lon: float,
+        mode: str = "transit",
+        destination_name: Optional[str] = None,
+        departure_time: Optional[str] = None,
+    ) -> str:
+        """
+        Rank properties by commute time to destination.
+
+        Args:
+            property_ids: Comma-separated list of property IDs.
+            destination_lat: Destination latitude.
+            destination_lon: Destination longitude.
+            mode: Travel mode - 'driving', 'walking', 'bicycling', or 'transit'.
+            destination_name: Optional destination name for display.
+            departure_time: Optional departure time for transit scheduling.
+
+        Returns:
+            Formatted string with ranked property commute times.
+        """
+        try:
+            from utils.commute_client import CommuteTimeClient
+
+            if self._vector_store is None:
+                return (
+                    "Commute Ranking:\n"
+                    "Error: Vector store not available. Cannot retrieve property coordinates."
+                )
+
+            # Parse property IDs
+            pid_list = [pid.strip() for pid in property_ids.split(",") if pid.strip()]
+            if not pid_list:
+                return "Error: At least one property_id is required."
+
+            # Get property coordinates
+            docs = self._vector_store.get_properties_by_ids(pid_list)
+            if not docs:
+                return "Error: No properties found."
+
+            properties_lat_lon = {}
+            property_titles = {}
+            for doc in docs:
+                md = doc.metadata or {}
+                pid = str(md.get("id", ""))
+                lat = md.get("lat")
+                lon = md.get("lon")
+                title = md.get("title")
+
+                if pid and lat is not None and lon is not None:
+                    properties_lat_lon[pid] = (float(lat), float(lon))
+                    if title:
+                        property_titles[pid] = title
+
+            if not properties_lat_lon:
+                return "Error: No properties with valid coordinates found."
+
+            # Parse departure time if provided
+            from datetime import datetime
+
+            parsed_departure_time = None
+            if departure_time:
+                try:
+                    parsed_departure_time = datetime.fromisoformat(departure_time)
+                except ValueError:
+                    return "Error: Invalid departure_time format. Use ISO format (e.g., '2024-01-15T08:30:00')."
+
+            # Create client and rank properties
+            client = CommuteTimeClient()
+
+            import asyncio
+
+            results = asyncio.run(
+                client.rank_properties_by_commute(
+                    property_ids=list(properties_lat_lon.keys()),
+                    properties_lat_lon=properties_lat_lon,
+                    destination_lat=destination_lat,
+                    destination_lon=destination_lon,
+                    mode=mode,
+                    destination_name=destination_name,
+                    departure_time=parsed_departure_time,
+                )
+            )
+
+            if not results:
+                return "Error: Unable to calculate commute times for any properties."
+
+            # Format output
+            dest_display = destination_name or f"({destination_lat:.4f}, {destination_lon:.4f})"
+            mode_display = mode.capitalize()
+
+            output = [
+                f"Commute Ranking to {dest_display}",
+                f"Mode: {mode_display}",
+                "",
+                f"{'Rank':<5} {'Property':<30} {'Duration':<12} {'Distance':<10}",
+                f"{'-' * 5} {'-' * 30} {'-' * 12} {'-' * 10}",
+            ]
+
+            for i, result in enumerate(results, 1):
+                pid = result.property_id
+                title = property_titles.get(pid, pid)[:28]  # Truncate if too long
+                duration = result.duration_text
+                distance = result.distance_text
+
+                output.append(f"{i:<5} {title:<30} {duration:<12} {distance:<10}")
+
+            output.append("")
+            output.append(f"Ranked {len(results)} properties by commute time.")
+
+            # Add summary
+            if results:
+                fastest = results[0]
+                slowest = results[-1]
+                output.append("")
+                output.append(f"Fastest: {fastest.duration_text}")
+                output.append(f"Slowest: {slowest.duration_text}")
+
+            return "\n".join(output)
+
+        except Exception as e:
+            return f"Commute Ranking:\nError: {str(e)}"
+
+    async def _arun(self, **kwargs: Any) -> str:
+        """Async version."""
+        return self._run(**kwargs)
+
+
 # Factory function to create all tools
 def create_property_tools(vector_store: Any = None) -> List[BaseTool]:
     """
@@ -1392,4 +1722,7 @@ def create_property_tools(vector_store: Any = None) -> List[BaseTool]:
         PropertyComparisonTool(vector_store=vector_store),
         PriceAnalysisTool(vector_store=vector_store),
         LocationAnalysisTool(vector_store=vector_store),
+        # TASK-021: Commute Time Analysis
+        CommuteTimeAnalysisTool(vector_store=vector_store),
+        CommuteRankingTool(vector_store=vector_store),
     ]

@@ -610,3 +610,329 @@ def test_crm_sync_contact_failed_returns_502(valid_headers):
     assert response.json()["detail"] == "CRM sync failed"
 
     app.dependency_overrides = {}
+
+
+# TASK-021: Commute Time Analysis API Tests
+
+
+def test_commute_time_success(valid_headers):
+    """Test commute time calculation endpoint."""
+    store = _FakeVectorStore()
+    store.add_doc(
+        Document(
+            page_content="Test Property",
+            metadata={
+                "id": "prop1",
+                "city": "Warsaw",
+                "lat": 52.2297,
+                "lon": 21.0122,
+            },
+        )
+    )
+    app.dependency_overrides[get_vector_store] = lambda: store
+
+    response = client.post(
+        "/api/v1/tools/commute-time",
+        json={
+            "property_id": "prop1",
+            "destination_lat": 52.2040,
+            "destination_lon": 21.0120,
+            "mode": "transit",
+            "destination_name": "Warsaw Central",
+        },
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert "result" in data
+    result = data["result"]
+    assert result["property_id"] == "prop1"
+    assert "destination_name" in result
+    assert "duration_seconds" in result
+    assert "distance_meters" in result
+    assert "mode" in result
+
+    app.dependency_overrides = {}
+
+
+def test_commute_time_requires_property_id(valid_headers):
+    """Test commute time endpoint requires property_id."""
+    app.dependency_overrides[get_vector_store] = lambda: _FakeVectorStore()
+
+    response = client.post(
+        "/api/v1/tools/commute-time",
+        json={
+            "property_id": "   ",
+            "destination_lat": 52.2040,
+            "destination_lon": 21.0120,
+            "mode": "transit",
+        },
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 400
+
+    app.dependency_overrides = {}
+
+
+def test_commute_time_property_not_found(valid_headers):
+    """Test commute time endpoint when property not found."""
+    app.dependency_overrides[get_vector_store] = lambda: _FakeVectorStore()
+
+    response = client.post(
+        "/api/v1/tools/commute-time",
+        json={
+            "property_id": "missing_prop",
+            "destination_lat": 52.2040,
+            "destination_lon": 21.0120,
+            "mode": "transit",
+        },
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 404
+
+    app.dependency_overrides = {}
+
+
+def test_commute_ranking_success(valid_headers):
+    """Test commute ranking endpoint."""
+    store = _FakeVectorStore()
+    store.add_doc(
+        Document(
+            page_content="Property 1",
+            metadata={
+                "id": "prop1",
+                "title": "Property 1",
+                "city": "Warsaw",
+                "lat": 52.2297,
+                "lon": 21.0122,
+            },
+        )
+    )
+    store.add_doc(
+        Document(
+            page_content="Property 2",
+            metadata={
+                "id": "prop2",
+                "title": "Property 2",
+                "city": "Warsaw",
+                "lat": 52.2040,
+                "lon": 21.0120,
+            },
+        )
+    )
+    app.dependency_overrides[get_vector_store] = lambda: store
+
+    response = client.post(
+        "/api/v1/tools/commute-ranking",
+        json={
+            "property_ids": "prop1,prop2",
+            "destination_lat": 52.2350,
+            "destination_lon": 21.0100,
+            "mode": "driving",
+            "destination_name": "Warsaw Central Station",
+        },
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert "rankings" in data
+    assert "destination_name" in data
+    assert "mode" in data
+    assert len(data["rankings"]) == 2
+
+    app.dependency_overrides = {}
+
+
+def test_commute_ranking_empty_property_list(valid_headers):
+    """Test commute ranking with empty property list."""
+    app.dependency_overrides[get_vector_store] = lambda: _FakeVectorStore()
+
+    response = client.post(
+        "/api/v1/tools/commute-ranking",
+        json={
+            "property_ids": "",
+            "destination_lat": 52.2350,
+            "destination_lon": 21.0100,
+            "mode": "transit",
+        },
+        headers=valid_headers,
+    )
+
+    # Pydantic validation returns 422 for empty property_ids
+    assert response.status_code == 422
+
+    app.dependency_overrides = {}
+
+
+def test_commute_ranking_all_properties_not_found(valid_headers):
+    """Test commute ranking when no properties are found."""
+    app.dependency_overrides[get_vector_store] = lambda: _FakeVectorStore()
+
+    response = client.post(
+        "/api/v1/tools/commute-ranking",
+        json={
+            "property_ids": "missing1,missing2",
+            "destination_lat": 52.2350,
+            "destination_lon": 21.0100,
+            "mode": "transit",
+        },
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 404
+
+    app.dependency_overrides = {}
+
+
+def test_commute_ranking_store_unavailable(valid_headers):
+    """Test commute ranking when vector store is unavailable."""
+    app.dependency_overrides[get_vector_store] = lambda: None
+
+    response = client.post(
+        "/api/v1/tools/commute-ranking",
+        json={
+            "property_ids": "prop1",
+            "destination_lat": 52.2350,
+            "destination_lon": 21.0100,
+            "mode": "transit",
+        },
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 503
+
+    app.dependency_overrides = {}
+
+
+def test_commute_time_property_no_coordinates(valid_headers):
+    """Test commute time when property has no coordinates."""
+    store = _FakeVectorStore()
+    store.add_doc(
+        Document(
+            page_content="Test Property",
+            metadata={
+                "id": "prop1",
+                "city": "Warsaw",
+                # Missing lat/lon
+            },
+        )
+    )
+    app.dependency_overrides[get_vector_store] = lambda: store
+
+    response = client.post(
+        "/api/v1/tools/commute-time",
+        json={
+            "property_id": "prop1",
+            "destination_lat": 52.2040,
+            "destination_lon": 21.0120,
+            "mode": "transit",
+        },
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 400
+
+    app.dependency_overrides = {}
+
+
+def test_commute_time_with_departure_time(valid_headers):
+    """Test commute time with departure time."""
+    store = _FakeVectorStore()
+    store.add_doc(
+        Document(
+            page_content="Test Property",
+            metadata={
+                "id": "prop1",
+                "city": "Warsaw",
+                "lat": 52.2297,
+                "lon": 21.0122,
+            },
+        )
+    )
+    app.dependency_overrides[get_vector_store] = lambda: store
+
+    response = client.post(
+        "/api/v1/tools/commute-time",
+        json={
+            "property_id": "prop1",
+            "destination_lat": 52.2040,
+            "destination_lon": 21.0120,
+            "mode": "transit",
+            "departure_time": "2024-01-15T08:30:00",
+        },
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert "result" in data
+
+    app.dependency_overrides = {}
+
+
+def test_commute_time_invalid_departure_time(valid_headers):
+    """Test commute time with invalid departure time format."""
+    store = _FakeVectorStore()
+    store.add_doc(
+        Document(
+            page_content="Test Property",
+            metadata={
+                "id": "prop1",
+                "city": "Warsaw",
+                "lat": 52.2297,
+                "lon": 21.0122,
+            },
+        )
+    )
+    app.dependency_overrides[get_vector_store] = lambda: store
+
+    response = client.post(
+        "/api/v1/tools/commute-time",
+        json={
+            "property_id": "prop1",
+            "destination_lat": 52.2040,
+            "destination_lon": 21.0120,
+            "mode": "transit",
+            "departure_time": "invalid-time",
+        },
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 400
+
+    app.dependency_overrides = {}
+
+
+def test_commute_ranking_no_valid_coordinates(valid_headers):
+    """Test commute ranking when no properties have valid coordinates."""
+    store = _FakeVectorStore()
+    store.add_doc(
+        Document(
+            page_content="Test Property",
+            metadata={
+                "id": "prop1",
+                "city": "Warsaw",
+                # Missing lat/lon
+            },
+        )
+    )
+    app.dependency_overrides[get_vector_store] = lambda: store
+
+    response = client.post(
+        "/api/v1/tools/commute-ranking",
+        json={
+            "property_ids": "prop1",
+            "destination_lat": 52.2350,
+            "destination_lon": 21.0100,
+            "mode": "transit",
+        },
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 400
+
+    app.dependency_overrides = {}
