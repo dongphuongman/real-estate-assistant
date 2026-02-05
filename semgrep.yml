@@ -104,7 +104,7 @@ rules:
 
   # dangerouslySetInnerHTML in React
   - id: react.dangerous-inner-html
-    pattern: dangerouslySetInnerHTML={{__html: $INPUT}}
+    pattern: dangerouslySetInnerHTML={{...}}
     message: "dangerouslySetInnerHTML can lead to XSS vulnerabilities"
     severity: WARNING
     languages: [javascript, typescript]

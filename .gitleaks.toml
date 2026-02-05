@@ -173,9 +173,5 @@ regexes = [
     '''(?i)test:? add? test? secrets?''',
 ]
 
-[allowlist.description]
-description = "Allowlist by commit author (use sparingly)"
-# authors = [
-#     "dependabot[bot]",
-#     "renovate[bot]",
-# ]
+# Note: To allowlist by commit author, add authors to the regexes section above
+# Example: '''Author: dependabot\[bot\]'''
