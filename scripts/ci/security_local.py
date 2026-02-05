@@ -25,6 +25,7 @@ import argparse
 import json
 import os
 import platform
+import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -137,16 +138,7 @@ class SecurityLocalRunner:
         Returns:
             True if command is available
         """
-        try:
-            subprocess.run(
-                [cmd, "--version"],
-                capture_output=True,
-                check=False,
-                shell=self.is_windows,
-            )
-            return True
-        except FileNotFoundError:
-            return False
+        return shutil.which(cmd) is not None
 
     def _check_docker_available(self) -> bool:
         """Check if Docker is available."""
