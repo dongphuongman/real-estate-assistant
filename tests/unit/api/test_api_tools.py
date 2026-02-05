@@ -108,6 +108,280 @@ def test_compare_properties_success(valid_headers):
     app.dependency_overrides = {}
 
 
+def test_tco_calculator_success(valid_headers, monkeypatch):
+    """Test TCO calculator endpoint success."""
+
+    def _mock_calculate(**kwargs):
+        return {
+            "monthly_mortgage": 2000.0,
+            "monthly_property_tax": 500.0,
+            "monthly_insurance": 100.0,
+            "monthly_hoa": 200.0,
+            "monthly_utilities": 150.0,
+            "monthly_maintenance": 300.0,
+            "monthly_internet": 50.0,
+            "monthly_parking": 100.0,
+            "total_monthly_cost": 3400.0,
+            "annual_total_cost": 40800.0,
+        }
+
+    monkeypatch.setattr(tools_router.TCOCalculatorTool, "calculate", staticmethod(_mock_calculate))
+
+    payload = {
+        "property_price": 500000,
+        "down_payment_percent": 20,
+        "interest_rate": 5.0,
+        "loan_years": 30,
+        "monthly_hoa": 200,
+        "annual_property_tax": 6000,
+        "annual_insurance": 1200,
+        "monthly_utilities": 150,
+        "monthly_internet": 50,
+        "monthly_parking": 100,
+        "maintenance_percent": 1.0,
+    }
+
+    response = client.post(
+        "/api/v1/tools/tco-calculator",
+        json=payload,
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_monthly_cost"] == 3400.0
+    assert data["annual_total_cost"] == 40800.0
+
+
+def test_tco_calculator_invalid_input(valid_headers):
+    """Test TCO calculator with invalid input."""
+    payload = {
+        "property_price": -500000,  # Invalid
+        "down_payment_percent": 20,
+        "interest_rate": 5.0,
+        "loan_years": 30,
+        "monthly_hoa": 200,
+        "annual_property_tax": 6000,
+        "annual_insurance": 1200,
+        "monthly_utilities": 150,
+        "monthly_internet": 50,
+        "monthly_parking": 100,
+        "maintenance_percent": 1.0,
+    }
+
+    response = client.post(
+        "/api/v1/tools/tco-calculator",
+        json=payload,
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 422
+
+
+def test_tco_calculator_internal_error(valid_headers, monkeypatch):
+    """Test TCO calculator internal error handling."""
+
+    def _boom(**kwargs):
+        raise RuntimeError("Calculation failed")
+
+    monkeypatch.setattr(tools_router.TCOCalculatorTool, "calculate", staticmethod(_boom))
+
+    payload = {
+        "property_price": 500000,
+        "down_payment_percent": 20,
+        "interest_rate": 5.0,
+        "loan_years": 30,
+        "monthly_hoa": 200,
+        "annual_property_tax": 6000,
+        "annual_insurance": 1200,
+        "monthly_utilities": 150,
+        "monthly_internet": 50,
+        "monthly_parking": 100,
+        "maintenance_percent": 1.0,
+    }
+
+    response = client.post(
+        "/api/v1/tools/tco-calculator",
+        json=payload,
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 500
+    assert "Calculation failed" in response.json()["detail"]
+
+
+def test_investment_analysis_success(valid_headers, monkeypatch):
+    """Test investment analysis endpoint success."""
+
+    def _mock_calculate(**kwargs):
+        return {
+            "monthly_income": 3000.0,
+            "monthly_expenses": 2000.0,
+            "net_operating_income": 12000.0,
+            "cash_flow": 500.0,
+            "cap_rate": 0.06,
+            "cash_on_cash_return": 0.08,
+            "gross_rent_multiplier": 10.0,
+            "roi_5_years": 0.25,
+        }
+
+    monkeypatch.setattr(
+        tools_router.InvestmentCalculatorTool, "calculate", staticmethod(_mock_calculate)
+    )
+
+    payload = {
+        "property_price": 500000,
+        "monthly_rent": 3000,
+        "down_payment_percent": 20,
+        "closing_costs": 10000,
+        "renovation_costs": 5000,
+        "interest_rate": 5.0,
+        "loan_years": 30,
+        "property_tax_monthly": 500,
+        "insurance_monthly": 100,
+        "hoa_monthly": 200,
+        "maintenance_percent": 1.0,
+        "vacancy_rate": 5.0,
+        "management_percent": 8.0,
+    }
+
+    response = client.post(
+        "/api/v1/tools/investment-analysis",
+        json=payload,
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["cash_flow"] == 500.0
+    assert data["cap_rate"] == 0.06
+
+
+def test_investment_analysis_invalid_input(valid_headers):
+    """Test investment analysis with invalid input."""
+    payload = {
+        "property_price": 500000,
+        "monthly_rent": -3000,  # Invalid
+        "down_payment_percent": 20,
+        "closing_costs": 10000,
+        "renovation_costs": 5000,
+        "interest_rate": 5.0,
+        "loan_years": 30,
+        "property_tax_monthly": 500,
+        "insurance_monthly": 100,
+        "hoa_monthly": 200,
+        "maintenance_percent": 1.0,
+        "vacancy_rate": 5.0,
+        "management_percent": 8.0,
+    }
+
+    response = client.post(
+        "/api/v1/tools/investment-analysis",
+        json=payload,
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 422
+
+
+def test_investment_analysis_internal_error(valid_headers, monkeypatch):
+    """Test investment analysis internal error handling."""
+
+    def _boom(**kwargs):
+        raise RuntimeError("Analysis failed")
+
+    monkeypatch.setattr(tools_router.InvestmentCalculatorTool, "calculate", staticmethod(_boom))
+
+    payload = {
+        "property_price": 500000,
+        "monthly_rent": 3000,
+        "down_payment_percent": 20,
+        "closing_costs": 10000,
+        "renovation_costs": 5000,
+        "interest_rate": 5.0,
+        "loan_years": 30,
+        "property_tax_monthly": 500,
+        "insurance_monthly": 100,
+        "hoa_monthly": 200,
+        "maintenance_percent": 1.0,
+        "vacancy_rate": 5.0,
+        "management_percent": 8.0,
+    }
+
+    response = client.post(
+        "/api/v1/tools/investment-analysis",
+        json=payload,
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 500
+    assert "Calculation failed" in response.json()["detail"]
+
+
+def test_neighborhood_quality_success(valid_headers, monkeypatch):
+    """Test neighborhood quality endpoint success."""
+
+    def _mock_calculate(**kwargs):
+        return {
+            "overall_score": 85,
+            "safety_score": 90,
+            "amenities_score": 80,
+            "transport_score": 85,
+            "green_spaces_score": 75,
+            "vibe": "Family-friendly",
+            "safety_level": "High",
+        }
+
+    monkeypatch.setattr(
+        tools_router.NeighborhoodQualityIndexTool, "calculate", staticmethod(_mock_calculate)
+    )
+
+    payload = {
+        "property_id": "prop1",
+        "latitude": 52.2297,
+        "longitude": 21.0122,
+        "city": "Warsaw",
+        "neighborhood": "Mokotow",
+    }
+
+    response = client.post(
+        "/api/v1/tools/neighborhood-quality",
+        json=payload,
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["overall_score"] == 85
+    assert data["safety_score"] == 90
+
+
+def test_neighborhood_quality_error(valid_headers, monkeypatch):
+    """Test neighborhood quality error handling."""
+
+    def _boom(**kwargs):
+        raise ValueError("Invalid coordinates")
+
+    monkeypatch.setattr(tools_router.NeighborhoodQualityIndexTool, "calculate", staticmethod(_boom))
+
+    payload = {
+        "property_id": "prop1",
+        "latitude": 52.2297,
+        "longitude": 21.0122,
+        "city": "Warsaw",
+        "neighborhood": "Mokotow",
+    }
+
+    response = client.post(
+        "/api/v1/tools/neighborhood-quality",
+        json=payload,
+        headers=valid_headers,
+    )
+
+    assert response.status_code == 400
+    assert "Invalid coordinates" in response.json()["detail"]
+
+
 def test_compare_properties_store_unavailable(valid_headers):
     app.dependency_overrides[get_vector_store] = lambda: None
 
