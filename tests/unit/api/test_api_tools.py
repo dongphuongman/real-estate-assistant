@@ -113,16 +113,31 @@ def test_tco_calculator_success(valid_headers, monkeypatch):
 
     def _mock_calculate(**kwargs):
         return {
+            "monthly_payment": 2000.0,
+            "total_interest": 300000.0,
+            "down_payment": 100000.0,
+            "loan_amount": 400000.0,
             "monthly_mortgage": 2000.0,
             "monthly_property_tax": 500.0,
             "monthly_insurance": 100.0,
             "monthly_hoa": 200.0,
             "monthly_utilities": 150.0,
-            "monthly_maintenance": 300.0,
             "monthly_internet": 50.0,
             "monthly_parking": 100.0,
-            "total_monthly_cost": 3400.0,
-            "annual_total_cost": 40800.0,
+            "monthly_maintenance": 300.0,
+            "monthly_tco": 3400.0,
+            "annual_mortgage": 24000.0,
+            "annual_property_tax": 6000.0,
+            "annual_insurance": 1200.0,
+            "annual_hoa": 2400.0,
+            "annual_utilities": 1800.0,
+            "annual_internet": 600.0,
+            "annual_parking": 1200.0,
+            "annual_maintenance": 3600.0,
+            "annual_tco": 40800.0,
+            "total_ownership_cost": 1224000.0,
+            "total_all_costs": 1324000.0,
+            "breakdown": {},
         }
 
     monkeypatch.setattr(tools_router.TCOCalculatorTool, "calculate", staticmethod(_mock_calculate))
@@ -149,8 +164,8 @@ def test_tco_calculator_success(valid_headers, monkeypatch):
 
     assert response.status_code == 200
     data = response.json()
-    assert data["total_monthly_cost"] == 3400.0
-    assert data["annual_total_cost"] == 40800.0
+    assert data["monthly_tco"] == 3400.0
+    assert data["annual_tco"] == 40800.0
 
 
 def test_tco_calculator_invalid_input(valid_headers):
@@ -215,14 +230,20 @@ def test_investment_analysis_success(valid_headers, monkeypatch):
 
     def _mock_calculate(**kwargs):
         return {
+            "monthly_cash_flow": 500.0,
+            "annual_cash_flow": 6000.0,
+            "cash_on_cash_roi": 8.0,
+            "cap_rate": 6.0,
+            "gross_yield": 7.2,
+            "net_yield": 1.2,
+            "total_investment": 110000.0,
             "monthly_income": 3000.0,
-            "monthly_expenses": 2000.0,
-            "net_operating_income": 12000.0,
-            "cash_flow": 500.0,
-            "cap_rate": 0.06,
-            "cash_on_cash_return": 0.08,
-            "gross_rent_multiplier": 10.0,
-            "roi_5_years": 0.25,
+            "monthly_expenses": 2500.0,
+            "annual_income": 36000.0,
+            "annual_expenses": 30000.0,
+            "monthly_mortgage": 2000.0,
+            "investment_score": 65.0,
+            "score_breakdown": {},
         }
 
     monkeypatch.setattr(
@@ -253,8 +274,8 @@ def test_investment_analysis_success(valid_headers, monkeypatch):
 
     assert response.status_code == 200
     data = response.json()
-    assert data["cash_flow"] == 500.0
-    assert data["cap_rate"] == 0.06
+    assert data["monthly_cash_flow"] == 500.0
+    assert data["cap_rate"] == 6.0
 
 
 def test_investment_analysis_invalid_input(valid_headers):
@@ -323,13 +344,19 @@ def test_neighborhood_quality_success(valid_headers, monkeypatch):
 
     def _mock_calculate(**kwargs):
         return {
+            "property_id": "prop1",
             "overall_score": 85,
             "safety_score": 90,
-            "amenities_score": 80,
-            "transport_score": 85,
-            "green_spaces_score": 75,
-            "vibe": "Family-friendly",
-            "safety_level": "High",
+            "schools_score": 80,
+            "amenities_score": 75,
+            "walkability_score": 85,
+            "green_space_score": 75,
+            "score_breakdown": {},
+            "data_sources": ["mock"],
+            "latitude": 52.2297,
+            "longitude": 21.0122,
+            "city": "Warsaw",
+            "neighborhood": "Mokotow",
         }
 
     monkeypatch.setattr(
