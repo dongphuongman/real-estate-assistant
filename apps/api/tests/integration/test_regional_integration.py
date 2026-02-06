@@ -1,9 +1,9 @@
 from datetime import datetime
 
 import pytest
-from data.schemas import Property, PropertyCollection
 
 from analytics.market_insights import MarketInsights
+from data.schemas import Property, PropertyCollection
 
 
 @pytest.fixture

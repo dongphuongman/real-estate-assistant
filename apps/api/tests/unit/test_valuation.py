@@ -1,10 +1,10 @@
 from unittest.mock import MagicMock
 
 import pytest
-from data.schemas import Property
 
 from analytics.market_insights import LocationInsights, MarketInsights, PriceTrend
 from analytics.valuation_model import HedonicValuationModel, ValuationResult
+from data.schemas import Property
 
 
 @pytest.fixture

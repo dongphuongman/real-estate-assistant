@@ -3,9 +3,9 @@ import importlib
 
 import pandas as pd
 import pytest
-from data.schemas import UserPreferences
 
 from agents.recommendation_engine import PropertyRecommendationEngine
+from data.schemas import UserPreferences
 
 
 def test_recommendation_engine_explicit_matching_case_insensitive_and_float_rooms():

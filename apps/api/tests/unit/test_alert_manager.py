@@ -1,7 +1,6 @@
 from unittest.mock import patch
 
 from data.schemas import Property, PropertyCollection, PropertyType
-
 from notifications.alert_manager import Alert, AlertManager, AlertType
 from notifications.email_service import EmailConfig, EmailProvider, EmailService
 from utils.saved_searches import SavedSearch

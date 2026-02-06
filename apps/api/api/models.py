@@ -2,9 +2,9 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from data.schemas import Property
 from pydantic import BaseModel, Field, model_validator
 
+from data.schemas import Property
 from utils.exporters import ExportFormat
 
 

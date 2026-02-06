@@ -3,10 +3,10 @@
 from datetime import datetime
 
 import pytest
-from data.schemas import Property, PropertyCollection
 
 from agents.query_analyzer import get_query_analyzer
 from analytics.market_insights import MarketInsights
+from data.schemas import Property, PropertyCollection
 
 
 @pytest.fixture

@@ -1,8 +1,8 @@
 from io import BytesIO
 
 import pytest
-from data.schemas import Property, PropertyCollection, PropertyType
 
+from data.schemas import Property, PropertyCollection, PropertyType
 from utils.exporters import ExportFormat, PropertyExporter
 
 

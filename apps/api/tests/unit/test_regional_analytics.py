@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 
 import pytest
-from data.schemas import Property, PropertyCollection, PropertyType
 
 from analytics import MarketInsights, TrendDirection
+from data.schemas import Property, PropertyCollection, PropertyType
 
 
 @pytest.fixture

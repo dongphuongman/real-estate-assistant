@@ -17,7 +17,6 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Set, cast
 
 from data.schemas import Property, PropertyCollection
-
 from notifications.email_service import EmailService
 from notifications.email_templates import DigestTemplate
 from utils import SavedSearch, UserPreferences

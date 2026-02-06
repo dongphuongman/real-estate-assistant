@@ -16,7 +16,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Union, cast
 
 import pandas as pd
-from data.schemas import Property, PropertyCollection
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
@@ -25,6 +24,7 @@ from langchain_core.embeddings import Embeddings
 from langchain_core.retrievers import BaseRetriever
 
 from config.settings import settings
+from data.schemas import Property, PropertyCollection
 
 _ChromaSettings: Any = None
 try:

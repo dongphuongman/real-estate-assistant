@@ -1,9 +1,9 @@
 import threading
 from unittest.mock import MagicMock, patch
 
-from data.schemas import Property, PropertyCollection, PropertyType
 from langchain_core.documents import Document
 
+from data.schemas import Property, PropertyCollection, PropertyType
 from vector_store.chroma_store import ChromaPropertyStore
 
 

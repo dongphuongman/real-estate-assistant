@@ -4,8 +4,6 @@ import sys
 from typing import Annotated
 
 import pandas as pd
-from data.csv_loader import DataLoaderCsv, DataLoaderExcel
-from data.schemas import Property, PropertyCollection
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from api.dependencies import get_vector_store
@@ -25,6 +23,8 @@ from api.models import (
     ReindexResponse,
 )
 from config.settings import settings
+from data.csv_loader import DataLoaderCsv, DataLoaderExcel
+from data.schemas import Property, PropertyCollection
 from notifications.alert_storage_stats import load_alert_storage_summary
 from utils.property_cache import load_collection, save_collection
 from vector_store.chroma_store import ChromaPropertyStore

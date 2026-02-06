@@ -1,11 +1,11 @@
 import threading
 from unittest.mock import MagicMock, patch
 
-from data.schemas import ListingType, Property, PropertyCollection, PropertyType
 from langchain_core.documents import Document
 
 from ai.app_services import create_property_retriever
 from analytics.market_insights import MarketInsights
+from data.schemas import ListingType, Property, PropertyCollection, PropertyType
 from vector_store.chroma_store import ChromaPropertyStore
 
 

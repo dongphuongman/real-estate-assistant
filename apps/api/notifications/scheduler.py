@@ -12,9 +12,8 @@ import threading
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from data.schemas import PropertyCollection
-
 from analytics import MarketInsights
+from data.schemas import PropertyCollection
 from notifications.alert_manager import Alert, AlertManager, AlertType
 from notifications.digest_generator import DigestGenerator
 from notifications.email_service import EmailService

@@ -9,8 +9,9 @@ just vector similarity.
 import logging
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
-from data.schemas import Property
 from langchain_core.documents import Document
+
+from data.schemas import Property
 
 logger = logging.getLogger(__name__)
 

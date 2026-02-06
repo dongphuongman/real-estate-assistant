@@ -8,10 +8,10 @@ import sys
 import types
 
 import pytest
-from data.schemas import Property, PropertyCollection, PropertyType
 from langchain_core.documents import Document
 
 from agents.query_analyzer import QueryAnalyzer
+from data.schemas import Property, PropertyCollection, PropertyType
 from vector_store.reranker import PropertyReranker
 
 

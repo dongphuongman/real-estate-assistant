@@ -15,8 +15,9 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
-from data.schemas import PropertyCollection
 from pydantic import BaseModel, Field
+
+from data.schemas import PropertyCollection
 
 
 class TrendDirection(str, Enum):

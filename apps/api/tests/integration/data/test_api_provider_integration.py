@@ -5,6 +5,7 @@ Integration tests for the API Data Provider.
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from data.providers.api_provider import APIProvider
 from data.schemas import ListingType, PropertyType
 

@@ -5,8 +5,8 @@ Tests for property export functionality with Points of Interest.
 import json
 
 import pytest
-from data.schemas import PointOfInterest, Property, PropertyCollection, PropertyType
 
+from data.schemas import PointOfInterest, Property, PropertyCollection, PropertyType
 from utils import PropertyExporter
 
 

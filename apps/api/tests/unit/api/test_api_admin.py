@@ -3,11 +3,11 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
-from data.adapters.base import PortalFetchResult
 from fastapi.testclient import TestClient
 
 from api.dependencies import get_vector_store
 from api.main import app
+from data.adapters.base import PortalFetchResult
 
 client = TestClient(app)
 

@@ -2,8 +2,8 @@ from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
-from data.schemas import Property, PropertyCollection
 
+from data.schemas import Property, PropertyCollection
 from notifications.alert_manager import Alert, AlertType
 from notifications.notification_history import NotificationType
 from notifications.notification_preferences import AlertFrequency, NotificationPreferences

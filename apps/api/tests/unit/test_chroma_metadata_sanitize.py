@@ -1,5 +1,4 @@
 from data.schemas import ListingType, Property, PropertyType
-
 from vector_store.chroma_store import ChromaPropertyStore
 
 

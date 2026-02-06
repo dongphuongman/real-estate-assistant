@@ -1,11 +1,11 @@
 import logging
 from typing import Annotated, Optional
 
-from data.schemas import Property
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from api.dependencies import get_vector_store
 from api.models import SearchRequest, SearchResponse, SearchResultItem
+from data.schemas import Property
 from utils.sanitization import sanitize_search_query
 from vector_store.chroma_store import ChromaPropertyStore
 

@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 
 import pandas as pd
+
 from data.csv_loader import DataLoaderExcel
 
 

@@ -5,11 +5,11 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
-from data.schemas import Property, PropertyCollection
 from fastapi.testclient import TestClient
 
 from api.dependencies import get_vector_store
 from api.main import app
+from data.schemas import Property, PropertyCollection
 
 client = TestClient(app)
 

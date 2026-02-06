@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 
 import pandas as pd
-from data.schemas import Property, PropertyCollection, PropertyType
 
 from analytics.market_insights import MarketInsights
+from data.schemas import Property, PropertyCollection, PropertyType
 
 
 def _make_props_city_months(city: str, start_months_ago: int, months: int, base_price: int):

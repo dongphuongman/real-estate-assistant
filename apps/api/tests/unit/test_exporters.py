@@ -7,8 +7,8 @@ from io import BytesIO
 
 import pandas as pd
 import pytest
-from data.schemas import Property, PropertyCollection, PropertyType
 
+from data.schemas import Property, PropertyCollection, PropertyType
 from utils import ExportFormat, PropertyExporter
 
 

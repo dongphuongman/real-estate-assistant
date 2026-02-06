@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
+
 from data.providers.json_provider import JSONDataProvider
 from data.schemas import Property
 

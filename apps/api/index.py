@@ -4,6 +4,7 @@ Vercel Serverless Entry Point for FastAPI Backend
 This file serves as the entry point for Vercel's Python serverless functions.
 It imports and exposes the FastAPI application for serverless deployment.
 """
+
 # pylint: disable=wrong-import-position
 import sys
 from pathlib import Path
@@ -21,4 +22,5 @@ handler = app
 # For local testing with uvicorn
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

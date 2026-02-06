@@ -10,8 +10,9 @@ This module provides intelligent recommendations based on:
 
 from typing import Any, Dict, List, Optional, Tuple
 
-from data.schemas import UserPreferences
 from langchain_core.documents import Document
+
+from data.schemas import UserPreferences
 
 
 class PropertyRecommendationEngine:

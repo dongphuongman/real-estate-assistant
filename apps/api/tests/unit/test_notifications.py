@@ -16,8 +16,8 @@ from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
-from data.schemas import Property, PropertyCollection, PropertyType
 
+from data.schemas import Property, PropertyCollection, PropertyType
 from notifications import (  # Email Service; Templates; History
     AlertFrequency,
     AlertManager,

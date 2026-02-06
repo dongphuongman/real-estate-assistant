@@ -1,8 +1,7 @@
 import json
 
-from data.schemas import PropertyCollection
-
 import utils.property_cache as property_cache
+from data.schemas import PropertyCollection
 
 
 def test_property_cache_save_load_previous_and_clear(tmp_path, monkeypatch):

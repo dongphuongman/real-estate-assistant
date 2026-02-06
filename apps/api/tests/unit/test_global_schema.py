@@ -1,4 +1,5 @@
 import pytest
+
 from data.schemas import Property, PropertyType
 
 

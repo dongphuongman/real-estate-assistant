@@ -1,7 +1,7 @@
-from data.schemas import UserPreferences
 from langchain_core.documents import Document
 
 from agents.recommendation_engine import PropertyRecommendationEngine
+from data.schemas import UserPreferences
 
 
 def test_recommend_returns_empty_for_no_documents():

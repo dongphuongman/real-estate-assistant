@@ -1,6 +1,5 @@
-from data.schemas import Property, PropertyCollection, PropertyType
-
 from analytics.market_insights import MarketInsights
+from data.schemas import Property, PropertyCollection, PropertyType
 from utils.exporters import InsightsExporter
 
 

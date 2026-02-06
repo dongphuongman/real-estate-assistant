@@ -1,6 +1,0 @@
-use_default_settings: true
-
-server:
-  secret_key: "change-me"
-  limiter: false
-  public_instance: false

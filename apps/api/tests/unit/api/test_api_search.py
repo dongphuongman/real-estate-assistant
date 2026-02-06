@@ -1,12 +1,12 @@
 from unittest.mock import MagicMock
 
 import pytest
-from data.schemas import Property
 from fastapi.testclient import TestClient
 from langchain_core.documents import Document
 
 from api.dependencies import get_vector_store
 from api.main import app
+from data.schemas import Property
 from vector_store.chroma_store import ChromaPropertyStore
 
 client = TestClient(app)

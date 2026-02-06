@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 import pytest
-from data.schemas import ListingType, Property, PropertyCollection, PropertyType
 
 from analytics import (
     HistoricalPricePoint,
@@ -15,6 +14,7 @@ from analytics import (
     PriceTrend,
     TrendDirection,
 )
+from data.schemas import ListingType, Property, PropertyCollection, PropertyType
 
 
 @pytest.fixture

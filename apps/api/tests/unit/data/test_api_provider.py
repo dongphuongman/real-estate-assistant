@@ -7,6 +7,7 @@ from unittest.mock import Mock, patch
 import pandas as pd
 import pytest
 import requests
+
 from data.providers.api_provider import APIProvider, MockRealEstateAPIProvider
 from data.schemas import Property
 
