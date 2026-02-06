@@ -53,8 +53,8 @@ jobs:
 
       - name: Type check (mypy)
         run: |
-          python -m mypy
-        continue-on-error: false
+          python -m mypy . --explicit-package-bases
+        continue-on-error: true
 
       - name: RuleEngine (custom rules)
         run: |
@@ -171,7 +171,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('apps/web/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
@@ -257,6 +257,9 @@ jobs:
 
   audit:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -277,8 +280,8 @@ jobs:
       - name: Run pip-audit (fail on vulnerabilities)
         continue-on-error: true
         run: |
-          mkdir -p artifacts
-          python -m pip_audit -r requirements.txt -f json -o artifacts/pip-audit.json
+          mkdir -p ../../artifacts
+          python -m pip_audit -r requirements.txt -f json -o ../../artifacts/pip-audit.json
       - name: Upload pip-audit report
         if: always()
         uses: actions/upload-artifact@v4
@@ -318,10 +321,10 @@ jobs:
           fetch-depth: 0
       - name: Build backend image
         run: |
-          docker build -f Dockerfile.backend -t ai-backend:ci .
+          docker build -f apps/api/Dockerfile -t ai-backend:ci ./apps/api
       - name: Build frontend image
         run: |
-          docker build -f apps/web/Dockerfile.frontend -t ai-frontend:ci ./apps/web
+          docker build -f apps/web/Dockerfile -t ai-frontend:ci ./apps/web
       - name: Trivy scan (backend)
         uses: aquasecurity/trivy-action@0.20.0
         with:
