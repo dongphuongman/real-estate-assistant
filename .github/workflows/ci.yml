@@ -15,6 +15,9 @@ jobs:
   backend:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/api
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,7 +33,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.local/share/uv
-          key: ${{ runner.os }}-uv-${{ hashFiles('requirements.txt', 'pyproject.toml') }}
+          key: ${{ runner.os }}-uv-${{ hashFiles('apps/api/requirements.txt', 'apps/api/pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-uv-
 
@@ -59,18 +62,18 @@ jobs:
 
       - name: Forbidden token scan
         run: |
-          python scripts/security/forbidden_tokens_check.py
+          python ../../scripts/security/forbidden_tokens_check.py
 
       - name: OpenAPI schema drift check
         run: |
-          python scripts/docs/export_openapi.py --check
+          python ../../scripts/docs/export_openapi.py --check
 
       - name: API reference (generated) drift check
         run: |
-          python scripts/docs/generate_api_reference.py --check
+          python ../../scripts/docs/generate_api_reference.py --check
       - name: API reference (full) drift check
         run: |
-          python scripts/docs/update_api_reference_full.py --check
+          python ../../scripts/docs/update_api_reference_full.py --check
 
       - name: Run unit tests with coverage (pytest)
         run: |
@@ -157,7 +160,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: frontend
+        working-directory: apps/web
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -168,7 +171,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('apps/web/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
@@ -193,7 +196,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage
-          path: frontend/coverage
+          path: apps/web/coverage
 
   compose_smoke:
     runs-on: ubuntu-latest
@@ -244,7 +247,7 @@ jobs:
         continue-on-error: true
         run: |
           mkdir -p artifacts
-          python -m bandit -r api agents ai analytics data models notifications rules scripts utils workflows -x tests,node_modules,.history,venv,venv/*,.venv,.venv/*,.venv_ci,.venv_ci/* --severity-level high --confidence-level high -f json -o artifacts/bandit.json
+          python -m bandit -r apps/api -x tests,node_modules,.history,venv,venv/*,.venv,.venv/*,.venv_ci,.venv_ci/* --severity-level high --confidence-level high -f json -o artifacts/bandit.json
       - name: Upload bandit report
         if: always()
         uses: actions/upload-artifact@v4
@@ -318,7 +321,7 @@ jobs:
           docker build -f Dockerfile.backend -t ai-backend:ci .
       - name: Build frontend image
         run: |
-          docker build -f frontend/Dockerfile.frontend -t ai-frontend:ci ./frontend
+          docker build -f apps/web/Dockerfile.frontend -t ai-frontend:ci ./apps/web
       - name: Trivy scan (backend)
         uses: aquasecurity/trivy-action@0.20.0
         with:

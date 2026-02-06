@@ -239,14 +239,15 @@ temp/
 *.bak
 *.pkl
 
-# Node modules (if using any Node.js tools)
+# Node modules (monorepo)
 node_modules/
 package-lock.json
-!frontend/package-lock.json
+!apps/web/package-lock.json
 yarn.lock
-frontend/.next/
-!frontend/src/lib/
-!frontend/src/lib/**
+apps/web/.next/
+apps/web/out/
+!apps/web/src/lib/
+!apps/web/src/lib/**
 
 # Build artifacts
 *.min.css

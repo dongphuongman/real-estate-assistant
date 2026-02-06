@@ -67,7 +67,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ./apps/web
       dockerfile: Dockerfile.frontend
     container_name: ai-frontend
     ports:
