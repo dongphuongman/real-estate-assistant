@@ -7,8 +7,10 @@ from pathlib import Path
 
 def main() -> int:
     project_root = Path(__file__).resolve().parents[2]
-    if str(project_root) not in sys.path:
-        sys.path.insert(0, str(project_root))
+    api_root = project_root / "apps" / "api"
+    # Add api_root to path for imports to work (code uses "from api.xxx")
+    if str(api_root) not in sys.path:
+        sys.path.insert(0, str(api_root))
 
     from api.main import app as fastapi_app
     from api.openapi_export import export_openapi_schema

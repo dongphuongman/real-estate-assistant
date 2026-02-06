@@ -2,17 +2,16 @@ FROM node:20-alpine3.20 AS deps
 WORKDIR /app
 # Don't use apk upgrade as it can introduce variability
 RUN apk add --no-cache libc6-compat
-WORKDIR /app
-# Copy package files from both root (for workspace) and web
+# Copy workspace package files
 COPY package*.json ./
 COPY apps/web/package*.json ./apps/web/
-RUN npm ci
+RUN npm install
 
 FROM node:20-alpine3.20 AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+RUN npm run build --workspace=apps/web
 
 FROM node:20-alpine3.20 AS runner
 WORKDIR /app
