@@ -15,7 +15,9 @@ def main() -> int:
     from api.main import app as fastapi_app
     from api.openapi_export import export_openapi_schema
 
-    parser = argparse.ArgumentParser(description="Export FastAPI OpenAPI schema to JSON.")
+    parser = argparse.ArgumentParser(
+        description="Export FastAPI OpenAPI schema to JSON."
+    )
     parser.add_argument(
         "--output",
         type=Path,
