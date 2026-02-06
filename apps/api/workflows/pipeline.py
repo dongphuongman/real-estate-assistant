@@ -78,9 +78,7 @@ class DevPipeline:
         if use_git:
             branch_name = self.create_feature_branch(description)
             if branch_name:
-                steps.append(
-                    {"step": "git_branch", "branch": branch_name, "status": "created"}
-                )
+                steps.append({"step": "git_branch", "branch": branch_name, "status": "created"})
 
         # Step 1: Coding
         logger.info("Step 1: Coding")
@@ -135,8 +133,6 @@ class DevPipeline:
             commit_msg = f"feat(auto): implement {description[:50]}..."
             committed = self.commit_changes(commit_msg)
             if committed:
-                steps.append(
-                    {"step": "git_commit", "status": "committed", "message": commit_msg}
-                )
+                steps.append({"step": "git_commit", "status": "committed", "message": commit_msg})
 
         return result

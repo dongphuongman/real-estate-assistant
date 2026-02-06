@@ -355,7 +355,7 @@ class NotificationScheduler:
                     PropertyCollection(
                         properties=new_props,
                         total_count=len(new_props),
-                        source_type="instant_alert"
+                        source_type="instant_alert",
                     ),
                     user_searches,
                 )
