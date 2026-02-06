@@ -4,7 +4,8 @@ from pathlib import Path
 
 
 def test_ci_workflow_has_no_mvp_disable_flag() -> None:
-    repo_root = Path(__file__).resolve().parents[2]
+    # Navigate from apps/api/tests/unit/ to repo root (4 levels up: unit -> tests -> api -> project root)
+    repo_root = Path(__file__).resolve().parents[4]
     workflow = repo_root / ".github" / "workflows" / "ci.yml"
 
     text = workflow.read_text(encoding="utf-8")

@@ -3,7 +3,8 @@ from pathlib import Path
 
 
 def _load_start_module():
-    root = Path(__file__).resolve().parents[3]
+    # Navigate from apps/api/tests/unit/scripts/ to repo root (5 levels up: scripts -> unit -> tests -> api -> project root)
+    root = Path(__file__).resolve().parents[5]
     start_path = root / "scripts" / "dev" / "start.py"
     spec = importlib.util.spec_from_file_location("scripts_dev_start", start_path)
     assert spec and spec.loader

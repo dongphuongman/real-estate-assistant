@@ -417,7 +417,8 @@ def test_module_runs_as_script(tmp_path: Path, monkeypatch):
     )
     cov_path = _write_coverage_xml(tmp_path, coverage_xml)
 
-    module_path = Path(__file__).resolve().parents[2] / "scripts" / "ci" / "coverage_gate.py"
+    # Navigate from apps/api/tests/unit/ to repo root (4 levels up: unit -> tests -> api -> project root)
+    module_path = Path(__file__).resolve().parents[4] / "scripts" / "ci" / "coverage_gate.py"
     monkeypatch.setenv("GITHUB_ACTIONS", "")
     monkeypatch.setattr(
         sys,
