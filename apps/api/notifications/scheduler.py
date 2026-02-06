@@ -10,7 +10,7 @@ Handles:
 import logging
 import threading
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from analytics import MarketInsights
 from data.schemas import PropertyCollection
@@ -230,6 +230,8 @@ class NotificationScheduler:
         """Build digest data using DigestGenerator logic."""
         # Load fresh data
         current = load_collection()
+        if current is None:
+            current = PropertyCollection(properties=[], total_count=0, source_type="digest")
         load_previous_collection()
 
         # We need a vector store for DigestGenerator
@@ -247,7 +249,8 @@ class NotificationScheduler:
         if self._vector_store:
             generator = DigestGenerator(market_insights, self._vector_store)
             saved_searches = self._search_manager.get_all_searches()
-            return generator.generate_digest(prefs, saved_searches, digest_type)
+            digest_result = generator.generate_digest(prefs, saved_searches, digest_type)
+            return cast(Dict[str, Any], digest_result)
 
         # Fallback if no vector store (e.g. testing)
         return {
@@ -349,7 +352,11 @@ class NotificationScheduler:
                 user_searches = self._search_manager.get_all_searches()
                 # Group by search
                 matches = am.check_new_property_matches(
-                    PropertyCollection(properties=new_props, total_count=len(new_props)),
+                    PropertyCollection(
+                        properties=new_props,
+                        total_count=len(new_props),
+                        source_type="instant_alert"
+                    ),
                     user_searches,
                 )
 

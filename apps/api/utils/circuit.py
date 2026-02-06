@@ -21,7 +21,7 @@ from collections import deque
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, Callable, Optional, TypeVar, cast
 
 logger = logging.getLogger(__name__)
 
@@ -153,9 +153,11 @@ class CircuitBreaker:
                     self._half_open_calls = 0
                 else:
                     # Circuit still open
+                    # last_failure_time is guaranteed to be set here since _should_attempt_reset() returned False
+                    last_failure = cast(datetime, self.stats.last_failure_time)
                     cooldown_remaining = (
                         self.config.timeout_seconds
-                        - (datetime.now(tz=UTC) - self.stats.last_failure_time).total_seconds()
+                        - (datetime.now(tz=UTC) - last_failure).total_seconds()
                     )
                     self.stats.rejected_calls += 1
                     raise CircuitBreakerOpenError(self.provider, cooldown_remaining)
@@ -176,7 +178,7 @@ class CircuitBreaker:
         # Execute the function call
         start = time.perf_counter()
         try:
-            result = await func(*args, **kwargs)
+            result: T = await func(*args, **kwargs)  # type: ignore[misc]
             elapsed = (time.perf_counter() - start) * 1000
 
             async with self._lock:
@@ -269,7 +271,7 @@ class CircuitBreakerRegistry:
     Provides a centralized way to get/create circuit breakers for different providers.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the registry."""
         self._breakers: dict[str, CircuitBreaker] = {}
         self._lock = asyncio.Lock()

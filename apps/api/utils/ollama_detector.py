@@ -11,7 +11,7 @@ Provides functionality to:
 import platform
 import subprocess
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import requests
 
@@ -24,7 +24,7 @@ class OllamaStatus:
     is_running: bool
     version: Optional[str] = None
     base_url: str = "http://localhost:11434"
-    available_models: List[str] = None
+    available_models: Optional[List[str]] = None
     error_message: Optional[str] = None
 
     def __post_init__(self):
@@ -165,7 +165,7 @@ class OllamaDetector:
         )
 
     @staticmethod
-    def get_installation_instructions(os_type: Optional[str] = None) -> Dict[str, any]:
+    def get_installation_instructions(os_type: Optional[str] = None) -> Dict[str, Any]:
         """
         Get OS-specific installation instructions for Ollama.
 
@@ -280,7 +280,7 @@ class OllamaDetector:
         return instructions.get(os_type, instructions["unknown"])
 
     @staticmethod
-    def get_recommended_models() -> List[Dict[str, str]]:
+    def get_recommended_models() -> List[Dict[str, Any]]:
         """
         Get list of recommended models to install.
 

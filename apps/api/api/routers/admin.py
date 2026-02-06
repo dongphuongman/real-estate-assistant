@@ -62,7 +62,7 @@ async def ingest_data(request: IngestRequest):
         raise HTTPException(status_code=400, detail="No URLs provided and no defaults configured")
 
     try:
-        all_properties = []
+        all_properties: list[Property] = []
         errors = []
         max_properties = settings.max_properties
 
@@ -72,6 +72,8 @@ async def ingest_data(request: IngestRequest):
                 source_type = DataLoaderExcel.detect_source_type(url)
                 source_name = request.source_name or url
 
+                # Declare loader type - DataLoaderExcel extends DataLoaderCsv
+                loader: DataLoaderCsv
                 if source_type == "excel":
                     loader = DataLoaderExcel(
                         url,
@@ -397,7 +399,7 @@ async def fetch_from_portal(request: PortalFiltersRequest):
             )
 
         # Convert to Property objects
-        all_properties = []
+        all_properties: list[Property] = []
         errors = result.errors.copy()
         max_properties = settings.max_properties
 
