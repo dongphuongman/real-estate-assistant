@@ -8,9 +8,9 @@ from langchain_openai import ChatOpenAI
 try:
     from langchain_experimental.agents import create_pandas_dataframe_agent
 
-    _create_pandas_dataframe_agent: Callable[..., Any] | None = create_pandas_dataframe_agent
+    create_pandas_dataframe_agent: Callable[..., Any] | None = create_pandas_dataframe_agent
 except ImportError:
-    _create_pandas_dataframe_agent = None
+    create_pandas_dataframe_agent = None
 
 
 class RealEstateGPT:
@@ -51,12 +51,12 @@ class RealEstateGPT:
         os.environ["OPENAI_API_KEY"] = key
 
         # Initialize the agent
-        if _create_pandas_dataframe_agent is None:
+        if create_pandas_dataframe_agent is None:
             raise ImportError(
                 "Optional dependency missing: langchain-experimental. "
                 "Install it to use RealEstateGPT dataframe agent features."
             )
-        self.agent = _create_pandas_dataframe_agent(
+        self.agent = create_pandas_dataframe_agent(
             ChatOpenAI(temperature=0, model="gpt-3.5-turbo"),
             df,
             verbose=False,
