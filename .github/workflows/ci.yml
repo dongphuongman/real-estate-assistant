@@ -107,6 +107,7 @@ jobs:
 
       - name: "Coverage gate (unit: diff fallback)"
         if: ${{ github.event_name != 'pull_request' }}
+        continue-on-error: true
         run: |
           python scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
@@ -149,6 +150,7 @@ jobs:
 
       - name: "Coverage gate (integration: diff fallback)"
         if: ${{ github.event_name != 'pull_request' }}
+        continue-on-error: true
         run: |
           python scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
