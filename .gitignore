@@ -301,3 +301,4 @@ artifacts/
 resp.html
 tmp
 data/audit/
+apps/api/data/audit/

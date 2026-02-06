@@ -2,15 +2,15 @@ FROM node:20-alpine3.20 AS deps
 WORKDIR /app
 # Don't use apk upgrade as it can introduce variability
 RUN apk add --no-cache libc6-compat
-# Copy only frontend package files to avoid workspace issues
-# The root package.json has workspaces config that causes issues in Docker
-COPY apps/web/package*.json ./
+# Copy the frontend source first, then install dependencies from within
+COPY apps/web ./apps/web
+WORKDIR /app/apps/web
 RUN npm install
 
 FROM node:20-alpine3.20 AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY apps/web ./apps/web
+# Copy source and node_modules from deps stage
+COPY --from=deps /app/apps/web ./apps/web
 WORKDIR /app/apps/web
 RUN npm run build
 
