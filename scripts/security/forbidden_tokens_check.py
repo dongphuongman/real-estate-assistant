@@ -30,7 +30,9 @@ def _scan_file_for_tokens(
             prefix = f.read(4096)
             if _is_probably_binary(prefix):
                 return []
-            content = prefix + f.read(max_bytes - len(prefix) if max_bytes > len(prefix) else 0)
+            content = prefix + f.read(
+                max_bytes - len(prefix) if max_bytes > len(prefix) else 0
+            )
     except OSError:
         return []
 
@@ -40,7 +42,9 @@ def _scan_file_for_tokens(
         for token in tokens:
             if token in line:
                 matches.append(
-                    TokenMatch(relative_path=relative_path, line_number=idx, token=token)
+                    TokenMatch(
+                        relative_path=relative_path, line_number=idx, token=token
+                    )
                 )
     return matches
 
@@ -99,8 +103,11 @@ def main(argv: list[str] | None = None) -> int:
     ignore_paths = {
         "docs/openapi.json",
         "frontend/package-lock.json",
+        "package-lock.json",
         "scripts/security/forbidden_tokens_check.py",
         "tests/unit/test_forbidden_tokens_check.py",
+        "apps/api/tests/unit/test_forbidden_tokens_check.py",
+        "apps/web/package-lock.json",
     }
 
     scan_all = bool(args.all) or os.environ.get(
@@ -152,7 +159,8 @@ def main(argv: list[str] | None = None) -> int:
             all_matches, key=lambda m: (m.relative_path, m.line_number, m.token)
         )
         details = "\n".join(
-            f"- {m.relative_path}:{m.line_number} ({m.token})" for m in all_matches_sorted[:200]
+            f"- {m.relative_path}:{m.line_number} ({m.token})"
+            for m in all_matches_sorted[:200]
         )
         raise SystemExit(
             "Forbidden tokens detected:\n"

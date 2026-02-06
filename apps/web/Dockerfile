@@ -3,7 +3,9 @@ WORKDIR /app
 # Don't use apk upgrade as it can introduce variability
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
-COPY package.json package-lock.json ./
+# Copy package files from both root (for workspace) and web
+COPY package*.json ./
+COPY apps/web/package*.json ./apps/web/
 RUN npm ci
 
 FROM node:20-alpine3.20 AS builder
