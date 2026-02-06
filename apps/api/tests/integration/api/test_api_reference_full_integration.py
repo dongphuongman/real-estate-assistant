@@ -20,7 +20,8 @@ def _extract_endpoints_section(text: str) -> str:
 
 
 def test_api_reference_md_endpoints_in_sync_with_openapi_snapshot() -> None:
-    repo_root = Path(__file__).resolve().parents[3]
+    # Navigate from apps/api/tests/integration/api/ to repo root (5 levels up)
+    repo_root = Path(__file__).resolve().parents[5]
     schema = load_openapi_schema(repo_root / "docs" / "openapi.json")
     generated = serialize_endpoints_markdown(schema).strip()
 

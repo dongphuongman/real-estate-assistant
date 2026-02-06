@@ -9,7 +9,9 @@ def test_compose_smoke_script_dry_run(tmp_path: Path):
     compose_file = tmp_path / "docker-compose.yml"
     compose_file.write_text("version: '3.8'\nservices: {}\n", encoding="utf-8")
 
-    script_path = Path(__file__).resolve().parents[2] / "scripts" / "ci" / "compose_smoke.py"
+    # Navigate from apps/api/tests/integration/ to repo root (4 levels up)
+    repo_root = Path(__file__).resolve().parents[4]
+    script_path = repo_root / "scripts" / "ci" / "compose_smoke.py"
     result = subprocess.run(
         [
             sys.executable,
