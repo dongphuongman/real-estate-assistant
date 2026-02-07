@@ -352,7 +352,7 @@ class NotificationHistory:
         failed = sum(1 for r in user_records if r.status == NotificationStatus.FAILED)
 
         # Count by type
-        by_type = defaultdict(int)
+        by_type: defaultdict[str, int] = defaultdict(int)
         for record in user_records:
             by_type[record.notification_type.value] += 1
 
@@ -410,12 +410,12 @@ class NotificationHistory:
         failed = sum(1 for r in all_records if r.status == NotificationStatus.FAILED)
 
         # Count by type
-        by_type = defaultdict(int)
+        by_type: defaultdict[str, int] = defaultdict(int)
         for record in all_records:
             by_type[record.notification_type.value] += 1
 
         # Count by status
-        by_status = defaultdict(int)
+        by_status: defaultdict[str, int] = defaultdict(int)
         for record in all_records:
             by_status[record.status.value] += 1
 

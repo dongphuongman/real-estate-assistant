@@ -11,7 +11,7 @@ def _make_props_city_months(city: str, start_months_ago: int, months: int, base_
     now = datetime.now()
     for i in range(months):
         dt = now - timedelta(days=30 * (start_months_ago - i))
-        p = Property(
+        p = Property(  # type: ignore[call-arg]
             city=city,
             area_sqm=50,
             price=base_price + i * 100,

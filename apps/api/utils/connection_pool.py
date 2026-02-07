@@ -67,6 +67,7 @@ class ConnectionPoolManager:
 
     _instance: Optional["ConnectionPoolManager"] = None
     _lock = threading.Lock()
+    _initialized: bool = False
 
     def __new__(cls) -> "ConnectionPoolManager":
         if cls._instance is None:

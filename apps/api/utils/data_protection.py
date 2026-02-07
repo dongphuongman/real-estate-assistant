@@ -188,7 +188,7 @@ class DataMasker:
                 "database_url",
             }
 
-        result = {}
+        result: dict[str, Any] = {}
         for key, value in data.items():
             key_lower = key.lower()
             if key_lower in sensitive_keys or any(s in key_lower for s in sensitive_keys):

@@ -116,7 +116,7 @@ def test_render_operation_block_renders_tags_description_and_parameters() -> Non
 def test_render_parameters_table_escapes_pipes_and_skips_invalid_entries() -> None:
     table = render_parameters_table(
         [
-            "not-a-dict",
+            "not-a-dict",  # type: ignore[arg-type]
             {"name": "", "in": "query"},
             {
                 "name": "x|y",
@@ -135,7 +135,7 @@ def test_render_parameters_table_returns_empty_when_no_valid_params() -> None:
     """Test that render_parameters_table returns empty string when all params are invalid."""
     table = render_parameters_table(
         [
-            "not-a-dict",
+            "not-a-dict",  # type: ignore[arg-type]
             {"name": "", "in": "query"},  # empty name
             {"in": "query"},  # missing name
         ]

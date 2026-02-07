@@ -159,7 +159,7 @@ class EmailService:
         html: bool = False,
         batch_size: int = 50,
         delay_between_batches: float = 1.0,
-    ) -> dict:
+    ) -> dict[str, int | list[dict[str, str]]]:
         """
         Send email to multiple recipients in batches.
 
@@ -174,7 +174,9 @@ class EmailService:
         Returns:
             Dictionary with success/failure counts
         """
-        results = {"sent": 0, "failed": 0, "failed_emails": []}
+        sent_count = 0
+        failed_count = 0
+        failed_emails_list: list[dict[str, str]] = []
 
         for i in range(0, len(recipients), batch_size):
             batch = recipients[i : i + batch_size]
@@ -182,16 +184,20 @@ class EmailService:
             for email in batch:
                 try:
                     self.send_email(email, subject, body, html)
-                    results["sent"] += 1
+                    sent_count += 1
                 except Exception as e:
-                    results["failed"] += 1
-                    results["failed_emails"].append({"email": email, "error": str(e)})
+                    failed_count += 1
+                    failed_emails_list.append({"email": email, "error": str(e)})
 
             # Delay between batches to avoid rate limits
             if i + batch_size < len(recipients):
                 time.sleep(delay_between_batches)
 
-        return results
+        return {
+            "sent": sent_count,
+            "failed": failed_count,
+            "failed_emails": failed_emails_list,
+        }
 
     def send_test_email(self, to_email: str) -> bool:
         """

@@ -8,7 +8,7 @@ from vector_store.chroma_store import ChromaPropertyStore
 
 
 def make_property(pid: str, city: str, price: float, rooms: float, desc: str = "") -> Property:
-    return Property(
+    return Property(  # type: ignore[call-arg]
         id=pid,
         city=city,
         price=price,

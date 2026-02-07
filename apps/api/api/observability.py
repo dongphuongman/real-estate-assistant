@@ -133,6 +133,7 @@ class RedisRateLimiter:
         """Check rate limit using Redis."""
 
         redis_key = f"ratelimit:{key}"
+        assert self._redis_client is not None, "Redis client should be initialized for _check_redis"
         pipe = self._redis_client.pipeline()
 
         window_start = ts - self._window_seconds
@@ -154,6 +155,7 @@ class RedisRateLimiter:
 
         if current_count >= self._max_requests:
             # Get oldest timestamp to calculate reset time
+            assert self._redis_client is not None, "Redis client should be initialized"
             oldest = self._redis_client.zrange(redis_key, 0, 0, withscores=True)
             if oldest:
                 oldest_ts = float(oldest[0][1])
@@ -166,6 +168,7 @@ class RedisRateLimiter:
         remaining = self._max_requests - current_count
 
         # Get oldest timestamp for reset time calculation
+        assert self._redis_client is not None, "Redis client should be initialized"
         oldest = self._redis_client.zrange(redis_key, 0, 0, withscores=True)
         if oldest:
             oldest_ts = float(oldest[0][1])
@@ -241,7 +244,7 @@ def add_observability(app: FastAPI, logger: logging.Logger) -> None:
     # Initialize rate limiter - use Redis if available, otherwise in-memory
     redis_url = os.getenv("REDIS_URL")
     if redis_url:
-        limiter = RedisRateLimiter(
+        limiter: RateLimiter | RedisRateLimiter = RedisRateLimiter(
             redis_url=redis_url,
             fallback_to_in_memory=True,
         )
@@ -250,7 +253,7 @@ def add_observability(app: FastAPI, logger: logging.Logger) -> None:
         limiter = RateLimiter()
         logger.info("Using in-memory rate limiter")
 
-    app.state.rate_limiter = limiter
+    app.state.rate_limiter = limiter  # type: ignore[assignment]
     app.state.metrics: dict[str, int] = {}
 
     @app.middleware("http")
