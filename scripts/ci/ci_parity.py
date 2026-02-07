@@ -292,8 +292,16 @@ def main(argv: Sequence[str]) -> int:
     # For monorepo structure, run from apps/api directory
     repo_root = Path.cwd()
     api_dir = repo_root / "apps" / "api"
+
+    # Check if we're already in apps/api directory (CI case)
     if not api_dir.exists():
-        raise FileNotFoundError(f"apps/api directory not found at {api_dir}")
+        # We might already be in apps/api, check for marker files
+        if (repo_root / "tests").exists() and (repo_root / "api").exists():
+            # We're in apps/api
+            api_dir = repo_root
+        else:
+            raise FileNotFoundError(f"apps/api directory not found at {api_dir}")
+
     os.chdir(api_dir)
 
     cmds = build_commands(cfg)

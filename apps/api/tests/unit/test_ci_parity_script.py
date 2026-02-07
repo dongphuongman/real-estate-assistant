@@ -73,7 +73,7 @@ def test_main_dry_run_prints_security_steps(
 ) -> None:
     from scripts.ci import ci_parity
 
-    monkeypatch.setattr(ci_parity.Path, "exists", lambda _self: True)
+    # Don't mock Path.exists - let it detect we're already in apps/api
     rc = ci_parity.main(["--dry-run", "--unit-only"])
     assert rc == 0
     out = capsys.readouterr().out
