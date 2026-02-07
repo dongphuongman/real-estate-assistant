@@ -239,6 +239,12 @@ temp/
 *.bak
 *.pkl
 
+# Private docs (closed version)
+docs/private/
+**/*.private.md
+**/*.secret.md
+**/*.internal.md
+
 # Node modules (monorepo)
 node_modules/
 package-lock.json

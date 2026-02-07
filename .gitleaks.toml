@@ -6,7 +6,7 @@ useDefault = true
 
 # Allowlist - paths and patterns to exclude from scanning
 [allowlist]
-description = "Global allowlist for test files, documentation, and example configs"
+description = "Global allowlist for tests, build outputs, and example configs"
 
 # Paths to exclude from scanning
 paths = [
@@ -27,13 +27,6 @@ paths = [
     '''\.spec\.ts''',
     '''\.spec\.tsx''',
     '''\.spec\.js''',
-    '''docs/.*''',
-    '''documentation/.*''',
-    '''README\.md''',
-    '''CLAUDE\.md''',
-    '''CHANGELOG\.md''',
-    '''DEPLOYMENT\.md''',
-    '''CONTRIBUTING\.md''',
     '''\.git/.*''',
     '''\.venv/.*''',
     '''venv/.*''',
@@ -43,6 +36,7 @@ paths = [
     '''\.idea/.*''',
     '''coverage/.*''',
     '''\.coverage''',
+    '''artifacts/.*''',
     '''dist/.*''',
     '''build/.*''',
 ]
@@ -51,7 +45,7 @@ paths = [
 [[rules]]
 description = "Generic API Key with common prefixes"
 id = "generic-api-key"
-regex = '''(?i)(?:api[_-]?key|apikey|secret[_-]?key|access[_-]?token|auth[_-]?token|private[_-]?key|client[_-]?secret)\s*[:=]\s*['\"]?([a-z0-9]{32,})['\"]?'''
+regex = '''(?i)(?:api[_-]?key|apikey|secret[_-]?key|access[_-]?token|auth[_-]?token|private[_-]?key|client[_-]?secret)\s*[:=]\s*['\"]?([a-zA-Z0-9_-]{32,})['\"]?'''
 secretGroup = 1
 entropy = 3.5
 keywords = [
