@@ -24,7 +24,7 @@ def build_ruff_check_cmd(python_exe: str) -> list[str]:
 
 
 def build_mypy_cmd(python_exe: str) -> list[str]:
-    return [python_exe, "-m", "mypy"]
+    return [python_exe, "-m", "mypy", "."]
 
 
 def build_rule_engine_check_cmd(python_exe: str) -> list[str]:
@@ -287,24 +287,75 @@ def build_commands(cfg: ParityConfig) -> list[list[str]]:
     return cmds
 
 
+def build_commands_with_repo_paths(
+    cfg: ParityConfig, repo_root: str, api_dir: str
+) -> list[list[str]]:
+    """Build commands with paths adjusted for running from apps/api directory."""
+    # Calculate relative path from api_dir to repo_root
+    api_path = Path(api_dir).absolute()
+    repo_path = Path(repo_root).absolute()
+    try:
+        rel_path = api_path.relative_to(repo_path)
+        # Number of parent directories to go up
+        # For example: apps/api -> 2 levels up -> ../../
+        up_count = len(rel_path.parts)
+        prefix = "../" * up_count
+    except ValueError:
+        # api_dir is not relative to repo_root (shouldn't happen)
+        prefix = ""
+
+    # Get original commands
+    cmds = build_commands(cfg)
+
+    # Adjust paths for script commands
+    adjusted_cmds: list[list[str]] = []
+    for cmd in cmds:
+        adjusted_cmd = list(cmd)
+        for i, arg in enumerate(cmd):
+            # Adjust paths that start with scripts/
+            if arg.startswith("scripts/"):
+                adjusted_cmd[i] = f"{prefix}{arg}"
+            # Adjust docs script paths
+            elif arg.startswith("../../scripts/"):
+                # Strip the existing ../../ and add correct prefix
+                adjusted_cmd[i] = f"{prefix}{arg[6:]}"  # Remove ../../ and add prefix
+        adjusted_cmds.append(adjusted_cmd)
+
+    return adjusted_cmds
+
+
 def main(argv: Sequence[str]) -> int:
     cfg = parse_args(argv)
     # For monorepo structure, run from apps/api directory
     repo_root = Path.cwd()
     api_dir = repo_root / "apps" / "api"
+    actual_repo_root = repo_root  # Track actual repo root for script paths
 
     # Check if we're already in apps/api directory (CI case)
     if not api_dir.exists():
         # We might already be in apps/api, check for marker files
-        if (repo_root / "tests").exists() and (repo_root / "api").exists():
-            # We're in apps/api
+        # Check for pyproject.toml which exists in apps/api but not in the root
+        if (repo_root / "pyproject.toml").exists() and (repo_root / "tests").exists():
+            # We're in apps/api, so repo root is parent of current directory's parent
             api_dir = repo_root
+            # The actual repo root is two levels up (from apps/api -> apps -> repo root)
+            # But actually, the scripts are at the project root, not apps root
+            # So we need to go up two levels to reach the repo root
+            actual_repo_root = repo_root.parent.parent if repo_root.parent.name == "apps" else repo_root.parent
         else:
             raise FileNotFoundError(f"apps/api directory not found at {api_dir}")
 
     os.chdir(api_dir)
 
-    cmds = build_commands(cfg)
+    # If we're in apps/api (not repo root), we need to adjust script paths
+    # to use ../../ prefix to reach repo root scripts
+    if api_dir != actual_repo_root:
+        # We're in apps/api, need to adjust script paths
+        cmds = build_commands_with_repo_paths(
+            cfg, str(actual_repo_root), str(api_dir)
+        )
+    else:
+        cmds = build_commands(cfg)
 
     if cfg.dry_run:
         for cmd in cmds:
