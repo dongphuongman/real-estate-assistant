@@ -25,15 +25,21 @@ def _run_check(results: list[CheckResult], name: str, fn) -> bool:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Validate core backend functionality in-process.")
+    parser = argparse.ArgumentParser(
+        description="Validate core backend functionality in-process."
+    )
     parser.add_argument(
         "--environment", choices=["development", "production"], default="development"
     )
     ns = parser.parse_args(list(argv) if argv is not None else None)
 
     repo_root = Path(__file__).resolve().parents[2]
+    # Add both repo root and apps/api to Python path for monorepo structure
+    api_dir = repo_root / "apps" / "api"
     if str(repo_root) not in sys.path:
         sys.path.insert(0, str(repo_root))
+    if str(api_dir) not in sys.path:
+        sys.path.insert(0, str(api_dir))
 
     os.environ.setdefault("ENVIRONMENT", ns.environment)
     os.environ.setdefault("API_ACCESS_KEY", "ci-test-key")

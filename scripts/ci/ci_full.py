@@ -99,7 +99,9 @@ def _wait_for_http_200(url: str, *, timeout_seconds: float) -> bool:
 def _is_tool_available(cmd: list[str]) -> bool:
     try:
         return (
-            subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode
+            subprocess.run(
+                cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            ).returncode
             == 0
         )
     except OSError:
@@ -115,12 +117,16 @@ def _run_step(results: list[StepResult], name: str, fn) -> bool:
         status = "failed"
         details = f"exception: {exc}"
     duration = time.time() - started
-    results.append(StepResult(name=name, status=status, duration_seconds=duration, details=details))
+    results.append(
+        StepResult(name=name, status=status, duration_seconds=duration, details=details)
+    )
     print(f" {status.upper()} ({duration:.1f}s)")
     return status in {"passed", "skipped"}
 
 
-def _write_validation_report(root: Path, results: list[StepResult], *, mode: str) -> Path:
+def _write_validation_report(
+    root: Path, results: list[StepResult], *, mode: str
+) -> Path:
     artifacts_dir = root / "artifacts"
     artifacts_dir.mkdir(parents=True, exist_ok=True)
     report_path = artifacts_dir / "validation_report.md"
@@ -134,7 +140,9 @@ def _write_validation_report(root: Path, results: list[StepResult], *, mode: str
     lines.append("## Results")
     lines.append("")
     for r in results:
-        lines.append(f"- {r.status.upper()}: {r.name} ({r.duration_seconds:.2f}s) - {r.details}")
+        lines.append(
+            f"- {r.status.upper()}: {r.name} ({r.duration_seconds:.2f}s) - {r.details}"
+        )
     lines.append("")
     lines.append("## Manual Verification Checklist")
     lines.append("")
@@ -144,8 +152,12 @@ def _write_validation_report(root: Path, results: list[StepResult], *, mode: str
     lines.append(
         '- Run a sample search query like "apartments in Krakow" and confirm results render'
     )
-    lines.append("- Open Assistant and confirm streaming responses render progressively")
-    lines.append("- Verify auth endpoint responds: GET /api/v1/verify-auth (requires X-API-Key)")
+    lines.append(
+        "- Open Assistant and confirm streaming responses render progressively"
+    )
+    lines.append(
+        "- Verify auth endpoint responds: GET /api/v1/verify-auth (requires X-API-Key)"
+    )
     lines.append("")
 
     report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -173,8 +185,12 @@ def main(argv: list[str] | None = None) -> int:
     root = _ensure_repo_root()
     logs_dir = root / "artifacts" / "logs"
 
-    parser = argparse.ArgumentParser(description="Run the full CI validation suite locally.")
-    parser.add_argument("--mode", choices=["local", "staging", "production"], default="local")
+    parser = argparse.ArgumentParser(
+        description="Run the full CI validation suite locally."
+    )
+    parser.add_argument(
+        "--mode", choices=["local", "staging", "production"], default="local"
+    )
     parser.add_argument("--base-ref", default=None)
     parser.add_argument("--backend-url", default=os.environ.get("BACKEND_URL"))
     parser.add_argument("--frontend-url", default=os.environ.get("FRONTEND_URL"))
@@ -231,25 +247,30 @@ def main(argv: list[str] | None = None) -> int:
                 cwd=root,
                 log_file=log_file,
             )
-            return ("passed" if rc1 == 0 else "failed", f"log={log_file.as_posix()} (Docker)")
+            return (
+                "passed" if rc1 == 0 else "failed",
+                f"log={log_file.as_posix()} (Docker)",
+            )
 
-        # Original implementation for non-Docker mode
-        rc1 = _run(["npm", "--prefix", "frontend", "ci"], cwd=root, log_file=log_file)
+        # Original implementation for non-Docker mode (monorepo: apps/web)
+        rc1 = _run(["npm", "--prefix", "apps/web", "ci"], cwd=root, log_file=log_file)
         used_fallback = False
         if rc1 != 0:
             rc1_fallback = _run(
-                ["npm", "--prefix", "frontend", "install", "--no-audit", "--no-fund"],
+                ["npm", "--prefix", "apps/web", "install", "--no-audit", "--no-fund"],
                 cwd=root,
                 log_file=log_file,
             )
             if rc1_fallback != 0:
                 return "failed", f"log={log_file.as_posix()}"
             used_fallback = True
-        rc2 = _run(["npm", "--prefix", "frontend", "run", "lint"], cwd=root, log_file=log_file)
+        rc2 = _run(
+            ["npm", "--prefix", "apps/web", "run", "lint"], cwd=root, log_file=log_file
+        )
         if rc2 != 0:
             return "failed", f"log={log_file.as_posix()}"
         rc3 = _run(
-            ["npm", "--prefix", "frontend", "run", "test", "--", "--ci", "--coverage"],
+            ["npm", "--prefix", "apps/web", "run", "test", "--", "--ci", "--coverage"],
             cwd=root,
             log_file=log_file,
         )
@@ -323,7 +344,9 @@ def main(argv: list[str] | None = None) -> int:
             return "failed", f"GET {health_url} status={status}"
         if ns.api_key:
             verify_url = ns.backend_url.rstrip("/") + "/api/v1/verify-auth"
-            req = Request(verify_url, method="GET", headers={"X-API-Key": str(ns.api_key)})
+            req = Request(
+                verify_url, method="GET", headers={"X-API-Key": str(ns.api_key)}
+            )
             try:
                 with urlopen(req, timeout=5.0) as resp:
                     auth_status = int(resp.status)
@@ -342,7 +365,10 @@ def main(argv: list[str] | None = None) -> int:
         import platform
 
         if platform.system() == "Windows":
-            return "skipped", "Windows: FastEmbed disabled, E2E tests require vector store"
+            return (
+                "skipped",
+                "Windows: FastEmbed disabled, E2E tests require vector store",
+            )
 
         uvicorn_log = logs_dir / "e2e_backend_uvicorn.log"
         uvicorn_log.parent.mkdir(parents=True, exist_ok=True)
@@ -368,14 +394,18 @@ def main(argv: list[str] | None = None) -> int:
             stderr=subprocess.STDOUT,
         )
         try:
-            if not _wait_for_http_200("http://127.0.0.1:8000/health", timeout_seconds=30.0):
+            if not _wait_for_http_200(
+                "http://127.0.0.1:8000/health", timeout_seconds=30.0
+            ):
                 return "failed", f"log={uvicorn_log.as_posix()}"
 
             npm_log = logs_dir / "e2e_root_npm_ci.log"
             rc_root = _run(["npm", "ci"], cwd=root, log_file=npm_log)
             if rc_root != 0:
                 rc_root_fallback = _run(
-                    ["npm", "install", "--no-audit", "--no-fund"], cwd=root, log_file=npm_log
+                    ["npm", "install", "--no-audit", "--no-fund"],
+                    cwd=root,
+                    log_file=npm_log,
                 )
                 if rc_root_fallback != 0:
                     return "failed", f"log={npm_log.as_posix()}"
@@ -405,22 +435,32 @@ def main(argv: list[str] | None = None) -> int:
         if not _is_tool_available(["docker", "--version"]):
             return "skipped", "docker not available"
         log_file = logs_dir / "trivy_scan.log"
+        # Build backend (monorepo: apps/api)
         rc1 = _run(
-            ["docker", "build", "-f", "Dockerfile.backend", "-t", "ai-backend:ci", "."],
+            [
+                "docker",
+                "build",
+                "-f",
+                "apps/api/Dockerfile",
+                "-t",
+                "ai-backend:ci",
+                "./apps/api",
+            ],
             cwd=root,
             log_file=log_file,
         )
         if rc1 != 0:
             return "failed", f"log={log_file.as_posix()}"
+        # Build frontend (monorepo: apps/web)
         rc2 = _run(
             [
                 "docker",
                 "build",
                 "-f",
-                "frontend/Dockerfile.frontend",
+                "apps/web/Dockerfile",
                 "-t",
                 "ai-frontend:ci",
-                "./frontend",
+                "./apps/web",
             ],
             cwd=root,
             log_file=log_file,
@@ -428,14 +468,30 @@ def main(argv: list[str] | None = None) -> int:
         if rc2 != 0:
             return "failed", f"log={log_file.as_posix()}"
         rc3 = _run(
-            ["trivy", "image", "--severity", "CRITICAL,HIGH", "--exit-code", "1", "ai-backend:ci"],
+            [
+                "trivy",
+                "image",
+                "--severity",
+                "CRITICAL,HIGH",
+                "--exit-code",
+                "1",
+                "ai-backend:ci",
+            ],
             cwd=root,
             log_file=log_file,
         )
         if rc3 != 0:
             return "failed", f"log={log_file.as_posix()}"
         rc4 = _run(
-            ["trivy", "image", "--severity", "CRITICAL,HIGH", "--exit-code", "1", "ai-frontend:ci"],
+            [
+                "trivy",
+                "image",
+                "--severity",
+                "CRITICAL,HIGH",
+                "--exit-code",
+                "1",
+                "ai-frontend:ci",
+            ],
             cwd=root,
             log_file=log_file,
         )
@@ -475,7 +531,9 @@ def main(argv: list[str] | None = None) -> int:
             stderr=subprocess.STDOUT,
         )
         try:
-            if not _wait_for_http_200("http://127.0.0.1:8000/health", timeout_seconds=30.0):
+            if not _wait_for_http_200(
+                "http://127.0.0.1:8000/health", timeout_seconds=30.0
+            ):
                 return "failed", f"log={uvicorn_log.as_posix()}"
             # Add warmup request to avoid cold start skewing results
             try:

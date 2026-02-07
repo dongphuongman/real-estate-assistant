@@ -42,7 +42,8 @@ def _get_default_api_access_key_from_env() -> str:
 
 def _ensure_uv_dev_env(root: Path) -> None:
     _run_checked(
-        [sys.executable, str(root / "scripts" / "dev" / "bootstrap_uv.py"), "--dev"], cwd=root
+        [sys.executable, str(root / "scripts" / "dev" / "bootstrap_uv.py"), "--dev"],
+        cwd=root,
     )
 
 
@@ -84,7 +85,9 @@ def _choose_docker_mode_interactively(*, default_mode: str) -> str:
 
 def _run_docker(root: Path, *, profiles: list[str]) -> int:
     if not _has_docker_compose():
-        print("Docker Compose is not available. Run with --mode local.", file=sys.stderr)
+        print(
+            "Docker Compose is not available. Run with --mode local.", file=sys.stderr
+        )
         return 2
     env = os.environ.copy()
     if "gpu" in profiles:
@@ -114,7 +117,10 @@ def _sanitize_env_for_display(env: dict[str, str]) -> dict[str, str]:
 def _build_backend_env() -> dict[str, str]:
     env = os.environ.copy()
     env.setdefault("ENVIRONMENT", "development")
-    if not env.get("API_ACCESS_KEY", "").strip() and not env.get("API_ACCESS_KEYS", "").strip():
+    if (
+        not env.get("API_ACCESS_KEY", "").strip()
+        and not env.get("API_ACCESS_KEYS", "").strip()
+    ):
         env["API_ACCESS_KEY"] = "dev-secret-key"
     return env
 
@@ -123,9 +129,13 @@ def _build_frontend_env(*, backend_env: dict[str, str]) -> dict[str, str]:
     env = os.environ.copy()
     env.setdefault("NEXT_PUBLIC_API_URL", "/api/v1")
     env.setdefault("BACKEND_API_URL", "http://localhost:8000/api/v1")
-    if not env.get("API_ACCESS_KEY", "").strip() and not env.get("API_ACCESS_KEYS", "").strip():
+    if (
+        not env.get("API_ACCESS_KEY", "").strip()
+        and not env.get("API_ACCESS_KEYS", "").strip()
+    ):
         effective_backend_key = (
-            backend_env.get("API_ACCESS_KEY", "").strip() or _get_default_api_access_key_from_env()
+            backend_env.get("API_ACCESS_KEY", "").strip()
+            or _get_default_api_access_key_from_env()
         )
         if effective_backend_key:
             env["API_ACCESS_KEY"] = effective_backend_key
@@ -169,7 +179,12 @@ def _run_local(root: Path, *, service: str, no_bootstrap: bool, dry_run: bool) -
                 ),
             )
         if wants_frontend:
-            keys = {"NEXT_PUBLIC_API_URL", "BACKEND_API_URL", "API_ACCESS_KEY", "API_ACCESS_KEYS"}
+            keys = {
+                "NEXT_PUBLIC_API_URL",
+                "BACKEND_API_URL",
+                "API_ACCESS_KEY",
+                "API_ACCESS_KEYS",
+            }
             print(
                 "FRONTEND_ENV:",
                 _sanitize_env_for_display(
@@ -195,7 +210,9 @@ def _run_local(root: Path, *, service: str, no_bootstrap: bool, dry_run: bool) -
             procs.append(subprocess.Popen(backend_cmd, cwd=str(root), env=env_backend))
         if wants_frontend:
             procs.append(
-                subprocess.Popen(frontend_cmd, cwd=str(root / "frontend"), env=env_frontend)
+                subprocess.Popen(
+                    frontend_cmd, cwd=str(root / "apps" / "web"), env=env_frontend
+                )
             )
 
         while True:
@@ -216,8 +233,12 @@ def _run_local(root: Path, *, service: str, no_bootstrap: bool, dry_run: bool) -
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=["auto", "docker", "local"], default="auto")
-    parser.add_argument("--service", choices=["all", "backend", "frontend"], default="all")
-    parser.add_argument("--docker-mode", choices=["auto", "cpu", "gpu", "ask"], default="auto")
+    parser.add_argument(
+        "--service", choices=["all", "backend", "frontend"], default="all"
+    )
+    parser.add_argument(
+        "--docker-mode", choices=["auto", "cpu", "gpu", "ask"], default="auto"
+    )
     parser.add_argument("--docker-profile", action="append", default=[])
     parser.add_argument("--internet", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
@@ -268,7 +289,10 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         return _run_docker(root, profiles=effective_profiles)
     return _run_local(
-        root, service=args.service, no_bootstrap=bool(args.no_bootstrap), dry_run=bool(args.dry_run)
+        root,
+        service=args.service,
+        no_bootstrap=bool(args.no_bootstrap),
+        dry_run=bool(args.dry_run),
     )
 
 
