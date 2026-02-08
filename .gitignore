@@ -11,6 +11,9 @@ __azurite_*
 *.swp
 *.swo
 
+# SearXNG configuration (contains secret key)
+config/searxng/
+
 # Trae Agent configuration
 trae_config.yaml
 trae_config.yml
