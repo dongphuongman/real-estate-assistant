@@ -10,9 +10,18 @@
 
 ![AI Real Estate Assistant (Docker Run)](assets/image.png)
 
-> **Status**
-> - **V4 (Active)**: FastAPI backend (`api/`) + Next.js frontend (`frontend/`)
-> - **V3 (Frozen)**: Streamlit legacy code has been removed.
+## 🌿 Branching & Versioning
+
+We follow a structured branching strategy. **Active development happens in `dev`**.
+
+| Branch | Status | Description |
+|--------|--------|-------------|
+| **[`dev`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/dev)** | **🔥 Active** | **Current Development**. All new features and fixes land here. |
+| **[`main`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/main)** | 🟢 Stable | Production-ready releases. |
+| **[`ver4`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/ver4)** | 🟡 Legacy | Previous V4 development branch (Frozen). |
+| **[`ver3`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/ver3)** | ❄️ Archived | Legacy Streamlit version. |
+| **[`ver2`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/ver2)** | ❄️ Archived | Early prototype. |
+
 
 ## 🌟 Overview
 
