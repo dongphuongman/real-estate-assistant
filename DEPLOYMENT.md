@@ -295,7 +295,7 @@ Backend exposes `/health` endpoint - configure monitoring to ping this endpoint.
 
 To update production:
 
-1. Merge changes to `main` or `ver4` branch
+1. Merge changes to `main` (from `dev`)
 2. Vercel auto-deploys on push
 3. Backend hosting may require manual trigger or auto-deploys on push
 

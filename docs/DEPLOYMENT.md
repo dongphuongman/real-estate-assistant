@@ -57,7 +57,7 @@ The easiest way to run the full stack (Backend + Frontend + Services).
    ```powershell
    git add .
    git commit -m "chore: ready for deploy"
-   git push origin ver4
+   git push origin dev
    ```
 
 2. **Connect Vercel to GitHub**
@@ -71,7 +71,7 @@ The easiest way to run the full stack (Backend + Frontend + Services).
    - **Environment Variables**: Add keys from `.env` (e.g., `OPENAI_API_KEY`, `API_ACCESS_KEY`).
 
 4. **Deploy**
-   - Click **Deploy**. Vercel will clone, build, and deploy automatically on every push.
+   - Click **Deploy**. Vercel will create preview deployments from `dev` and production deployments from `main`.
 
 ---
 

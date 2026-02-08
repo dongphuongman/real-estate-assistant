@@ -216,11 +216,11 @@ in V4.
   - Temporary exception: `CVE-2026-0994` is ignored until an upstream protobuf patch is available within the `google-ai-generativelanguage` dependency constraint.
 
 ## Branch Protection
-- Protect `main` and `ver4` branches with required CI checks:
+- Protect `main` and `dev` branches with required CI checks:
   - Backend job (ruff, mypy, unit/integration coverage gates)
   - Frontend job (eslint, jest)
   - Security job (Bandit: high severity/high confidence)
-- Enable “Require branches to be up to date” and “Include administrators”.
+- Enable “Require branches to be up to date”, “Include administrators”, and “Block force pushes”.
 
 ## Notes
 - Do not commit secrets; use environment variables.

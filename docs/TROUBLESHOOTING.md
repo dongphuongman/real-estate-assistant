@@ -99,14 +99,14 @@ gh run view -R AleksNeStu/ai-real-estate-assistant <run_id> --log-failed
 ```powershell
 git log -n 5
 git revert <commit_sha>
-git push origin ver4
+git push origin dev
 ```
 
 **Rollback a bad vector-store change**
 ```powershell
 git log -n 5 -- vector_store/chroma_store.py
 git revert <commit_sha>
-git push origin ver4
+git push origin dev
 ```
 ### ChromaDB metadata errors
 
