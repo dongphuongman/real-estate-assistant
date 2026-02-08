@@ -42,6 +42,11 @@ def pytest_configure() -> None:
     _ensure_optional_excel_modules()
 
 
+def pytest_asyncio_mode() -> str:
+    """Set pytest-asyncio mode to auto for async test support."""
+    return "auto"
+
+
 @pytest.fixture
 def query_analyzer():
     """Fixture for query analyzer."""
