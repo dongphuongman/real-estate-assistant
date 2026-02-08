@@ -67,11 +67,12 @@ ignore = ["E501"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-ra -q"
+addopts = "-ra -q --timeout=300"
 testpaths = [
     "tests",
 ]
 python_files = ["test_*.py"]
+timeout = 300
 
 [tool.mypy]
 python_version = "3.11"
