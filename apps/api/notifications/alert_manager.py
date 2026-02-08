@@ -415,8 +415,8 @@ class AlertManager:
     def send_new_property_alerts(
         self,
         user_email: str,
-        search_id: str,
-        search_name: str,
+        search_id: Optional[str],
+        search_name: Optional[str],
         matching_properties: List[Property],
         send_email: bool = True,
     ) -> bool:
@@ -508,7 +508,11 @@ class AlertManager:
             return False
 
     def send_digest(
-        self, user_email: str, digest_type: str, data: Dict[str, Any], send_email: bool = True
+        self,
+        user_email: str,
+        digest_type: Optional[str],
+        data: Optional[Dict[str, Any]],
+        send_email: bool = True,
     ) -> bool:
         """
         Send daily or weekly digest to user.
@@ -528,7 +532,9 @@ class AlertManager:
             return False
 
         subject, message = DigestTemplate.render(
-            digest_type, data, user_name=user_email.split("@")[0]
+            digest_type or "daily",
+            data or {},
+            user_name=user_email.split("@")[0],  # type: ignore[arg-type]
         )
 
         if send_email:

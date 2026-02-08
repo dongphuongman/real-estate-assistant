@@ -6,9 +6,11 @@ from langchain.agents.agent_types import AgentType
 from langchain_openai import ChatOpenAI
 
 try:
-    from langchain_experimental.agents import create_pandas_dataframe_agent
+    from langchain_experimental.agents import (
+        create_pandas_dataframe_agent as _create_pandas_df_agent,
+    )
 
-    create_pandas_dataframe_agent: Callable[..., Any] | None = create_pandas_dataframe_agent
+    create_pandas_dataframe_agent: Callable[..., Any] | None = _create_pandas_df_agent
 except ImportError:
     create_pandas_dataframe_agent = None
 

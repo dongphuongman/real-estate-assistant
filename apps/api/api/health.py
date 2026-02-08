@@ -300,7 +300,8 @@ async def get_health_status(include_dependencies: bool = True) -> HealthCheckRes
                 logger.error("Health check error: %s", result)
                 continue
             if result is not None:
-                dependencies[result.name] = result
+                health_result: DependencyHealth = result  # type: ignore[assignment]
+                dependencies[health_result.name] = health_result
 
     # Determine overall status
     # - UNHEALTHY if any critical dependency is unhealthy

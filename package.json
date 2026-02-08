@@ -60,7 +60,7 @@
       "prettier --write"
     ],
     "apps/api/**/*.py": [
-      "cd apps/api && ruff format --fix"
+      "ruff format --config=apps/api/pyproject.toml"
     ]
   }
 }

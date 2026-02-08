@@ -249,7 +249,7 @@ class NotificationScheduler:
         if self._vector_store:
             generator = DigestGenerator(market_insights, self._vector_store)
             saved_searches = self._search_manager.get_all_searches()
-            digest_result = generator.generate_digest(prefs, saved_searches, digest_type)
+            digest_result = generator.generate_digest(prefs, saved_searches, digest_type)  # type: ignore[arg-type]
             return cast(Dict[str, Any], digest_result)
 
         # Fallback if no vector store (e.g. testing)

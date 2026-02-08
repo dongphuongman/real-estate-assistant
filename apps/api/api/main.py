@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 import signal
+from typing import Any
 
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -312,7 +313,7 @@ async def health_check(include_dependencies: bool = True):
     health = await get_health_status(include_dependencies=include_dependencies)
 
     # Convert to dict for JSON response
-    response = {
+    response: dict[str, str | float | dict[str, Any]] = {
         "status": health.status.value,
         "version": health.version,
         "timestamp": health.timestamp,

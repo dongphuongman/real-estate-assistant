@@ -661,7 +661,7 @@ def _to_float(value: object) -> Optional[float]:
     if value is None:
         return None
     try:
-        return float(value)
+        return float(value)  # type: ignore[arg-type]
     except (TypeError, ValueError):
         return None
 
@@ -670,6 +670,6 @@ def _to_int(value: object) -> Optional[int]:
     if value is None:
         return None
     try:
-        return int(float(value))
+        return int(float(value))  # type: ignore[arg-type]
     except (TypeError, ValueError):
         return None

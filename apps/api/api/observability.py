@@ -313,13 +313,13 @@ def add_observability(app: FastAPI, logger: logging.Logger) -> None:
             response = await call_next(request)
         except Exception as exc:
             elapsed_ms = (time.perf_counter() - start) * 1000.0
-            client_id: str | None = client_id_from_api_key(request.headers.get("X-API-Key"))
+            log_client_id: str | None = client_id_from_api_key(request.headers.get("X-API-Key"))
             logger.exception(
                 "api_unhandled_exception",
                 extra={
                     "event": "api_unhandled_exception",
                     "request_id": request_id,
-                    "client_id": (client_id or "-"),
+                    "client_id": (log_client_id or "-"),
                     "method": request.method,
                     "path": request.url.path,
                     "status": 500,
@@ -347,13 +347,13 @@ def add_observability(app: FastAPI, logger: logging.Logger) -> None:
         for k, v in response_headers.items():
             response.headers[k] = v
 
-        client_id: str | None = client_id_from_api_key(request.headers.get("X-API-Key"))
+        log_client_id_success: str | None = client_id_from_api_key(request.headers.get("X-API-Key"))
         logger.info(
             "api_request",
             extra={
                 "event": "api_request",
                 "request_id": request_id,
-                "client_id": (client_id or "-"),
+                "client_id": (log_client_id_success or "-"),
                 "method": request.method,
                 "path": request.url.path,
                 "status": getattr(response, "status_code", "-"),
