@@ -1,7 +1,7 @@
 # Branch Protection & Required Checks (V4)
 
 ## Overview
-Protect `main` and `ver4` with required status checks to ensure quality gates before merge.
+Protect `main` and `dev` with required status checks to ensure quality gates before merge.
 
 ## Required Checks
 - Backend CI: ruff, mypy, unit diff coverage (≥90), integration diff coverage (≥70), unit critical coverage (≥90)
@@ -17,7 +17,9 @@ Protect `main` and `ver4` with required status checks to ensure quality gates be
    - `security` job
 4. Enable “Require branches to be up to date”
 5. Enable “Include administrators”
-6. Repeat for `ver4`
+6. Enable “Block force pushes”
+7. Enable “Restrict deletions”
+8. Repeat for `dev`
 
 ## Notes
 - Temporary thresholds are documented in [DEVELOPER_NOTES.md](file:///c:/Projects/ai-real-estate-assistant/docs/DEVELOPER_NOTES.md); raise to targets as tests improve.

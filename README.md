@@ -22,6 +22,8 @@ We follow a structured branching strategy. **Active development happens in `dev`
 | **[`ver3`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/ver3)** | ❄️ Archived | Legacy Streamlit version. |
 | **[`ver2`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/ver2)** | ❄️ Archived | Early prototype. |
 
+Releases are tracked with tags (SemVer), e.g. **[`v1.0.0`](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v1.0.0)**.
+
 
 ## 🌟 Overview
 

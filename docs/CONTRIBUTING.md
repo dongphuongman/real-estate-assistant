@@ -166,6 +166,18 @@ Secrets and env notes:
 - Use `.env` from `.env.example` for local development keys and SMTP settings.
 - Pipeline failure notifications are created as GitHub issues and written to the job summary.
 
+## 🌿 Branching & Releases
+
+### Branches
+- `dev`: active development branch
+- `main`: stable release branch
+- Legacy branches: `ver4`, `ver3`, `ver2` (frozen / archived)
+
+### Release Flow
+1. Work on `dev` (direct commits are OK for solo development).
+2. When ready to release, merge `dev` into `main`.
+3. Create a SemVer tag on the release commit (e.g. `v1.0.0`, `v1.1.0`).
+
 ## 🔄 Pull Request Process
 
 ### Commit Message Convention
@@ -181,6 +193,10 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 - **Description**: What changed?
 - **Type**: Bug fix / Feature / Docs.
 - **Testing**: How was it verified?
+
+### Solo Development Note
+If you are the only contributor, you can skip PRs for day-to-day work and push directly to `dev`.
+Keep `main` reserved for releases (merge from `dev` when publishing).
 
 ## 📚 Documentation
 - Keep `README.md` concise.
