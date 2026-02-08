@@ -15,14 +15,17 @@ def main() -> int:
     from api.main import app as fastapi_app
     from api.openapi_export import export_openapi_schema
 
+    # Default path is relative to project root, not current working directory
+    default_output = project_root / "docs" / "openapi.json"
+
     parser = argparse.ArgumentParser(
         description="Export FastAPI OpenAPI schema to JSON."
     )
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("docs") / "openapi.json",
-        help="Output JSON file path (default: docs/openapi.json).",
+        default=default_output,
+        help=f"Output JSON file path (default: {default_output}).",
     )
     parser.add_argument(
         "--check",

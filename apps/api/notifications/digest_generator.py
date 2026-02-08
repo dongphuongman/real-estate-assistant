@@ -51,8 +51,8 @@ class DigestGenerator:
             Dictionary containing digest data suitable for DigestTemplate
         """
         # 1. Gather property highlights (Consumer focus)
-        top_picks = []
-        price_drop_properties = []
+        top_picks: list[dict[str, Any]] = []
+        price_drop_properties: list[dict[str, Any]] = []
 
         # We'll use a set of seen property IDs to avoid duplicates across saved searches
         seen_ids = set()
@@ -174,8 +174,8 @@ class DigestGenerator:
 
     def _build_filters(self, search: SavedSearch) -> Dict[str, Any]:
         """Build Chroma/VectorStore compatible filters from SavedSearch."""
-        filters = {}
-        conditions = []
+        filters: Dict[str, Any] = {}
+        conditions: list[Dict[str, Dict[str, Any]]] = []
 
         if search.city:
             conditions.append({"city": {"$eq": search.city}})
@@ -191,8 +191,8 @@ class DigestGenerator:
 
         # Combine conditions
         if len(conditions) > 1:
-            filters = {"$and": conditions}
+            filters = {"$and": conditions}  # type: ignore[assignment]
         elif len(conditions) == 1:
-            filters = conditions[0]
+            filters = conditions[0]  # type: ignore[assignment]
 
         return filters

@@ -72,12 +72,7 @@ rules:
 
   # FastAPI-specific issues
   - id: fastapi.cors-wildcard
-    patterns:
-      - pattern: |
-          $CORSMiddleware(
-              allow_origins=["*"],
-              ...,
-          )
+    pattern: $CORSMiddleware(allow_origins=["*"], ...)
     message: "CORS configured with wildcard origins - allows any domain"
     severity: WARNING
     languages: [python]
@@ -104,7 +99,7 @@ rules:
 
   # dangerouslySetInnerHTML in React
   - id: react.dangerous-inner-html
-    pattern: dangerouslySetInnerHTML={{...}}
+    pattern: dangerouslySetInnerHTML={...}
     message: "dangerouslySetInnerHTML can lead to XSS vulnerabilities"
     severity: WARNING
     languages: [javascript, typescript]

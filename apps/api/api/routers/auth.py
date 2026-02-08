@@ -76,4 +76,7 @@ async def get_session(
     entry = storage.get_session(x_session_token)
     if not entry:
         raise HTTPException(status_code=403, detail="Invalid or expired session")
-    return SessionInfo(session_token=x_session_token, user_email=entry.get("email"))
+    user_email = entry.get("email")
+    # entry.get() returns Any, validate it's a string
+    assert isinstance(user_email, str), f"Expected str for email, got {type(user_email)}"
+    return SessionInfo(session_token=x_session_token, user_email=user_email)

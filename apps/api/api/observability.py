@@ -254,7 +254,8 @@ def add_observability(app: FastAPI, logger: logging.Logger) -> None:
         logger.info("Using in-memory rate limiter")
 
     app.state.rate_limiter = limiter  # type: ignore[assignment]
-    app.state.metrics: dict[str, int] = {}
+    metrics: dict[str, int] = {}
+    app.state.metrics = metrics  # type: ignore[assignment]
 
     @app.middleware("http")
     async def _request_id_middleware(request: Request, call_next):
@@ -312,7 +313,7 @@ def add_observability(app: FastAPI, logger: logging.Logger) -> None:
             response = await call_next(request)
         except Exception as exc:
             elapsed_ms = (time.perf_counter() - start) * 1000.0
-            client_id = client_id_from_api_key(request.headers.get("X-API-Key"))
+            client_id: str | None = client_id_from_api_key(request.headers.get("X-API-Key"))
             logger.exception(
                 "api_unhandled_exception",
                 extra={
@@ -346,7 +347,7 @@ def add_observability(app: FastAPI, logger: logging.Logger) -> None:
         for k, v in response_headers.items():
             response.headers[k] = v
 
-        client_id = client_id_from_api_key(request.headers.get("X-API-Key"))
+        client_id: str | None = client_id_from_api_key(request.headers.get("X-API-Key"))
         logger.info(
             "api_request",
             extra={

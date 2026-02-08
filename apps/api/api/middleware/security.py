@@ -78,7 +78,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self,
         request: Request,
-        call_next: Callable[[Request], Response],
+        call_next: Callable[[Request], Response],  # type: ignore[override]
     ) -> Response:
         """
         Process request and add security headers to response.
@@ -95,7 +95,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         is_production = environment.strip().lower() == "production"
 
         # Get the response from the next middleware/route
-        response = await call_next(request)
+        response: Response = await call_next(request)  # type: ignore[misc]
 
         # Add security headers
         # Prevents MIME type sniffing

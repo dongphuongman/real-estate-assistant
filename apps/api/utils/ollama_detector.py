@@ -277,7 +277,10 @@ class OllamaDetector:
             },
         }
 
-        return instructions.get(os_type, instructions["unknown"])
+        result = instructions.get(os_type, instructions["unknown"])
+        # Type narrowing: we know the result is a dict because all values in instructions are dicts
+        assert isinstance(result, dict), f"Expected dict, got {type(result)}"
+        return result
 
     @staticmethod
     def get_recommended_models() -> List[Dict[str, Any]]:

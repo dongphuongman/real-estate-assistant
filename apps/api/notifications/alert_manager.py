@@ -10,7 +10,7 @@ Handles:
 
 import json
 import logging
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -46,16 +46,14 @@ class Alert:
     property_id: Optional[str] = None
     subject: str = ""
     message: str = ""
-    data: Dict[str, Any] = None
-    created_at: datetime = None
+    data: Dict[str, Any] = field(default_factory=dict)
+    created_at: Optional[datetime] = None
     sent_at: Optional[datetime] = None
     priority: int = 1  # 1=high, 2=medium, 3=low
 
     def __post_init__(self):
         if self.created_at is None:
             self.created_at = datetime.now()
-        if self.data is None:
-            self.data = {}
 
 
 class AlertManager:
@@ -131,18 +129,22 @@ class AlertManager:
                 elif alert.alert_type == AlertType.NEW_PROPERTY:
                     props_data = alert.data.get("properties", [])
                     props = [Property(**p) for p in props_data]
+                    search_id = alert.data.get("search_id")
+                    search_name = alert.data.get("search_name")
                     success = self.send_new_property_alerts(
                         alert.user_email,
-                        alert.data.get("search_id"),
-                        alert.data.get("search_name"),
+                        search_id if isinstance(search_id, str) else None,
+                        search_name if isinstance(search_name, str) else None,
                         props,
                         send_email=True,
                     )
                 elif alert.alert_type == AlertType.DIGEST:
+                    digest_type = alert.data.get("digest_type")
+                    content = alert.data.get("content")
                     success = self.send_digest(
                         alert.user_email,
-                        alert.data.get("digest_type"),
-                        alert.data.get("content"),
+                        digest_type if isinstance(digest_type, str) else None,
+                        content if isinstance(content, dict) else None,
                         send_email=True,
                     )
 
@@ -300,7 +302,8 @@ class AlertManager:
                 old_price = prev_prices[prop_key]
                 new_price = prop.price
 
-                if new_price < old_price:
+                # Both prices must not be None for comparison
+                if new_price is not None and old_price is not None and new_price < old_price:
                     percent_drop = ((old_price - new_price) / old_price) * 100
 
                     if percent_drop >= threshold_percent:

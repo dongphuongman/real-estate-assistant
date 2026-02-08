@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 
 import pytest
 from scripts.ci.ci_parity import (
@@ -85,14 +86,17 @@ def test_main_dry_run_prints_security_steps(
 def test_main_raises_when_not_run_from_repo_root(monkeypatch: pytest.MonkeyPatch) -> None:
     from scripts.ci import ci_parity
 
-    original_exists = ci_parity.Path.exists
+    original_exists = Path.exists
 
-    def fake_exists(self: ci_parity.Path) -> bool:
+    def fake_exists(self: Path) -> bool:
         if str(self).replace("\\", "/") == "scripts/ci/coverage_gate.py":
             return False
-        return original_exists(self)
+        result = original_exists(self)
+        # Path.exists returns object (bool in practice), but mypy sees it as object
+        assert isinstance(result, bool)
+        return result
 
-    monkeypatch.setattr(ci_parity.Path, "exists", fake_exists)
+    monkeypatch.setattr(Path, "exists", fake_exists)
     with pytest.raises(FileNotFoundError, match="coverage_gate.py"):
         ci_parity.main([])
 

@@ -39,7 +39,9 @@ def test_wait_for_http_ok_succeeds_after_retries():
     statuses = [503, 503, 200]
 
     def _get_status(_url: str, _timeout: float) -> int:
-        return statuses.pop(0)
+        result = statuses.pop(0)
+        assert isinstance(result, int)
+        return result
 
     sleeps: list[float] = []
 

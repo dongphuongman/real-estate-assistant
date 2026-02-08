@@ -52,7 +52,7 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self,
         request: Request,
-        call_next: Callable[[Request], Response],
+        call_next: Callable[[Request], Response],  # type: ignore[override]
     ) -> Response:
         """
         Process request and enforce size limits.
@@ -102,7 +102,7 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
 
         # For requests without content-length or for multipart, let Starlette handle it
         # Starlette will raise a 413 if body exceeds internal limits
-        response = await call_next(request)
+        response: Response = await call_next(request)  # type: ignore[misc]
 
         return response
 

@@ -442,13 +442,13 @@ def cached_response(
                 cache = request.app.state.response_cache
 
             # Check cache
-            if cache:
+            if cache and request:
                 cached = await cache.get(request)
                 if cached:
                     return cached.data  # type: ignore[return-value]
 
             # Execute original function
-            result = await func(*args, **kwargs)
+            result: T = await func(*args, **kwargs)  # type: ignore[misc]
 
             # Cache result
             if cache and request:
@@ -460,6 +460,6 @@ def cached_response(
 
             return result
 
-        return wrapper
+        return wrapper  # type: ignore[return-value]
 
     return decorator
