@@ -206,7 +206,7 @@ When the API is called cross-origin from a browser, the backend exposes `X-Reque
 ## Quality & Stability
 - The app enforces backend quality gates (lint, types, custom rules) to improve reliability.
 - If requests fail due to rate limits or validation, try again after the suggested reset time.
-- Contributors: run CI parity commands from `docs/TESTING_GUIDE.md` on Windows PowerShell.
+- Contributors: run CI parity commands from `docs/testing/TESTING_GUIDE.md` on Windows PowerShell.
 - For contributors, run backend checks locally:
   - `python -m pytest`
   - `python -m pytest -q tests\integration\test_rule_engine_clean.py`

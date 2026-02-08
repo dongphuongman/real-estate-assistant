@@ -22,5 +22,5 @@ Protect `main` and `dev` with required status checks to ensure quality gates bef
 8. Repeat for `dev`
 
 ## Notes
-- Temporary thresholds are documented in [DEVELOPER_NOTES.md](file:///c:/Projects/ai-real-estate-assistant/docs/DEVELOPER_NOTES.md); raise to targets as tests improve.
+- Temporary thresholds are documented in [DEVELOPER_NOTES.md](../development/DEVELOPER_NOTES.md); raise to targets as tests improve.
 - Avoid storing secrets in code; CI jobs must not echo secret values.

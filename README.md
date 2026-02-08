@@ -29,7 +29,7 @@ Releases are tracked with tags (SemVer), e.g. **[`v1.0.0`](https://github.com/Al
 
 The AI Real Estate Assistant is a modern, conversational AI platform helping users find properties through natural language. Built with a **FastAPI** backend and **Next.js** frontend, it features semantic search, hybrid agent routing, and real-time analytics.
 
-**[Docs](docs/)** | **[User Guide](docs/USER_GUIDE.md)** | **[Backend API](docs/API_REFERENCE.md)** | **[Developer Notes](docs/DEVELOPER_NOTES.md)** | **[Troubleshooting](docs/TROUBLESHOOTING.md)** | **[Testing](docs/TESTING_GUIDE.md)** | **[Contributing](docs/CONTRIBUTING.md)**
+**[Docs](docs/README.md)** | **[User Guide](docs/user/USER_GUIDE.md)** | **[Backend API](docs/API_REFERENCE.md)** | **[Developer Notes](docs/development/DEVELOPER_NOTES.md)** | **[Troubleshooting](docs/development/TROUBLESHOOTING.md)** | **[Testing](docs/testing/TESTING_GUIDE.md)** | **[Contributing](docs/development/CONTRIBUTING.md)**
 
 ---
 
@@ -187,7 +187,7 @@ npm test
 - **API Proxy**: Frontend calls `/api/v1/*` which proxies to backend, injecting `X-API-Key` server-side
 - **No Public Secrets**: `NEXT_PUBLIC_*` variables never contain sensitive data
 
-**For complete deployment instructions**, see [DEPLOYMENT.md](DEPLOYMENT.md).
+**For complete deployment instructions**, see [DEPLOYMENT.md](docs/deployment/DEPLOYMENT.md).
 
 ---
 
@@ -320,7 +320,7 @@ Frontend-specific variables (optional) go into `frontend/.env.local`.
 - **Frontend Tests**: `cd frontend && npm test`
 - **Linting**: `ruff check .` (Python), `npm run lint` (Frontend)
 
-See `docs/TESTING_GUIDE.md` for details.
+See `docs/testing/TESTING_GUIDE.md` for details.
 
 ---
 
@@ -380,7 +380,7 @@ Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full w
 
 ## 🔧 Troubleshooting
 
-See `docs/TROUBLESHOOTING.md` for detailed help.
+See `docs/development/TROUBLESHOOTING.md` for detailed help.
 
 ### Common Issues
 
