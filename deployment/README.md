@@ -9,6 +9,20 @@
 
 ## Quick Start
 
+### Using Deployment Script (Recommended)
+
+```powershell
+# Windows
+.\scripts\deploy-vercel.ps1
+
+# Linux/Mac
+./scripts/deploy-vercel.sh
+```
+
+The script will guide you through the entire deployment process.
+
+### Manual Steps
+
 1. **[Environment Setup](./vercel/01-env-setup.md)** - Configure your API keys
 2. **[Deployment Steps](./vercel/02-deploy-steps.md)** - Deploy to production
 3. **[Validation Checklist](./checklist/validation.md)** - Post-deployment verification
@@ -99,6 +113,18 @@ Copy these to Vercel **before** deploying:
 ---
 
 ## Deployment Commands
+
+### Option 1: Using Deployment Script (Recommended)
+
+```powershell
+# Windows
+.\scripts\deploy-vercel.ps1
+
+# Linux/Mac
+./scripts/deploy-vercel.sh
+```
+
+### Option 2: Manual Commands
 
 ```powershell
 # 1. Navigate to project
