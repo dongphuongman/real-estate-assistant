@@ -95,8 +95,8 @@ The AI-powered chat interface allows you to search for properties using natural 
 - Alternative (auto-detect Docker vs local): `.\scripts\dev\start.ps1` (more options in `docs/scripts/LOCAL_DEVELOPMENT.md`)
 - Open UI: `http://localhost:3000`
 - API docs: `http://localhost:8000/docs`
-- OpenAPI schema: `http://localhost:8000/openapi.json` (repo snapshot: `docs/openapi.json`)
-- Generated endpoint index (repo): `docs/API_REFERENCE.generated.md`
+- OpenAPI schema: `http://localhost:8000/openapi.json` (repo snapshot: `docs/api/openapi.json`)
+- Generated endpoint index (repo): `docs/api/API_REFERENCE.generated.md`
 
 Operator note:
 - Rotate/revoke API keys safely via `API_ACCESS_KEYS` (staged rotation). See `docs/SECURITY.md` for the runbook.

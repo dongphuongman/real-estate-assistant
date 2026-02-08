@@ -123,9 +123,18 @@ def diff_coverage_percent(
 ) -> tuple[int, int, float]:
     total = 0
     covered = 0
+    prefixes = ("apps/api/",)
     for file_path, lines in changed_lines.items():
         normalized = file_path.replace("\\", "/")
-        fc = coverage_by_file.get(normalized)
+        candidates = [normalized]
+        for prefix in prefixes:
+            if normalized.startswith(prefix):
+                candidates.append(normalized[len(prefix) :])
+        fc = None
+        for candidate in candidates:
+            if candidate in coverage_by_file:
+                fc = coverage_by_file[candidate]
+                break
         if fc is None:
             total += len(lines)
             continue
@@ -170,7 +179,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     sub = parser.add_subparsers(dest="cmd", required=True)
 
-    diff_parser = sub.add_parser("diff", help="Enforce minimum coverage on changed lines.")
+    diff_parser = sub.add_parser(
+        "diff", help="Enforce minimum coverage on changed lines."
+    )
     diff_parser.add_argument("--coverage-xml", type=Path, default=Path("coverage.xml"))
     diff_parser.add_argument("--base-ref", type=str, default=None)
     diff_parser.add_argument("--include", action="append", default=[])
@@ -197,13 +208,30 @@ def main(argv: Sequence[str] | None = None) -> int:
         include_globs = list(args.include)
         exclude_globs = list(args.exclude)
         if include_globs or exclude_globs:
+            prefixes = ("apps/api/",)
+
+            def _candidates(value: str) -> list[str]:
+                normalized = value.replace("\\", "/")
+                items = [normalized]
+                for prefix in prefixes:
+                    if normalized.startswith(prefix):
+                        items.append(normalized[len(prefix) :])
+                return items
+
             filtered: Dict[str, Set[int]] = {}
             for filename, lines in changed_lines.items():
+                candidates = _candidates(filename)
                 if include_globs and not any(
-                    fnmatch.fnmatch(filename, pat) for pat in include_globs
+                    fnmatch.fnmatch(candidate, pat)
+                    for candidate in candidates
+                    for pat in include_globs
                 ):
                     continue
-                if exclude_globs and any(fnmatch.fnmatch(filename, pat) for pat in exclude_globs):
+                if exclude_globs and any(
+                    fnmatch.fnmatch(candidate, pat)
+                    for candidate in candidates
+                    for pat in exclude_globs
+                ):
                     continue
                 filtered[filename] = lines
             changed_lines = filtered
@@ -211,7 +239,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         covered, total, percent = diff_coverage_percent(coverage_by_file, changed_lines)
         _print_summary("Diff coverage", covered, total, percent)
         if percent + 1e-9 < float(args.min_coverage):
-            print(f"FAIL: Diff coverage {percent:.2f}% < {float(args.min_coverage):.2f}%")
+            print(
+                f"FAIL: Diff coverage {percent:.2f}% < {float(args.min_coverage):.2f}%"
+            )
             return 2
         return 0
 
@@ -225,7 +255,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         print("FAIL: Critical coverage set is empty.")
         return 2
     if percent + 1e-9 < float(args.min_coverage):
-        print(f"FAIL: Critical coverage {percent:.2f}% < {float(args.min_coverage):.2f}%")
+        print(
+            f"FAIL: Critical coverage {percent:.2f}% < {float(args.min_coverage):.2f}%"
+        )
         return 2
     return 0
 

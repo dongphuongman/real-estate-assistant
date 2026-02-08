@@ -2,6 +2,7 @@
 Pytest configuration and shared fixtures.
 """
 
+import importlib
 import importlib.util
 import os
 import sys
@@ -25,26 +26,44 @@ def _install_stub_module(module_name: str, attrs: dict[str, object] | None = Non
         for key, value in attrs.items():
             setattr(module, key, value)
     sys.modules[module_name] = module
+    if "." in module_name:
+        parent_name, child_name = module_name.rsplit(".", 1)
+        parent = sys.modules.get(parent_name)
+        if parent is None:
+            parent = types.ModuleType(parent_name)
+            parent.__path__ = []
+            sys.modules[parent_name] = parent
+        setattr(parent, child_name, module)
 
 
 def _ensure_optional_excel_modules() -> None:
     if importlib.util.find_spec("xlrd") is None:
-        _install_stub_module("xlrd", {"open_workbook": lambda *_args, **_kwargs: None})
+        book_type = type("Book", (), {})
+        _install_stub_module(
+            "xlrd",
+            {
+                "open_workbook": lambda *_args, **_kwargs: book_type(),
+                "__version__": "2.0.1",
+                "Book": book_type,
+            },
+        )
     if importlib.util.find_spec("odf") is None:
         _install_stub_module("odf")
-    if importlib.util.find_spec("odf.opendocument") is None:
+    try:
+        odf_opendocument = importlib.import_module("odf.opendocument")
+    except Exception:
         _install_stub_module("odf.opendocument", {"load": lambda *_args, **_kwargs: None})
+    else:
+        parent = sys.modules.get("odf")
+        child = sys.modules.get("odf.opendocument", odf_opendocument)
+        if parent is not None and child is not None and not hasattr(parent, "opendocument"):
+            parent.opendocument = child
 
 
 def pytest_configure() -> None:
     os.environ.setdefault("ENVIRONMENT", "test")
     os.environ["API_ACCESS_KEY"] = "dev-secret-key"
     _ensure_optional_excel_modules()
-
-
-def pytest_asyncio_mode() -> str:
-    """Set pytest-asyncio mode to auto for async test support."""
-    return "auto"
 
 
 @pytest.fixture

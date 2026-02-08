@@ -6,9 +6,9 @@ permissions:
 
 on:
   push:
-    branches: [ main, ver4 ]
+    branches: [ main, dev, ver4 ]
   pull_request:
-    branches: [ main, ver4 ]
+    branches: [ main, dev, ver4 ]
   workflow_dispatch:
 
 jobs:

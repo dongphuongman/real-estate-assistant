@@ -15,8 +15,8 @@ The V4 API is built with FastAPI and provides a RESTful interface for the AI Rea
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
 - OpenAPI JSON (runtime): `http://localhost:8000/openapi.json`
-- OpenAPI JSON (repo snapshot): `docs/openapi.json` (regenerate with `python scripts\docs\export_openapi.py`)
-- Generated endpoint index (repo): `docs/API_REFERENCE.generated.md` (regenerate with `python scripts\docs\generate_api_reference.py`)
+- OpenAPI JSON (repo snapshot): `docs/api/openapi.json` (regenerate with `python scripts\docs\export_openapi.py`)
+- Generated endpoint index (repo): `docs/api/API_REFERENCE.generated.md` (regenerate with `python scripts\docs\generate_api_reference.py`)
 
 ### Quality & Security Gates
 - Lint: `python -m ruff check .`
@@ -209,7 +209,7 @@ Invoke-RestMethod `
 - For full CI parity commands on Windows, see `docs/testing/TESTING_GUIDE.md`.
 - One-command backend CI parity: `python scripts\ci\ci_parity.py` (or `--dry-run` to print commands only).
 - CI runs RuleEngine as a dedicated step for fast feedback; run locally with `python -m pytest -q tests\integration\test_rule_engine_clean.py`.
-- CI runs OpenAPI and API Reference drift checks to keep `docs/openapi.json` and endpoint docs in sync.
+- CI runs OpenAPI and API Reference drift checks to keep `docs/api/openapi.json` and endpoint docs in sync.
 - CI also runs a Docker Compose smoke test (build + health checks). It waits for `/health` and the frontend `/`, and also checks `/api/v1/verify-auth` when `API_ACCESS_KEY` is set. Local equivalent: `python scripts\ci\compose_smoke.py --ci`.
 - Some internal/legacy modules may require optional Python packages (for example `ai/agent.py` requires `langchain-experimental`); the V4 API does not require these optional deps.
 - CI coverage enforcement uses `python scripts\\coverage_gate.py`:

@@ -20,7 +20,7 @@ def test_serialize_endpoints_markdown_outputs_operations_only() -> None:
 
 
 def test_update_api_reference_full_replaces_endpoints_section(tmp_path: Path) -> None:
-    docs_dir = tmp_path / "docs"
+    docs_dir = tmp_path / "docs" / "api"
     docs_dir.mkdir(parents=True)
     schema_path = docs_dir / "openapi.json"
     schema_path.write_text(
@@ -30,18 +30,7 @@ def test_update_api_reference_full_replaces_endpoints_section(tmp_path: Path) ->
     api_ref = docs_dir / "API_REFERENCE.md"
     api_ref.write_text("# Title\n\n### Endpoints\n\nold\n", encoding="utf-8")
 
-    # Run update (via imported main) using cwd-relative defaults
-    cwd = Path.cwd()
-    try:
-        # Temporarily chdir to tmp project so defaults point to our files
-        import os
-
-        os.chdir(tmp_path)
-        assert update_main([]) == 0
-    finally:
-        import os
-
-        os.chdir(cwd)
+    assert update_main(["--schema", str(schema_path), "--output", str(api_ref)]) == 0
 
     updated = api_ref.read_text(encoding="utf-8")
     assert "## GET /ping" in updated

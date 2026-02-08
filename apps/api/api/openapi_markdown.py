@@ -51,7 +51,7 @@ def serialize_api_reference_markdown(schema: dict[str, Any]) -> str:
     header = [
         "# API Reference (Generated)",
         "",
-        "This file is generated from the committed OpenAPI schema snapshot (`docs/openapi.json`).",
+        "This file is generated from the committed OpenAPI schema snapshot (`docs/api/openapi.json`).",
         f"- Source title: {title}",
         f"- Source version: {version}" if version else "- Source version: (unknown)",
         "",

@@ -15,11 +15,11 @@ def main(argv: list[str] | None = None) -> int:
     from api.openapi_markdown import load_openapi_schema, serialize_endpoints_markdown
 
     # Default paths are relative to project root, not current working directory
-    default_schema = project_root / "docs" / "openapi.json"
-    default_output = project_root / "docs" / "API_REFERENCE.md"
+    default_schema = project_root / "docs" / "api" / "openapi.json"
+    default_output = project_root / "docs" / "api" / "API_REFERENCE.md"
 
     parser = argparse.ArgumentParser(
-        description="Update docs\\API_REFERENCE.md Endpoints section from committed OpenAPI schema snapshot."
+        description="Update docs\\api\\API_REFERENCE.md Endpoints section from committed OpenAPI schema snapshot."
     )
     parser.add_argument(
         "--schema",

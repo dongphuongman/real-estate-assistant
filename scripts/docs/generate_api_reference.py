@@ -15,8 +15,8 @@ def main() -> int:
     from api.openapi_markdown import export_api_reference_markdown
 
     # Default paths are relative to project root, not current working directory
-    default_schema = project_root / "docs" / "openapi.json"
-    default_output = project_root / "docs" / "API_REFERENCE.generated.md"
+    default_schema = project_root / "docs" / "api" / "openapi.json"
+    default_output = project_root / "docs" / "api" / "API_REFERENCE.generated.md"
 
     parser = argparse.ArgumentParser(
         description="Generate a Markdown API reference from the committed OpenAPI schema snapshot."

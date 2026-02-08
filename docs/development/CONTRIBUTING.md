@@ -201,4 +201,4 @@ Keep `main` reserved for releases (merge from `dev` when publishing).
 ## 📚 Documentation
 - Keep `README.md` concise.
 - Place detailed docs in `docs/`.
-- Update `docs/API_REFERENCE.md` for API changes.
+- Update `docs/api/API_REFERENCE.md` for API changes.

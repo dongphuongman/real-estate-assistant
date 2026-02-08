@@ -128,6 +128,35 @@ def test_diff_coverage_percent_counts_missing_files_as_uncovered(tmp_path: Path)
     assert (covered, total, percent) == (0, 2, 0.0)
 
 
+def test_diff_coverage_percent_strips_apps_api_prefix(tmp_path: Path):
+    coverage_xml = "\n".join(
+        [
+            '<?xml version="1.0" ?>',
+            '<coverage line-rate="1.0">',
+            "  <packages>",
+            '    <package name="api">',
+            "      <classes>",
+            '        <class filename="api/foo.py">',
+            "          <lines>",
+            '            <line number="1" hits="1" />',
+            "          </lines>",
+            "        </class>",
+            "      </classes>",
+            "    </package>",
+            "  </packages>",
+            "</coverage>",
+        ]
+    )
+    cov_path = _write_coverage_xml(tmp_path, coverage_xml)
+    coverage_by_file = load_coverage_xml(cov_path)
+
+    covered, total, percent = diff_coverage_percent(
+        coverage_by_file=coverage_by_file,
+        changed_lines={"apps/api/api/foo.py": {1}},
+    )
+    assert (covered, total, percent) == (1, 1, 100.0)
+
+
 def test_critical_coverage_percent_applies_include_and_exclude(tmp_path: Path):
     coverage_xml = "\n".join(
         [

@@ -101,7 +101,7 @@ def main(argv: list[str] | None = None) -> int:
         "coverage",
     }
     ignore_paths = {
-        "docs/openapi.json",
+        "docs/api/openapi.json",
         "frontend/package-lock.json",
         "package-lock.json",
         "scripts/security/forbidden_tokens_check.py",

@@ -84,6 +84,7 @@ class ConnectionPoolManager:
         self._config = PoolConfig.from_env()
         self._thread_pool: Optional[ThreadPoolExecutor] = None
         self._redis_pool: Optional[Any] = None
+        self._redis_pool_initialized = False
         self._initialized = True
 
     def get_thread_pool(self) -> ThreadPoolExecutor:
@@ -112,8 +113,11 @@ class ConnectionPoolManager:
             Redis connection pool or None if redis package not available
         """
         if self._redis_pool is None:
+            if self._redis_pool_initialized:
+                return None
             with threading.Lock():
                 if self._redis_pool is None:
+                    self._redis_pool_initialized = True
                     try:
                         import redis
 
@@ -146,7 +150,7 @@ class ConnectionPoolManager:
         Returns:
             Redis client or None if unavailable
         """
-        pool = self.get_redis_connection_pool(redis_url)
+        pool = self._redis_pool
         if pool is None:
             return None
 
@@ -172,6 +176,7 @@ class ConnectionPoolManager:
             except Exception as e:
                 logger.warning("Error disconnecting Redis pool: %s", e)
             self._redis_pool = None
+            self._redis_pool_initialized = False
 
     def get_stats(self) -> dict[str, Any]:
         """Get connection pool statistics."""

@@ -17,11 +17,15 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Union, cas
 
 import pandas as pd
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_chroma import Chroma
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_core.retrievers import BaseRetriever
+
+try:
+    from langchain_chroma import Chroma
+except Exception:
+    Chroma = None
 
 from config.settings import settings
 from data.schemas import Property, PropertyCollection
@@ -151,6 +155,9 @@ class ChromaPropertyStore:
 
     def _initialize_vector_store(self) -> Optional[Chroma]:
         """Initialize or load existing ChromaDB vector store."""
+        if Chroma is None:
+            logger.warning("Chroma is unavailable; vector store features are disabled")
+            return None
         if self.embeddings is None:
             logger.warning("Embeddings unavailable; vector store features are disabled")
             return None
@@ -535,7 +542,7 @@ class ChromaPropertyStore:
             self._indexing_event.set()
             try:
                 self._vector_store_local.store = self.vector_store
-                if isinstance(self.vector_store, Chroma):
+                if Chroma is not None and isinstance(self.vector_store, Chroma):
                     self._vector_store_local.store = self._initialize_vector_store()
                 return self.add_property_collection(
                     collection,

@@ -29,7 +29,7 @@ Releases are tracked with tags (SemVer), e.g. **[`v1.0.0`](https://github.com/Al
 
 The AI Real Estate Assistant is a modern, conversational AI platform helping users find properties through natural language. Built with a **FastAPI** backend and **Next.js** frontend, it features semantic search, hybrid agent routing, and real-time analytics.
 
-**[Docs](docs/README.md)** | **[User Guide](docs/user/USER_GUIDE.md)** | **[Backend API](docs/API_REFERENCE.md)** | **[Developer Notes](docs/development/DEVELOPER_NOTES.md)** | **[Troubleshooting](docs/development/TROUBLESHOOTING.md)** | **[Testing](docs/testing/TESTING_GUIDE.md)** | **[Contributing](docs/development/CONTRIBUTING.md)**
+**[Docs](docs/README.md)** | **[User Guide](docs/user/USER_GUIDE.md)** | **[Backend API](docs/api/API_REFERENCE.md)** | **[Developer Notes](docs/development/DEVELOPER_NOTES.md)** | **[Troubleshooting](docs/development/TROUBLESHOOTING.md)** | **[Testing](docs/testing/TESTING_GUIDE.md)** | **[Contributing](docs/development/CONTRIBUTING.md)**
 
 ---
 

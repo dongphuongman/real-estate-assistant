@@ -1,6 +1,6 @@
 # API Reference (Generated)
 
-This file is generated from the committed OpenAPI schema snapshot (`docs/openapi.json`).
+This file is generated from the committed OpenAPI schema snapshot (`docs/api/openapi.json`).
 - Source title: AI Real Estate Assistant - Modern
 - Source version: 3.0.0
 

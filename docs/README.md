@@ -32,8 +32,8 @@ Welcome to the documentation for the AI Real Estate Assistant (V4).
 - **[Feature Ideas](process/FEATURE_IDEAS_AND_INTEGRATIONS.md)**: Ideation and integrations.
 
 ## API
-- **[API Reference](API_REFERENCE.md)**: Backend API documentation.
-- `openapi.json`: Snapshotted OpenAPI schema.
+- **[API Reference](api/API_REFERENCE.md)**: Backend API documentation.
+- `api/openapi.json`: Snapshotted OpenAPI schema.
 
 ## Scripts
 - **[Local Development Scripts](scripts/LOCAL_DEVELOPMENT.md)**: One-command start helpers.

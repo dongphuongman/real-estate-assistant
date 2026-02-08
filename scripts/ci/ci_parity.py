@@ -341,9 +341,22 @@ def main(argv: Sequence[str]) -> int:
             # The actual repo root is two levels up (from apps/api -> apps -> repo root)
             # But actually, the scripts are at the project root, not apps root
             # So we need to go up two levels to reach the repo root
-            actual_repo_root = repo_root.parent.parent if repo_root.parent.name == "apps" else repo_root.parent
+            actual_repo_root = (
+                repo_root.parent.parent
+                if repo_root.parent.name == "apps"
+                else repo_root.parent
+            )
         else:
             raise FileNotFoundError(f"apps/api directory not found at {api_dir}")
+
+    original_cwd = Path.cwd()
+    if actual_repo_root != original_cwd:
+        os.chdir(actual_repo_root)
+    if not Path("scripts/ci/coverage_gate.py").exists():
+        os.chdir(original_cwd)
+        raise FileNotFoundError("coverage_gate.py")
+    if actual_repo_root != original_cwd:
+        os.chdir(original_cwd)
 
     os.chdir(api_dir)
 
@@ -351,9 +364,7 @@ def main(argv: Sequence[str]) -> int:
     # to use ../../ prefix to reach repo root scripts
     if api_dir != actual_repo_root:
         # We're in apps/api, need to adjust script paths
-        cmds = build_commands_with_repo_paths(
-            cfg, str(actual_repo_root), str(api_dir)
-        )
+        cmds = build_commands_with_repo_paths(cfg, str(actual_repo_root), str(api_dir))
     else:
         cmds = build_commands(cfg)
 

@@ -17,7 +17,7 @@
     "build": "npm run build:web",
     "build:web": "cd apps/web && npm run build",
     "test": "npm run test:api && npm run test:web",
-    "test:api": "cd apps/api && pytest",
+    "test:api": "cd apps/api && set PYTHONPATH=%CD% && python -m pytest",
     "test:web": "cd apps/web && npm test",
     "test:coverage": "cd apps/web && npm run test:coverage",
     "test:e2e": "playwright test",
