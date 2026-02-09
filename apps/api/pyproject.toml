@@ -11,7 +11,7 @@ requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.110.0",
     "uvicorn>=0.27.0",
-    "langchain>=0.3.0",
+    "langchain>=0.3.0,<1.0.0",
     "chromadb>=0.5.0",
     "pydantic>=2.0.0",
     "openai>=1.0.0",
@@ -44,8 +44,8 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["api*", "agents*", "analytics*", "config*", "models*", "notifications*", "workflows*"]
-exclude = ["frontend*", "tests*", "data*", "assets*", "artifacts*", "vector_store*", "node_modules*"]
+include = ["api*", "agents*", "analytics*", "config*", "models*", "notifications*", "workflows*", "tools*", "utils*", "vector_store*", "i18n*", "data*", "rules*", "ai*"]
+exclude = ["frontend*", "tests*", "assets*", "artifacts*", "node_modules*"]
 
 [tool.ruff]
 line-length = 100

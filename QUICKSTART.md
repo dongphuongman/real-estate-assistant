@@ -17,9 +17,9 @@
 ```
 
 **Access:**
-- Frontend: http://localhost:3000
-- Backend: http://localhost:8000
-- API Docs: http://localhost:8000/docs
+- Frontend: http://localhost:3001
+- Backend: http://localhost:8001
+- API Docs: http://localhost:8001/docs
 
 ---
 

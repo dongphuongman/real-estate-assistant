@@ -14,7 +14,7 @@
         "updatedAt": "2026-02-05T13:58:27.886Z"
       },
       {
-        "id": 25,
+        "id": "25",
         "title": "Create deploy/ directory structure and move Docker files",
         "description": "Create the new deploy/ directory with docker/ and compose/ subdirectories, and move all Docker-related files from root and frontend locations to the new structure.",
         "status": "pending",
@@ -25,7 +25,7 @@
         "subtasks": []
       },
       {
-        "id": 26,
+        "id": "26",
         "title": "Restructure scripts/ directory into subdirectories",
         "description": "Reorganize the scripts/ directory by creating subdirectories (ci, dev, docs, security, validation) and moving existing scripts into their appropriate categories.",
         "status": "pending",
@@ -36,7 +36,7 @@
         "subtasks": []
       },
       {
-        "id": 27,
+        "id": "27",
         "title": "Update .devcontainer configuration for FastAPI + Next.js",
         "description": "Update the .devcontainer/devcontainer.json file to reflect the new FastAPI backend and Next.js frontend stack, removing outdated Streamlit references.",
         "status": "pending",
@@ -47,12 +47,12 @@
         "subtasks": []
       },
       {
-        "id": 28,
+        "id": "28",
         "title": "Rename and consolidate security scripts",
         "description": "Rename scripts/ci/security_local.py to scripts/ci/security.py and remove the root-level security-scan.py wrapper script.",
         "status": "pending",
         "dependencies": [
-          26
+          "26"
         ],
         "priority": "medium",
         "details": "1. Rename scripts/ci/security_local.py to scripts/ci/security.py using git mv to preserve history\n2. Update any imports or references within security.py if needed\n3. Remove root-level security-scan.py file\n4. Verify security.py can be run directly: 'python scripts/ci/security.py'\n5. Ensure security.py functionality covers all capabilities of the removed wrapper\n6. Update any shebang lines to use proper Python interpreter path",
@@ -60,14 +60,14 @@
         "subtasks": []
       },
       {
-        "id": 29,
+        "id": "29",
         "title": "Update CI/CD workflows with new paths",
         "description": "Update .github/workflows/ci.yml and .github/workflows/semgrep.yml to use the new script paths and Docker file locations.",
         "status": "pending",
         "dependencies": [
-          25,
-          26,
-          28
+          "25",
+          "26",
+          "28"
         ],
         "priority": "high",
         "details": "1. Update .github/workflows/ci.yml:\n   - Update script paths: scripts/xxx -> scripts/ci/xxx, scripts/dev/xxx, etc.\n   - Update docker-compose paths: docker-compose.yml -> deploy/compose/docker-compose.yml\n   - Update Dockerfile paths for build steps\n   - Update security scan command to use scripts/ci/security.py\n2. Update .github/workflows/semgrep.yml if it references any moved scripts\n3. Verify all environment variables and secrets references remain valid\n4. Ensure working-directory settings in workflow jobs are correct for new structure\n5. Update any relative path references in workflow commands",
@@ -75,14 +75,14 @@
         "subtasks": []
       },
       {
-        "id": 30,
+        "id": "30",
         "title": "Create Makefile for common commands",
         "description": "Create a root-level Makefile with convenient targets for security scanning, testing, linting, docker operations, and running full CI locally.",
         "status": "pending",
         "dependencies": [
-          26,
-          28,
-          29
+          "26",
+          "28",
+          "29"
         ],
         "priority": "medium",
         "details": "1. Create Makefile with the following targets:\n   - make security: runs 'python scripts/ci/security.py'\n   - make test: runs 'python -m pytest' or equivalent test command\n   - make lint: runs 'ruff check .' and 'ruff format --check .'\n   - make docker-up: runs 'docker-compose -f deploy/compose/docker-compose.yml up -d'\n   - make docker-down: runs 'docker-compose -f deploy/compose/docker-compose.yml down'\n   - make ci: runs full CI locally via scripts/dev/run-ci-full.ps1 or equivalent\n   - make setup: runs scripts/dev/setup.sh (or .ps1 on Windows)\n   - make dev: runs scripts/dev/start.py\n2. Add .PHONY declaration for all targets\n3. Include help target that displays all available commands\n4. Add variables for common paths (DOCKER_COMPOSE_FILE, SCRIPT_DIR, etc.)\n5. Ensure Makefile is cross-platform compatible (or document Windows limitations)",
@@ -90,17 +90,17 @@
         "subtasks": []
       },
       {
-        "id": 31,
+        "id": "31",
         "title": "Update documentation with new structure",
         "description": "Update README.md, CLAUDE.md, and any other documentation files to reflect the new project structure, script locations, and commands.",
         "status": "pending",
         "dependencies": [
-          25,
-          26,
-          27,
-          28,
-          29,
-          30
+          "25",
+          "26",
+          "27",
+          "28",
+          "29",
+          "30"
         ],
         "priority": "medium",
         "details": "1. Update README.md:\n   - Update project structure diagram\n   - Update all script path references (old -> new)\n   - Update Docker commands to use new paths\n   - Update development setup instructions\n   - Add Makefile usage examples\n2. Update CLAUDE.md:\n   - Update script paths for AI assistant context\n   - Reflect new directory structure in any path descriptions\n   - Update workflow references\n3. Update any inline documentation or comments in moved files\n4. Update CONTRIBUTING.md if it exists with new command patterns\n5. Search for references to old paths in other .md files and update accordingly",
@@ -108,18 +108,18 @@
         "subtasks": []
       },
       {
-        "id": 32,
+        "id": "32",
         "title": "Final validation and integration testing",
         "description": "Perform comprehensive validation to ensure all refactored paths work correctly, Docker containers build and run, and all scripts execute without errors.",
         "status": "pending",
         "dependencies": [
-          25,
-          26,
-          27,
-          28,
-          29,
-          30,
-          31
+          "25",
+          "26",
+          "27",
+          "28",
+          "29",
+          "30",
+          "31"
         ],
         "priority": "high",
         "details": "1. Run full CI pipeline to verify all changes work together\n2. Test Docker workflows:\n   - Build backend: 'docker build -f deploy/docker/Dockerfile.backend .'\n   - Build frontend: 'docker build -f deploy/docker/Dockerfile.frontend ./frontend'\n   - Start services: 'docker-compose -f deploy/compose/docker-compose.yml up -d'\n   - Verify services are accessible on expected ports\n3. Test all Makefile targets end-to-end\n4. Run security scan: 'python scripts/ci/security.py' or 'make security'\n5. Test dev container from fresh start:\n   - Delete .devcontainer cache\n   - Rebuild and reopen container\n   - Verify all setup completes\n6. Validate no broken imports or path references in any Python file\n7. Create a smoke test that exercises key functionality",

@@ -317,7 +317,7 @@ Frontend-specific variables (optional) go into `frontend/.env.local`.
 ## 🧪 Development & Testing
 
 - **Backend Tests**: `pytest`
-- **Frontend Tests**: `cd frontend && npm test`
+- **Frontend Tests**: `cd frontend; npm test`
 - **Linting**: `ruff check .` (Python), `npm run lint` (Frontend)
 
 See `docs/testing/TESTING_GUIDE.md` for details.

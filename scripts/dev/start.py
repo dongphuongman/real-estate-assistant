@@ -114,7 +114,7 @@ def _sanitize_env_for_display(env: dict[str, str]) -> dict[str, str]:
     return safe
 
 
-def _build_backend_env() -> dict[str, str]:
+def _build_backend_env(*, port: int | None = None) -> dict[str, str]:
     env = os.environ.copy()
     env.setdefault("ENVIRONMENT", "development")
     if (
@@ -122,13 +122,18 @@ def _build_backend_env() -> dict[str, str]:
         and not env.get("API_ACCESS_KEYS", "").strip()
     ):
         env["API_ACCESS_KEY"] = "dev-secret-key"
+    if port is not None:
+        env["PORT"] = str(port)
     return env
 
 
-def _build_frontend_env(*, backend_env: dict[str, str]) -> dict[str, str]:
+def _build_frontend_env(
+    *, backend_env: dict[str, str], backend_port: int = 8000, frontend_port: int = 3000
+) -> dict[str, str]:
     env = os.environ.copy()
     env.setdefault("NEXT_PUBLIC_API_URL", "/api/v1")
-    env.setdefault("BACKEND_API_URL", "http://localhost:8000/api/v1")
+    env.setdefault("BACKEND_API_URL", f"http://localhost:{backend_port}/api/v1")
+    env.setdefault("PORT", str(frontend_port))
     if (
         not env.get("API_ACCESS_KEY", "").strip()
         and not env.get("API_ACCESS_KEYS", "").strip()
@@ -142,7 +147,15 @@ def _build_frontend_env(*, backend_env: dict[str, str]) -> dict[str, str]:
     return env
 
 
-def _run_local(root: Path, *, service: str, no_bootstrap: bool, dry_run: bool) -> int:
+def _run_local(
+    root: Path,
+    *,
+    service: str,
+    no_bootstrap: bool,
+    dry_run: bool,
+    backend_port: int = 8001,
+    frontend_port: int = 3001,
+) -> int:
     wants_backend = service in {"all", "backend"}
     wants_frontend = service in {"all", "frontend"}
 
@@ -155,12 +168,18 @@ def _run_local(root: Path, *, service: str, no_bootstrap: bool, dry_run: bool) -
         "--host",
         "0.0.0.0",
         "--port",
-        "8000",
+        str(backend_port),
     ]
     frontend_cmd = ["npm", "run", "dev"]
+    if os.name == "nt":
+        frontend_cmd[0] = "npm.cmd"
 
-    env_backend = _build_backend_env()
-    env_frontend = _build_frontend_env(backend_env=env_backend)
+    env_backend = _build_backend_env(port=backend_port)
+    env_frontend = _build_frontend_env(
+        backend_env=env_backend,
+        backend_port=backend_port,
+        frontend_port=frontend_port,
+    )
 
     if dry_run:
         if wants_backend:
@@ -243,6 +262,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--internet", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--no-bootstrap", action="store_true")
+    parser.add_argument(
+        "--backend-port", type=int, default=8001, help="Backend port (default: 8001)"
+    )
+    parser.add_argument(
+        "--frontend-port", type=int, default=3001, help="Frontend port (default: 3001)"
+    )
     args = parser.parse_args(argv)
     if bool(args.internet):
         os.environ.setdefault("INTERNET_ENABLED", "true")
@@ -278,6 +303,8 @@ def main(argv: list[str] | None = None) -> int:
             service=args.service,
             no_bootstrap=bool(args.no_bootstrap),
             dry_run=bool(args.dry_run),
+            backend_port=args.backend_port,
+            frontend_port=args.frontend_port,
         )
     if args.mode == "docker":
         if args.dry_run:
@@ -293,6 +320,8 @@ def main(argv: list[str] | None = None) -> int:
         service=args.service,
         no_bootstrap=bool(args.no_bootstrap),
         dry_run=bool(args.dry_run),
+        backend_port=args.backend_port,
+        frontend_port=args.frontend_port,
     )
 
 
