@@ -43,7 +43,9 @@ def _scan_file_for_tokens(
             if token in line:
                 matches.append(
                     TokenMatch(
-                        relative_path=relative_path, line_number=idx, token=token
+                        relative_path=relative_path,
+                        line_number=idx,
+                        token=token,
                     )
                 )
     return matches
@@ -65,7 +67,9 @@ def main(argv: list[str] | None = None) -> int:
         "--token",
         action="append",
         default=["NEXT_PUBLIC_API_KEY"],
-        help="Forbidden token to search for. Repeatable. Default: NEXT_PUBLIC_API_KEY",
+        help=(
+            "Forbidden token to search for. Repeatable. Default: NEXT_PUBLIC_API_KEY"
+        ),
     )
     parser.add_argument(
         "--max-bytes",
@@ -81,7 +85,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "paths",
         nargs="*",
-        help="Optional file paths to scan (relative or absolute). If omitted, scans the repository.",
+        help=(
+            "Optional file paths to scan (relative or absolute). "
+            "If omitted, scans the repository."
+        ),
     )
     args = parser.parse_args(argv)
 
@@ -104,7 +111,7 @@ def main(argv: list[str] | None = None) -> int:
         "docs/api/openapi.json",
         "frontend/package-lock.json",
         "package-lock.json",
-        "scripts/security/forbidden_tokens_check.py",
+        "scripts/security/forbidden_tokens.py",
         "tests/unit/test_forbidden_tokens_check.py",
         "apps/api/tests/unit/test_forbidden_tokens_check.py",
         "apps/web/package-lock.json",
@@ -156,7 +163,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if all_matches:
         all_matches_sorted = sorted(
-            all_matches, key=lambda m: (m.relative_path, m.line_number, m.token)
+            all_matches,
+            key=lambda m: (m.relative_path, m.line_number, m.token),
         )
         details = "\n".join(
             f"- {m.relative_path}:{m.line_number} ({m.token})"
@@ -165,7 +173,8 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(
             "Forbidden tokens detected:\n"
             f"{details}\n\n"
-            "Remove the token(s) from the repository or move them to server-only env variables."
+            "Remove the token(s) from the repository or move them to "
+            "server-only env variables."
         )
 
     return 0
