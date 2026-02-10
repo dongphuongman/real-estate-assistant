@@ -88,7 +88,10 @@ Copy-Item .env.example .env
 # Edit .env to add your API keys (e.g., OPENAI_API_KEY)
 
 # 2. Run with Docker Compose
-docker-compose up --build
+docker compose -f deploy/compose/docker-compose.yml up --build
+
+# For GPU support (NVIDIA):
+docker compose -f deploy/compose/docker-compose.yml -f deploy/compose/docker-compose.gpu.yml up --build
 
 # 3. Access
 # Frontend: http://localhost:3000

@@ -17,12 +17,13 @@
         "id": "25",
         "title": "Create deploy/ directory structure and move Docker files",
         "description": "Create the new deploy/ directory with docker/ and compose/ subdirectories, and move all Docker-related files from root and frontend locations to the new structure.",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [],
         "priority": "high",
         "details": "1. Create directory structure: deploy/docker/, deploy/compose/, deploy/k8s/\n2. Move Dockerfile.backend (root) to deploy/docker/Dockerfile.backend\n3. Move frontend/Dockerfile.frontend to deploy/docker/Dockerfile.frontend\n4. Move docker-compose.yml (root) to deploy/compose/docker-compose.yml\n5. Create deploy/compose/docker-compose.gpu.yml for GPU variant based on docker-compose.yml\n6. Update all path references in Docker files (e.g., COPY commands, WORKDIR paths) to reflect new project root relative locations\n7. Update docker-compose files to reference Dockerfiles at their new locations (../docker/...)\n8. Create placeholder .gitkeep in deploy/k8s/ for future use",
         "testStrategy": "1. Verify directory structure matches PRD specification\n2. Run 'docker build -f deploy/docker/Dockerfile.backend .' to ensure backend builds\n3. Run 'docker build -f deploy/docker/Dockerfile.frontend ./frontend' to ensure frontend builds\n4. Run 'docker-compose -f deploy/compose/docker-compose.yml config' to validate compose file syntax\n5. Run 'docker-compose -f deploy/compose/docker-compose.gpu.yml config' to validate GPU variant",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-02-09T23:51:41.247Z"
       },
       {
         "id": "26",
@@ -128,9 +129,13 @@
       }
     ],
     "metadata": {
-      "created": "2026-02-05T13:53:51.002Z",
-      "updated": "2026-02-05T13:53:51.002Z",
-      "description": "Tasks for master context"
+      "version": "1.0.0",
+      "lastModified": "2026-02-09T23:51:41.247Z",
+      "taskCount": 9,
+      "completedCount": 0,
+      "tags": [
+        "master"
+      ]
     }
   }
 }

@@ -61,7 +61,9 @@ def run_diagnostics(base: list[str]) -> None:
             continue
 
 
-def http_get_status(url: str, timeout_seconds: float, headers: dict[str, str] | None = None) -> int:
+def http_get_status(
+    url: str, timeout_seconds: float, headers: dict[str, str] | None = None
+) -> int:
     req = urllib.request.Request(url, method="GET", headers=headers or {})
     try:
         with urllib.request.urlopen(req, timeout=timeout_seconds) as resp:
@@ -106,14 +108,18 @@ def get_default_api_access_key_from_env() -> str:
 
 
 def parse_args(argv: list[str]) -> SmokeConfig:
-    parser = argparse.ArgumentParser(description="Docker Compose smoke test (backend + frontend).")
-    parser.add_argument("--compose-file", default="docker-compose.yml")
+    parser = argparse.ArgumentParser(
+        description="Docker Compose smoke test (backend + frontend)."
+    )
+    parser.add_argument("--compose-file", default="deploy/compose/docker-compose.yml")
     parser.add_argument("--backend-health-url", default="http://localhost:8000/health")
     parser.add_argument(
         "--backend-verify-auth-url", default="http://localhost:8000/api/v1/verify-auth"
     )
     parser.add_argument("--frontend-url", default="http://localhost:3000/")
-    parser.add_argument("--api-access-key", default=get_default_api_access_key_from_env())
+    parser.add_argument(
+        "--api-access-key", default=get_default_api_access_key_from_env()
+    )
     parser.add_argument("--timeout-seconds", type=int, default=180)
     parser.add_argument("--interval-seconds", type=float, default=2.0)
     parser.add_argument("--build", action="store_true")

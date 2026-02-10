@@ -441,26 +441,26 @@ def main(argv: list[str] | None = None) -> int:
                 "docker",
                 "build",
                 "-f",
-                "apps/api/Dockerfile",
+                "deploy/docker/Dockerfile.backend",
                 "-t",
                 "ai-backend:ci",
-                "./apps/api",
+                ".",
             ],
             cwd=root,
             log_file=log_file,
         )
         if rc1 != 0:
             return "failed", f"log={log_file.as_posix()}"
-        # Build frontend (monorepo: apps/web)
+        # Build frontend (deploy/docker/Dockerfile.frontend)
         rc2 = _run(
             [
                 "docker",
                 "build",
                 "-f",
-                "apps/web/Dockerfile",
+                "deploy/docker/Dockerfile.frontend",
                 "-t",
                 "ai-frontend:ci",
-                "./apps/web",
+                ".",
             ],
             cwd=root,
             log_file=log_file,

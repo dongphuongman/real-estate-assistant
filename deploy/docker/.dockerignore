@@ -91,28 +91,3 @@ frontend/
 
 # Local artifacts
 artifacts/
-
-# Deploy directory (not needed in backend image)
-deploy/
-
-# Apps directories except api
-apps/database/
-
-# Additional exclusions
-data/
-**/data/
-**/audit/*.csv
-uv.lock
-coverage.xml
-tmp/
-dummy/
-
-# Exclude node_modules except for frontend build
-node_modules/
-!apps/web/node_modules/
-
-# Keep root package.json but allow apps/web/package.json
-package.json
-!apps/web/package.json
-package-lock.json
-!apps/web/package-lock.json

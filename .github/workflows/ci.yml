@@ -339,10 +339,10 @@ jobs:
           fetch-depth: 0
       - name: Build backend image
         run: |
-          docker build -f apps/api/Dockerfile -t ai-backend:ci ./apps/api
+          docker build -f deploy/docker/Dockerfile.backend -t ai-backend:ci .
       - name: Build frontend image
         run: |
-          docker build -f apps/web/Dockerfile -t ai-frontend:ci .
+          docker build -f deploy/docker/Dockerfile.frontend -t ai-frontend:ci .
       - name: Trivy scan (backend)
         uses: aquasecurity/trivy-action@0.20.0
         with:
