@@ -1,27 +1,26 @@
-# Project Structure (V3)
+# Project Structure (V4)
 
 ```
 ai-real-estate-assistant/
-├── app_modern.py           # Modern V3 app
-├── docs/                   # Documentation
-│   ├── README.md           # Docs navigation
-│   ├── INSTALLATION.md     # Platform-specific setup
-│   ├── TROUBLESHOOTING.md  # Common fixes
-│   ├── DEPLOYMENT.md       # Production deployment
-│   ├── QUICKSTART.md       # Docker Compose quickstart
-│   ├── TESTING_GUIDE.md    # Testing
-│   ├── USER_GUIDE.md       # User instructions
-│   ├── DEVELOPER_NOTES.md  # Dev architecture notes
-│   ├── PRD.MD              # Product requirements
-│   └── TODO.MD             # Roadmap
-├── agents/                 # Query analysis, hybrid orchestration
-├── analytics/              # Market insights & tracking
-├── ui/                     # Visualization components
-├── models/                 # Providers & factory
-├── vector_store/           # ChromaDB, retrievers, reranker
-├── data/                   # Schemas, loaders
-├── notifications/          # Email alerts
-├── i18n/                   # Translations
-├── utils/                  # Exporters, helpers
-└── tests/                  # Unit & integration tests
+├── apps/
+│   ├── api/                      # FastAPI backend (Python)
+│   │   ├── api/                  # Routers, middleware, app entrypoint
+│   │   ├── agents/               # Query analysis + orchestration
+│   │   ├── tools/                # Tool implementations (mortgage, compare, web tools)
+│   │   ├── vector_store/         # ChromaDB + retrievers + reranker
+│   │   ├── data/                 # Schemas + providers/adapters
+│   │   ├── analytics/            # Market insights + financial metrics
+│   │   ├── notifications/        # Digests, alerts, scheduling
+│   │   ├── models/               # Provider factory + model implementations
+│   │   ├── utils/                # Shared helpers (sanitization, exporters, caching)
+│   │   └── tests/                # Backend unit/integration/e2e tests
+│   └── web/                      # Next.js frontend (TypeScript)
+│       ├── src/app/              # App Router pages
+│       ├── src/components/       # UI components
+│       └── src/lib/              # API client + shared types/utils
+├── deploy/                       # Docker/Compose files
+├── docs/                         # Documentation (PRD, ADRs, architecture, security)
+├── scripts/                      # Dev/CI/docs/security/validation scripts
+├── k8s/                          # Kubernetes manifests (optional)
+└── .taskmaster/                  # Taskmaster PRD/tasks (project tracking)
 ```

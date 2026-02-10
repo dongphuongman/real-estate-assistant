@@ -48,6 +48,10 @@ trae_config.yml
 .test_alerts/
 chroma_db/
 
+# Local research and private materials (do not commit)
+tmp/
+private/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

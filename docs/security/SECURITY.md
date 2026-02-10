@@ -1,6 +1,6 @@
 # Security Policy — AI Real Estate Assistant V4
 
-**Last Updated:** 2026-01-26
+**Last Updated:** 26.01.2026
 **Version:** 4.0
 
 This document outlines the security measures implemented in the AI Real Estate Assistant platform and provides guidelines for secure deployment and operation.
