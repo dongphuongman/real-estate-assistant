@@ -75,7 +75,7 @@ jobs:
 
       - name: Forbidden token scan
         run: |
-          python ../../scripts/security/forbidden_tokens_check.py
+          python ../../scripts/security/forbidden_tokens.py
 
       - name: OpenAPI schema drift check
         continue-on-error: true
@@ -238,7 +238,7 @@ jobs:
           docker compose version
           set -e
           for attempt in 1 2; do
-            python scripts/ci/compose_smoke.py --ci --timeout-seconds 600 && break
+            python scripts/docker/compose_smoke.py --ci --timeout-seconds 600 && break
             if [ $attempt -eq 2 ]; then exit 1; fi
             echo "Compose smoke failed. Retrying..."
           done
