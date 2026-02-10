@@ -112,11 +112,11 @@ def parse_args(argv: list[str]) -> SmokeConfig:
         description="Docker Compose smoke test (backend + frontend)."
     )
     parser.add_argument("--compose-file", default="deploy/compose/docker-compose.yml")
-    parser.add_argument("--backend-health-url", default="http://localhost:8000/health")
+    parser.add_argument("--backend-health-url", default="http://localhost:8001/health")
     parser.add_argument(
-        "--backend-verify-auth-url", default="http://localhost:8000/api/v1/verify-auth"
+        "--backend-verify-auth-url", default="http://localhost:8001/api/v1/verify-auth"
     )
-    parser.add_argument("--frontend-url", default="http://localhost:3000/")
+    parser.add_argument("--frontend-url", default="http://localhost:3001/")
     parser.add_argument(
         "--api-access-key", default=get_default_api_access_key_from_env()
     )
