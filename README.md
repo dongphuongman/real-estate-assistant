@@ -80,22 +80,30 @@ flowchart TB
 ## 🚀 Quick Start
 
 ### 🐳 Docker (Fastest Way)
-The easiest way to run the full stack (Frontend + Backend + Database) locally.
+The easiest way to run the full stack locally.
+
+**Requires:** At least one external API key (OpenAI, Anthropic, Google, etc.)
 
 ```powershell
 # 1. Prepare environment
 Copy-Item .env.example .env
-# Edit .env to add your API keys (e.g., OPENAI_API_KEY)
+# Edit .env to add your API keys (OPENAI_API_KEY, ANTHROPIC_API_KEY, etc.)
 
-# 2. Run with Docker Compose
+# 2. Run with Docker Compose (external AI models)
 docker compose -f deploy/compose/docker-compose.yml up --build
-
-# For GPU support (NVIDIA):
-docker compose -f deploy/compose/docker-compose.yml -f deploy/compose/docker-compose.gpu.yml up --build
 
 # 3. Access
 # Frontend: http://localhost:3000
 # Backend API: http://localhost:8000/docs
+```
+
+#### Optional: Local LLM with Ollama
+
+> **Note:** Local LLM with Ollama requires GPU for good performance.
+
+```powershell
+# Run with Ollama for local models
+docker compose -f deploy/compose/docker-compose.yml --profile local-llm up --build
 ```
 
 ### 🐍 Manual Setup

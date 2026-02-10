@@ -1,3 +1,13 @@
+# AI Real Estate Assistant - Docker Compose Configuration
+#
+# Primary: External AI Models (OpenAI, Anthropic, Google, etc.)
+# - Requires at least one external API key in .env
+# - Backend and Frontend work without Ollama
+#
+# Optional: Local LLM with Ollama
+# - Start with: --profile local-llm
+# - GPU support: -f docker-compose.gpu.yml (LOCAL DEVELOPMENT ONLY)
+
 services:
   backend:
     build:
@@ -9,7 +19,7 @@ services:
     environment:
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - API_ACCESS_KEY=${API_ACCESS_KEY:-dev-secret-key}
-      - DEFAULT_PROVIDER=${DEFAULT_PROVIDER:-ollama}
+      - DEFAULT_PROVIDER=${DEFAULT_PROVIDER:-openai}
       - OLLAMA_DEFAULT_MODEL=${OLLAMA_DEFAULT_MODEL:-llama3.2:3b}
       - INTERNET_ENABLED=${INTERNET_ENABLED:-false}
       - SEARXNG_URL=${SEARXNG_URL:-http://searxng:8080}
@@ -61,9 +71,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-    depends_on:
-      ollama:
-        condition: service_healthy
+    # No Ollama dependency - backend works with external providers
 
   frontend:
     build:
@@ -87,6 +95,7 @@ services:
       start_period: 40s
 
   ollama:
+    profiles: ["local-llm"]  # Optional: only start with --profile local-llm
     image: ollama/ollama:latest
     container_name: ollama
     ports:
@@ -107,9 +116,8 @@ services:
       start_period: 20s
 
   ollama_gpu:
+    profiles: ["local-llm", "gpu"]  # Requires both profiles: --profile local-llm --profile gpu
     image: ollama/ollama:latest
-    container_name: ollama-gpu
-    profiles: ["gpu"]
     ports:
       - "11435:11434"
     environment:
