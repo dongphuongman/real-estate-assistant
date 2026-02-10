@@ -165,6 +165,8 @@ def _run_local(
         "uvicorn",
         "api.main:app",
         "--reload",
+        "--reload-dir",
+        str(root / "apps" / "api"),
         "--host",
         "0.0.0.0",
         "--port",

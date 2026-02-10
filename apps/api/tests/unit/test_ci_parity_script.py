@@ -4,7 +4,14 @@ import sys
 from pathlib import Path
 
 import pytest
-from scripts.ci.ci_parity import (
+
+# Add project root to Python path for scripts imports (before any test imports)
+# From apps/api/tests/unit/ to project root: 4 levels up
+_project_root = Path(__file__).resolve().parents[4]
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
+
+from scripts.ci.ci_parity import (  # noqa: E402
     ParityConfig,
     build_commands,
     build_integration_diff_coverage_gate_cmd,
