@@ -6,4 +6,4 @@ param(
 $root = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 Set-Location $root
 
-python (Join-Path $root "scripts\dev\start.py") @Args
+python (Join-Path $root "scripts\core\bootstrap.py") --dev @Args

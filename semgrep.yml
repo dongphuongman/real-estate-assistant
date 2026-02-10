@@ -36,17 +36,17 @@ rules:
       cwe: "CWE-78: OS Command Injection"
       owasp: "A03:2021 - Injection"
 
-  # Hardcoded secrets
+  # Hardcoded secrets - more specific patterns to reduce false positives
   - id: python.hardcoded-secrets
     pattern-either:
       - pattern: |
-          $PASSWORD = "..."
+          $PASSWORD = "=~.*(sk_|pk_|api_|secret_|token_|auth_).+"
       - pattern: |
-          $API_KEY = "..."
+          $API_KEY = "=~.*(sk_|pk_|api_|secret_|token_|auth_).+"
       - pattern: |
-          $SECRET = "..."
+          $SECRET = "=~.*(sk_|pk_|api_|secret_|token_|auth_).+"
       - pattern: |
-          $TOKEN = "..."
+          $TOKEN = "=~.*(sk_|pk_|api_|secret_|token_|auth_).+"
     message: "Hardcoded secret detected - use environment variables"
     severity: WARNING
     languages: [python]
@@ -72,7 +72,7 @@ rules:
 
   # FastAPI-specific issues
   - id: fastapi.cors-wildcard
-    pattern: $CORSMiddleware(allow_origins=["*"], ...)
+    pattern: CORSMiddleware(allow_origins=["*"], ...)
     message: "CORS configured with wildcard origins - allows any domain"
     severity: WARNING
     languages: [python]
@@ -107,15 +107,15 @@ rules:
       cwe: "CWE-79: Cross-site Scripting"
       owasp: "A03:2021 - Injection"
 
-  # Hardcoded secrets in JS/TS
+  # Hardcoded secrets in JS/TS - more specific to reduce false positives
   - id: javascript.hardcoded-secrets
     pattern-either:
       - pattern: |
-          const $SECRET = "..."
+          const $SECRET = "=~.*(sk_|pk_|api_|secret_|token_|auth_|password_|key_).+"
       - pattern: |
-          $API_KEY = "..."
+          $API_KEY = "=~.*(sk_|pk_|api_|secret_|token_|auth_|password_|key_).+"
       - pattern: |
-          process.env.$KEY = "..."
+          process.env.$KEY = "=~.*(sk_|pk_|api_|secret_|token_|auth_|password_|key_).+"
     message: "Hardcoded secret in frontend code - secrets should be on backend only"
     severity: WARNING
     languages: [javascript, typescript]

@@ -211,7 +211,9 @@ class SecurityLocalRunner:
                 status = ScanStatus.PASSED
             elif output:
                 # Extract findings from JSON or text output
-                findings.append(f"Gitleaks detected potential secrets (exit code: {rc})")
+                findings.append(
+                    f"Gitleaks detected potential secrets (exit code: {rc})"
+                )
                 if self.verbose:
                     findings.append(f"Output: {output[:500]}")
                 status = ScanStatus.FAILED

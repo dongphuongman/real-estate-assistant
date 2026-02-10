@@ -42,7 +42,7 @@ def _get_default_api_access_key_from_env() -> str:
 
 def _ensure_uv_dev_env(root: Path) -> None:
     _run_checked(
-        [sys.executable, str(root / "scripts" / "dev" / "bootstrap_uv.py"), "--dev"],
+        [sys.executable, str(root / "scripts" / "core" / "bootstrap.py"), "--dev"],
         cwd=root,
     )
 

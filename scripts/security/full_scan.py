@@ -284,7 +284,9 @@ class SecurityScanner:
         return ScanResult(
             name="Code Security Scan",
             status=status,
-            description=f"Found {len(findings)} issues" if findings else "No issues found",
+            description=f"Found {len(findings)} issues"
+            if findings
+            else "No issues found",
             details=stdout if findings else None,
             findings=findings,
         )
@@ -377,7 +379,9 @@ class SecurityScanner:
         return ScanResult(
             name="Configuration Security Scan",
             status=status,
-            description=f"Found {len(findings)} config issues" if findings else "No config issues",
+            description=f"Found {len(findings)} config issues"
+            if findings
+            else "No config issues",
             findings=findings,
         )
 
@@ -472,7 +476,9 @@ class SecurityScanner:
 
             reset_color = "\033[0m"
 
-            print(f"{status_color}{status_symbol}{reset_color} {result.name}: {result.status}")
+            print(
+                f"{status_color}{status_symbol}{reset_color} {result.name}: {result.status}"
+            )
             print(f"  {result.description}")
 
             if result.findings:
