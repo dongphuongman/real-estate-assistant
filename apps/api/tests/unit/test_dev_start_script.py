@@ -1,9 +1,17 @@
 from __future__ import annotations
 
-import os
+import sys  # noqa: E402
+from pathlib import Path
 from unittest.mock import patch
 
-from scripts.dev.start import (
+# noqa: E501
+# Add project root to Python path for scripts imports (top-level, before any test imports)
+# From apps/api/tests/unit/ to project root: 4 levels up
+_project_root = Path(__file__).resolve().parents[4]
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
+
+from scripts.core.start import (
     _build_backend_env,
     _build_frontend_env,
     _get_default_api_access_key_from_env,
@@ -13,14 +21,20 @@ from scripts.dev.start import (
 
 def test_get_default_api_access_key_from_env_prefers_primary_key() -> None:
     with patch.dict(
-        os.environ, {"API_ACCESS_KEY": " primary ", "API_ACCESS_KEYS": "rot1,rot2"}, clear=True
+        os.environ,
+        {"API_ACCESS_KEY": "primary", "API_ACCESS_KEYS": "rot1,rot2"},
+        clear=True,
+        # noqa: E501
     ):
         assert _get_default_api_access_key_from_env() == "primary"
 
 
 def test_get_default_api_access_key_from_env_falls_back_to_rotated_keys() -> None:
     with patch.dict(
-        os.environ, {"API_ACCESS_KEY": "   ", "API_ACCESS_KEYS": " rot1 , rot2 "}, clear=True
+        os.environ,
+        {"API_ACCESS_KEY": "   ", "API_ACCESS_KEYS": " rot1 , rot2 "},
+        clear=True,
+        # noqa: E501
     ):
         assert _get_default_api_access_key_from_env() == "rot1"
 
