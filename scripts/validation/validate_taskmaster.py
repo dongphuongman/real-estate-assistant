@@ -44,7 +44,9 @@ def _detect_cycles(graph: dict[str, set[str]]) -> list[list[str]]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Validate Task Master tasks.json consistency.")
+    parser = argparse.ArgumentParser(
+        description="Validate Task Master tasks.json consistency."
+    )
     parser.add_argument(
         "--path",
         type=Path,
@@ -87,10 +89,14 @@ def main(argv: list[str] | None = None) -> int:
                 continue
             task_id = task.get("id")
             if not isinstance(task_id, str) or not task_id.strip():
-                errors.append(ValidationError(message=f"{tag}: task id missing/invalid"))
+                errors.append(
+                    ValidationError(message=f"{tag}: task id missing/invalid")
+                )
                 continue
             if task_id in seen_ids:
-                errors.append(ValidationError(message=f"{tag}: duplicate task id {task_id}"))
+                errors.append(
+                    ValidationError(message=f"{tag}: duplicate task id {task_id}")
+                )
                 continue
             seen_ids.add(task_id)
 
@@ -104,11 +110,15 @@ def main(argv: list[str] | None = None) -> int:
                         deps.add(dep.strip())
                     else:
                         errors.append(
-                            ValidationError(message=f"{tag}:{task_id}: invalid dependency {dep!r}")
+                            ValidationError(
+                                message=f"{tag}:{task_id}: invalid dependency {dep!r}"
+                            )
                         )
             else:
                 errors.append(
-                    ValidationError(message=f"{tag}:{task_id}: dependencies is not a list")
+                    ValidationError(
+                        message=f"{tag}:{task_id}: dependencies is not a list"
+                    )
                 )
             deps_graph[task_id] = deps
 
@@ -116,12 +126,16 @@ def main(argv: list[str] | None = None) -> int:
             if subtasks is None:
                 subtasks = []
             if not isinstance(subtasks, list):
-                errors.append(ValidationError(message=f"{tag}:{task_id}: subtasks is not a list"))
+                errors.append(
+                    ValidationError(message=f"{tag}:{task_id}: subtasks is not a list")
+                )
                 continue
             for sub in subtasks:
                 if not isinstance(sub, dict):
                     errors.append(
-                        ValidationError(message=f"{tag}:{task_id}: subtask is not an object")
+                        ValidationError(
+                            message=f"{tag}:{task_id}: subtask is not an object"
+                        )
                     )
                     continue
                 parent_id = sub.get("parentId")
@@ -136,12 +150,16 @@ def main(argv: list[str] | None = None) -> int:
             for dep in deps:
                 if dep not in seen_ids:
                     errors.append(
-                        ValidationError(message=f"{tag}:{task_id}: missing dependency {dep}")
+                        ValidationError(
+                            message=f"{tag}:{task_id}: missing dependency {dep}"
+                        )
                     )
 
         cycles = _detect_cycles(deps_graph)
         for cycle in cycles:
-            errors.append(ValidationError(message=f"{tag}: dependency cycle {' -> '.join(cycle)}"))
+            errors.append(
+                ValidationError(message=f"{tag}: dependency cycle {' -> '.join(cycle)}")
+            )
 
     if errors:
         for e in errors[:200]:
