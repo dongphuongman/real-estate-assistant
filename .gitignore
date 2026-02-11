@@ -108,6 +108,8 @@ artifacts/bandit.json
 artifacts/pip-audit.json
 artifacts/validation_report.md
 artifacts/logs/
+*.sarif
+results.sarif
 
 # Translations
 *.mo
