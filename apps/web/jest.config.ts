@@ -1,10 +1,12 @@
-import type { Config } from 'jest'
-import nextJest from 'next/jest'
+import type { Config } from 'jest';
+import nextJest from 'next/jest';
 
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
   dir: './',
-})
+});
+
+const nodeMajor = Number.parseInt(process.versions.node.split('.')[0] ?? '0', 10);
 
 // Add any custom config to be passed to Jest
 const config: Config = {
@@ -12,6 +14,9 @@ const config: Config = {
   coverageReporters: ['json', 'json-summary', 'text', 'lcov', 'clover'],
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  modulePathIgnorePatterns: ['<rootDir>/.next/'],
+  watchPathIgnorePatterns: ['<rootDir>/.next/'],
+  ...(nodeMajor >= 22 ? { maxWorkers: 1 } : {}),
   moduleNameMapper: {
     // Handle module aliases (this will be automatically configured for you soon)
     '^@/(.*)$': '<rootDir>/src/$1',
@@ -37,7 +42,7 @@ const config: Config = {
       statements: 85,
     },
   },
-}
+};
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-export default createJestConfig(config)
+export default createJestConfig(config);

@@ -205,7 +205,7 @@ jobs:
         run: npm run lint
 
       - name: Run tests
-        run: npm run test -- --ci --coverage
+        run: npm run test:ci
       - name: Frontend coverage summary
         run: |
           node -e 'const fs=require("fs"); const summary=JSON.parse(fs.readFileSync("coverage/coverage-summary.json","utf8")); const total=summary.total; const text=["### Frontend Coverage","","Lines: "+total.lines.pct+"%","Statements: "+total.statements.pct+"%","Functions: "+total.functions.pct+"%","Branches: "+total.branches.pct+"%",""].join("\n"); fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, text);'

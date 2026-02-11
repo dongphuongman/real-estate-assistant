@@ -1,32 +1,59 @@
 {
-  "name": "Python 3",
-  "image": "mcr.microsoft.com/devcontainers/python:1-3.11-bullseye",
+  "name": "AI Real Estate Assistant (API + Web)",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bullseye",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    },
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
   "customizations": {
     "codespaces": {
       "openFiles": [
         "README.md",
-        "app.py"
+        "apps/api/api/main.py",
+        "apps/web/src/app/page.tsx"
       ]
     },
     "vscode": {
-      "settings": {},
+      "settings": {
+        "python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python",
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff"
+        },
+        "[typescript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[typescriptreact]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        }
+      },
       "extensions": [
         "ms-python.python",
-        "ms-python.vscode-pylance"
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "ms-azuretools.vscode-docker"
       ]
     }
   },
-  "updateContentCommand": "if [ -f pyproject.toml ]; then curl -sSL https://install.python-poetry.org | python3 - && ln -s /root/.local/bin/poetry /usr/local/bin/poetry && poetry config virtualenvs.in-project true && poetry install --no-root && ls -lash && source .venv/bin/activate && echo '✅ Dependencies installed'; else echo 'No pyproject.toml found'; fi",
-  "postAttachCommand": {
-    "server": "streamlit run app.py --server.enableCORS false --server.enableXsrfProtection false"
-  },
+  "postCreateCommand": "curl -LsSf https://astral.sh/uv/install.sh | sh && sudo ln -sf $HOME/.local/bin/uv /usr/local/bin/uv && python scripts/core/bootstrap.py --dev && npm --prefix apps/web ci",
+  "postAttachCommand": "python -c \"from apps.api.api.main import app; print('API import OK')\" && node -v && npm -v",
   "portsAttributes": {
-    "8501": {
-      "label": "Application",
+    "8000": {
+      "label": "FastAPI",
+      "onAutoForward": "openPreview"
+    },
+    "3000": {
+      "label": "Next.js",
       "onAutoForward": "openPreview"
     }
   },
   "forwardPorts": [
-    8501
+    8000,
+    3000
   ]
 }

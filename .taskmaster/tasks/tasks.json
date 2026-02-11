@@ -5,47 +5,49 @@
         "id": "33",
         "title": "Deploy to Versel environment (TOP PRIORITY)",
         "description": "Verify CI changes, check application works locally, then deploy to Versel (Vercel) production environment.",
-        "status": "in-progress",
+        "status": "review",
         "dependencies": [],
         "priority": "critical",
         "details": "1. Review and verify recent CI changes:\n   - Check .github/workflows/ci.yml for any recent modifications\n   - Verify all security scripts are working correctly\n   - Confirm pre-commit hooks are functioning\n2. Local validation:\n   - Run backend locally: 'python -m uvicorn api.main:app --reload'\n   - Run frontend locally: 'cd frontend && npm run dev'\n   - Test key functionality (chat API, property search)\n   - Run security scan: 'python security-scan.py'\n   - Run tests: 'python -m pytest'\n3. Prepare for Versel deployment:\n   - Update environment variables for Versel\n   - Configure backend API URL in frontend\n   - Set up production database if needed\n4. Deploy to Versel:\n   - Connect GitHub repository to Versel\n   - Configure build settings (root directory, build command)\n   - Set environment variables in Versel dashboard\n   - Deploy frontend to Versel\n   - Verify deployment is accessible\n5. Post-deployment validation:\n   - Test live application\n   - Monitor logs for errors\n   - Verify API connectivity",
         "testStrategy": "1. Backend runs on port 8000 without errors\n2. Frontend runs on port 3000 without errors\n3. Security scan passes (or acceptable warnings)\n4. Unit tests pass\n5. Application works locally end-to-end\n6. Versel deployment completes successfully\n7. Live application is accessible and functional\n8. API endpoints respond correctly",
         "subtasks": [],
-        "updatedAt": "2026-02-05T13:58:27.886Z"
+        "updatedAt": "2026-02-11T20:58:24.983Z"
       },
       {
         "id": "25",
         "title": "Create deploy/ directory structure and move Docker files",
         "description": "Create the new deploy/ directory with docker/ and compose/ subdirectories, and move all Docker-related files from root and frontend locations to the new structure.",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [],
         "priority": "high",
         "details": "1. Create directory structure: deploy/docker/, deploy/compose/, deploy/k8s/\n2. Move Dockerfile.backend (root) to deploy/docker/Dockerfile.backend\n3. Move frontend/Dockerfile.frontend to deploy/docker/Dockerfile.frontend\n4. Move docker-compose.yml (root) to deploy/compose/docker-compose.yml\n5. Create deploy/compose/docker-compose.gpu.yml for GPU variant based on docker-compose.yml\n6. Update all path references in Docker files (e.g., COPY commands, WORKDIR paths) to reflect new project root relative locations\n7. Update docker-compose files to reference Dockerfiles at their new locations (../docker/...)\n8. Create placeholder .gitkeep in deploy/k8s/ for future use",
         "testStrategy": "1. Verify directory structure matches PRD specification\n2. Run 'docker build -f deploy/docker/Dockerfile.backend .' to ensure backend builds\n3. Run 'docker build -f deploy/docker/Dockerfile.frontend ./frontend' to ensure frontend builds\n4. Run 'docker-compose -f deploy/compose/docker-compose.yml config' to validate compose file syntax\n5. Run 'docker-compose -f deploy/compose/docker-compose.gpu.yml config' to validate GPU variant",
         "subtasks": [],
-        "updatedAt": "2026-02-09T23:51:41.247Z"
+        "updatedAt": "2026-02-11T20:55:19.167Z"
       },
       {
         "id": "26",
         "title": "Restructure scripts/ directory into subdirectories",
         "description": "Reorganize the scripts/ directory by creating subdirectories (ci, dev, docs, security, validation) and moving existing scripts into their appropriate categories.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "high",
         "details": "1. Create subdirectories: scripts/ci/, scripts/dev/, scripts/docs/, scripts/security/, scripts/validation/\n2. Move ci-related scripts to scripts/ci/: ci_parity.py, ci_full.py, compose_smoke.py, coverage_gate.py, security_local.py\n3. Move development scripts to scripts/dev/: bootstrap_uv.py, start.py, start.sh, start.ps1, setup.sh, setup.ps1, run-ci-full.ps1, run-pre-commit.ps1, run-docker-cpu.ps1, run-docker-gpu.ps1, run-docker-gpu-internet.ps1, verify_ollama.ps1, sync_claude_mcp_from_trae.ps1\n4. Move documentation scripts to scripts/docs/: export_openapi.py, generate_api_reference.py, update_api_reference_full.py\n5. Move security scripts to scripts/security/: forbidden_tokens_check.py, security_scan.py\n6. Move validation scripts to scripts/validation/: system_validate.py, validate_taskmaster.py\n7. Review any remaining scripts in root scripts/ and categorize appropriately or remove if obsolete",
         "testStrategy": "1. Verify directory tree matches PRD structure using 'tree scripts/' or similar\n2. For each moved script, verify shebang lines and imports still work\n3. Run 'python -m py_compile' on each Python script to check for syntax errors\n4. Execute a representative script from each category (e.g., scripts/dev/start.py) to verify path resolution",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-02-11T20:55:52.506Z"
       },
       {
         "id": "27",
         "title": "Update .devcontainer configuration for FastAPI + Next.js",
         "description": "Update the .devcontainer/devcontainer.json file to reflect the new FastAPI backend and Next.js frontend stack, removing outdated Streamlit references.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "medium",
         "details": "1. Update .devcontainer/devcontainer.json:\n   - Change image to one supporting Python 3.11+ and Node.js\n   - Update extensions: include Python, Prettier, ESLint, Docker extensions\n   - Update forwardPorts: add 8000 (FastAPI), 3000 (Next.js), remove Streamlit ports\n   - Update postCreateCommand to use uv for Python setup and npm/yarn for frontend\n   - Configure workspaceFolder to point to project root\n   - Add environment variables for development mode\n2. Update VS Code settings in devcontainer for Python interpreter and formatting\n3. Add healthcheck commands in lifecycle scripts to verify services are running",
         "testStrategy": "1. Validate JSON syntax of devcontainer.json\n2. Build the dev container: 'devcontainer build --workspace-folder .'\n3. Reopen in container and verify:\n   - Python 3.11+ is available\n   - Node.js is available\n   - uv is installed\n   - Extensions are loaded\n   - Ports 8000 and 3000 are forwarded\n4. Run postCreateCommand manually to verify setup completes",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-02-11T20:57:12.692Z"
       },
       {
         "id": "28",
@@ -130,9 +132,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-09T23:51:41.247Z",
+      "lastModified": "2026-02-11T20:58:24.983Z",
       "taskCount": 9,
-      "completedCount": 0,
+      "completedCount": 3,
       "tags": [
         "master"
       ]

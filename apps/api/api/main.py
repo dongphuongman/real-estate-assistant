@@ -2,7 +2,14 @@ import asyncio
 import logging
 import os
 import signal
+import warnings
 from typing import Any
+
+warnings.filterwarnings(
+    "ignore",
+    category=FutureWarning,
+    module=r"langchain_google_genai\.chat_models",
+)
 
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware

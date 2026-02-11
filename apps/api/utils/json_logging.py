@@ -1,5 +1,6 @@
 import json
 import logging
+import sys
 import time
 from typing import Any
 
@@ -28,7 +29,7 @@ class JsonFormatter(logging.Formatter):
 
 def configure_json_logging(level: int = logging.INFO) -> None:
     logging.root.handlers.clear()
-    handler = logging.StreamHandler()
+    handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(JsonFormatter())
     logging.root.addHandler(handler)
     logging.root.setLevel(level)

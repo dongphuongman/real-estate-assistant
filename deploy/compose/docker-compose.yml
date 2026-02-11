@@ -153,7 +153,7 @@ services:
       - SEARXNG_BASE_URL=${SEARXNG_BASE_URL:-http://localhost:8081/}
       - SEARXNG_SECRET_KEY=${SEARXNG_SECRET_KEY:-change-me}
     volumes:
-      - ./config/searxng:/etc/searxng:rw
+      - ../../apps/api/config/searxng:/etc/searxng:rw
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- --header='X-Forwarded-For: 1.1.1.1' --header='X-Real-IP: 1.1.1.1' http://localhost:8080/ >/dev/null 2>&1"]
       interval: 30s

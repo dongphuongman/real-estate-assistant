@@ -14,6 +14,12 @@ const eslintConfig = defineConfig([
     "coverage/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+    // Disable the pages directory check for monorepo setup
+    "@next/next/no-html-link-for-pages": "off",
+  },
+  },
 ]);
 
 export default eslintConfig;
