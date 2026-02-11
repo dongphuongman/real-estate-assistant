@@ -41,6 +41,10 @@ paths = [
     '''build/.*''',
 ]
 
+regexes = [
+    '''your-api-key''',
+]
+
 # Custom rules for project-specific secrets
 [[rules]]
 description = "Generic API Key with common prefixes"

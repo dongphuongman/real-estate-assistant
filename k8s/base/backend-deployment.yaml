@@ -16,21 +16,6 @@ data:
   API_RATE_LIMIT_RPM: "600"
 
 ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: backend-secrets
-  labels:
-    app: ai-real-estate-backend
-type: Opaque
-stringData:
-  # API Keys - configure with proper values in production
-  API_ACCESS_KEYS: "prod-key-1,prod-key-2"
-  OPENAI_API_KEY: ""  # Set via kubectl create secret or external secrets operator
-  ANTHROPIC_API_KEY: ""
-  GOOGLE_API_KEY: ""
-
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:

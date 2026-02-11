@@ -21,6 +21,7 @@ def main() -> int:
     args = parser.parse_args()
 
     root = _project_root()
+    git_dir = root / ".git"
 
     if shutil.which("uv") is None:
         print("uv is not installed or not on PATH.", file=sys.stderr)
@@ -46,6 +47,12 @@ def main() -> int:
         _run(["uv", "pip", "install", "-e", target], cwd=root)
     else:
         _run(["uv", "pip", "install", "-e", extras], cwd=root)
+
+    if args.dev and git_dir.exists():
+        try:
+            _run(["uv", "run", "python", "-m", "pre_commit", "install"], cwd=root)
+        except subprocess.CalledProcessError as e:
+            print(f"pre-commit install failed: {e}", file=sys.stderr)
 
     return 0
 
