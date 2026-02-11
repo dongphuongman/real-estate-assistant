@@ -11,7 +11,7 @@ def test_compose_smoke_script_dry_run(tmp_path: Path):
 
     # Navigate from apps/api/tests/integration/ to repo root (4 levels up)
     repo_root = Path(__file__).resolve().parents[4]
-    script_path = repo_root / "scripts" / "ci" / "compose_smoke.py"
+    script_path = repo_root / "scripts" / "docker" / "compose_smoke.py"
     result = subprocess.run(
         [
             sys.executable,
