@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os  # noqa: E402
 import sys  # noqa: E402
 from pathlib import Path
 from unittest.mock import patch
@@ -11,7 +12,7 @@ _project_root = Path(__file__).resolve().parents[4]
 if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
-from scripts.core.start import (
+from scripts.core.start import (  # noqa: E402
     _build_backend_env,
     _build_frontend_env,
     _get_default_api_access_key_from_env,
