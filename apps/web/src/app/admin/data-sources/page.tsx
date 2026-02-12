@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   FileUp,
   Loader2,
@@ -12,15 +12,9 @@ import {
   Database,
   Globe,
   Filter,
-} from "lucide-react";
-import {
-  ingestData,
-  getExcelSheets,
-  listPortals,
-  fetchFromPortal,
-  ApiError,
-} from "@/lib/api";
-import type { IngestResponse, PortalAdapterInfo } from "@/lib/types";
+} from 'lucide-react';
+import { ingestData, getExcelSheets, listPortals, fetchFromPortal, ApiError } from '@/lib/api';
+import type { IngestResponse, PortalAdapterInfo } from '@/lib/types';
 
 interface ErrorState {
   message: string;
@@ -32,12 +26,12 @@ interface SheetInfo {
   rowCount: number;
 }
 
-type TabType = "url" | "portal";
+type TabType = 'url' | 'portal';
 
 export default function DataSourcesPage() {
-  const [activeTab, setActiveTab] = useState<TabType>("url");
-  const [fileUrl, setFileUrl] = useState<string>("");
-  const [sourceName, setSourceName] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<TabType>('url');
+  const [fileUrl, setFileUrl] = useState<string>('');
+  const [sourceName, setSourceName] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ErrorState | null>(null);
   const [result, setResult] = useState<IngestResponse | null>(null);
@@ -45,21 +39,20 @@ export default function DataSourcesPage() {
   // Excel sheets state
   const [loadingSheets, setLoadingSheets] = useState(false);
   const [sheets, setSheets] = useState<SheetInfo[]>([]);
-  const [selectedSheet, setSelectedSheet] = useState<string>("");
+  const [selectedSheet, setSelectedSheet] = useState<string>('');
   const [headerRow, setHeaderRow] = useState<number>(0);
 
   // Portal state
   const [portals, setPortals] = useState<PortalAdapterInfo[]>([]);
   const [loadingPortals, setLoadingPortals] = useState(true);
-  const [selectedPortal, setSelectedPortal] = useState<string>("");
-  const [portalCity, setPortalCity] = useState<string>("");
-  const [portalMinPrice, setPortalMinPrice] = useState<string>("");
-  const [portalMaxPrice, setPortalMaxPrice] = useState<string>("");
-  const [portalMinRooms, setPortalMinRooms] = useState<string>("");
-  const [portalMaxRooms, setPortalMaxRooms] = useState<string>("");
-  const [portalPropertyType, setPortalPropertyType] =
-    useState<string>("");
-  const [portalListingType, setPortalListingType] = useState<string>("rent");
+  const [selectedPortal, setSelectedPortal] = useState<string>('');
+  const [portalCity, setPortalCity] = useState<string>('');
+  const [portalMinPrice, setPortalMinPrice] = useState<string>('');
+  const [portalMaxPrice, setPortalMaxPrice] = useState<string>('');
+  const [portalMinRooms, setPortalMinRooms] = useState<string>('');
+  const [portalMaxRooms, setPortalMaxRooms] = useState<string>('');
+  const [portalPropertyType, setPortalPropertyType] = useState<string>('');
+  const [portalListingType, setPortalListingType] = useState<string>('rent');
   const [portalLimit, setPortalLimit] = useState<number>(50);
 
   // Load available portals on mount
@@ -72,7 +65,7 @@ export default function DataSourcesPage() {
         }
       })
       .catch((e: unknown) => {
-        console.error("Failed to load portals:", e);
+        console.error('Failed to load portals:', e);
       })
       .finally(() => {
         setLoadingPortals(false);
@@ -81,15 +74,11 @@ export default function DataSourcesPage() {
 
   const isExcelFile = (url: string): boolean => {
     const lowerUrl = url.toLowerCase();
-    return (
-      lowerUrl.endsWith(".xlsx") ||
-      lowerUrl.endsWith(".xls") ||
-      lowerUrl.endsWith(".ods")
-    );
+    return lowerUrl.endsWith('.xlsx') || lowerUrl.endsWith('.xls') || lowerUrl.endsWith('.ods');
   };
 
   const extractErrorState = (err: unknown): ErrorState => {
-    let message = "Unknown error";
+    let message = 'Unknown error';
     let requestId: string | undefined = undefined;
 
     if (err instanceof ApiError) {
@@ -107,14 +96,13 @@ export default function DataSourcesPage() {
   const onLoadSheets = async () => {
     const url = fileUrl.trim();
     if (!url) {
-      setError({ message: "Please enter a file URL first." });
+      setError({ message: 'Please enter a file URL first.' });
       return;
     }
 
     if (!isExcelFile(url)) {
       setError({
-        message:
-          "URL must point to an Excel file (.xlsx, .xls, or .ods).",
+        message: 'URL must point to an Excel file (.xlsx, .xls, or .ods).',
       });
       return;
     }
@@ -143,7 +131,7 @@ export default function DataSourcesPage() {
   const onIngest = async () => {
     const url = fileUrl.trim();
     if (!url) {
-      setError({ message: "Please enter a file URL." });
+      setError({ message: 'Please enter a file URL.' });
       return;
     }
 
@@ -169,12 +157,12 @@ export default function DataSourcesPage() {
 
   const onFetchFromPortal = async () => {
     if (!selectedPortal) {
-      setError({ message: "Please select a portal." });
+      setError({ message: 'Please select a portal.' });
       return;
     }
 
     if (!portalCity.trim()) {
-      setError({ message: "Please enter a city." });
+      setError({ message: 'Please enter a city.' });
       return;
     }
 
@@ -186,18 +174,10 @@ export default function DataSourcesPage() {
       const request = {
         portal: selectedPortal,
         city: portalCity.trim(),
-        min_price: portalMinPrice
-          ? parseFloat(portalMinPrice)
-          : undefined,
-        max_price: portalMaxPrice
-          ? parseFloat(portalMaxPrice)
-          : undefined,
-        min_rooms: portalMinRooms
-          ? parseFloat(portalMinRooms)
-          : undefined,
-        max_rooms: portalMaxRooms
-          ? parseFloat(portalMaxRooms)
-          : undefined,
+        min_price: portalMinPrice ? parseFloat(portalMinPrice) : undefined,
+        max_price: portalMaxPrice ? parseFloat(portalMaxPrice) : undefined,
+        min_rooms: portalMinRooms ? parseFloat(portalMinRooms) : undefined,
+        max_rooms: portalMaxRooms ? parseFloat(portalMaxRooms) : undefined,
         property_type: portalPropertyType || undefined,
         listing_type: portalListingType,
         limit: portalLimit,
@@ -221,24 +201,22 @@ export default function DataSourcesPage() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-10">
       <div className="flex flex-col space-y-2 mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Data Sources
-        </h1>
+        <h1 className="text-3xl font-bold tracking-tight">Data Sources</h1>
         <p className="text-muted-foreground">
           Import property data from files or external portals.
         </p>
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex gap-4 border-b mb-6">
+      <div className="flex gap-4 border-b-2 mb-6">
         <button
           type="button"
           className={`pb-3 px-4 font-medium transition-colors ${
-            activeTab === "url"
-              ? "border-b-2 border-primary text-primary"
-              : "text-muted-foreground hover:text-foreground"
+            activeTab === 'url'
+              ? 'border-b-2 border-primary text-primary'
+              : 'text-muted-foreground hover:text-foreground'
           }`}
-          onClick={() => setActiveTab("url")}
+          onClick={() => setActiveTab('url')}
         >
           <FileUp className="w-4 h-4 inline mr-2" />
           File / URL
@@ -246,11 +224,11 @@ export default function DataSourcesPage() {
         <button
           type="button"
           className={`pb-3 px-4 font-medium transition-colors ${
-            activeTab === "portal"
-              ? "border-b-2 border-primary text-primary"
-              : "text-muted-foreground hover:text-foreground"
+            activeTab === 'portal'
+              ? 'border-b-2 border-primary text-primary'
+              : 'text-muted-foreground hover:text-foreground'
           }`}
-          onClick={() => setActiveTab("portal")}
+          onClick={() => setActiveTab('portal')}
         >
           <Globe className="w-4 h-4 inline mr-2" />
           Portal API
@@ -258,21 +236,16 @@ export default function DataSourcesPage() {
       </div>
 
       {/* File/URL Tab Content */}
-      {activeTab === "url" && (
+      {activeTab === 'url' && (
         <section className="border rounded-lg p-6">
           <div className="flex items-center gap-2 mb-4">
             <Database className="w-5 h-5" />
-            <h2 className="text-xl font-semibold">
-              Import from URL
-            </h2>
+            <h2 className="text-xl font-semibold">Import from URL</h2>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label
-                htmlFor="fileUrl"
-                className="block text-sm font-medium mb-2"
-              >
+              <label htmlFor="fileUrl" className="block text-sm font-medium mb-2">
                 File URL
               </label>
               <input
@@ -291,10 +264,7 @@ export default function DataSourcesPage() {
             </div>
 
             <div>
-              <label
-                htmlFor="sourceName"
-                className="block text-sm font-medium mb-2"
-              >
+              <label htmlFor="sourceName" className="block text-sm font-medium mb-2">
                 Source Name (optional)
               </label>
               <input
@@ -342,19 +312,14 @@ export default function DataSourcesPage() {
                   {sheets.length > 0 && (
                     <>
                       <div>
-                        <label
-                          htmlFor="sheetSelect"
-                          className="block text-sm font-medium mb-2"
-                        >
+                        <label htmlFor="sheetSelect" className="block text-sm font-medium mb-2">
                           Select Sheet
                         </label>
                         <select
                           id="sheetSelect"
                           className="border p-2 w-full rounded"
                           value={selectedSheet}
-                          onChange={(e) =>
-                            setSelectedSheet(e.target.value)
-                          }
+                          onChange={(e) => setSelectedSheet(e.target.value)}
                           disabled={loading}
                         >
                           {sheets.map((sheet) => (
@@ -366,10 +331,7 @@ export default function DataSourcesPage() {
                       </div>
 
                       <div>
-                        <label
-                          htmlFor="headerRow"
-                          className="block text-sm font-medium mb-2"
-                        >
+                        <label htmlFor="headerRow" className="block text-sm font-medium mb-2">
                           Header Row (0-indexed)
                         </label>
                         <input
@@ -378,9 +340,7 @@ export default function DataSourcesPage() {
                           type="number"
                           min="0"
                           value={headerRow}
-                          onChange={(e) =>
-                            setHeaderRow(parseInt(e.target.value) || 0)
-                          }
+                          onChange={(e) => setHeaderRow(parseInt(e.target.value) || 0)}
                           disabled={loading}
                         />
                       </div>
@@ -413,13 +373,11 @@ export default function DataSourcesPage() {
       )}
 
       {/* Portal Tab Content */}
-      {activeTab === "portal" && (
+      {activeTab === 'portal' && (
         <section className="border rounded-lg p-6">
           <div className="flex items-center gap-2 mb-4">
             <Globe className="w-5 h-5" />
-            <h2 className="text-xl font-semibold">
-              Fetch from Portal
-            </h2>
+            <h2 className="text-xl font-semibold">Fetch from Portal</h2>
           </div>
 
           {loadingPortals ? (
@@ -429,17 +387,13 @@ export default function DataSourcesPage() {
             </div>
           ) : portals.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No portal adapters available. Configure adapters in
-              the backend.
+              No portal adapters available. Configure adapters in the backend.
             </div>
           ) : (
             <div className="space-y-4">
               {/* Portal selector */}
               <div>
-                <label
-                  htmlFor="portalSelect"
-                  className="block text-sm font-medium mb-2"
-                >
+                <label htmlFor="portalSelect" className="block text-sm font-medium mb-2">
                   Portal
                 </label>
                 <select
@@ -450,13 +404,9 @@ export default function DataSourcesPage() {
                   disabled={loading}
                 >
                   {portals.map((portal) => (
-                    <option
-                      key={portal.name}
-                      value={portal.name}
-                      disabled={!portal.configured}
-                    >
+                    <option key={portal.name} value={portal.name} disabled={!portal.configured}>
                       {portal.display_name}
-                      {!portal.configured && " (not configured)"}
+                      {!portal.configured && ' (not configured)'}
                     </option>
                   ))}
                 </select>
@@ -464,10 +414,7 @@ export default function DataSourcesPage() {
 
               {/* Required: City */}
               <div>
-                <label
-                  htmlFor="portalCity"
-                  className="block text-sm font-medium mb-2"
-                >
+                <label htmlFor="portalCity" className="block text-sm font-medium mb-2">
                   City * (required)
                 </label>
                 <input
@@ -491,10 +438,7 @@ export default function DataSourcesPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label
-                      htmlFor="minPrice"
-                      className="block text-sm font-medium mb-2"
-                    >
+                    <label htmlFor="minPrice" className="block text-sm font-medium mb-2">
                       Min Price
                     </label>
                     <input
@@ -505,18 +449,13 @@ export default function DataSourcesPage() {
                       step="100"
                       placeholder="e.g., 1000"
                       value={portalMinPrice}
-                      onChange={(e) =>
-                        setPortalMinPrice(e.target.value)
-                      }
+                      onChange={(e) => setPortalMinPrice(e.target.value)}
                       disabled={loading}
                     />
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="maxPrice"
-                      className="block text-sm font-medium mb-2"
-                    >
+                    <label htmlFor="maxPrice" className="block text-sm font-medium mb-2">
                       Max Price
                     </label>
                     <input
@@ -527,18 +466,13 @@ export default function DataSourcesPage() {
                       step="100"
                       placeholder="e.g., 5000"
                       value={portalMaxPrice}
-                      onChange={(e) =>
-                        setPortalMaxPrice(e.target.value)
-                      }
+                      onChange={(e) => setPortalMaxPrice(e.target.value)}
                       disabled={loading}
                     />
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="minRooms"
-                      className="block text-sm font-medium mb-2"
-                    >
+                    <label htmlFor="minRooms" className="block text-sm font-medium mb-2">
                       Min Rooms
                     </label>
                     <input
@@ -549,18 +483,13 @@ export default function DataSourcesPage() {
                       step="0.5"
                       placeholder="e.g., 1"
                       value={portalMinRooms}
-                      onChange={(e) =>
-                        setPortalMinRooms(e.target.value)
-                      }
+                      onChange={(e) => setPortalMinRooms(e.target.value)}
                       disabled={loading}
                     />
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="maxRooms"
-                      className="block text-sm font-medium mb-2"
-                    >
+                    <label htmlFor="maxRooms" className="block text-sm font-medium mb-2">
                       Max Rooms
                     </label>
                     <input
@@ -571,27 +500,20 @@ export default function DataSourcesPage() {
                       step="0.5"
                       placeholder="e.g., 4"
                       value={portalMaxRooms}
-                      onChange={(e) =>
-                        setPortalMaxRooms(e.target.value)
-                      }
+                      onChange={(e) => setPortalMaxRooms(e.target.value)}
                       disabled={loading}
                     />
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="propertyType"
-                      className="block text-sm font-medium mb-2"
-                    >
+                    <label htmlFor="propertyType" className="block text-sm font-medium mb-2">
                       Property Type
                     </label>
                     <select
                       id="propertyType"
                       className="border p-2 w-full rounded"
                       value={portalPropertyType}
-                      onChange={(e) =>
-                        setPortalPropertyType(e.target.value)
-                      }
+                      onChange={(e) => setPortalPropertyType(e.target.value)}
                       disabled={loading}
                     >
                       <option value="">Any</option>
@@ -602,19 +524,14 @@ export default function DataSourcesPage() {
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="listingType"
-                      className="block text-sm font-medium mb-2"
-                    >
+                    <label htmlFor="listingType" className="block text-sm font-medium mb-2">
                       Listing Type
                     </label>
                     <select
                       id="listingType"
                       className="border p-2 w-full rounded"
                       value={portalListingType}
-                      onChange={(e) =>
-                        setPortalListingType(e.target.value)
-                      }
+                      onChange={(e) => setPortalListingType(e.target.value)}
                       disabled={loading}
                     >
                       <option value="rent">Rent</option>
@@ -624,10 +541,7 @@ export default function DataSourcesPage() {
                 </div>
 
                 <div className="mt-4">
-                  <label
-                    htmlFor="limit"
-                    className="block text-sm font-medium mb-2"
-                  >
+                  <label htmlFor="limit" className="block text-sm font-medium mb-2">
                     Max Results
                   </label>
                   <input
@@ -637,19 +551,14 @@ export default function DataSourcesPage() {
                     min="1"
                     max="500"
                     value={portalLimit}
-                    onChange={(e) =>
-                      setPortalLimit(parseInt(e.target.value) || 50)
-                    }
+                    onChange={(e) => setPortalLimit(parseInt(e.target.value) || 50)}
                     disabled={loading}
                   />
                 </div>
               </div>
 
               <div>
-                <label
-                  htmlFor="portalSourceName"
-                  className="block text-sm font-medium mb-2"
-                >
+                <label htmlFor="portalSourceName" className="block text-sm font-medium mb-2">
                   Source Name (optional)
                 </label>
                 <input
@@ -694,11 +603,7 @@ export default function DataSourcesPage() {
           <div>
             <p className="font-medium">Error</p>
             <p className="text-sm">{error.message}</p>
-            {error.requestId && (
-              <p className="text-xs mt-1">
-                Request ID: {error.requestId}
-              </p>
-            )}
+            {error.requestId && <p className="text-xs mt-1">Request ID: {error.requestId}</p>}
           </div>
         </div>
       )}
@@ -710,15 +615,9 @@ export default function DataSourcesPage() {
           <div>
             <p className="font-medium">Import Successful</p>
             <p className="text-sm">{result.message}</p>
-            <p className="text-xs mt-1">
-              Properties processed: {result.properties_processed}
-            </p>
-            {result.source_type && (
-              <p className="text-xs">Source type: {result.source_type}</p>
-            )}
-            {result.source_name && (
-              <p className="text-xs">Source name: {result.source_name}</p>
-            )}
+            <p className="text-xs mt-1">Properties processed: {result.properties_processed}</p>
+            {result.source_type && <p className="text-xs">Source type: {result.source_type}</p>}
+            {result.source_name && <p className="text-xs">Source name: {result.source_name}</p>}
             {result.errors.length > 0 && (
               <details className="mt-2">
                 <summary className="text-xs cursor-pointer">
@@ -752,12 +651,10 @@ export default function DataSourcesPage() {
             <strong>Excel (.xls):</strong> Legacy Excel format with xlrd
           </p>
           <p>
-            <strong>ODF Spreadsheet (.ods):</strong> OpenDocument format with
-            odfpy
+            <strong>ODF Spreadsheet (.ods):</strong> OpenDocument format with odfpy
           </p>
           <p>
-            <strong>Portals:</strong> External APIs (OpenStreetMap/Overpass
-            available)
+            <strong>Portals:</strong> External APIs (OpenStreetMap/Overpass available)
           </p>
         </div>
       </section>
