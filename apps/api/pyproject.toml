@@ -19,6 +19,8 @@ dependencies = [
     "google-generativeai>=0.8.0",
     "pandas>=2.2.0",
     "numpy>=1.26.0",
+    "faker>=27.0.0",
+    "yarl>=1.17.2",
 ]
 
 [project.optional-dependencies]

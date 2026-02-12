@@ -42,9 +42,17 @@ def _get_default_api_access_key_from_env() -> str:
 
 def _ensure_uv_dev_env(root: Path) -> None:
     _run_checked(
-        [sys.executable, str(root / "scripts" / "core" / "bootstrap.py"), "--dev"],
+        [sys.executable, str(root / "scripts" / "launcher" / "bootstrap.py"), "--dev"],
         cwd=root,
     )
+
+
+def _ensure_npm_env(root: Path) -> None:
+    web_dir = root / "apps" / "web"
+    if not (web_dir / "node_modules").exists():
+        print("Frontend dependencies not found. Installing...")
+        npm = "npm.cmd" if os.name == "nt" else "npm"
+        _run_checked([npm, "install"], cwd=web_dir)
 
 
 def _docker_gpu_available() -> bool:
@@ -95,7 +103,7 @@ def _run_docker(root: Path, *, profiles: list[str]) -> int:
         env.setdefault("OLLAMA_HOST", "http://ollama-gpu:11434")
     if "internet" in profiles:
         env.setdefault("INTERNET_ENABLED", "true")
-    cmd = ["docker", "compose"]
+    cmd = ["docker", "compose", "-f", "deploy/compose/docker-compose.yml"]
     for profile in profiles:
         cmd.extend(["--profile", profile])
     cmd.extend(["up", "--build"])
@@ -218,6 +226,9 @@ def _run_local(
         print("npm is not installed or not on PATH.", file=sys.stderr)
         return 2
 
+    if wants_frontend and not no_bootstrap:
+        _ensure_npm_env(root)
+
     if wants_backend:
         if shutil.which("uv") is None:
             print("uv is not installed or not on PATH.", file=sys.stderr)
@@ -293,7 +304,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.mode == "auto":
         if _has_docker_compose():
             if args.dry_run:
-                prefix = "docker compose"
+                prefix = "docker compose -f deploy/compose/docker-compose.yml"
                 profiles = " ".join(f"--profile {p}" for p in effective_profiles)
                 cmd = f"{prefix} {profiles} up --build".strip()
                 cmd = " ".join(cmd.split())
@@ -310,7 +321,7 @@ def main(argv: list[str] | None = None) -> int:
         )
     if args.mode == "docker":
         if args.dry_run:
-            prefix = "docker compose"
+            prefix = "docker compose -f deploy/compose/docker-compose.yml"
             profiles = " ".join(f"--profile {p}" for p in effective_profiles)
             cmd = f"{prefix} {profiles} up --build".strip()
             cmd = " ".join(cmd.split())

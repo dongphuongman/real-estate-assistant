@@ -40,40 +40,40 @@ Extra flags:
 ### Windows (PowerShell)
 
 ```powershell
-.\scripts\dev\start.ps1
+.\scripts\core\local\run.ps1
 ```
 
 Force a specific mode:
 
 ```powershell
-.\scripts\dev\start.ps1 --mode docker
-.\scripts\dev\start.ps1 --mode docker --docker-mode gpu
-.\scripts\dev\start.ps1 --mode docker --docker-mode gpu --internet
-.\scripts\dev\start.ps1 --mode local
-.\scripts\dev\start.ps1 --mode local --service backend
-.\scripts\dev\start.ps1 --mode local --dry-run
+python .\scripts\launcher\start.py --mode docker --docker-mode cpu
+python .\scripts\launcher\start.py --mode docker --docker-mode gpu
+python .\scripts\launcher\start.py --mode docker --docker-mode gpu --internet
+python .\scripts\launcher\start.py --mode local
+python .\scripts\launcher\start.py --mode local --service backend
+python .\scripts\launcher\start.py --mode local --dry-run
 ```
 
 Convenience commands:
 
 ```powershell
-.\scripts\dev\run-docker-cpu.ps1
-.\scripts\dev\run-docker-gpu.ps1
-.\scripts\dev\run-docker-gpu-internet.ps1
+.\scripts\core\docker\cpu.ps1
+.\scripts\core\docker\gpu.ps1
+.\scripts\core\docker\gpu-internet.ps1
 ```
 
 ### Linux
 
 ```sh
-chmod +x ./scripts/dev/*.sh
-./scripts/dev/start.sh
+chmod +x ./scripts/core/linux/*.sh
+./scripts/core/linux/start.sh --mode local
 ```
 
 Force a specific mode:
 
 ```sh
-./scripts/dev/start.sh --mode docker
-./scripts/dev/start.sh --mode local
+./scripts/core/linux/start.sh --mode docker
+./scripts/core/linux/docker.sh gpu
 ```
 
 ## Python environment setup (uv)
@@ -83,25 +83,25 @@ This creates `.venv/` and installs project dependencies (plus dev extras):
 ### Windows
 
 ```powershell
-.\scripts\dev\setup.ps1
+.\scripts\core\env\setup.ps1
 ```
 
 ### Linux
 
 ```sh
-./scripts/dev/setup.sh
+./scripts/core/env/setup.sh
 ```
 
 ## Local ports and env defaults
 
-- Backend: http://localhost:8000
-- Frontend: http://localhost:3000
+- Backend: http://localhost:8001
+- Frontend: http://localhost:3001
 
 Local mode defaults:
 
 - `ENVIRONMENT=development`
 - `API_ACCESS_KEY=dev-secret-key`
 - `NEXT_PUBLIC_API_URL=/api/v1`
-- `BACKEND_API_URL=http://localhost:8000/api/v1`
+- `BACKEND_API_URL=http://localhost:8001/api/v1`
 
 For real provider usage, set `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `GOOGLE_API_KEY` in your shell env (or `.env` used by Docker Compose).

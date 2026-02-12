@@ -1,8 +1,9 @@
 import type { NextConfig } from 'next';
-import { dirname } from 'path';
+import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
-const turbopackRoot = dirname(fileURLToPath(import.meta.url));
+const configDir = dirname(fileURLToPath(import.meta.url));
+const turbopackRoot = resolve(configDir, '..', '..');
 
 const nextConfig: NextConfig = {
   output: 'standalone',

@@ -37,12 +37,9 @@ def main() -> int:
 
     extras = ".[dev]" if args.dev else "."
 
-    # Check if pyproject.toml is in apps/api instead of root
     api_dir = root / "apps" / "api"
     if not (root / "pyproject.toml").exists() and (api_dir / "pyproject.toml").exists():
-        # Adjust target to point to apps/api
-        # extras is either "." or ".[dev]"
-        suffix = extras[1:]  # "" or "[dev]"
+        suffix = extras[1:]
         target = f"apps/api{suffix}"
         _run(["uv", "pip", "install", "-e", target], cwd=root)
     else:

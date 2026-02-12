@@ -47,6 +47,7 @@ trae_config.yml
 .alerts/
 .test_alerts/
 chroma_db/
+deploy/compose/data/audit/
 
 # Local research and private materials (do not commit)
 tmp/

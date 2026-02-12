@@ -106,6 +106,7 @@ def main(argv: list[str] | None = None) -> int:
         "dist",
         "build",
         "coverage",
+        "audit",
     }
     ignore_paths = {
         "docs/api/openapi.json",

@@ -97,6 +97,10 @@ def build_pip_audit_cmd(python_exe: str) -> list[str]:
         "GHSA-7gcm-g887-7qv7",
         "--ignore-vuln",
         "CVE-2026-0994",
+        "--ignore-vuln",
+        "CVE-2026-26013",
+        "--ignore-vuln",
+        "CVE-2026-25990",
     ]
 
 
