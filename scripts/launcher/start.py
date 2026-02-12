@@ -161,8 +161,8 @@ def _run_local(
     service: str,
     no_bootstrap: bool,
     dry_run: bool,
-    backend_port: int = 8001,
-    frontend_port: int = 3001,
+    backend_port: int = 8000,
+    frontend_port: int = 3000,
 ) -> int:
     wants_backend = service in {"all", "backend"}
     wants_frontend = service in {"all", "frontend"}
@@ -276,10 +276,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--no-bootstrap", action="store_true")
     parser.add_argument(
-        "--backend-port", type=int, default=8001, help="Backend port (default: 8001)"
+        "--backend-port", type=int, default=8000, help="Backend port (default: 8000)"
     )
     parser.add_argument(
-        "--frontend-port", type=int, default=3001, help="Frontend port (default: 3001)"
+        "--frontend-port", type=int, default=3000, help="Frontend port (default: 3000)"
     )
     args = parser.parse_args(argv)
     if bool(args.internet):

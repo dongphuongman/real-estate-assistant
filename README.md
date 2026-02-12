@@ -259,22 +259,19 @@ For full CI/CD security parity, you can run all security checks locally:
 
 ```bash
 # Run all security scans (Gitleaks, Semgrep, Bandit, pip-audit)
-python security-scan.py
-
-# Or use the direct path
-python scripts/ci/security_local.py
+python scripts/security/local_scan.py
 
 # Run specific scan only
-python security-scan.py --scan-only=secrets    # Gitleaks
-python security-scan.py --scan-only=semgrep    # Semgrep SAST
-python security-scan.py --scan-only=bandit     # Bandit Python security
-python security-scan.py --scan-only=pip-audit  # Dependency vulnerabilities
+python scripts/security/local_scan.py --scan-only=secrets    # Gitleaks
+python scripts/security/local_scan.py --scan-only=semgrep    # Semgrep SAST
+python scripts/security/local_scan.py --scan-only=bandit     # Bandit Python security
+python scripts/security/local_scan.py --scan-only=pip-audit  # Dependency vulnerabilities
 
 # Quick mode (skip slower pip-audit scan)
-python security-scan.py --quick
+python scripts/security/local_scan.py --quick
 
 # Verbose output
-python security-scan.py --verbose
+python scripts/security/local_scan.py --verbose
 ```
 
 **Docker Fallback:** On Windows, if Gitleaks or Semgrep binaries aren't installed, the script automatically uses Docker containers.
@@ -339,20 +336,20 @@ See `docs/testing/TESTING_GUIDE.md` for details.
 
 ```powershell
 # CPU
-.\scripts\dev\run-docker-cpu.ps1
+.\scripts\core\docker\cpu.ps1
 
 # GPU (if available)
-.\scripts\dev\run-docker-gpu.ps1
+.\scripts\core\docker\gpu.ps1
 
 # GPU + Internet web research (starts the `internet` compose profile)
-.\scripts\dev\run-docker-gpu-internet.ps1
+.\scripts\core\docker\gpu-internet.ps1
 ```
 
 If you prefer a single entrypoint:
 
 ```powershell
-.\scripts\dev\start.ps1 --mode docker --docker-mode auto
-.\scripts\dev\start.ps1 --mode docker --docker-mode gpu --internet
+python scripts/launcher/start.py --mode docker --docker-mode auto
+python scripts/launcher/start.py --mode docker --docker-mode gpu --internet
 ```
 
 ---

@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useMemo } from "react";
-import { MapPin, Building2, DollarSign, AlertCircle, Loader2 } from "lucide-react";
-import { searchProperties } from "@/lib/api";
-import { extractMapPoints, type PropertyMapPoint } from "@/components/search/property-map-utils";
-import dynamic from "next/dynamic";
+import { useEffect, useState, useMemo } from 'react';
+import { MapPin, Building2, DollarSign, AlertCircle, Loader2 } from 'lucide-react';
+import { searchProperties } from '@/lib/api';
+import { extractMapPoints, type PropertyMapPoint } from '@/components/search/property-map-utils';
+import dynamic from 'next/dynamic';
 
-const PropertyMapboxMap = dynamic(() => import("@/components/search/property-mapbox-map"), {
+const PropertyMapboxMap = dynamic(() => import('@/components/search/property-mapbox-map'), {
   ssr: false,
   loading: () => <div className="h-[600px] w-full bg-muted animate-pulse rounded-lg" />,
 });
@@ -23,14 +23,14 @@ interface CityStats {
 }
 
 const POPULAR_CITIES = [
-  "Warsaw",
-  "Krakow",
-  "Gdansk",
-  "Wroclaw",
-  "Poznan",
-  "Lodz",
-  "Katowice",
-  "Lublin",
+  'Warsaw',
+  'Krakow',
+  'Gdansk',
+  'Wroclaw',
+  'Poznan',
+  'Lodz',
+  'Katowice',
+  'Lublin',
 ];
 
 export default function CityOverviewPage() {
@@ -57,17 +57,21 @@ export default function CityOverviewPage() {
             const points = extractMapPoints(response.results);
             const prices = points
               .map((p) => p.price)
-              .filter((p): p is number => typeof p === "number");
+              .filter((p): p is number => typeof p === 'number');
 
-            const center = points.length > 0
-              ? { lat: points[0].lat, lon: points[0].lon }
-              : { lat: 52.2297, lon: 21.0122 };
+            const center =
+              points.length > 0
+                ? { lat: points[0].lat, lon: points[0].lon }
+                : { lat: 52.2297, lon: 21.0122 };
 
             stats.push({
               city,
-              country: response.results[0].property.country || "Poland",
+              country: response.results[0].property.country || 'Poland',
               propertyCount: response.results.length,
-              avgPrice: prices.length > 0 ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0,
+              avgPrice:
+                prices.length > 0
+                  ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length)
+                  : 0,
               minPrice: prices.length > 0 ? Math.min(...prices) : 0,
               maxPrice: prices.length > 0 ? Math.max(...prices) : 0,
               points,
@@ -75,7 +79,11 @@ export default function CityOverviewPage() {
             });
           }
         } catch (err) {
+          const errorMessage = err instanceof Error ? err.message : 'Unknown error';
           console.error(`Failed to load data for ${city}:`, err);
+          // Set error state so user sees the error UI
+          setError(`Failed to load data for ${city}: ${errorMessage}`);
+          break; // Stop processing remaining cities on error
         }
       }
 
@@ -98,7 +106,7 @@ export default function CityOverviewPage() {
     const city = cityStats.find((c) => c.points.some((p) => p.id === point.id));
     if (city) {
       setSelectedCity(city.city);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -176,11 +184,11 @@ export default function CityOverviewPage() {
                   <div
                     key={`${stat.city}-${stat.country}`}
                     className={`rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden cursor-pointer transition-all hover:shadow-md ${
-                      selectedCity === stat.city ? "ring-2 ring-primary" : ""
+                      selectedCity === stat.city ? 'ring-2 ring-primary' : ''
                     }`}
                     onClick={() => setSelectedCity(stat.city)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
+                      if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
                         setSelectedCity(stat.city);
                       }
@@ -207,7 +215,10 @@ export default function CityOverviewPage() {
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <DollarSign className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                          <DollarSign
+                            className="h-4 w-4 text-muted-foreground"
+                            aria-hidden="true"
+                          />
                           <div className="text-sm">
                             <span className="font-medium">${stat.avgPrice.toLocaleString()}</span>
                             <span className="text-muted-foreground"> avg</span>
@@ -266,12 +277,12 @@ export default function CityOverviewPage() {
                         <MapPin className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
                       </div>
                       <div className="p-4 space-y-2">
-                        <h3 className="font-semibold">{point.title ?? "Untitled Property"}</h3>
+                        <h3 className="font-semibold">{point.title ?? 'Untitled Property'}</h3>
                         <p className="text-sm text-muted-foreground">
                           {point.city}, {point.country}
                         </p>
                         <div className="font-bold text-lg">
-                          {point.price ? `$${point.price.toLocaleString()}` : "Price on request"}
+                          {point.price ? `$${point.price.toLocaleString()}` : 'Price on request'}
                         </div>
                       </div>
                     </div>

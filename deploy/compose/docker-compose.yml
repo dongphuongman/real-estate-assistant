@@ -15,7 +15,7 @@ services:
       dockerfile: deploy/docker/Dockerfile.backend
     container_name: ai-backend
     ports:
-      - "8001:8000"
+      - "8000:8000"
     environment:
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - API_ACCESS_KEY=${API_ACCESS_KEY:-dev-secret-key}
@@ -35,7 +35,7 @@ services:
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - SMTP_PROVIDER=${SMTP_PROVIDER}
       - UPTIME_MONITOR_ENABLED=${UPTIME_MONITOR_ENABLED:-false}
-      - UPTIME_MONITOR_HEALTH_URL=${UPTIME_MONITOR_HEALTH_URL:-http://localhost:8001/health}
+      - UPTIME_MONITOR_HEALTH_URL=${UPTIME_MONITOR_HEALTH_URL:-http://localhost:8000/health}
       - UPTIME_MONITOR_EMAIL_TO=${UPTIME_MONITOR_EMAIL_TO}
       - UPTIME_MONITOR_INTERVAL=${UPTIME_MONITOR_INTERVAL:-60}
       - UPTIME_MONITOR_FAIL_THRESHOLD=${UPTIME_MONITOR_FAIL_THRESHOLD:-3}
@@ -79,7 +79,7 @@ services:
       dockerfile: deploy/docker/Dockerfile.frontend
     container_name: ai-frontend
     ports:
-      - "3001:3000"
+      - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api/v1}
       - BACKEND_API_URL=${BACKEND_API_URL:-http://backend:8000/api/v1}
@@ -88,7 +88,7 @@ services:
       - backend
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://$(hostname -i):3000/ >/dev/null"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ >/dev/null 2>&1 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

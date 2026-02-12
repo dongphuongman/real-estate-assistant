@@ -128,12 +128,24 @@
         "details": "1. Run full CI pipeline to verify all changes work together\n2. Test Docker workflows:\n   - Build backend: 'docker build -f deploy/docker/Dockerfile.backend .'\n   - Build frontend: 'docker build -f deploy/docker/Dockerfile.frontend ./frontend'\n   - Start services: 'docker-compose -f deploy/compose/docker-compose.yml up -d'\n   - Verify services are accessible on expected ports\n3. Test all Makefile targets end-to-end\n4. Run security scan: 'python scripts/ci/security.py' or 'make security'\n5. Test dev container from fresh start:\n   - Delete .devcontainer cache\n   - Rebuild and reopen container\n   - Verify all setup completes\n6. Validate no broken imports or path references in any Python file\n7. Create a smoke test that exercises key functionality",
         "testStrategy": "1. Full CI/CD pipeline run with green status\n2. All Makefile targets pass without errors\n3. Docker containers start successfully and respond to health checks\n4. All scripts in scripts/ execute without import errors\n5. Dev container builds and setup completes within expected time\n6. No broken links or missing file references found via automated checks\n7. Create validation checklist and verify all items pass",
         "subtasks": []
+      },
+      {
+        "id": "34",
+        "title": "Refactor repo for local PowerShell scripts and Docker",
+        "description": "Fix port consistency, Docker configuration issues, update documentation, and add convenience scripts for easier local development.",
+        "status": "in_progress",
+        "dependencies": [],
+        "priority": "high",
+        "details": "1. Fix port consistency:\n   - Update scripts/launcher/start.py: change default ports from 8001/3001 to 8000/3000\n   - Update deploy/compose/docker-compose.yml: change port mappings from 8001:8000 to 8000:8000 and 3001:3000 to 3000:3000\n2. Fix Docker issues:\n   - Add API_ACCESS_KEY default in docker-compose.yml: ${API_ACCESS_KEY:-dev-secret-key}\n   - Fix frontend health check for Windows compatibility (use localhost instead of $(hostname -i))\n   - Add environment variable documentation in docker-compose.yml comments\n3. Update documentation:\n   - Add scripts/ directory structure documentation to CLAUDE.md\n   - Update all script path references (scripts/dev/ -> scripts/core/ or scripts/launcher/)\n   - Update all port references to use 8000/3000 consistently\n   - Update QUICKSTART.md with correct script examples\n4. Add convenience scripts:\n   - Create scripts/run.ps1 for easy local development\n   - Create scripts/docker-up.ps1 for quick Docker start\n5. Verify all changes work correctly",
+        "testStrategy": "1. Run .\\scripts\\core\\local\\backend.ps1 - verify backend runs on port 8000\n2. Run .\\scripts\\core\\local\\frontend.ps1 - verify frontend runs on port 3000\n3. Run .\\scripts\\core\\local\\run.ps1 - verify both services start\n4. Run .\\scripts\\core\\docker\\cpu.ps1 - verify Docker starts correctly\n5. Run .\\scripts\\run.ps1 - verify convenience wrapper works\n6. Run .\\scripts\\docker-up.ps1 - verify Docker wrapper works\n7. Check all documentation for correct paths and ports",
+        "subtasks": [],
+        "updatedAt": "2026-02-12T00:00:00.000Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-11T20:58:24.983Z",
-      "taskCount": 9,
+      "lastModified": "2026-02-12T00:00:00.000Z",
+      "taskCount": 10,
       "completedCount": 3,
       "tags": [
         "master"

@@ -1,77 +1,92 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { BarChart3, BookOpen, Building2, MessageSquare, Moon, Search, Settings, Sun, Globe } from "lucide-react";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import {
+  BarChart3,
+  BookOpen,
+  Building2,
+  MessageSquare,
+  Moon,
+  Search,
+  Settings,
+  Sun,
+  Globe,
+} from 'lucide-react';
 
-const THEME_STORAGE_KEY = "theme";
+const THEME_STORAGE_KEY = 'theme';
 
 export function MainNav() {
   const pathname = usePathname();
 
   const routes = [
     {
-      href: "/",
-      label: "Home",
+      href: '/',
+      label: 'Home',
       icon: Building2,
-      active: pathname === "/",
+      active: pathname === '/',
     },
     {
-      href: "/search",
-      label: "Search",
+      href: '/search',
+      label: 'Search',
       icon: Search,
-      active: pathname === "/search",
+      active: pathname === '/search',
     },
     {
-      href: "/city-overview",
-      label: "Cities",
+      href: '/city-overview',
+      label: 'Cities',
       icon: Globe,
-      active: pathname === "/city-overview",
+      active: pathname === '/city-overview',
     },
     {
-      href: "/chat",
-      label: "Assistant",
+      href: '/chat',
+      label: 'Assistant',
       icon: MessageSquare,
-      active: pathname === "/chat",
+      active: pathname === '/chat',
     },
     {
-      href: "/analytics",
-      label: "Analytics",
+      href: '/analytics',
+      label: 'Analytics',
       icon: BarChart3,
-      active: pathname === "/analytics",
+      active: pathname === '/analytics',
     },
     {
-      href: "/knowledge",
-      label: "Knowledge",
+      href: '/knowledge',
+      label: 'Knowledge',
       icon: BookOpen,
-      active: pathname === "/knowledge",
+      active: pathname === '/knowledge',
     },
     {
-      href: "/settings",
-      label: "Settings",
+      href: '/settings',
+      label: 'Settings',
       icon: Settings,
-      active: pathname === "/settings",
+      active: pathname === '/settings',
     },
   ];
 
   const toggleTheme = () => {
-    const isDark = document.documentElement.classList.contains("dark");
-    const next = isDark ? "light" : "dark";
+    const isDark = document.documentElement.classList.contains('dark');
+    const next = isDark ? 'light' : 'dark';
     window.localStorage.setItem(THEME_STORAGE_KEY, next);
-    document.documentElement.classList.toggle("dark", !isDark);
+    document.documentElement.classList.toggle('dark', !isDark);
   };
 
   return (
-    <nav className="flex flex-1 items-center space-x-6 lg:space-x-8 mx-6">
+    <nav className="flex items-center justify-center space-x-6 lg:space-x-8">
+      {/* Logo - absolutely positioned on the left */}
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-xl hidden md:block">
+        AI Estate
+      </div>
+
       {routes.map((route) => (
         <Link
           key={route.href}
           href={route.href}
           className={cn(
-            "text-sm font-medium transition-colors hover:text-primary flex items-center gap-x-2",
-            route.active ? "text-foreground" : "text-muted-foreground"
+            'text-sm font-medium transition-colors hover:text-primary flex items-center gap-x-2',
+            route.active ? 'text-foreground' : 'text-muted-foreground'
           )}
         >
           <route.icon className="w-4 h-4" />
