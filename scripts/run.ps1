@@ -1,21 +1,15 @@
-# Convenience script for running the AI Real Estate Assistant locally
-# This is a wrapper around the launcher script with sensible defaults
+param(
+  [Parameter(ValueFromRemainingArguments = $true)]
+  [string[]]$Args
+)
 
 $ErrorActionPreference = "Stop"
 
-$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$projectRoot = Split-Path -Parent $scriptDir
+$root = Resolve-Path (Join-Path $PSScriptRoot "..")
+Set-Location $root
 
-Write-Host "Starting AI Real Estate Assistant..." -ForegroundColor Green
-Write-Host "Project root: $projectRoot" -ForegroundColor Cyan
+. (Join-Path $root "scripts\core\_shared\resolve_python.ps1")
 
-# Check if Python is available
-$pythonCmd = Get-Command python -ErrorAction SilentlyContinue
-if (-not $pythonCmd) {
-    Write-Host "Error: Python is not installed or not on PATH." -ForegroundColor Red
-    Write-Host "Please install Python 3.11+ from https://python.org" -ForegroundColor Yellow
-    exit 1
-}
-
-# Run the launcher script with sensible defaults
-& python "$projectRoot\scripts\launcher\start.py" @args
+$invocation = Get-PythonInvocation -ProjectRoot $root
+& $invocation.Python @($invocation.Args) (Join-Path $root "scripts\launcher\start.py") @Args
+exit $LASTEXITCODE

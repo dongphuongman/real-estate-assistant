@@ -8,18 +8,18 @@
 
 ### Windows (PowerShell)
 ```powershell
-.\scripts\dev\start.ps1
+.\scripts\core\local\run.ps1
 ```
 
 ### Linux/Mac (Bash)
 ```bash
-./scripts/dev/start.sh
+./scripts/core/linux/start.sh --mode local
 ```
 
 **Access:**
-- Frontend: http://localhost:3001
-- Backend: http://localhost:8001
-- API Docs: http://localhost:8001/docs
+- Frontend: http://localhost:3000
+- Backend: http://localhost:8000
+- API Docs: http://localhost:8000/docs
 
 ---
 
@@ -28,28 +28,28 @@
 ### Windows (PowerShell)
 ```powershell
 # CPU mode
-.\scripts\dev\run-docker-cpu.ps1
+.\scripts\core\docker\cpu.ps1
 
 # GPU mode
-.\scripts\dev\run-docker-gpu.ps1
+.\scripts\core\docker\gpu.ps1
 
 # GPU + Internet access
-.\scripts\dev\run-docker-gpu-internet.ps1
+.\scripts\core\docker\gpu-internet.ps1
 ```
 
 ### Linux/Mac (Bash)
 ```bash
 # Auto-detect GPU
-./scripts/dev/run-docker.sh
+./scripts/core/linux/start.sh --mode docker
 
 # Force CPU mode
-./scripts/dev/run-docker.sh cpu
+./scripts/core/linux/docker.sh cpu
 
 # Force GPU mode
-./scripts/dev/run-docker.sh gpu
+./scripts/core/linux/docker.sh gpu
 
 # Enable internet access
-./scripts/dev/run-docker.sh internet
+./scripts/core/linux/start.sh --mode docker --internet
 ```
 
 ---
@@ -58,12 +58,12 @@
 
 ### Windows (PowerShell)
 ```powershell
-.\scripts\deploy-vercel.ps1
+.\scripts\deployment\vercel.ps1
 ```
 
 ### Linux/Mac (Bash)
 ```bash
-./scripts/deploy-vercel.sh
+./scripts/deployment/vercel.sh
 ```
 
 **The script will:**

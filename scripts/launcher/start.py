@@ -98,9 +98,12 @@ def _run_docker(root: Path, *, profiles: list[str]) -> int:
         )
         return 2
     env = os.environ.copy()
-    if "gpu" in profiles:
-        env.setdefault("OLLAMA_API_BASE", "http://ollama-gpu:11434")
-        env.setdefault("OLLAMA_HOST", "http://ollama-gpu:11434")
+    if "local-llm" in profiles:
+        ollama_api_base = "http://ollama:11434"
+        if "gpu" in profiles:
+            ollama_api_base = "http://ollama_gpu:11434"
+        env.setdefault("OLLAMA_API_BASE", ollama_api_base)
+        env.setdefault("OLLAMA_HOST", ollama_api_base)
     if "internet" in profiles:
         env.setdefault("INTERNET_ENABLED", "true")
     cmd = ["docker", "compose", "-f", "deploy/compose/docker-compose.yml"]
@@ -297,6 +300,8 @@ def main(argv: list[str] | None = None) -> int:
     if docker_mode == "gpu":
         if "gpu" not in effective_profiles:
             effective_profiles.append("gpu")
+        if "local-llm" not in effective_profiles:
+            effective_profiles.append("local-llm")
     elif docker_mode == "auto":
         if "gpu" not in effective_profiles and _docker_gpu_available():
             effective_profiles.append("gpu")

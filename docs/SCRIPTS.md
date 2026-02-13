@@ -26,8 +26,8 @@ Run the application directly on your host machine. Requires Python (uv) and Node
 |--------|-------------|
 | `local/run.ps1` | Starts both Backend and Frontend. |
 | `local/run-internet.ps1` | Starts Backend/Frontend with **Web Search enabled**. |
-| `local/backend.ps1` | Starts only the Backend API (port 8001). |
-| `local/frontend.ps1` | Starts only the Frontend Next.js app (port 3001). |
+| `local/backend.ps1` | Starts only the Backend API (port 8000). |
+| `local/frontend.ps1` | Starts only the Frontend Next.js app (port 3000). |
 
 ## Docker Development
 Run the application in isolated containers. Useful for consistent environments or testing deployment.

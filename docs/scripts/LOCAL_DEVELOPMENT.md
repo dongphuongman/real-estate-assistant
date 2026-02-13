@@ -94,14 +94,14 @@ This creates `.venv/` and installs project dependencies (plus dev extras):
 
 ## Local ports and env defaults
 
-- Backend: http://localhost:8001
-- Frontend: http://localhost:3001
+- Backend: http://localhost:8000
+- Frontend: http://localhost:3000
 
 Local mode defaults:
 
 - `ENVIRONMENT=development`
 - `API_ACCESS_KEY=dev-secret-key`
 - `NEXT_PUBLIC_API_URL=/api/v1`
-- `BACKEND_API_URL=http://localhost:8001/api/v1`
+- `BACKEND_API_URL=http://localhost:8000/api/v1`
 
 For real provider usage, set `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `GOOGLE_API_KEY` in your shell env (or `.env` used by Docker Compose).
