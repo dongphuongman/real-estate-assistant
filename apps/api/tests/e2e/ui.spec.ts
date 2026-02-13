@@ -48,7 +48,7 @@ test.describe('UI Smoke', () => {
     });
 
     await page.goto('/chat');
-    await expect(page.getByText(/Hello! I'm your AI Real Estate Assistant\./i)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: 'AI Real Estate Assistant' })).toBeVisible({ timeout: 10000 });
     await page.getByPlaceholder('Ask about properties, market trends, or investment advice...').fill('Test message');
     await page.getByRole('button', { name: /send message/i }).click();
 
@@ -101,6 +101,7 @@ test.describe('UI Smoke', () => {
     });
 
     await page.goto('/chat');
+    await expect(page.getByRole('heading', { name: 'AI Real Estate Assistant' })).toBeVisible({ timeout: 10000 });
     await page.getByPlaceholder('Ask about properties, market trends, or investment advice...').fill('Retry message');
     await page.getByRole('button', { name: /send message/i }).click();
 

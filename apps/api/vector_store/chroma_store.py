@@ -142,8 +142,6 @@ class ChromaPropertyStore:
             logger.warning(f"FastEmbed initialization failed: {e}")
 
         try:
-            from config import settings
-
             if settings.openai_api_key:
                 from langchain_openai import OpenAIEmbeddings
 

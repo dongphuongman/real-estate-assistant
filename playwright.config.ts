@@ -7,7 +7,7 @@ const startWeb =
   (process.env.PLAYWRIGHT_START_WEB || '').toLowerCase() === 'true';
 
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: './apps/api/tests/e2e',
   timeout: 60_000,
   retries: 0,
   reporter: [['list']],
