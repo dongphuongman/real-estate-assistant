@@ -12,7 +12,7 @@ _project_root = Path(__file__).resolve().parents[4]
 if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
-from scripts.launcher.start import (  # noqa: E402
+from scripts.start import (  # noqa: E402
     _build_backend_env,
     _build_frontend_env,
     _get_default_api_access_key_from_env,
