@@ -25,7 +25,7 @@ from langchain_core.retrievers import BaseRetriever
 try:
     from langchain_chroma import Chroma
 except Exception:
-    Chroma = None
+    Chroma = None  # type: ignore[misc,assignment]
 
 from config.settings import settings
 from data.schemas import Property, PropertyCollection
@@ -38,7 +38,9 @@ except Exception:
 
 _FastEmbedEmbeddings: Any = None
 try:
-    from langchain_community.embeddings.fastembed import FastEmbedEmbeddings as _FastEmbedEmbeddings
+    from langchain_community.embeddings.fastembed import (  # type: ignore[no-redef]
+        FastEmbedEmbeddings as _FastEmbedEmbeddings,
+    )
 except Exception:
     pass
 

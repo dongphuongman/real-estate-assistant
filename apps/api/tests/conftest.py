@@ -57,7 +57,7 @@ def _ensure_optional_excel_modules() -> None:
         parent = sys.modules.get("odf")
         child = sys.modules.get("odf.opendocument", odf_opendocument)
         if parent is not None and child is not None and not hasattr(parent, "opendocument"):
-            parent.opendocument = child
+            setattr(parent, "opendocument", child)  # noqa: B010
 
 
 def pytest_configure() -> None:
