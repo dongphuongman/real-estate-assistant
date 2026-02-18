@@ -1,34 +1,32 @@
 #!/bin/bash
-# Auto-detect mode launcher for AI Real Estate Assistant
-# Detects Docker availability and runs in appropriate mode
+# Local mode launcher for AI Real Estate Assistant (both services)
+# Runs both backend and frontend locally without Docker
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
 # Help support
 show_help() {
     cat << EOF
 Usage: run.sh [options]
 
-Auto-detect mode launcher for AI Real Estate Assistant.
-Detects Docker availability and runs in appropriate mode.
+Local development launcher for AI Real Estate Assistant.
+Runs both backend and frontend services locally.
 
 Options:
   --help, -h        Show this help message
   --dry-run         Show commands without executing
   --no-bootstrap    Skip dependency installation
-  --mode            auto | docker | local (default: auto)
-  --service         all | backend | frontend (default: all)
   --backend-port    Backend port (default: 8000)
   --frontend-port   Frontend port (default: 3000)
 
 Examples:
-  ./scripts/run.sh                        # Auto-detect mode
-  ./scripts/run.sh --mode local           # Force local mode
-  ./scripts/run.sh --service backend      # Backend only
-  ./scripts/run.sh --dry-run              # Show commands
+  ./scripts/local/run.sh                        # Start both services
+  ./scripts/local/run.sh --no-bootstrap         # Skip bootstrap
+  ./scripts/local/run.sh --backend-port 8080    # Custom backend port
+  ./scripts/local/run.sh --dry-run              # Show commands
 
 For full options, run: python3 scripts/start.py --help
 EOF
@@ -42,7 +40,7 @@ for arg in "$@"; do
     fi
 done
 
-echo "Starting AI Real Estate Assistant..."
+echo "Starting AI Real Estate Assistant locally..."
 echo "Project root: $PROJECT_ROOT"
 
 # Check if Python3 is available
@@ -52,5 +50,5 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
-# Run the launcher script with sensible defaults
-python3 "$PROJECT_ROOT/scripts/start.py" "$@"
+# Run the launcher script with local mode
+python3 "$PROJECT_ROOT/scripts/start.py" --mode local "$@"

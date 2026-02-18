@@ -64,5 +64,5 @@ function Get-PythonInvocation {
     }
   }
 
-  throw "Python executable not found. Install Python 3.11+ or run scripts\core\env\setup.ps1."
+  throw "Python executable not found. Install Python 3.11+ or run scripts\setup\setup.ps1."
 }
