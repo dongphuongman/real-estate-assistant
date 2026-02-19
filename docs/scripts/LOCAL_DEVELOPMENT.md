@@ -40,40 +40,40 @@ Extra flags:
 ### Windows (PowerShell)
 
 ```powershell
-.\scripts\core\local\run.ps1
+.\scripts\local\run.ps1
 ```
 
 Force a specific mode:
 
 ```powershell
-python .\scripts\launcher\start.py --mode docker --docker-mode cpu
-python .\scripts\launcher\start.py --mode docker --docker-mode gpu
-python .\scripts\launcher\start.py --mode docker --docker-mode gpu --internet
-python .\scripts\launcher\start.py --mode local
-python .\scripts\launcher\start.py --mode local --service backend
-python .\scripts\launcher\start.py --mode local --dry-run
+python .\scripts\start.py --mode docker --docker-mode cpu
+python .\scripts\start.py --mode docker --docker-mode gpu
+python .\scripts\start.py --mode docker --docker-mode gpu --internet
+python .\scripts\start.py --mode local
+python .\scripts\start.py --mode local --service backend
+python .\scripts\start.py --mode local --dry-run
 ```
 
 Convenience commands:
 
 ```powershell
-.\scripts\core\docker\cpu.ps1
-.\scripts\core\docker\gpu.ps1
-.\scripts\core\docker\gpu-internet.ps1
+.\scripts\docker\cpu.ps1
+.\scripts\docker\gpu.ps1
+.\scripts\docker\gpu-internet.ps1
 ```
 
 ### Linux
 
 ```sh
-chmod +x ./scripts/core/linux/*.sh
-./scripts/core/linux/start.sh --mode local
+chmod +x ./scripts/*.sh ./scripts/local/*.sh ./scripts/docker/*.sh
+./scripts/run.sh --mode local
 ```
 
 Force a specific mode:
 
 ```sh
-./scripts/core/linux/start.sh --mode docker
-./scripts/core/linux/docker.sh gpu
+./scripts/run.sh --mode docker
+./scripts/docker.sh gpu
 ```
 
 ## Python environment setup (uv)
@@ -83,13 +83,13 @@ This creates `.venv/` and installs project dependencies (plus dev extras):
 ### Windows
 
 ```powershell
-.\scripts\core\env\setup.ps1
+.\scripts\setup\setup.ps1
 ```
 
 ### Linux
 
 ```sh
-./scripts/core/env/setup.sh
+./scripts/setup/setup.sh
 ```
 
 ## Local ports and env defaults

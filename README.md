@@ -364,8 +364,8 @@ See `docs/testing/TESTING_GUIDE.md` for details.
 If you prefer a single entrypoint:
 
 ```powershell
-python scripts/launcher/start.py --mode docker --docker-mode auto
-python scripts/launcher/start.py --mode docker --docker-mode gpu --internet
+python scripts/start.py --mode docker --docker-mode auto
+python scripts/start.py --mode docker --docker-mode gpu --internet
 ```
 
 ---

@@ -8,12 +8,12 @@
 
 ### Windows (PowerShell)
 ```powershell
-.\scripts\core\local\run.ps1
+.\scripts\local\run.ps1
 ```
 
 ### Linux/Mac (Bash)
 ```bash
-./scripts/core/linux/start.sh --mode local
+./scripts/run.sh --mode local
 ```
 
 **Access:**
@@ -28,28 +28,28 @@
 ### Windows (PowerShell)
 ```powershell
 # CPU mode
-.\scripts\core\docker\cpu.ps1
+.\scripts\docker\cpu.ps1
 
 # GPU mode
-.\scripts\core\docker\gpu.ps1
+.\scripts\docker\gpu.ps1
 
 # GPU + Internet access
-.\scripts\core\docker\gpu-internet.ps1
+.\scripts\docker\gpu-internet.ps1
 ```
 
 ### Linux/Mac (Bash)
 ```bash
 # Auto-detect GPU
-./scripts/core/linux/start.sh --mode docker
+./scripts/run.sh --mode docker
 
 # Force CPU mode
-./scripts/core/linux/docker.sh cpu
+./scripts/docker.sh cpu
 
 # Force GPU mode
-./scripts/core/linux/docker.sh gpu
+./scripts/docker.sh gpu
 
 # Enable internet access
-./scripts/core/linux/start.sh --mode docker --internet
+./scripts/run.sh --mode docker --internet
 ```
 
 ---

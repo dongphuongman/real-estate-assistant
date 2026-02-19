@@ -1,23 +1,23 @@
 # Development Scripts Guide
 
-This project provides a set of scripts in `scripts/core/` to streamline development tasks. These scripts call the shared Python launcher (`scripts/launcher/start.py`) to ensure consistent execution across environments.
+This project provides a set of scripts in `scripts/` to streamline development tasks. These scripts call the shared Python launcher (`scripts/start.py`) to ensure consistent execution across environments.
 
 ## Recommended Entry Point
 
-Pick one script from `scripts/core/local/` or `scripts/core/docker/`.
+Pick one script from `scripts/local/` or `scripts/docker/`.
 
 Advanced usage (all flags supported):
 
 ```powershell
-python .\scripts\launcher\start.py --help
+python .\scripts\start.py --help
 ```
 
 ## Script Layout
 
 Use these subfolders to avoid a flat list of scripts:
 
-- `scripts/core/local/` (local runs)
-- `scripts/core/docker/` (docker runs)
+- `scripts/local/` (local runs)
+- `scripts/docker/` (docker runs)
 
 ## Local Development (Recommended)
 Run the application directly on your host machine. Requires Python (uv) and Node.js installed.
@@ -54,7 +54,7 @@ Run the application in isolated containers. Useful for consistent environments o
 
 ### 2. CPU vs GPU
 - **Local**: Automatically uses your GPU if `torch` with CUDA is installed in your venv.
-- **Docker**: Use `scripts/core/docker/gpu.ps1` (requires NVIDIA Container Toolkit).
+- **Docker**: Use `scripts/docker/gpu.ps1` (requires NVIDIA Container Toolkit).
 
 ### 3. Internet Mode
 - **Local**: Uses `DuckDuckGo` (via HTML scraping) by default. Zero setup required.

@@ -40,7 +40,7 @@
       ]
     }
   },
-  "postCreateCommand": "curl -LsSf https://astral.sh/uv/install.sh | sh && sudo ln -sf $HOME/.local/bin/uv /usr/local/bin/uv && python scripts/core/bootstrap.py --dev && npm --prefix apps/web ci",
+  "postCreateCommand": "curl -LsSf https://astral.sh/uv/install.sh | sh && sudo ln -sf $HOME/.local/bin/uv /usr/local/bin/uv && python scripts/bootstrap.py --dev && npm --prefix apps/web ci",
   "postAttachCommand": "python -c \"from apps.api.api.main import app; print('API import OK')\" && node -v && npm -v",
   "portsAttributes": {
     "8000": {

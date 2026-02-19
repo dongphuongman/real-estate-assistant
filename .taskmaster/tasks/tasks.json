@@ -140,20 +140,20 @@
         "id": "34",
         "title": "Refactor repo for local PowerShell scripts and Docker",
         "description": "Fix port consistency, Docker configuration issues, update documentation, and add convenience scripts for easier local development.",
-        "status": "in_progress",
+        "status": "done",
         "dependencies": [],
         "priority": "high",
         "details": "1. Fix port consistency:\n   - Update scripts/launcher/start.py: change default ports from 8001/3001 to 8000/3000\n   - Update deploy/compose/docker-compose.yml: change port mappings from 8001:8000 to 8000:8000 and 3001:3000 to 3000:3000\n2. Fix Docker issues:\n   - Add API_ACCESS_KEY default in docker-compose.yml: ${API_ACCESS_KEY:-dev-secret-key}\n   - Fix frontend health check for Windows compatibility (use localhost instead of $(hostname -i))\n   - Add environment variable documentation in docker-compose.yml comments\n3. Update documentation:\n   - Add scripts/ directory structure documentation to CLAUDE.md\n   - Update all script path references (scripts/dev/ -> scripts/core/ or scripts/launcher/)\n   - Update all port references to use 8000/3000 consistently\n   - Update QUICKSTART.md with correct script examples\n4. Add convenience scripts:\n   - Create scripts/run.ps1 for easy local development\n   - Create scripts/docker-up.ps1 for quick Docker start\n5. Verify all changes work correctly",
         "testStrategy": "1. Run .\\scripts\\core\\local\\backend.ps1 - verify backend runs on port 8000\n2. Run .\\scripts\\core\\local\\frontend.ps1 - verify frontend runs on port 3000\n3. Run .\\scripts\\core\\local\\run.ps1 - verify both services start\n4. Run .\\scripts\\core\\docker\\cpu.ps1 - verify Docker starts correctly\n5. Run .\\scripts\\run.ps1 - verify convenience wrapper works\n6. Run .\\scripts\\docker-up.ps1 - verify Docker wrapper works\n7. Check all documentation for correct paths and ports",
         "subtasks": [],
-        "updatedAt": "2026-02-12T00:00:00.000Z"
+        "updatedAt": "2026-02-19T12:07:00.519Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-19T11:15:16.095Z",
+      "lastModified": "2026-02-19T12:07:00.520Z",
       "taskCount": 10,
-      "completedCount": 8,
+      "completedCount": 9,
       "tags": [
         "master"
       ]
