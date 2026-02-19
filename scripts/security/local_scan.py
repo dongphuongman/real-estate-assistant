@@ -10,9 +10,9 @@ This script runs all security checks that are performed in CI/CD locally:
 Mirrors the CI/CD security stage for local development and AI tool usage.
 
 Usage:
-    python scripts/ci/security_local.py              # Run all checks
-    python scripts/ci/security_local.py --scan-only=secrets
-    python scripts/ci/security_local.py --quick      # Skip slower checks
+    python scripts/security/local_scan.py              # Run all checks
+    python scripts/security/local_scan.py --scan-only=secrets
+    python scripts/security/local_scan.py --quick      # Skip slower checks
 
 Exit codes:
     0 - All checks passed
