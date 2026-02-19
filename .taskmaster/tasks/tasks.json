@@ -3,15 +3,15 @@
     "tasks": [
       {
         "id": "33",
-        "title": "Deploy to Versel environment (TOP PRIORITY)",
-        "description": "Verify CI changes, check application works locally, then deploy to Versel (Vercel) production environment.",
-        "status": "review",
-        "dependencies": [],
-        "priority": "critical",
-        "details": "1. Review and verify recent CI changes:\n   - Check .github/workflows/ci.yml for any recent modifications\n   - Verify all security scripts are working correctly\n   - Confirm pre-commit hooks are functioning\n2. Local validation:\n   - Run backend locally: 'python -m uvicorn api.main:app --reload'\n   - Run frontend locally: 'cd frontend && npm run dev'\n   - Test key functionality (chat API, property search)\n   - Run security scan: 'python security-scan.py'\n   - Run tests: 'python -m pytest'\n3. Prepare for Versel deployment:\n   - Update environment variables for Versel\n   - Configure backend API URL in frontend\n   - Set up production database if needed\n4. Deploy to Versel:\n   - Connect GitHub repository to Versel\n   - Configure build settings (root directory, build command)\n   - Set environment variables in Versel dashboard\n   - Deploy frontend to Versel\n   - Verify deployment is accessible\n5. Post-deployment validation:\n   - Test live application\n   - Monitor logs for errors\n   - Verify API connectivity",
-        "testStrategy": "1. Backend runs on port 8000 without errors\n2. Frontend runs on port 3000 without errors\n3. Security scan passes (or acceptable warnings)\n4. Unit tests pass\n5. Application works locally end-to-end\n6. Versel deployment completes successfully\n7. Live application is accessible and functional\n8. API endpoints respond correctly",
+        "title": "Deploy to Vercel environment (DEFERRED)",
+        "description": "Verify CI changes, check application works locally, then deploy frontend to Vercel and backend to Render/Railway production environment. DEFERRED: Will be done after application is feature-complete.",
+        "status": "pending",
+        "dependencies": ["32"],
+        "priority": "low",
+        "details": "1. Review and verify recent CI changes:\n   - Check .github/workflows/ci.yml for any recent modifications\n   - Verify all security scripts are working correctly\n   - Confirm pre-commit hooks are functioning\n2. Local validation:\n   - Run backend locally: 'python -m uvicorn api.main:app --reload'\n   - Run frontend locally: 'cd apps/web && npm run dev'\n   - Test key functionality (chat API, property search)\n   - Run security scan: 'python scripts/security/local_scan.py'\n   - Run tests: 'npm run test'\n3. Prepare for Vercel deployment (FRONTEND):\n   - Update environment variables for Vercel\n   - Configure BACKEND_API_URL in Vercel dashboard\n   - Set up production API key\n4. Deploy frontend to Vercel:\n   - Connect GitHub repository to Vercel\n   - Configure build settings (root directory: apps/web, build command: npm run build)\n   - Set environment variables in Vercel dashboard\n   - Deploy and verify deployment is accessible\n5. Deploy backend to Render/Railway (BACKEND):\n   - Create new Web Service on Render or Railway\n   - Connect GitHub repository\n   - Configure build command: pip install -e .[dev]\n   - Configure start command: python -m uvicorn api.main:app --host 0.0.0.0 --port $PORT\n   - Set environment variables (API keys, CORS, etc.)\n   - Deploy and verify API health endpoint\n6. Post-deployment validation:\n   - Test live frontend at Vercel URL\n   - Test live backend at Render/Railway URL\n   - Monitor logs for errors\n   - Verify API connectivity from frontend",
+        "testStrategy": "1. Backend runs on port 8000 without errors\n2. Frontend runs on port 3000 without errors\n3. Security scan passes (or acceptable warnings)\n4. Unit tests pass\n5. Application works locally end-to-end\n6. Vercel deployment completes successfully\n7. Render/Railway deployment completes successfully\n8. Live application is accessible and functional\n9. API endpoints respond correctly\n10. Frontend can communicate with backend",
         "subtasks": [],
-        "updatedAt": "2026-02-11T20:58:24.983Z"
+        "updatedAt": "2026-02-19T00:00:00.000Z"
       },
       {
         "id": "25",
@@ -51,16 +51,17 @@
       },
       {
         "id": "28",
-        "title": "Rename and consolidate security scripts",
-        "description": "Rename scripts/ci/security_local.py to scripts/ci/security.py and remove the root-level security-scan.py wrapper script.",
+        "title": "Update security script references and remove broken wrapper",
+        "description": "Update documentation and CI references to use scripts/security/local_scan.py as the canonical security scanner, and remove the broken security-scan.py wrapper.",
         "status": "pending",
         "dependencies": [
           "26"
         ],
         "priority": "medium",
-        "details": "1. Rename scripts/ci/security_local.py to scripts/ci/security.py using git mv to preserve history\n2. Update any imports or references within security.py if needed\n3. Remove root-level security-scan.py file\n4. Verify security.py can be run directly: 'python scripts/ci/security.py'\n5. Ensure security.py functionality covers all capabilities of the removed wrapper\n6. Update any shebang lines to use proper Python interpreter path",
-        "testStrategy": "1. Verify security_local.py no longer exists\n2. Verify security.py exists in scripts/ci/\n3. Verify root security-scan.py is removed\n4. Run 'python scripts/ci/security.py --help' to verify it executes\n5. Run full security scan to ensure functionality is preserved\n6. Check git log to confirm history was preserved via git mv",
-        "subtasks": []
+        "details": "1. Remove root-level security-scan.py wrapper (already broken - imports non-existent module)\n2. Update documentation references:\n   - CLAUDE.md: Update security section to reference scripts/security/local_scan.py\n   - README.md: Update security scan command\n   - .taskmaster/docs/prd_refactoring.md: Update planned paths\n3. Update CI workflow references if needed:\n   - .github/workflows/ci.yml already uses correct paths (scripts/security/)\n4. Verify local_scan.py works correctly:\n   - Run 'python scripts/security/local_scan.py --help'\n   - Run 'python scripts/security/local_scan.py --quick'\n5. Update docstring in local_scan.py to reference correct path\n6. No file rename needed - local_scan.py is already the canonical location",
+        "testStrategy": "1. Verify root security-scan.py is removed\n2. Verify scripts/security/local_scan.py exists and runs\n3. Run 'python scripts/security/local_scan.py --help' to verify it executes\n4. Run 'python scripts/security/local_scan.py --quick' for quick scan\n5. Check documentation for correct paths\n6. Verify CI workflows reference correct paths",
+        "subtasks": [],
+        "updatedAt": "2026-02-19T00:00:00.000Z"
       },
       {
         "id": "29",
@@ -73,7 +74,7 @@
           "28"
         ],
         "priority": "high",
-        "details": "1. Update .github/workflows/ci.yml:\n   - Update script paths: scripts/xxx -> scripts/ci/xxx, scripts/dev/xxx, etc.\n   - Update docker-compose paths: docker-compose.yml -> deploy/compose/docker-compose.yml\n   - Update Dockerfile paths for build steps\n   - Update security scan command to use scripts/ci/security.py\n2. Update .github/workflows/semgrep.yml if it references any moved scripts\n3. Verify all environment variables and secrets references remain valid\n4. Ensure working-directory settings in workflow jobs are correct for new structure\n5. Update any relative path references in workflow commands",
+        "details": "1. Update .github/workflows/ci.yml:\n   - Update script paths: scripts/xxx -> scripts/ci/xxx, scripts/dev/xxx, etc.\n   - Update docker-compose paths: docker-compose.yml -> deploy/compose/docker-compose.yml\n   - Update Dockerfile paths for build steps\n   - Update security scan command to use scripts/security/local_scan.py\n2. Update .github/workflows/semgrep.yml if it references any moved scripts\n3. Verify all environment variables and secrets references remain valid\n4. Ensure working-directory settings in workflow jobs are correct for new structure\n5. Update any relative path references in workflow commands",
         "testStrategy": "1. Validate YAML syntax for both workflow files\n2. Dry-run workflow locally using 'act' or similar tool if available\n3. Create a test branch and push to trigger CI workflow\n4. Monitor GitHub Actions logs for path-related errors\n5. Verify all workflow steps complete successfully",
         "subtasks": []
       },
@@ -88,7 +89,7 @@
           "29"
         ],
         "priority": "medium",
-        "details": "1. Create Makefile with the following targets:\n   - make security: runs 'python scripts/ci/security.py'\n   - make test: runs 'python -m pytest' or equivalent test command\n   - make lint: runs 'ruff check .' and 'ruff format --check .'\n   - make docker-up: runs 'docker-compose -f deploy/compose/docker-compose.yml up -d'\n   - make docker-down: runs 'docker-compose -f deploy/compose/docker-compose.yml down'\n   - make ci: runs full CI locally via scripts/dev/run-ci-full.ps1 or equivalent\n   - make setup: runs scripts/dev/setup.sh (or .ps1 on Windows)\n   - make dev: runs scripts/dev/start.py\n2. Add .PHONY declaration for all targets\n3. Include help target that displays all available commands\n4. Add variables for common paths (DOCKER_COMPOSE_FILE, SCRIPT_DIR, etc.)\n5. Ensure Makefile is cross-platform compatible (or document Windows limitations)",
+        "details": "1. Create Makefile with the following targets:\n   - make security: runs 'python scripts/security/local_scan.py'\n   - make test: runs 'python -m pytest' or equivalent test command\n   - make lint: runs 'ruff check .' and 'ruff format --check .'\n   - make docker-up: runs 'docker-compose -f deploy/compose/docker-compose.yml up -d'\n   - make docker-down: runs 'docker-compose -f deploy/compose/docker-compose.yml down'\n   - make ci: runs full CI locally via scripts/dev/run-ci-full.ps1 or equivalent\n   - make setup: runs scripts/dev/setup.sh (or .ps1 on Windows)\n   - make dev: runs scripts/dev/start.py\n2. Add .PHONY declaration for all targets\n3. Include help target that displays all available commands\n4. Add variables for common paths (DOCKER_COMPOSE_FILE, SCRIPT_DIR, etc.)\n5. Ensure Makefile is cross-platform compatible (or document Windows limitations)",
         "testStrategy": "1. Run 'make help' to verify all targets are listed\n2. Execute each target individually:\n   - make security\n   - make test\n   - make lint\n   - make docker-up (verify containers start)\n   - make docker-down (verify containers stop)\n   - make ci\n3. Verify targets fail appropriately when dependencies are missing\n4. Test Makefile on both Unix and Windows (with WSL or make equivalent)",
         "subtasks": []
       },
@@ -125,7 +126,7 @@
           "31"
         ],
         "priority": "high",
-        "details": "1. Run full CI pipeline to verify all changes work together\n2. Test Docker workflows:\n   - Build backend: 'docker build -f deploy/docker/Dockerfile.backend .'\n   - Build frontend: 'docker build -f deploy/docker/Dockerfile.frontend ./frontend'\n   - Start services: 'docker-compose -f deploy/compose/docker-compose.yml up -d'\n   - Verify services are accessible on expected ports\n3. Test all Makefile targets end-to-end\n4. Run security scan: 'python scripts/ci/security.py' or 'make security'\n5. Test dev container from fresh start:\n   - Delete .devcontainer cache\n   - Rebuild and reopen container\n   - Verify all setup completes\n6. Validate no broken imports or path references in any Python file\n7. Create a smoke test that exercises key functionality",
+        "details": "1. Run full CI pipeline to verify all changes work together\n2. Test Docker workflows:\n   - Build backend: 'docker build -f deploy/docker/Dockerfile.backend .'\n   - Build frontend: 'docker build -f deploy/docker/Dockerfile.frontend ./frontend'\n   - Start services: 'docker-compose -f deploy/compose/docker-compose.yml up -d'\n   - Verify services are accessible on expected ports\n3. Test all Makefile targets end-to-end\n4. Run security scan: 'python scripts/security/local_scan.py' or 'make security'\n5. Test dev container from fresh start:\n   - Delete .devcontainer cache\n   - Rebuild and reopen container\n   - Verify all setup completes\n6. Validate no broken imports or path references in any Python file\n7. Create a smoke test that exercises key functionality",
         "testStrategy": "1. Full CI/CD pipeline run with green status\n2. All Makefile targets pass without errors\n3. Docker containers start successfully and respond to health checks\n4. All scripts in scripts/ execute without import errors\n5. Dev container builds and setup completes within expected time\n6. No broken links or missing file references found via automated checks\n7. Create validation checklist and verify all items pass",
         "subtasks": []
       },

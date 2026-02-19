@@ -318,3 +318,6 @@ resp.html
 tmp
 data/audit/
 apps/api/data/audit/
+
+# Taskmaster review script (contains private backlog parsing logic)
+scripts/validation/taskmaster_review.py
