@@ -2,7 +2,7 @@
   "master": {
     "tasks": [
       {
-        "id": "33",
+        "id": 33,
         "title": "Deploy to Vercel environment (DEFERRED)",
         "description": "Verify CI changes, check application works locally, then deploy frontend to Vercel and backend to Render/Railway production environment. DEFERRED: Will be done after application is feature-complete.",
         "status": "pending",
@@ -16,7 +16,7 @@
         "updatedAt": "2026-02-19T00:00:00.000Z"
       },
       {
-        "id": "25",
+        "id": 25,
         "title": "Create deploy/ directory structure and move Docker files",
         "description": "Create the new deploy/ directory with docker/ and compose/ subdirectories, and move all Docker-related files from root and frontend locations to the new structure.",
         "status": "done",
@@ -28,7 +28,7 @@
         "updatedAt": "2026-02-11T20:55:19.167Z"
       },
       {
-        "id": "26",
+        "id": 26,
         "title": "Restructure scripts/ directory into subdirectories",
         "description": "Reorganize the scripts/ directory by creating subdirectories (ci, dev, docs, security, validation) and moving existing scripts into their appropriate categories.",
         "status": "done",
@@ -40,7 +40,7 @@
         "updatedAt": "2026-02-11T20:55:52.506Z"
       },
       {
-        "id": "27",
+        "id": 27,
         "title": "Update .devcontainer configuration for FastAPI + Next.js",
         "description": "Update the .devcontainer/devcontainer.json file to reflect the new FastAPI backend and Next.js frontend stack, removing outdated Streamlit references.",
         "status": "done",
@@ -52,7 +52,7 @@
         "updatedAt": "2026-02-11T20:57:12.692Z"
       },
       {
-        "id": "28",
+        "id": 28,
         "title": "Update security script references and remove broken wrapper",
         "description": "Update documentation and CI references to use scripts/security/local_scan.py as the canonical security scanner, and remove the broken security-scan.py wrapper.",
         "status": "done",
@@ -66,7 +66,7 @@
         "updatedAt": "2026-02-19T10:15:28.267Z"
       },
       {
-        "id": "29",
+        "id": 29,
         "title": "Update CI/CD workflows with new paths",
         "description": "Update .github/workflows/ci.yml and .github/workflows/semgrep.yml to use the new script paths and Docker file locations.",
         "status": "done",
@@ -82,7 +82,7 @@
         "updatedAt": "2026-02-19T10:59:16.740Z"
       },
       {
-        "id": "30",
+        "id": 30,
         "title": "Create Makefile for common commands",
         "description": "Create a root-level Makefile with convenient targets for security scanning, testing, linting, docker operations, and running full CI locally.",
         "status": "done",
@@ -98,7 +98,7 @@
         "updatedAt": "2026-02-19T11:03:55.333Z"
       },
       {
-        "id": "31",
+        "id": 31,
         "title": "Update documentation with new structure",
         "description": "Update README.md, CLAUDE.md, and any other documentation files to reflect the new project structure, script locations, and commands.",
         "status": "done",
@@ -117,7 +117,7 @@
         "updatedAt": "2026-02-19T11:10:24.749Z"
       },
       {
-        "id": "32",
+        "id": 32,
         "title": "Final validation and integration testing",
         "description": "Perform comprehensive validation to ensure all refactored paths work correctly, Docker containers build and run, and all scripts execute without errors.",
         "status": "done",
@@ -137,7 +137,7 @@
         "updatedAt": "2026-02-19T11:15:16.095Z"
       },
       {
-        "id": "34",
+        "id": 34,
         "title": "Refactor repo for local PowerShell scripts and Docker",
         "description": "Fix port consistency, Docker configuration issues, update documentation, and add convenience scripts for easier local development.",
         "status": "done",
@@ -147,16 +147,173 @@
         "testStrategy": "1. Run .\\scripts\\core\\local\\backend.ps1 - verify backend runs on port 8000\n2. Run .\\scripts\\core\\local\\frontend.ps1 - verify frontend runs on port 3000\n3. Run .\\scripts\\core\\local\\run.ps1 - verify both services start\n4. Run .\\scripts\\core\\docker\\cpu.ps1 - verify Docker starts correctly\n5. Run .\\scripts\\run.ps1 - verify convenience wrapper works\n6. Run .\\scripts\\docker-up.ps1 - verify Docker wrapper works\n7. Check all documentation for correct paths and ports",
         "subtasks": [],
         "updatedAt": "2026-02-19T12:07:00.519Z"
+      },
+      {
+        "id": 35,
+        "title": "User Authentication System",
+        "description": "Implement real authentication to replace the current simulated auth system. Users should be able to register, login, and manage their sessions securely.",
+        "details": "1. Backend - JWT Authentication:\n   - Create User model with email, password_hash, verified, created_at\n   - Implement /auth/register endpoint with email verification\n   - Implement /auth/login endpoint returning JWT tokens\n   - Implement /auth/logout endpoint for session invalidation\n   - Implement /auth/refresh endpoint for token renewal\n   - Implement /auth/password-reset endpoint\n\n2. Backend - OAuth Providers:\n   - Add Google OAuth integration\n   - Add Apple OAuth integration (optional)\n   - Create /auth/oauth/{provider} endpoints\n\n3. Backend - Middleware:\n   - Add JWT validation middleware\n   - Add rate limiting for auth endpoints\n   - Add CSRF protection\n\n4. Frontend - Auth Pages:\n   - Update /auth/login with real form submission\n   - Update /auth/register with email verification flow\n   - Add /auth/forgot-password page\n   - Add /auth/reset-password page\n   - Store JWT tokens securely (httpOnly cookies preferred)\n\n5. Frontend - Auth State:\n   - Create AuthContext for user state management\n   - Add protected route wrapper\n   - Add logout functionality",
+        "testStrategy": "1. Unit tests for password hashing and JWT generation\n2. Integration tests for all auth endpoints\n3. Test OAuth flow with mock providers\n4. Test token refresh and expiration\n5. Test rate limiting on auth endpoints\n6. E2E tests for login/register/logout flows",
+        "status": "in-progress",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-02-19T18:19:32.385Z"
+      },
+      {
+        "id": 36,
+        "title": "Saved Searches & Alerts",
+        "description": "Allow users to save their search criteria and receive email alerts when new properties match their saved searches.",
+        "details": "1. Backend - Saved Search Model:\n   - Create SavedSearch model with user_id, filters, alert_frequency, is_active\n   - Store filter criteria (price_range, location, property_type, rooms, etc.)\n\n2. Backend - API Endpoints:\n   - GET /saved-searches - List user's saved searches\n   - POST /saved-searches - Create new saved search\n   - PUT /saved-searches/{id} - Update saved search\n   - DELETE /saved-searches/{id} - Delete saved search\n   - PATCH /saved-searches/{id}/toggle - Pause/resume alerts\n\n3. Backend - Alert System:\n   - Background job to check for new matching properties\n   - Email notification when matches found\n   - Daily/weekly digest options\n   - Rate limiting to prevent spam\n\n4. Frontend - UI:\n   - \"Save Search\" button on search results page\n   - Saved searches management in settings\n   - Alert frequency selector\n   - Toggle for pausing alerts",
+        "testStrategy": "1. Unit tests for saved search model and filters\n2. Integration tests for CRUD operations\n3. Test alert triggering with mock properties\n4. Test email notification sending\n5. E2E test for save/search/alert flow",
+        "status": "pending",
+        "dependencies": [
+          "35"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 37,
+        "title": "Property Favorites/Watchlist",
+        "description": "Implement a favorites/watchlist system where users can save individual properties for later review, organize them into collections, and add notes.",
+        "details": "1. Backend - Favorites Model:\n   - Create Favorite model with user_id, property_id, collection_id, notes, created_at\n   - Create Collection model with user_id, name, description, is_default\n\n2. Backend - API Endpoints:\n   - GET /favorites - List user's favorites\n   - POST /favorites - Add property to favorites\n   - DELETE /favorites/{property_id} - Remove from favorites\n   - PATCH /favorites/{property_id} - Update notes/collection\n   - GET /collections - List collections\n   - POST /collections - Create collection\n   - PUT /collections/{id} - Update collection\n   - DELETE /collections/{id} - Delete collection\n\n3. Frontend - UI:\n   - Heart icon on property cards to add/remove favorites\n   - /favorites page with grid view of saved properties\n   - Collection sidebar for organizing favorites\n   - Notes editor for each saved property\n   - Share watchlist via link (optional)",
+        "testStrategy": "1. Unit tests for favorites model\n2. Integration tests for CRUD operations\n3. Test collection management\n4. Test notes functionality\n5. E2E test for add/view/remove favorites",
+        "status": "pending",
+        "dependencies": [
+          "35"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 38,
+        "title": "Price History & Trends",
+        "description": "Implement price history tracking and trend analysis to show how property prices have changed over time.",
+        "details": "1. Backend - Price History Model:\n   - Create PriceSnapshot model with property_id, price, price_per_sqm, recorded_at\n   - Background job to capture price snapshots periodically\n\n2. Backend - API Endpoints:\n   - GET /market/price-history/{property_id} - Get price history for a property\n   - GET /market/trends - Get market trend data (avg prices by city/district)\n   - GET /market/indicators - Get market indicators (rising/falling/stable)\n\n3. Backend - Analytics:\n   - Calculate price trends (1m, 3m, 6m, 1y)\n   - Calculate market indicators\n   - Price drop detection and alerts\n\n4. Frontend - UI:\n   - Price history chart component (line chart)\n   - Trend indicators on property cards\n   - Market trends dashboard\n   - Price alert subscription",
+        "testStrategy": "1. Unit tests for trend calculations\n2. Integration tests for price history API\n3. Test price snapshot capture\n4. Test alert triggering on price drops\n5. Verify chart rendering with sample data",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 39,
+        "title": "Advanced Investment Analytics",
+        "description": "Enhance the investment analysis tools with more advanced metrics including cash flow projections, tax implications, and risk assessment.",
+        "details": "1. Backend - Enhanced Calculators:\n   - Cash flow projection (1, 5, 10, 20 years)\n   - Tax implications calculator (property tax, income tax deductions)\n   - Appreciation scenarios (pessimistic -2%, realistic +3%, optimistic +7%)\n   - Risk assessment score (0-100) based on market volatility\n\n2. Backend - Portfolio Metrics:\n   - Aggregate metrics for multiple properties\n   - Diversification score\n   - Overall portfolio risk\n\n3. Frontend - Enhanced UI:\n   - Cash flow projection chart\n   - Scenario comparison table\n   - Risk assessment visualization\n   - Portfolio dashboard view",
+        "testStrategy": "1. Unit tests for all calculator functions\n2. Verify projection calculations\n3. Test risk scoring algorithm\n4. Verify chart data formatting\n5. Compare results with known investment scenarios",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 40,
+        "title": "Neighborhood Insights Enhancement",
+        "description": "Enhance the neighborhood quality index with more detailed data including crime statistics, school ratings, and public transport accessibility.",
+        "details": "1. Backend - Data Sources:\n   - Integrate crime statistics API (if available for Poland)\n   - Integrate school ratings/distance data\n   - Add public transport accessibility score (GTFS data)\n   - Add air quality index integration\n   - Add noise level data\n\n2. Backend - Enhanced Scoring:\n   - Update NeighborhoodQualityIndexTool with new factors\n   - Add weighted scoring configuration\n   - Add historical comparison\n\n3. Frontend - Enhanced UI:\n   - Detailed neighborhood breakdown (crime, schools, transport)\n   - Comparison with city average\n   - Interactive map with POI markers\n   - \"What's nearby\" section",
+        "testStrategy": "1. Unit tests for each scoring factor\n2. Integration tests with external APIs\n3. Verify scoring calculations\n4. Test fallback when data unavailable\n5. Verify map marker rendering",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 41,
+        "title": "Multi-language UI",
+        "description": "Implement full internationalization (i18n) for the UI, supporting Polish (primary market), English, and Russian languages.",
+        "details": "1. Setup i18n:\n   - Add next-intl package\n   - Configure i18n in next.config.ts\n   - Create locales directory structure\n\n2. Translations:\n   - Create translation files for PL, EN, RU\n   - Extract all UI strings to translation keys\n   - Add language switcher component\n\n3. Localization:\n   - Localized date formatting\n   - Localized number/currency formatting\n   - RTL support consideration (for future)\n\n4. Files to create/modify:\n   - apps/web/src/locales/en.json\n   - apps/web/src/locales/pl.json\n   - apps/web/src/locales/ru.json\n   - apps/web/src/components/ui/language-switcher.tsx",
+        "testStrategy": "1. Verify all pages render in each language\n2. Test language switching\n3. Verify date/number formatting per locale\n4. Check for missing translation keys\n5. Test with long text (German/Polish words)",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": []
+      },
+      {
+        "id": 42,
+        "title": "Rent vs Buy Calculator",
+        "description": "Create a calculator that compares the financial implications of renting vs buying a property over time.",
+        "details": "1. Backend - Calculator:\n   - Monthly rent vs mortgage payment comparison\n   - Total cost calculation over 5, 10, 15, 30 years\n   - Break-even point calculation (when buying becomes cheaper)\n   - Opportunity cost of down payment (if invested instead)\n   - Tax benefits of ownership (deductions)\n   - Maintenance and repair costs\n   - Property appreciation consideration\n\n2. API Endpoint:\n   - POST /tools/rent-vs-buy - Calculate comparison\n\n3. Frontend - UI:\n   - Rent vs Buy calculator form\n   - Side-by-side comparison chart\n   - Break-even timeline visualization\n   - Sensitivity analysis (what-if scenarios)",
+        "testStrategy": "1. Unit tests for all calculations\n2. Verify break-even calculation\n3. Test with various input scenarios\n4. Compare with online calculators for validation\n5. E2E test for calculator flow",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": []
+      },
+      {
+        "id": 43,
+        "title": "Document Management",
+        "description": "Implement a document management system where users can upload, store, and organize property-related documents such as contracts, inspection reports, and photos.",
+        "details": "1. Backend - Document Model:\n   - Create Document model with user_id, property_id, filename, file_type, category, tags, expiry_date\n   - Support file types: PDF, DOC, DOCX, JPG, PNG\n\n2. Backend - Storage:\n   - Configure file storage (local S3-compatible or cloud storage)\n   - Implement secure file upload/download\n   - Add file size limits (10MB max)\n   - Add virus scanning (optional)\n\n3. Backend - API Endpoints:\n   - POST /documents - Upload document\n   - GET /documents - List documents\n   - GET /documents/{id} - Download document\n   - DELETE /documents/{id} - Delete document\n   - PATCH /documents/{id} - Update metadata\n\n4. Backend - OCR (optional):\n   - Extract text from PDFs/images\n   - Make documents searchable\n\n5. Frontend - UI:\n   - Document upload with drag-drop\n   - Document list with filters\n   - Document preview (PDF viewer)\n   - Expiry reminders",
+        "testStrategy": "1. Unit tests for document model\n2. Integration tests for upload/download\n3. Test file type validation\n4. Test file size limits\n5. Test document categorization\n6. Verify secure file access",
+        "status": "pending",
+        "dependencies": [
+          "35"
+        ],
+        "priority": "low",
+        "subtasks": []
+      },
+      {
+        "id": 44,
+        "title": "Mobile PWA",
+        "description": "Convert the web application into a Progressive Web App (PWA) to provide a mobile-friendly experience with offline capabilities.",
+        "details": "1. PWA Configuration:\n   - Create manifest.json with app icons, name, theme colors\n   - Register service worker for caching\n   - Configure offline page fallbacks\n\n2. Offline Capabilities:\n   - Cache property search results\n   - Cache viewed property details\n   - Offline form submission (sync when online)\n   - Cache static assets\n\n3. Push Notifications:\n   - Configure push notification service\n   - Subscribe to price alerts\n   - Subscribe to new property alerts\n   - Notification preferences in settings\n\n4. Mobile Optimization:\n   - Add to home screen prompt\n   - Mobile-optimized navigation\n   - Touch-friendly UI improvements\n   - Responsive image loading\n\n5. Files to create:\n   - apps/web/public/manifest.json\n   - apps/web/public/sw.js (service worker)\n   - apps/web/src/lib/push-notifications.ts",
+        "testStrategy": "1. Verify manifest.json is valid\n2. Test offline mode in Chrome DevTools\n3. Test add to home screen on mobile\n4. Verify push notification subscription\n5. Test cached content access offline\n6. Lighthouse PWA audit score > 90",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": []
+      },
+      {
+        "id": 45,
+        "title": "Agent/Broker Integration",
+        "description": "Integrate real estate agent/broker functionality to connect users with professionals for property inquiries, viewing appointments, and listing management.",
+        "details": "1. Backend - Agent Model:\n   - Create Agent model with name, email, phone, agency, rating, specialties, service_areas\n   - Create AgentListing model for agent's properties\n\n2. Backend - API Endpoints:\n   - GET /agents - List agents (with filters by area, specialty)\n   - GET /agents/{id} - Get agent details\n   - POST /agents/{id}/contact - Send inquiry to agent\n   - POST /agents/{id}/schedule-viewing - Request viewing appointment\n   - GET /agents/{id}/listings - Get agent's listings\n\n3. Backend - Agent Dashboard (optional):\n   - Agent registration/login\n   - Manage listings\n   - View inquiries\n   - Schedule management\n\n4. Frontend - UI:\n   - Agent directory page with search/filters\n   - Agent profile page with ratings/reviews\n   - Contact form on property pages\n   - Viewing appointment scheduler\n   - Commission calculator tool",
+        "testStrategy": "1. Unit tests for agent model\n2. Integration tests for all endpoints\n3. Test contact form submission\n4. Test appointment scheduling\n5. Verify agent search/filtering\n6. E2E test for agent contact flow",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": []
+      },
+      {
+        "id": 46,
+        "title": "Frontend Auth Integration",
+        "description": "Implement frontend authentication integration with JWT backend. Connect login/register pages to real API endpoints, create AuthContext for state management, and add protected routes.",
+        "details": "This task depends on Task #35 (User Authentication System - Backend) which provides the JWT auth endpoints.\n\n1. Auth Context:\n   - Create AuthContext.tsx for user state management\n   - Create useAuth hook for easy access\n   - Handle loading states and error handling\n   - Store CSRF token from cookie\n\n2. Auth API Functions:\n   - Create lib/auth.ts with API functions\n   - login(email, password)\n   - register(email, password, name)\n   - logout()\n   - getCurrentUser()\n   - forgotPassword(email)\n   - resetPassword(token, password)\n   - getGoogleOAuthUrl()\n\n3. Auth Pages Refactor:\n   - Update /auth/login with real API calls and OAuth button\n   - Update /auth/register with real API calls\n   - Create /auth/forgot-password page\n   - Create /auth/reset-password page\n   - Create /auth/verify-email page\n   - Create /auth/oauth/callback page\n\n4. Protected Routes:\n   - Create middleware.ts for route protection\n   - Check for auth cookies\n   - Redirect unauthenticated users to /auth/login\n   - Allow public routes: /auth/*, /api/*, /health\n\n5. UI Components:\n   - Create LoginForm.tsx component\n   - Create RegisterForm.tsx component\n   - Create OAuthButtons.tsx component\n   - Create UserMenu.tsx component for header\n\n6. Integration:\n   - Update header to show user menu when authenticated\n   - Add logout functionality\n   - Handle token refresh on 401 responses",
+        "testStrategy": "1. Component tests for AuthContext\n2. Form validation tests\n3. Protected route tests\n4. E2E tests for login/register/logout flows\n5. Test OAuth flow (mocked)",
+        "status": "pending",
+        "dependencies": [
+          35
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 47,
+        "title": "Auth Security Hardening",
+        "description": "Add security hardening measures for the authentication system including CSRF protection, rate limiting on auth endpoints, and audit logging integration.",
+        "details": "This task depends on Task #35 (User Authentication System - Backend) which provides the JWT auth endpoints.\n\n1. CSRF Protection:\n   - Create api/middleware/csrf.py\n   - Implement double-submit cookie pattern\n   - Read CSRF token from cookie\n   - Validate against X-CSRF-Token header\n   - Skip for GET, HEAD, OPTIONS requests\n   - Skip for routes using Authorization header (API clients)\n\n2. Rate Limiting on Auth Endpoints:\n   - Login: 5 attempts per minute per IP\n   - Register: 3 per minute per IP\n   - Password reset: 3 per minute per IP\n   - Email verification resend: 3 per minute per IP\n   - Use existing rate limiter from middleware/observability.py\n\n3. Audit Logging Integration:\n   - Log all auth events (login, logout, register)\n   - Log failed login attempts\n   - Log password reset requests\n   - Integrate with existing audit.py system\n\n4. RBAC Integration:\n   - Map JWT roles to existing Role enum in rbac.py\n   - Extend UserContext with user_id from JWT\n   - Add get_user_context_from_jwt function\n\n5. Security Headers:\n   - Ensure auth cookies have Secure flag in production\n   - Verify SameSite=Strict is set\n   - Add rate limit headers to responses\n\n6. Additional Security:\n   - Add account lockout after 5 failed login attempts\n   - Add breached password checking (optional, haveibeenpwned API)\n   - Add password strength validation on server side",
+        "testStrategy": "1. Unit tests for CSRF middleware\n2. Integration tests for rate limiting\n3. Test account lockout mechanism\n4. Security penetration tests\n5. Test audit logging captures all auth events",
+        "status": "pending",
+        "dependencies": [
+          35
+        ],
+        "priority": "high",
+        "subtasks": []
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-19T12:07:00.520Z",
-      "taskCount": 10,
+      "lastModified": "2026-02-19T18:19:32.386Z",
+      "taskCount": 21,
       "completedCount": 9,
       "tags": [
         "master"
-      ]
+      ],
+      "created": "2026-02-19T18:55:36.701Z",
+      "description": "Tasks for master context",
+      "updated": "2026-02-19T18:55:36.723Z"
     }
   }
 }
