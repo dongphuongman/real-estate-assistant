@@ -21,7 +21,16 @@ from api.middleware.error_handler import add_error_handlers
 from api.middleware.request_size import add_request_size_limits
 from api.middleware.security import add_security_headers
 from api.observability import REQUEST_ID_HEADER, add_observability
-from api.routers import admin, auth, chat, exports, prompt_templates, search, tools
+from api.routers import (
+    admin,
+    auth,
+    auth_jwt,  # JWT authentication endpoints
+    chat,
+    exports,
+    prompt_templates,
+    search,
+    tools,
+)
 from api.routers import rag as rag_router
 from api.routers import settings as settings_router
 from config.settings import get_settings
@@ -94,6 +103,17 @@ async def startup_event():
             "Notifications relying on vector search will be disabled."
         )
     app.state.vector_store = vector_store
+
+    # 1.5 Initialize Auth Database (if JWT auth enabled)
+    if settings.auth_jwt_enabled:
+        logger.info("Initializing Auth Database...")
+        try:
+            from db.database import init_db
+
+            await init_db()
+            logger.info("Auth Database initialized successfully.")
+        except Exception as e:
+            logger.error(f"Failed to initialize Auth Database: {e}")
 
     # 2. Initialize Email Service
     logger.info("Initializing Email Service...")
@@ -304,6 +324,10 @@ app.include_router(prompt_templates.router, prefix="/api/v1", dependencies=[Depe
 app.include_router(admin.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(exports.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(auth.router, prefix="/api/v1")
+
+# JWT Auth Router (conditionally enabled)
+if settings.auth_jwt_enabled:
+    app.include_router(auth_jwt.router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["System"])

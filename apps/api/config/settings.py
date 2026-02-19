@@ -82,7 +82,7 @@ class AppSettings(BaseModel):
         )
     )
 
-    # Auth
+    # Auth (Legacy - Email Code Auth)
     auth_email_enabled: bool = Field(
         default_factory=lambda: os.getenv("AUTH_EMAIL_ENABLED", "false").strip().lower()
         in {"1", "true", "yes", "on"}
@@ -92,6 +92,91 @@ class AppSettings(BaseModel):
     )
     session_ttl_days: int = Field(default_factory=lambda: int(os.getenv("SESSION_TTL_DAYS", "30")))
     auth_storage_dir: str = Field(default_factory=lambda: os.getenv("AUTH_STORAGE_DIR", ".auth"))
+
+    # JWT Authentication
+    jwt_secret_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("JWT_SECRET_KEY"),
+        description="Secret key for JWT token signing (required in production)",
+    )
+    jwt_algorithm: str = Field(
+        default_factory=lambda: os.getenv("JWT_ALGORITHM", "HS256"),
+        description="JWT signing algorithm",
+    )
+    jwt_access_token_expire_minutes: int = Field(
+        default_factory=lambda: int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "15")),
+        description="Access token expiration time in minutes",
+    )
+    jwt_refresh_token_expire_days: int = Field(
+        default_factory=lambda: int(os.getenv("JWT_REFRESH_TOKEN_EXPIRE_DAYS", "7")),
+        description="Refresh token expiration time in days",
+    )
+
+    # Database
+    database_url: Optional[str] = Field(
+        default_factory=lambda: os.getenv("DATABASE_URL"),
+        description="Database connection URL (defaults to SQLite if not set)",
+    )
+
+    # OAuth - Google
+    google_client_id: Optional[str] = Field(
+        default_factory=lambda: os.getenv("GOOGLE_CLIENT_ID"),
+        description="Google OAuth client ID",
+    )
+    google_client_secret: Optional[str] = Field(
+        default_factory=lambda: os.getenv("GOOGLE_CLIENT_SECRET"),
+        description="Google OAuth client secret",
+    )
+    google_redirect_uri: Optional[str] = Field(
+        default_factory=lambda: os.getenv("GOOGLE_REDIRECT_URI"),
+        description="Google OAuth redirect URI",
+    )
+
+    # OAuth - Apple (optional)
+    apple_client_id: Optional[str] = Field(
+        default_factory=lambda: os.getenv("APPLE_CLIENT_ID"),
+        description="Apple Sign-In client ID (services identifier)",
+    )
+    apple_team_id: Optional[str] = Field(
+        default_factory=lambda: os.getenv("APPLE_TEAM_ID"),
+        description="Apple Developer Team ID",
+    )
+    apple_key_id: Optional[str] = Field(
+        default_factory=lambda: os.getenv("APPLE_KEY_ID"),
+        description="Apple Sign-In key ID",
+    )
+    apple_private_key_path: Optional[str] = Field(
+        default_factory=lambda: os.getenv("APPLE_PRIVATE_KEY_PATH"),
+        description="Path to Apple Sign-In private key file (.p8)",
+    )
+
+    # Feature Flags
+    auth_jwt_enabled: bool = Field(
+        default_factory=lambda: os.getenv("AUTH_JWT_ENABLED", "false").strip().lower()
+        in {"1", "true", "yes", "on"},
+        description="Enable JWT-based authentication",
+    )
+    auth_registration_enabled: bool = Field(
+        default_factory=lambda: os.getenv("AUTH_REGISTRATION_ENABLED", "true").strip().lower()
+        in {"1", "true", "yes", "on"},
+        description="Allow new user registration",
+    )
+    auth_email_verification_required: bool = Field(
+        default_factory=lambda: os.getenv("AUTH_EMAIL_VERIFICATION_REQUIRED", "true")
+        .strip()
+        .lower()
+        in {"1", "true", "yes", "on"},
+        description="Require email verification before account activation",
+    )
+    auth_oauth_google_enabled: bool = Field(
+        default_factory=lambda: os.getenv("AUTH_OAUTH_GOOGLE_ENABLED", "false").strip().lower()
+        in {"1", "true", "yes", "on"},
+        description="Enable Google OAuth login",
+    )
+    auth_oauth_apple_enabled: bool = Field(
+        default_factory=lambda: os.getenv("AUTH_OAUTH_APPLE_ENABLED", "false").strip().lower()
+        in {"1", "true", "yes", "on"},
+        description="Enable Apple Sign-In",
+    )
 
     # Model Defaults
     default_provider: str = Field(
