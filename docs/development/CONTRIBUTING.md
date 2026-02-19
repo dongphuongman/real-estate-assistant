@@ -43,6 +43,7 @@ Thank you for your interest in contributing to the AI Real Estate Assistant! Thi
    # Install uv (fast Python package manager)
    pip install uv
 
+   cd apps/api
    uv venv venv
    # Windows:
    .\venv\Scripts\Activate.ps1
@@ -54,7 +55,7 @@ Thank you for your interest in contributing to the AI Real Estate Assistant! Thi
 
 3. **Frontend Setup (Next.js)**
    ```bash
-   cd frontend
+   cd apps/web
    npm install
    ```
 
@@ -70,31 +71,56 @@ Thank you for your interest in contributing to the AI Real Estate Assistant! Thi
 
 ```
 ai-real-estate-assistant/
-├── agents/              # AI agents (Hybrid, Tools)
-├── analytics/           # Market insights & Valuation
-├── api/                 # FastAPI routers & endpoints
-├── data/                # Data providers (CSV, API)
-├── docs/                # Documentation
-├── frontend/            # Next.js Application
-├── models/              # LLM Provider Factory
-├── notifications/       # Digest & Alert System
-├── tests/               # Pytest suite
-└── vector_store/        # ChromaDB integration
+├── apps/
+│   ├── api/                 # FastAPI backend (Python)
+│   │   ├── api/             # Routers & endpoints
+│   │   ├── agents/          # AI agents (Hybrid, Tools)
+│   │   ├── models/          # LLM Provider Factory
+│   │   ├── data/            # Data providers (CSV, API)
+│   │   ├── vector_store/    # ChromaDB integration
+│   │   └── tests/           # Pytest suite
+│   └── web/                 # Next.js frontend
+├── deploy/
+│   ├── docker/              # Dockerfiles
+│   └── compose/             # docker-compose files
+├── scripts/
+│   ├── ci/                  # CI/CD scripts
+│   ├── dev/                 # Development scripts
+│   ├── docker/              # Docker utilities
+│   ├── docs/                # Doc generators
+│   └── security/            # Security scanning
+├── docs/                    # Documentation
+└── Makefile                 # Quick commands (make help)
 ```
 
 ### Running Locally
 
+Using the unified launcher (recommended):
+```bash
+python scripts/start.py --mode local
+```
+
+Or run services individually:
+
 1. **Backend**
    ```bash
+   cd apps/api
    uvicorn api.main:app --reload --port 8000
    ```
 
 2. **Frontend**
    ```bash
-   cd frontend
+   cd apps/web
    npm run dev
    # Runs on http://localhost:3000
    ```
+
+Or use Makefile targets:
+```bash
+make dev        # Start both services
+make dev-api    # Backend only
+make dev-web    # Frontend only
+```
 
 ## 📝 Code Standards
 
@@ -102,6 +128,7 @@ ai-real-estate-assistant/
 - **Style**: Follow PEP 8.
 - **Linting**: We use `ruff` for linting and formatting.
   ```bash
+  cd apps/api
   ruff check .
   ruff format .
   ```
@@ -117,6 +144,8 @@ ai-real-estate-assistant/
 
 ### Backend (Pytest)
 ```bash
+cd apps/api
+
 # Run all tests
 python -m pytest
 
@@ -127,38 +156,52 @@ python -m pytest tests/integration
 
 ### Frontend (Jest)
 ```bash
-cd frontend
+cd apps/web
 npm test
+```
+
+### Using Makefile
+```bash
+make test       # Run all tests
+make test-api   # Backend only
+make test-web   # Frontend only
 ```
 
 ### CI Parity (GitHub Actions)
 Run the same checks locally before opening a PR:
 ```bash
+cd apps/api
 python -m pip install -r requirements.txt
 python -m pip install pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout ruff mypy httpx types-requests
 python -m ruff check .
 python -m mypy
 python -m pytest -q tests/integration/test_rule_engine_clean.py
-python scripts/docs/export_openapi.py --check
-python scripts/docs/generate_api_reference.py --check
+python ../../scripts/docs/export_openapi.py --check
+python ../../scripts/docs/generate_api_reference.py --check
 python -m pytest tests/unit --cov=. --cov-report=xml --cov-report=term -n auto
-python scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude tests/* --exclude scripts/* --exclude workflows/*
-python scripts/ci/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include api/*.py --include api/routers/*.py --include rules/*.py --include models/provider_factory.py --include models/user_model_preferences.py --include config/*.py
+python ../../scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude tests/* --exclude scripts/* --exclude workflows/*
+python ../../scripts/ci/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include api/*.py --include api/routers/*.py --include rules/*.py --include models/provider_factory.py --include models/user_model_preferences.py --include config/*.py
 python -m pytest tests/integration --cov=. --cov-report=xml --cov-report=term -n auto
-python scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude tests/* --exclude scripts/* --exclude workflows/*
+python ../../scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude tests/* --exclude scripts/* --exclude workflows/*
 ```
 
 For frontend parity:
 ```bash
-cd frontend
+cd apps/web
 npm ci
 npm run lint
 npm run test -- --ci --coverage
 ```
 
+Or use Makefile:
+```bash
+make ci        # Run full CI pipeline
+make ci-quick  # Quick CI (skip slower scans)
+```
+
 Optional smoke test (requires Docker):
 ```bash
-API_ACCESS_KEY=ci-test-key python scripts/ci/compose_smoke.py --ci --timeout-seconds 300
+API_ACCESS_KEY=ci-test-key python scripts/docker/compose_smoke.py --ci --timeout-seconds 300
 ```
 
 Secrets and env notes:

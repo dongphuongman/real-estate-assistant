@@ -101,7 +101,7 @@
         "id": "31",
         "title": "Update documentation with new structure",
         "description": "Update README.md, CLAUDE.md, and any other documentation files to reflect the new project structure, script locations, and commands.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "25",
           "26",
@@ -113,7 +113,8 @@
         "priority": "medium",
         "details": "1. Update README.md:\n   - Update project structure diagram\n   - Update all script path references (old -> new)\n   - Update Docker commands to use new paths\n   - Update development setup instructions\n   - Add Makefile usage examples\n2. Update CLAUDE.md:\n   - Update script paths for AI assistant context\n   - Reflect new directory structure in any path descriptions\n   - Update workflow references\n3. Update any inline documentation or comments in moved files\n4. Update CONTRIBUTING.md if it exists with new command patterns\n5. Search for references to old paths in other .md files and update accordingly",
         "testStrategy": "1. Use grep to find remaining references to old paths: 'security-scan.py', 'scripts/ci_parity.py', 'Dockerfile.backend' at root\n2. Verify all code examples in documentation are valid\n3. Check that all internal links still work\n4. Have another team member review documentation for clarity",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-02-19T11:10:24.749Z"
       },
       {
         "id": "32",
@@ -149,9 +150,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-19T11:03:55.333Z",
+      "lastModified": "2026-02-19T11:10:24.749Z",
       "taskCount": 10,
-      "completedCount": 6,
+      "completedCount": 7,
       "tags": [
         "master"
       ]

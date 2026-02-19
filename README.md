@@ -153,7 +153,7 @@ python -m uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
 ### 2. Frontend (Next.js)
 
 ```bash
-cd frontend
+cd apps/web
 npm install
 npm run dev
 ```
@@ -166,12 +166,27 @@ We use `pytest` for backend testing and `jest` for frontend testing.
 
 ```bash
 # Backend Tests
+cd apps/api
 python -m pytest tests/unit          # Unit tests
 python -m pytest tests/integration   # Integration tests
 
 # Frontend Tests
-cd frontend
+cd apps/web
 npm test
+```
+
+### Using Makefile
+
+For quick commands, use the Makefile:
+
+```bash
+make help        # Show all available commands
+make test        # Run all tests
+make lint        # Run linting
+make security    # Run security scans
+make dev         # Start development servers
+make docker-up   # Start Docker containers
+make ci          # Run full CI locally
 ```
 
 ---
@@ -324,9 +339,10 @@ Frontend-specific variables (optional) go into `frontend/.env.local`.
 
 ## 🧪 Development & Testing
 
-- **Backend Tests**: `pytest`
-- **Frontend Tests**: `cd frontend; npm test`
-- **Linting**: `ruff check .` (Python), `npm run lint` (Frontend)
+- **Backend Tests**: `cd apps/api && pytest`
+- **Frontend Tests**: `cd apps/web && npm test`
+- **Linting**: `cd apps/api && ruff check .` (Python), `cd apps/web && npm run lint` (Frontend)
+- **Security**: `python scripts/security/local_scan.py`
 
 See `docs/testing/TESTING_GUIDE.md` for details.
 
@@ -336,13 +352,13 @@ See `docs/testing/TESTING_GUIDE.md` for details.
 
 ```powershell
 # CPU
-.\scripts\core\docker\cpu.ps1
+.\scripts\docker\cpu.ps1
 
 # GPU (if available)
-.\scripts\core\docker\gpu.ps1
+.\scripts\docker\gpu.ps1
 
 # GPU + Internet web research (starts the `internet` compose profile)
-.\scripts\core\docker\gpu-internet.ps1
+.\scripts\docker\gpu-internet.ps1
 ```
 
 If you prefer a single entrypoint:
