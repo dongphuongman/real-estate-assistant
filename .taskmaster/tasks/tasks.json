@@ -69,7 +69,7 @@
         "id": "29",
         "title": "Update CI/CD workflows with new paths",
         "description": "Update .github/workflows/ci.yml and .github/workflows/semgrep.yml to use the new script paths and Docker file locations.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "25",
           "26",
@@ -78,7 +78,8 @@
         "priority": "high",
         "details": "1. Update .github/workflows/ci.yml:\n   - Update script paths: scripts/xxx -> scripts/ci/xxx, scripts/dev/xxx, etc.\n   - Update docker-compose paths: docker-compose.yml -> deploy/compose/docker-compose.yml\n   - Update Dockerfile paths for build steps\n   - Update security scan command to use scripts/security/local_scan.py\n2. Update .github/workflows/semgrep.yml if it references any moved scripts\n3. Verify all environment variables and secrets references remain valid\n4. Ensure working-directory settings in workflow jobs are correct for new structure\n5. Update any relative path references in workflow commands",
         "testStrategy": "1. Validate YAML syntax for both workflow files\n2. Dry-run workflow locally using 'act' or similar tool if available\n3. Create a test branch and push to trigger CI workflow\n4. Monitor GitHub Actions logs for path-related errors\n5. Verify all workflow steps complete successfully",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-02-19T10:59:16.740Z"
       },
       {
         "id": "30",
@@ -147,9 +148,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-19T10:15:28.267Z",
+      "lastModified": "2026-02-19T10:59:16.740Z",
       "taskCount": 10,
-      "completedCount": 4,
+      "completedCount": 5,
       "tags": [
         "master"
       ]
