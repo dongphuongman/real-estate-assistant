@@ -8,9 +8,12 @@ This module provides JWT-based authentication endpoints including:
 - Current user info
 - Email verification
 - Password reset
+- OAuth (Google, Apple)
 """
 
 import logging
+import time
+from functools import wraps
 from typing import Optional
 
 from fastapi import (
@@ -51,6 +54,73 @@ from db.schemas import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["JWT Auth"])
+
+
+# Auth-specific rate limiting (in-memory, per-instance)
+_auth_rate_limits: dict[str, list[float]] = {}
+
+
+def _check_auth_rate_limit(
+    key: str,
+    max_requests: int,
+    window_seconds: int = 60,
+) -> tuple[bool, int]:
+    """Check auth-specific rate limit."""
+    now = time.time()
+    window_start = now - window_seconds
+
+    if key not in _auth_rate_limits:
+        _auth_rate_limits[key] = []
+
+    _auth_rate_limits[key] = [ts for ts in _auth_rate_limits[key] if ts > window_start]
+
+    if len(_auth_rate_limits[key]) >= max_requests:
+        oldest = min(_auth_rate_limits[key])
+        retry_after = int(oldest + window_seconds - now) + 1
+        return False, max(1, retry_after)
+
+    _auth_rate_limits[key].append(now)
+    return True, 0
+
+
+def _get_client_ip(request: Request) -> str:
+    """Get client IP from request."""
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+def auth_rate_limit(max_requests: int, window_seconds: int = 60):
+    """Decorator for auth-specific rate limiting."""
+
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, request: Request = None, **kwargs):
+            req = request
+            if req is None:
+                for arg in args:
+                    if isinstance(arg, Request):
+                        req = arg
+                        break
+            if req is None:
+                req = kwargs.get("request")
+
+            if req:
+                client_ip = _get_client_ip(req)
+                key = f"auth:{func.__name__}:{client_ip}"
+                allowed, retry_after = _check_auth_rate_limit(key, max_requests, window_seconds)
+                if not allowed:
+                    raise HTTPException(
+                        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                        detail=f"Too many requests. Try again in {retry_after}s.",
+                        headers={"Retry-After": str(retry_after)},
+                    )
+            return await func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 def _set_auth_cookies(
@@ -125,6 +195,7 @@ def _get_client_info(request: Request) -> tuple[Optional[str], Optional[str]]:
     summary="Register a new user",
     description="Create a new user account with email and password.",
 )
+@auth_rate_limit(max_requests=3, window_seconds=60)
 async def register(
     body: UserCreate,
     request: Request,
@@ -197,6 +268,7 @@ async def register(
     summary="Login with email and password",
     description="Authenticate user and return tokens.",
 )
+@auth_rate_limit(max_requests=5, window_seconds=60)
 async def login(
     body: UserLogin,
     request: Request,
@@ -430,6 +502,7 @@ async def verify_email(
     summary="Resend verification email",
     description="Request a new email verification token.",
 )
+@auth_rate_limit(max_requests=3, window_seconds=60)
 async def resend_verification(
     body: dict[str, str],
     request: Request,
@@ -494,6 +567,7 @@ async def resend_verification(
     summary="Request password reset",
     description="Request a password reset email.",
 )
+@auth_rate_limit(max_requests=3, window_seconds=60)
 async def forgot_password(
     body: dict[str, str],
     request: Request,
@@ -840,3 +914,101 @@ async def oauth_callback(
         expires_in=get_access_token_expire_minutes() * 60,
         user=UserResponse.model_validate(user),
     )
+
+
+# Apple OAuth Endpoints
+
+
+@router.get(
+    "/oauth/apple",
+    summary="Start Apple OAuth flow",
+    description="Redirect to Apple for Sign In.",
+)
+async def apple_oauth_start(
+    request: Request,
+    response: Response,
+) -> dict:
+    """Start Apple Sign-In OAuth flow."""
+    settings = get_settings()
+
+    if not settings.auth_oauth_apple_enabled:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Apple Sign-In is not enabled",
+        )
+
+    if not settings.apple_client_id or not settings.apple_team_id:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Apple Sign-In is not configured",
+        )
+
+    # Read private key from file if path is provided
+    private_key = None
+    if settings.apple_private_key_path:
+        try:
+            with open(settings.apple_private_key_path, "r") as f:
+                private_key = f.read()
+        except Exception as e:
+            logger.error(f"Failed to read Apple private key: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Apple Sign-In private key not found",
+            ) from None
+
+    if not private_key:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Apple Sign-In private key not configured",
+        )
+
+    from core.oauth import AppleOAuthProvider
+
+    provider = AppleOAuthProvider(
+        client_id=settings.apple_client_id,
+        client_secret="",  # Not used for Apple
+        redirect_uri=settings.google_redirect_uri.replace("google", "apple"),  # Use same base
+        team_id=settings.apple_team_id,
+        key_id=settings.apple_key_id or "",
+        private_key=private_key,
+    )
+
+    # Generate state and PKCE verifier
+    import secrets
+
+    state = secrets.token_urlsafe(32)
+    code_verifier = AppleOAuthProvider.generate_pkce_verifier()
+    code_challenge = AppleOAuthProvider.generate_pkce_challenge(code_verifier)
+
+    # Store state and verifier in cookies for callback
+    response.set_cookie(
+        key="oauth_state",
+        value=state,
+        max_age=600,
+        httponly=True,
+        secure=settings.environment.lower() == "production",
+        samesite="lax",
+    )
+    response.set_cookie(
+        key="oauth_code_verifier",
+        value=code_verifier,
+        max_age=600,
+        httponly=True,
+        secure=settings.environment.lower() == "production",
+        samesite="lax",
+    )
+    response.set_cookie(
+        key="oauth_provider",
+        value="apple",
+        max_age=600,
+        httponly=True,
+        secure=settings.environment.lower() == "production",
+        samesite="lax",
+    )
+
+    auth_url = provider.get_authorization_url(
+        state=state,
+        code_challenge=code_challenge,
+    )
+
+    return {"authorization_url": auth_url}

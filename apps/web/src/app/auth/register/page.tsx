@@ -1,13 +1,13 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Building2, Loader2 } from "lucide-react"
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Building2, Loader2, AlertCircle } from 'lucide-react';
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Card,
   CardContent,
@@ -15,25 +15,40 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from '@/components/ui/card';
+import { OAuthButtons } from '@/components/auth/OAuthButtons';
+import { register } from '@/lib/auth';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function RegisterPage() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter();
+  const { refreshUser } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setIsLoading(true)
+    event.preventDefault();
+    setIsLoading(true);
+    setError(null);
 
-    const data = new FormData(event.currentTarget)
-    const email = (data.get("email") || "").toString().trim()
-    window.localStorage.setItem("userEmail", email)
+    const data = new FormData(event.currentTarget);
+    const fullName = (data.get('fullName') || '').toString().trim();
+    const email = (data.get('email') || '').toString().trim();
+    const password = (data.get('password') || '').toString();
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
-      router.push("/")
-    }, 1000)
+    try {
+      await register(email, password, fullName);
+      // Refresh user context
+      await refreshUser();
+
+      // Redirect to home page
+      router.push('/');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Registration failed';
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -45,20 +60,19 @@ export default function RegisterPage() {
           </div>
         </div>
         <CardTitle className="text-2xl">Create an account</CardTitle>
-        <CardDescription>
-          Enter your information to create your account
-        </CardDescription>
+        <CardDescription>Enter your information to create your account</CardDescription>
       </CardHeader>
       <form onSubmit={onSubmit}>
         <CardContent className="grid gap-4">
+          {error && (
+            <div className="flex items-center gap-2 rounded-md bg-destructive/15 p-3 text-sm text-destructive">
+              <AlertCircle className="h-4 w-4" />
+              <span>{error}</span>
+            </div>
+          )}
           <div className="grid gap-2">
-            <Label htmlFor="name">Full Name</Label>
-            <Input
-              id="name"
-              placeholder="John Doe"
-              required
-              disabled={isLoading}
-            />
+            <Label htmlFor="fullName">Full Name</Label>
+            <Input id="fullName" name="fullName" placeholder="John Doe" disabled={isLoading} />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
@@ -75,9 +89,12 @@ export default function RegisterPage() {
             <Label htmlFor="password">Password</Label>
             <Input
               id="password"
+              name="password"
               type="password"
+              placeholder="Min. 8 chars, uppercase, lowercase, digit"
               required
               disabled={isLoading}
+              minLength={8}
             />
           </div>
         </CardContent>
@@ -86,17 +103,17 @@ export default function RegisterPage() {
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Create Account
           </Button>
+
+          <OAuthButtons isLoading={isLoading} />
+
           <div className="text-sm text-center text-muted-foreground">
-            Already have an account?{" "}
-            <Link
-              href="/auth/login"
-              className="underline underline-offset-4 hover:text-primary"
-            >
+            Already have an account?{' '}
+            <Link href="/auth/login" className="underline underline-offset-4 hover:text-primary">
               Sign in
             </Link>
           </div>
         </CardFooter>
       </form>
     </Card>
-  )
+  );
 }

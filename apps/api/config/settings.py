@@ -55,8 +55,9 @@ class AppSettings(BaseModel):
         description="API key for Google Routes API (commute time calculations)",
     )
     google_routes_enabled: bool = Field(
-        default_factory=lambda: os.getenv("GOOGLE_ROUTES_ENABLED", "true").strip().lower()
-        in {"1", "true", "yes", "on"},
+        default_factory=lambda: (
+            os.getenv("GOOGLE_ROUTES_ENABLED", "true").strip().lower() in {"1", "true", "yes", "on"}
+        ),
         description="Enable Google Routes API for commute time analysis",
     )
     # API Access Control
@@ -68,8 +69,10 @@ class AppSettings(BaseModel):
         default_factory=lambda: os.getenv("API_ACCESS_KEY_SECONDARY")
     )
     api_rate_limit_enabled: bool = Field(
-        default_factory=lambda: os.getenv("API_RATE_LIMIT_ENABLED", "true").strip().lower()
-        in {"1", "true", "yes", "on"}
+        default_factory=lambda: (
+            os.getenv("API_RATE_LIMIT_ENABLED", "true").strip().lower()
+            in {"1", "true", "yes", "on"}
+        )
     )
     api_rate_limit_rpm: int = Field(
         default_factory=lambda: int(os.getenv("API_RATE_LIMIT_RPM", "600"))
@@ -84,8 +87,9 @@ class AppSettings(BaseModel):
 
     # Auth (Legacy - Email Code Auth)
     auth_email_enabled: bool = Field(
-        default_factory=lambda: os.getenv("AUTH_EMAIL_ENABLED", "false").strip().lower()
-        in {"1", "true", "yes", "on"}
+        default_factory=lambda: (
+            os.getenv("AUTH_EMAIL_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
+        )
     )
     auth_code_ttl_minutes: int = Field(
         default_factory=lambda: int(os.getenv("AUTH_CODE_TTL_MINUTES", "10"))
@@ -149,32 +153,71 @@ class AppSettings(BaseModel):
         description="Path to Apple Sign-In private key file (.p8)",
     )
 
+    # Email Settings
+    email_provider: str = Field(
+        default_factory=lambda: os.getenv("EMAIL_PROVIDER", "console"),
+        description="Email provider: console (dev) or smtp (production)",
+    )
+    email_from_address: str = Field(
+        default_factory=lambda: os.getenv("EMAIL_FROM_ADDRESS", "noreply@example.com"),
+        description="Default sender email address",
+    )
+    smtp_host: Optional[str] = Field(
+        default_factory=lambda: os.getenv("SMTP_HOST"),
+        description="SMTP server hostname",
+    )
+    smtp_port: int = Field(
+        default_factory=lambda: int(os.getenv("SMTP_PORT", "587")),
+        description="SMTP server port",
+    )
+    smtp_username: Optional[str] = Field(
+        default_factory=lambda: os.getenv("SMTP_USERNAME"),
+        description="SMTP authentication username",
+    )
+    smtp_password: Optional[str] = Field(
+        default_factory=lambda: os.getenv("SMTP_PASSWORD"),
+        description="SMTP authentication password",
+    )
+    smtp_use_tls: bool = Field(
+        default_factory=lambda: (
+            os.getenv("SMTP_USE_TLS", "true").strip().lower() in {"1", "true", "yes", "on"}
+        ),
+        description="Use TLS for SMTP connection",
+    )
+
     # Feature Flags
     auth_jwt_enabled: bool = Field(
-        default_factory=lambda: os.getenv("AUTH_JWT_ENABLED", "false").strip().lower()
-        in {"1", "true", "yes", "on"},
+        default_factory=lambda: (
+            os.getenv("AUTH_JWT_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
+        ),
         description="Enable JWT-based authentication",
     )
     auth_registration_enabled: bool = Field(
-        default_factory=lambda: os.getenv("AUTH_REGISTRATION_ENABLED", "true").strip().lower()
-        in {"1", "true", "yes", "on"},
+        default_factory=lambda: (
+            os.getenv("AUTH_REGISTRATION_ENABLED", "true").strip().lower()
+            in {"1", "true", "yes", "on"}
+        ),
         description="Allow new user registration",
     )
     auth_email_verification_required: bool = Field(
-        default_factory=lambda: os.getenv("AUTH_EMAIL_VERIFICATION_REQUIRED", "true")
-        .strip()
-        .lower()
-        in {"1", "true", "yes", "on"},
+        default_factory=lambda: (
+            os.getenv("AUTH_EMAIL_VERIFICATION_REQUIRED", "true").strip().lower()
+            in {"1", "true", "yes", "on"}
+        ),
         description="Require email verification before account activation",
     )
     auth_oauth_google_enabled: bool = Field(
-        default_factory=lambda: os.getenv("AUTH_OAUTH_GOOGLE_ENABLED", "false").strip().lower()
-        in {"1", "true", "yes", "on"},
+        default_factory=lambda: (
+            os.getenv("AUTH_OAUTH_GOOGLE_ENABLED", "false").strip().lower()
+            in {"1", "true", "yes", "on"}
+        ),
         description="Enable Google OAuth login",
     )
     auth_oauth_apple_enabled: bool = Field(
-        default_factory=lambda: os.getenv("AUTH_OAUTH_APPLE_ENABLED", "false").strip().lower()
-        in {"1", "true", "yes", "on"},
+        default_factory=lambda: (
+            os.getenv("AUTH_OAUTH_APPLE_ENABLED", "false").strip().lower()
+            in {"1", "true", "yes", "on"}
+        ),
         description="Enable Apple Sign-In",
     )
 
@@ -184,7 +227,7 @@ class AppSettings(BaseModel):
         description="Default LLM provider",
     )
     default_model: Optional[str] = Field(
-        default_factory=lambda: (os.getenv("DEFAULT_MODEL") or None),
+        default_factory=lambda: os.getenv("DEFAULT_MODEL") or None,
         description="Default model ID (overrides provider default)",
     )
     default_temperature: float = 0.0
@@ -206,8 +249,9 @@ class AppSettings(BaseModel):
 
     # Internet tools (optional, for demo/research)
     internet_enabled: bool = Field(
-        default_factory=lambda: os.getenv("INTERNET_ENABLED", "false").strip().lower()
-        in {"1", "true", "yes", "on"}
+        default_factory=lambda: (
+            os.getenv("INTERNET_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
+        )
     )
     searxng_url: Optional[str] = Field(default_factory=lambda: os.getenv("SEARXNG_URL"))
     web_search_max_results: int = Field(
@@ -258,8 +302,9 @@ class AppSettings(BaseModel):
 
     # Response Caching (TASK-017: Production Deployment Optimization)
     cache_enabled: bool = Field(
-        default_factory=lambda: os.getenv("CACHE_ENABLED", "true").strip().lower()
-        in {"1", "true", "yes", "on"}
+        default_factory=lambda: (
+            os.getenv("CACHE_ENABLED", "true").strip().lower() in {"1", "true", "yes", "on"}
+        )
     )
     cache_ttl_seconds: int = Field(
         default_factory=lambda: int(os.getenv("CACHE_TTL_SECONDS", "300"))
@@ -272,19 +317,23 @@ class AppSettings(BaseModel):
         default_factory=lambda: int(os.getenv("CACHE_MAX_MEMORY_MB", "100"))
     )
     cache_stale_while_revalidate: bool = Field(
-        default_factory=lambda: os.getenv("CACHE_STALE_WHILE_REVALIDATE", "false").strip().lower()
-        in {"1", "true", "yes", "on"}
+        default_factory=lambda: (
+            os.getenv("CACHE_STALE_WHILE_REVALIDATE", "false").strip().lower()
+            in {"1", "true", "yes", "on"}
+        )
     )
 
     # Performance Monitoring (TASK-017: Production Deployment Optimization)
     metrics_enabled: bool = Field(
-        default_factory=lambda: os.getenv("METRICS_ENABLED", "true").strip().lower()
-        in {"1", "true", "yes", "on"}
+        default_factory=lambda: (
+            os.getenv("METRICS_ENABLED", "true").strip().lower() in {"1", "true", "yes", "on"}
+        )
     )
     metrics_path: str = Field(default_factory=lambda: os.getenv("METRICS_PATH", "/metrics"))
     prometheus_enabled: bool = Field(
-        default_factory=lambda: os.getenv("PROMETHEUS_ENABLED", "false").strip().lower()
-        in {"1", "true", "yes", "on"}
+        default_factory=lambda: (
+            os.getenv("PROMETHEUS_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
+        )
     )
 
     # Database Connection Pooling (TASK-017: Production Deployment Optimization)
@@ -306,8 +355,10 @@ class AppSettings(BaseModel):
     valuation_mode: str = Field(default_factory=lambda: os.getenv("VALUATION_MODE", "simple"))
     legal_check_mode: str = Field(default_factory=lambda: os.getenv("LEGAL_CHECK_MODE", "basic"))
     data_enrichment_enabled: bool = Field(
-        default_factory=lambda: os.getenv("DATA_ENRICHMENT_ENABLED", "false").strip().lower()
-        in {"1", "true", "yes", "on"}
+        default_factory=lambda: (
+            os.getenv("DATA_ENRICHMENT_ENABLED", "false").strip().lower()
+            in {"1", "true", "yes", "on"}
+        )
     )
 
     # UI Settings
