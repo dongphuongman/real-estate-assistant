@@ -29,6 +29,7 @@ from api.routers import (
     chat,
     exports,
     prompt_templates,
+    saved_searches,
     search,
     tools,
 )
@@ -330,6 +331,8 @@ app.include_router(auth.router, prefix="/api/v1")
 # JWT Auth Router (conditionally enabled)
 if settings.auth_jwt_enabled:
     app.include_router(auth_jwt.router, prefix="/api/v1")
+    # Saved searches requires JWT auth
+    app.include_router(saved_searches.router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["System"])

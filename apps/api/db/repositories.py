@@ -13,6 +13,7 @@ from db.models import (
     OAuthAccount,
     PasswordResetToken,
     RefreshToken,
+    SavedSearchDB,
     User,
 )
 
@@ -328,3 +329,91 @@ class EmailVerificationTokenRepository:
             count += 1
 
         return count
+
+
+class SavedSearchRepository:
+    """Repository for SavedSearchDB model operations."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def create(
+        self,
+        user_id: str,
+        name: str,
+        filters: dict,
+        description: Optional[str] = None,
+        alert_frequency: str = "daily",
+        notify_on_new: bool = True,
+        notify_on_price_drop: bool = True,
+    ) -> SavedSearchDB:
+        """Create a new saved search."""
+        search = SavedSearchDB(
+            id=str(uuid4()),
+            user_id=user_id,
+            name=name,
+            description=description,
+            filters=filters,
+            alert_frequency=alert_frequency,
+            notify_on_new=notify_on_new,
+            notify_on_price_drop=notify_on_price_drop,
+            is_active=True,
+        )
+        self.session.add(search)
+        await self.session.flush()
+        return search
+
+    async def get_by_id(self, search_id: str, user_id: str) -> Optional[SavedSearchDB]:
+        """Get saved search by ID (scoped to user)."""
+        result = await self.session.execute(
+            select(SavedSearchDB).where(
+                SavedSearchDB.id == search_id, SavedSearchDB.user_id == user_id
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def get_by_user(
+        self, user_id: str, include_inactive: bool = False
+    ) -> list[SavedSearchDB]:
+        """Get all saved searches for a user."""
+        query = select(SavedSearchDB).where(SavedSearchDB.user_id == user_id)
+        if not include_inactive:
+            query = query.where(SavedSearchDB.is_active == True)  # noqa: E712
+        query = query.order_by(SavedSearchDB.created_at.desc())
+        result = await self.session.execute(query)
+        return list(result.scalars().all())
+
+    async def get_all_active(self) -> list[SavedSearchDB]:
+        """Get all active saved searches (for scheduler)."""
+        result = await self.session.execute(
+            select(SavedSearchDB).where(SavedSearchDB.is_active == True)  # noqa: E712
+        )
+        return list(result.scalars().all())
+
+    async def get_by_frequency(self, frequency: str) -> list[SavedSearchDB]:
+        """Get searches by alert frequency (for scheduler)."""
+        result = await self.session.execute(
+            select(SavedSearchDB).where(
+                SavedSearchDB.is_active == True,  # noqa: E712
+                SavedSearchDB.alert_frequency == frequency,
+            )
+        )
+        return list(result.scalars().all())
+
+    async def update(self, search: SavedSearchDB, **kwargs) -> SavedSearchDB:
+        """Update saved search fields."""
+        for key, value in kwargs.items():
+            if hasattr(search, key):
+                setattr(search, key, value)
+        await self.session.flush()
+        return search
+
+    async def delete(self, search: SavedSearchDB) -> None:
+        """Delete a saved search."""
+        await self.session.delete(search)
+
+    async def increment_usage(self, search: SavedSearchDB) -> None:
+        """Increment usage count and update last_used_at."""
+        search.use_count += 1
+        search.last_used_at = datetime.now(UTC)
+        await self.session.flush()

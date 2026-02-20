@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from typing import Optional
 from uuid import uuid4
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, String, Text
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.database import Base
@@ -187,3 +187,49 @@ class EmailVerificationToken(Base):
 
     def __repr__(self) -> str:
         return f"<EmailVerificationToken(id={self.id}, user_id={self.user_id})>"
+
+
+class SavedSearchDB(Base):
+    """Database model for user saved searches."""
+
+    __tablename__ = "saved_searches"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    user_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Search criteria (stored as JSON)
+    filters: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+
+    # Alert settings
+    alert_frequency: Mapped[str] = mapped_column(
+        String(20), default="daily", nullable=False
+    )  # instant, daily, weekly, none
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    notify_on_new: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    notify_on_price_drop: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+    # Metadata
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+    last_used_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    use_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    # Relationships
+    user: Mapped["User"] = relationship("User", backref="saved_searches")
+
+    def __repr__(self) -> str:
+        return f"<SavedSearchDB(id={self.id}, user_id={self.user_id}, name={self.name})>"

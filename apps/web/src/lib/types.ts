@@ -10,8 +10,8 @@ export interface Property {
   address?: string;
   latitude?: number;
   longitude?: number;
-  property_type: "apartment" | "house" | "studio" | "loft" | "townhouse" | "other";
-  listing_type: "rent" | "sale" | "room" | "sublease";
+  property_type: 'apartment' | 'house' | 'studio' | 'loft' | 'townhouse' | 'other';
+  listing_type: 'rent' | 'sale' | 'room' | 'sublease';
   rooms?: number;
   bathrooms?: number;
   area_sqm?: number;
@@ -24,7 +24,7 @@ export interface Property {
   price_media?: number;
   price_delta?: number;
   deposit?: number;
-  negotiation_rate?: "high" | "middle" | "low";
+  negotiation_rate?: 'high' | 'middle' | 'low';
   has_parking: boolean;
   has_garden: boolean;
   has_pool: boolean;
@@ -52,8 +52,8 @@ export interface SearchRequest {
   lat?: number;
   lon?: number;
   radius_km?: number;
-  sort_by?: "relevance" | "price" | "price_per_sqm" | "area_sqm" | "year_built";
-  sort_order?: "asc" | "desc";
+  sort_by?: 'relevance' | 'price' | 'price_per_sqm' | 'area_sqm' | 'year_built';
+  sort_order?: 'asc' | 'desc';
 }
 
 export interface ChatRequest {
@@ -170,7 +170,7 @@ export interface TCOResult {
 
 export interface NotificationSettings {
   email_digest: boolean;
-  frequency: "daily" | "weekly";
+  frequency: 'daily' | 'weekly';
   expert_mode: boolean;
   marketing_emails: boolean;
 }
@@ -216,7 +216,7 @@ export interface ModelPreferences {
   preferred_model: string | null;
 }
 
-export type ExportFormat = "csv" | "xlsx" | "json" | "md" | "pdf";
+export type ExportFormat = 'csv' | 'xlsx' | 'json' | 'md' | 'pdf';
 
 export interface ExportPropertiesRequest {
   format: ExportFormat;
@@ -401,4 +401,47 @@ export interface NeighborhoodQualityResult {
   longitude?: number;
   city?: string;
   neighborhood?: string;
+}
+
+// Saved Search types for Task #36
+export type AlertFrequency = 'instant' | 'daily' | 'weekly' | 'none';
+
+export interface SavedSearch {
+  id: string;
+  user_id: string;
+  name: string;
+  description?: string;
+  filters: Record<string, unknown>;
+  alert_frequency: AlertFrequency;
+  is_active: boolean;
+  notify_on_new: boolean;
+  notify_on_price_drop: boolean;
+  created_at: string;
+  updated_at: string;
+  last_used_at?: string;
+  use_count: number;
+}
+
+export interface SavedSearchCreate {
+  name: string;
+  description?: string;
+  filters: Record<string, unknown>;
+  alert_frequency?: AlertFrequency;
+  notify_on_new?: boolean;
+  notify_on_price_drop?: boolean;
+}
+
+export interface SavedSearchUpdate {
+  name?: string;
+  description?: string;
+  filters?: Record<string, unknown>;
+  alert_frequency?: AlertFrequency;
+  is_active?: boolean;
+  notify_on_new?: boolean;
+  notify_on_price_drop?: boolean;
+}
+
+export interface SavedSearchListResponse {
+  items: SavedSearch[];
+  total: number;
 }

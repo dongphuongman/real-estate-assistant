@@ -24,21 +24,25 @@ import {
   RagQaResponse,
   RagResetResponse,
   RagUploadResponse,
+  SavedSearch,
+  SavedSearchCreate,
+  SavedSearchListResponse,
+  SavedSearchUpdate,
   SearchRequest,
   SearchResponse,
   ExportFormat,
   ExportPropertiesRequest,
   PromptTemplateApplyResponse,
   PromptTemplateInfo,
-} from "./types";
+} from './types';
 
 function getApiUrl(): string {
-  return process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+  return process.env.NEXT_PUBLIC_API_URL || '/api/v1';
 }
 
 function getUserEmail(): string | undefined {
-  if (typeof window === "undefined") return undefined;
-  const email = window.localStorage.getItem("userEmail");
+  if (typeof window === 'undefined') return undefined;
+  const email = window.localStorage.getItem('userEmail');
   return email && email.trim() ? email.trim() : undefined;
 }
 
@@ -46,14 +50,14 @@ function buildAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = {};
 
   const userEmail = getUserEmail();
-  if (userEmail) headers["X-User-Email"] = userEmail;
+  if (userEmail) headers['X-User-Email'] = userEmail;
 
   return headers;
 }
 
 function buildHeaders(extra?: Record<string, string>): Record<string, string> {
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   };
 
   return { ...headers, ...buildAuthHeaders(), ...(extra || {}) };
@@ -67,14 +71,14 @@ function buildMultipartHeaders(extra?: Record<string, string>): Record<string, s
  * Error category for classification and handling.
  */
 export type ApiErrorCategory =
-  | "network"      // Connection failed, offline, DNS issues
-  | "timeout"      // Request timed out
-  | "auth"         // 401/403 authentication/authorization errors
-  | "validation"   // 400/422 client-side validation errors
-  | "not_found"    // 404 resource not found
-  | "rate_limit"   // 429 too many requests
-  | "server"       // 500+ server-side errors
-  | "unknown";     // Unclassified errors
+  | 'network' // Connection failed, offline, DNS issues
+  | 'timeout' // Request timed out
+  | 'auth' // 401/403 authentication/authorization errors
+  | 'validation' // 400/422 client-side validation errors
+  | 'not_found' // 404 resource not found
+  | 'rate_limit' // 429 too many requests
+  | 'server' // 500+ server-side errors
+  | 'unknown'; // Unclassified errors
 
 /**
  * Custom error class for API errors that includes request_id for correlation
@@ -107,7 +111,7 @@ export class ApiError extends Error {
     category?: ApiErrorCategory
   ) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
 
     // Determine category if not provided
     this.category = category ?? ApiError.categorizeStatus(status);
@@ -120,14 +124,14 @@ export class ApiError extends Error {
    * Categorize error based on HTTP status code.
    */
   static categorizeStatus(status: number): ApiErrorCategory {
-    if (status === 0) return "network";
-    if (status === 401 || status === 403) return "auth";
-    if (status === 404) return "not_found";
-    if (status === 408 || status === 504) return "timeout";
-    if (status === 429) return "rate_limit";
-    if (status === 400 || status === 422) return "validation";
-    if (status >= 500) return "server";
-    return "unknown";
+    if (status === 0) return 'network';
+    if (status === 401 || status === 403) return 'auth';
+    if (status === 404) return 'not_found';
+    if (status === 408 || status === 504) return 'timeout';
+    if (status === 429) return 'rate_limit';
+    if (status === 400 || status === 422) return 'validation';
+    if (status >= 500) return 'server';
+    return 'unknown';
   }
 
   /**
@@ -136,11 +140,11 @@ export class ApiError extends Error {
    */
   static isRetryableCategory(category: ApiErrorCategory, status: number): boolean {
     switch (category) {
-      case "network":
-      case "timeout":
-      case "rate_limit":
+      case 'network':
+      case 'timeout':
+      case 'rate_limit':
         return true;
-      case "server":
+      case 'server':
         // 503 Service Unavailable and 502 Bad Gateway are often transient
         return status === 502 || status === 503;
       default:
@@ -152,8 +156,8 @@ export class ApiError extends Error {
    * Create a network error (for fetch failures, offline, etc.)
    */
   static networkError(originalError?: Error): ApiError {
-    const message = originalError?.message || "Network request failed. Check your connection.";
-    const error = new ApiError(message, 0, undefined, "network");
+    const message = originalError?.message || 'Network request failed. Check your connection.';
+    const error = new ApiError(message, 0, undefined, 'network');
     if (originalError) {
       error.cause = originalError;
     }
@@ -164,7 +168,7 @@ export class ApiError extends Error {
    * Create a timeout error.
    */
   static timeoutError(request_id?: string): ApiError {
-    return new ApiError("Request timed out. Please try again.", 408, request_id, "timeout");
+    return new ApiError('Request timed out. Please try again.', 408, request_id, 'timeout');
   }
 }
 
@@ -172,10 +176,7 @@ export class ApiError extends Error {
  * Safely perform a fetch request with network error handling.
  * Wraps fetch to convert network failures into ApiError.
  */
-async function safeFetch(
-  input: RequestInfo | URL,
-  init?: RequestInit
-): Promise<Response> {
+async function safeFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   try {
     return await fetch(input, init);
   } catch (error) {
@@ -186,19 +187,20 @@ async function safeFetch(
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    const errorText = await response.text().catch(() => "");
-    const headers = (response as unknown as { headers?: { get?: (name: string) => string | null } }).headers;
+    const errorText = await response.text().catch(() => '');
+    const headers = (response as unknown as { headers?: { get?: (name: string) => string | null } })
+      .headers;
     const requestId =
-      headers && typeof headers.get === "function"
-        ? headers.get("X-Request-ID") || undefined
+      headers && typeof headers.get === 'function'
+        ? headers.get('X-Request-ID') || undefined
         : undefined;
-    let message = "API request failed";
+    let message = 'API request failed';
     if (errorText) {
       try {
         const parsed: unknown = JSON.parse(errorText);
-        if (parsed && typeof parsed === "object") {
+        if (parsed && typeof parsed === 'object') {
           const detail = (parsed as { detail?: unknown }).detail;
-          if (typeof detail === "string" && detail.trim()) {
+          if (typeof detail === 'string' && detail.trim()) {
             message = detail.trim();
           } else if (detail !== undefined) {
             message = JSON.stringify(detail);
@@ -219,7 +221,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 export async function getNotificationSettings(): Promise<NotificationSettings> {
   const response = await safeFetch(`${getApiUrl()}/settings/notifications`, {
-    method: "GET",
+    method: 'GET',
     headers: {
       ...buildHeaders(),
     },
@@ -227,9 +229,11 @@ export async function getNotificationSettings(): Promise<NotificationSettings> {
   return handleResponse<NotificationSettings>(response);
 }
 
-export async function updateNotificationSettings(settings: NotificationSettings): Promise<NotificationSettings> {
+export async function updateNotificationSettings(
+  settings: NotificationSettings
+): Promise<NotificationSettings> {
   const response = await fetch(`${getApiUrl()}/settings/notifications`, {
-    method: "PUT",
+    method: 'PUT',
     headers: {
       ...buildHeaders(),
     },
@@ -240,7 +244,7 @@ export async function updateNotificationSettings(settings: NotificationSettings)
 
 export async function getModelsCatalog(): Promise<ModelProviderCatalog[]> {
   const response = await fetch(`${getApiUrl()}/settings/models`, {
-    method: "GET",
+    method: 'GET',
     headers: {
       ...buildHeaders(),
     },
@@ -249,18 +253,21 @@ export async function getModelsCatalog(): Promise<ModelProviderCatalog[]> {
 }
 
 export async function testModelRuntime(provider: string): Promise<ModelRuntimeTestResponse> {
-  const response = await fetch(`${getApiUrl()}/settings/test-runtime?provider=${encodeURIComponent(provider)}`, {
-    method: "GET",
-    headers: {
-      ...buildHeaders(),
-    },
-  });
+  const response = await fetch(
+    `${getApiUrl()}/settings/test-runtime?provider=${encodeURIComponent(provider)}`,
+    {
+      method: 'GET',
+      headers: {
+        ...buildHeaders(),
+      },
+    }
+  );
   return handleResponse<ModelRuntimeTestResponse>(response);
 }
 
 export async function getModelPreferences(): Promise<ModelPreferences> {
   const response = await fetch(`${getApiUrl()}/settings/model-preferences`, {
-    method: "GET",
+    method: 'GET',
     headers: {
       ...buildHeaders(),
     },
@@ -268,9 +275,11 @@ export async function getModelPreferences(): Promise<ModelPreferences> {
   return handleResponse<ModelPreferences>(response);
 }
 
-export async function updateModelPreferences(payload: Partial<ModelPreferences>): Promise<ModelPreferences> {
+export async function updateModelPreferences(
+  payload: Partial<ModelPreferences>
+): Promise<ModelPreferences> {
   const response = await fetch(`${getApiUrl()}/settings/model-preferences`, {
-    method: "PUT",
+    method: 'PUT',
     headers: {
       ...buildHeaders(),
     },
@@ -281,7 +290,7 @@ export async function updateModelPreferences(payload: Partial<ModelPreferences>)
 
 export async function calculateMortgage(input: MortgageInput): Promise<MortgageResult> {
   const response = await fetch(`${getApiUrl()}/tools/mortgage-calculator`, {
-    method: "POST",
+    method: 'POST',
     headers: buildHeaders(),
     body: JSON.stringify(input),
   });
@@ -290,7 +299,7 @@ export async function calculateMortgage(input: MortgageInput): Promise<MortgageR
 
 export async function calculateTCO(input: TCOInput): Promise<TCOResult> {
   const response = await fetch(`${getApiUrl()}/tools/tco-calculator`, {
-    method: "POST",
+    method: 'POST',
     headers: buildHeaders(),
     body: JSON.stringify(input),
   });
@@ -301,7 +310,7 @@ export async function calculateInvestment(
   input: InvestmentAnalysisInput
 ): Promise<InvestmentAnalysisResult> {
   const response = await fetch(`${getApiUrl()}/tools/investment-analysis`, {
-    method: "POST",
+    method: 'POST',
     headers: buildHeaders(),
     body: JSON.stringify(input),
   });
@@ -312,7 +321,7 @@ export async function neighborhoodQualityApi(
   input: NeighborhoodQualityInput
 ): Promise<NeighborhoodQualityResult> {
   const response = await fetch(`${getApiUrl()}/tools/neighborhood-quality`, {
-    method: "POST",
+    method: 'POST',
     headers: buildHeaders(),
     body: JSON.stringify(input),
   });
@@ -334,7 +343,7 @@ export async function getNeighborhoodBadge(property: {
   neighborhood?: string;
 }): Promise<NeighborhoodQualityResult> {
   return neighborhoodQualityApi({
-    property_id: property.id || "unknown",
+    property_id: property.id || 'unknown',
     latitude: property.latitude,
     longitude: property.longitude,
     city: property.city,
@@ -344,7 +353,7 @@ export async function getNeighborhoodBadge(property: {
 
 export async function comparePropertiesApi(propertyIds: string[]) {
   const response = await fetch(`${getApiUrl()}/tools/compare-properties`, {
-    method: "POST",
+    method: 'POST',
     headers: buildHeaders(),
     body: JSON.stringify({ property_ids: propertyIds }),
   });
@@ -366,7 +375,7 @@ export async function comparePropertiesApi(propertyIds: string[]) {
 
 export async function priceAnalysisApi(query: string) {
   const response = await fetch(`${getApiUrl()}/tools/price-analysis`, {
-    method: "POST",
+    method: 'POST',
     headers: buildHeaders(),
     body: JSON.stringify({ query }),
   });
@@ -385,7 +394,7 @@ export async function priceAnalysisApi(query: string) {
 
 export async function locationAnalysisApi(propertyId: string) {
   const response = await fetch(`${getApiUrl()}/tools/location-analysis`, {
-    method: "POST",
+    method: 'POST',
     headers: buildHeaders(),
     body: JSON.stringify({ property_id: propertyId }),
   });
@@ -400,7 +409,7 @@ export async function locationAnalysisApi(propertyId: string) {
 
 export async function valuationApi(propertyId: string) {
   const response = await fetch(`${getApiUrl()}/tools/valuation`, {
-    method: "POST",
+    method: 'POST',
     headers: buildHeaders(),
     body: JSON.stringify({ property_id: propertyId }),
   });
@@ -409,7 +418,7 @@ export async function valuationApi(propertyId: string) {
 
 export async function legalCheckApi(text: string) {
   const response = await fetch(`${getApiUrl()}/tools/legal-check`, {
-    method: "POST",
+    method: 'POST',
     headers: buildHeaders(),
     body: JSON.stringify({ text }),
   });
@@ -418,7 +427,7 @@ export async function legalCheckApi(text: string) {
 
 export async function enrichAddressApi(address: string) {
   const response = await fetch(`${getApiUrl()}/tools/enrich-address`, {
-    method: "POST",
+    method: 'POST',
     headers: buildHeaders(),
     body: JSON.stringify({ address }),
   });
@@ -427,7 +436,7 @@ export async function enrichAddressApi(address: string) {
 
 export async function listPromptTemplates(): Promise<PromptTemplateInfo[]> {
   const response = await fetch(`${getApiUrl()}/prompt-templates`, {
-    method: "GET",
+    method: 'GET',
     headers: buildHeaders(),
   });
   return handleResponse<PromptTemplateInfo[]>(response);
@@ -438,7 +447,7 @@ export async function applyPromptTemplate(
   variables: Record<string, unknown>
 ): Promise<PromptTemplateApplyResponse> {
   const response = await fetch(`${getApiUrl()}/prompt-templates/apply`, {
-    method: "POST",
+    method: 'POST',
     headers: buildHeaders(),
     body: JSON.stringify({ template_id: templateId, variables }),
   });
@@ -448,11 +457,11 @@ export async function applyPromptTemplate(
 export async function uploadRagDocuments(files: File[]): Promise<RagUploadResponse> {
   const formData = new FormData();
   for (const file of files) {
-    formData.append("files", file, file.name);
+    formData.append('files', file, file.name);
   }
 
   const response = await fetch(`${getApiUrl()}/rag/upload`, {
-    method: "POST",
+    method: 'POST',
     headers: buildMultipartHeaders(),
     body: formData,
   });
@@ -461,7 +470,7 @@ export async function uploadRagDocuments(files: File[]): Promise<RagUploadRespon
 
 export async function resetRagKnowledge(): Promise<RagResetResponse> {
   const response = await fetch(`${getApiUrl()}/rag/reset`, {
-    method: "POST",
+    method: 'POST',
     headers: buildHeaders(),
   });
   return handleResponse<RagResetResponse>(response);
@@ -469,7 +478,7 @@ export async function resetRagKnowledge(): Promise<RagResetResponse> {
 
 export async function ragQa(request: RagQaRequest): Promise<RagQaResponse> {
   const response = await fetch(`${getApiUrl()}/rag/qa`, {
-    method: "POST",
+    method: 'POST',
     headers: buildHeaders(),
     body: JSON.stringify(request),
   });
@@ -478,7 +487,7 @@ export async function ragQa(request: RagQaRequest): Promise<RagQaResponse> {
 
 export async function crmSyncContactApi(name: string, phone?: string, email?: string) {
   const response = await fetch(`${getApiUrl()}/tools/crm-sync-contact`, {
-    method: "POST",
+    method: 'POST',
     headers: buildHeaders(),
     body: JSON.stringify({ name, phone, email }),
   });
@@ -487,7 +496,7 @@ export async function crmSyncContactApi(name: string, phone?: string, email?: st
 
 export async function searchProperties(request: SearchRequest): Promise<SearchResponse> {
   const response = await safeFetch(`${getApiUrl()}/search`, {
-    method: "POST",
+    method: 'POST',
     headers: buildHeaders(),
     body: JSON.stringify(request),
   });
@@ -496,7 +505,7 @@ export async function searchProperties(request: SearchRequest): Promise<SearchRe
 
 export async function chatMessage(request: ChatRequest): Promise<ChatResponse> {
   const response = await safeFetch(`${getApiUrl()}/chat`, {
-    method: "POST",
+    method: 'POST',
     headers: {
       ...buildHeaders(),
     },
@@ -510,14 +519,14 @@ export async function streamChatMessage(
   onChunk: (chunk: string) => void,
   onStart?: (meta: { requestId?: string }) => void,
   onMeta?: (meta: {
-    sources?: ChatResponse["sources"];
+    sources?: ChatResponse['sources'];
     sourcesTruncated?: boolean;
     sessionId?: string;
-    intermediateSteps?: ChatResponse["intermediate_steps"];
+    intermediateSteps?: ChatResponse['intermediate_steps'];
   }) => void
 ): Promise<void> {
   const response = await safeFetch(`${getApiUrl()}/chat`, {
-    method: "POST",
+    method: 'POST',
     headers: {
       ...buildHeaders(),
     },
@@ -525,22 +534,25 @@ export async function streamChatMessage(
   });
 
   if (!response.ok || !response.body) {
-    const errorText = await response.text().catch(() => "");
-    const headers = (response as unknown as { headers?: { get?: (name: string) => string | null } }).headers;
+    const errorText = await response.text().catch(() => '');
+    const headers = (response as unknown as { headers?: { get?: (name: string) => string | null } })
+      .headers;
     const requestId =
-      headers && typeof headers.get === "function" ? headers.get("X-Request-ID") || undefined : undefined;
-    const message = errorText || "Failed to start stream";
+      headers && typeof headers.get === 'function'
+        ? headers.get('X-Request-ID') || undefined
+        : undefined;
+    const message = errorText || 'Failed to start stream';
     throw new ApiError(message, response.status, requestId || undefined);
   }
 
-  const requestId = response.headers.get("X-Request-ID") || undefined;
+  const requestId = response.headers.get('X-Request-ID') || undefined;
   if (onStart) {
     onStart({ requestId });
   }
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
-  let buffer = "";
+  let buffer = '';
 
   while (true) {
     const { done, value } = await reader.read();
@@ -548,28 +560,28 @@ export async function streamChatMessage(
 
     buffer += decoder.decode(value);
     while (true) {
-      const boundaryIndex = buffer.indexOf("\n\n");
+      const boundaryIndex = buffer.indexOf('\n\n');
       if (boundaryIndex === -1) break;
       const rawEvent = buffer.slice(0, boundaryIndex);
       buffer = buffer.slice(boundaryIndex + 2);
 
-      let eventName = "message";
+      let eventName = 'message';
       const dataLines: string[] = [];
-      for (const rawLine of rawEvent.split("\n")) {
+      for (const rawLine of rawEvent.split('\n')) {
         const line = rawLine.trimEnd();
         if (!line) continue;
-        if (line.startsWith("event:")) {
-          eventName = line.slice(6).trim() || "message";
+        if (line.startsWith('event:')) {
+          eventName = line.slice(6).trim() || 'message';
           continue;
         }
-        if (line.startsWith("data:")) {
+        if (line.startsWith('data:')) {
           dataLines.push(line.slice(5).trimStart());
         }
       }
 
-      const data = dataLines.join("\n");
+      const data = dataLines.join('\n');
       if (!data) continue;
-      if (data === "[DONE]") return;
+      if (data === '[DONE]') return;
 
       let parsed: unknown = undefined;
       try {
@@ -578,24 +590,26 @@ export async function streamChatMessage(
         parsed = undefined;
       }
 
-      if (parsed && typeof parsed === "object") {
+      if (parsed && typeof parsed === 'object') {
         const maybeError = (parsed as { error?: unknown }).error;
-        if (typeof maybeError === "string" && maybeError.trim()) {
+        if (typeof maybeError === 'string' && maybeError.trim()) {
           throw new Error(maybeError);
         }
 
-        if (eventName === "meta") {
+        if (eventName === 'meta') {
           if (onMeta) {
             const sources = (parsed as { sources?: unknown }).sources;
             const sourcesTruncated = (parsed as { sources_truncated?: unknown }).sources_truncated;
             const sessionId = (parsed as { session_id?: unknown }).session_id;
-            const intermediateSteps = (parsed as { intermediate_steps?: unknown }).intermediate_steps;
+            const intermediateSteps = (parsed as { intermediate_steps?: unknown })
+              .intermediate_steps;
             onMeta({
-              sources: Array.isArray(sources) ? (sources as ChatResponse["sources"]) : undefined,
-              sourcesTruncated: typeof sourcesTruncated === "boolean" ? sourcesTruncated : undefined,
-              sessionId: typeof sessionId === "string" && sessionId.trim() ? sessionId : undefined,
+              sources: Array.isArray(sources) ? (sources as ChatResponse['sources']) : undefined,
+              sourcesTruncated:
+                typeof sourcesTruncated === 'boolean' ? sourcesTruncated : undefined,
+              sessionId: typeof sessionId === 'string' && sessionId.trim() ? sessionId : undefined,
               intermediateSteps: Array.isArray(intermediateSteps)
-                ? (intermediateSteps as ChatResponse["intermediate_steps"])
+                ? (intermediateSteps as ChatResponse['intermediate_steps'])
                 : undefined,
             });
           }
@@ -603,7 +617,7 @@ export async function streamChatMessage(
         }
 
         const content = (parsed as { content?: unknown }).content;
-        if (typeof content === "string") {
+        if (typeof content === 'string') {
           onChunk(content);
           continue;
         }
@@ -618,17 +632,17 @@ async function exportProperties(
   request: ExportPropertiesRequest
 ): Promise<{ filename: string; blob: Blob }> {
   const response = await fetch(`${getApiUrl()}/export/properties`, {
-    method: "POST",
+    method: 'POST',
     headers: buildHeaders(),
     body: JSON.stringify(request),
   });
   if (!response.ok) {
-    const errorText = await response.text().catch(() => "");
-    const requestId = response.headers.get("X-Request-ID") || undefined;
-    const errorMsg = errorText || "Export request failed";
+    const errorText = await response.text().catch(() => '');
+    const requestId = response.headers.get('X-Request-ID') || undefined;
+    const errorMsg = errorText || 'Export request failed';
     throw new ApiError(errorMsg, response.status, requestId || undefined);
   }
-  const cd = response.headers.get("Content-Disposition") || "";
+  const cd = response.headers.get('Content-Disposition') || '';
   let filename = `properties.${request.format}`;
   const match = cd.match(/filename="([^"]+)"/i);
   if (match && match[1]) {
@@ -641,7 +655,10 @@ async function exportProperties(
 export async function exportPropertiesBySearch(
   search: SearchRequest,
   format: ExportFormat,
-  options?: Pick<ExportPropertiesRequest, "columns" | "include_header" | "csv_delimiter" | "csv_decimal">
+  options?: Pick<
+    ExportPropertiesRequest,
+    'columns' | 'include_header' | 'csv_delimiter' | 'csv_decimal'
+  >
 ): Promise<{ filename: string; blob: Blob }> {
   return exportProperties({ format, search, ...(options || {}) });
 }
@@ -649,7 +666,10 @@ export async function exportPropertiesBySearch(
 export async function exportPropertiesByIds(
   propertyIds: string[],
   format: ExportFormat,
-  options?: Pick<ExportPropertiesRequest, "columns" | "include_header" | "csv_delimiter" | "csv_decimal">
+  options?: Pick<
+    ExportPropertiesRequest,
+    'columns' | 'include_header' | 'csv_delimiter' | 'csv_decimal'
+  >
 ): Promise<{ filename: string; blob: Blob }> {
   return exportProperties({ format, property_ids: propertyIds, ...(options || {}) });
 }
@@ -657,7 +677,7 @@ export async function exportPropertiesByIds(
 // Admin API functions for data ingestion
 export async function ingestData(request: IngestRequest): Promise<IngestResponse> {
   const response = await fetch(`${getApiUrl()}/admin/ingest`, {
-    method: "POST",
+    method: 'POST',
     headers: buildHeaders(),
     body: JSON.stringify(request),
   });
@@ -666,7 +686,7 @@ export async function ingestData(request: IngestRequest): Promise<IngestResponse
 
 export async function getExcelSheets(request: ExcelSheetsRequest): Promise<ExcelSheetsResponse> {
   const response = await fetch(`${getApiUrl()}/admin/excel/sheets`, {
-    method: "POST",
+    method: 'POST',
     headers: buildHeaders(),
     body: JSON.stringify(request),
   });
@@ -676,7 +696,7 @@ export async function getExcelSheets(request: ExcelSheetsRequest): Promise<Excel
 // Portal/API Integration functions for TASK-006
 export async function listPortals(): Promise<PortalAdaptersResponse> {
   const response = await fetch(`${getApiUrl()}/admin/portals`, {
-    method: "GET",
+    method: 'GET',
     headers: buildHeaders(),
   });
   return handleResponse<PortalAdaptersResponse>(response);
@@ -686,9 +706,89 @@ export async function fetchFromPortal(
   request: PortalFiltersRequest
 ): Promise<PortalIngestResponse> {
   const response = await fetch(`${getApiUrl()}/admin/portals/fetch`, {
-    method: "POST",
+    method: 'POST',
     headers: buildHeaders(),
     body: JSON.stringify(request),
   });
   return handleResponse<PortalIngestResponse>(response);
+}
+
+// Saved Searches API functions for Task #36
+export async function getSavedSearches(
+  includeInactive: boolean = false
+): Promise<SavedSearchListResponse> {
+  const url = `${getApiUrl()}/saved-searches?include_inactive=${includeInactive}`;
+  const response = await safeFetch(url, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<SavedSearchListResponse>(response);
+}
+
+export async function createSavedSearch(data: SavedSearchCreate): Promise<SavedSearch> {
+  const response = await safeFetch(`${getApiUrl()}/saved-searches`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  return handleResponse<SavedSearch>(response);
+}
+
+export async function getSavedSearch(id: string): Promise<SavedSearch> {
+  const response = await safeFetch(`${getApiUrl()}/saved-searches/${id}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<SavedSearch>(response);
+}
+
+export async function updateSavedSearch(id: string, data: SavedSearchUpdate): Promise<SavedSearch> {
+  const response = await safeFetch(`${getApiUrl()}/saved-searches/${id}`, {
+    method: 'PATCH',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  return handleResponse<SavedSearch>(response);
+}
+
+export async function deleteSavedSearch(id: string): Promise<void> {
+  const response = await safeFetch(`${getApiUrl()}/saved-searches/${id}`, {
+    method: 'DELETE',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '');
+    const requestId = response.headers.get('X-Request-ID') || undefined;
+    throw new ApiError(
+      errorText || 'Failed to delete saved search',
+      response.status,
+      requestId || undefined
+    );
+  }
+}
+
+export async function toggleSavedSearchAlert(id: string, enabled: boolean): Promise<SavedSearch> {
+  const response = await safeFetch(
+    `${getApiUrl()}/saved-searches/${id}/toggle-alert?enabled=${enabled}`,
+    {
+      method: 'POST',
+      headers: buildHeaders(),
+      credentials: 'include',
+    }
+  );
+  return handleResponse<SavedSearch>(response);
+}
+
+export async function markSavedSearchUsed(id: string): Promise<SavedSearch> {
+  const response = await safeFetch(`${getApiUrl()}/saved-searches/${id}/use`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<SavedSearch>(response);
 }

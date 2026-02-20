@@ -1,52 +1,60 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import { Search as SearchIcon, MapPin, Filter, Download, RefreshCw, AlertCircle } from "lucide-react";
-import { searchProperties, exportPropertiesBySearch, ApiError } from "@/lib/api";
-import { SearchResultItem } from "@/lib/types";
-import { extractMapPoints } from "@/components/search/property-map-utils";
-import dynamic from "next/dynamic";
-import MapControls, { type MapFilterOptions } from "@/components/search/map-controls";
+import { useState, useMemo } from 'react';
+import {
+  Search as SearchIcon,
+  MapPin,
+  Filter,
+  Download,
+  RefreshCw,
+  AlertCircle,
+} from 'lucide-react';
+import { searchProperties, exportPropertiesBySearch, ApiError } from '@/lib/api';
+import { SearchResultItem } from '@/lib/types';
+import { extractMapPoints } from '@/components/search/property-map-utils';
+import dynamic from 'next/dynamic';
+import MapControls, { type MapFilterOptions } from '@/components/search/map-controls';
+import { SaveSearchButton } from '@/components/search/save-search-button';
 
-const PropertyMap = dynamic(() => import("@/components/search/property-map"), {
+const PropertyMap = dynamic(() => import('@/components/search/property-map'), {
   ssr: false,
   loading: () => <div className="h-[420px] w-full bg-muted animate-pulse rounded-lg" />,
 });
 
-const PropertyMapboxMap = dynamic(() => import("@/components/search/property-mapbox-map"), {
+const PropertyMapboxMap = dynamic(() => import('@/components/search/property-mapbox-map'), {
   ssr: false,
   loading: () => <div className="h-[420px] w-full bg-muted animate-pulse rounded-lg" />,
 });
 
 // Example queries for empty state
 const EXAMPLE_QUERIES = [
-  "2-bedroom apartment under $500,000 in Madrid",
-  "House with garden in Krakow",
-  "Studio apartment near city center",
-  "Luxury apartment with parking in Warsaw",
+  '2-bedroom apartment under $500,000 in Madrid',
+  'House with garden in Krakow',
+  'Studio apartment near city center',
+  'Luxury apartment with parking in Warsaw',
 ];
 
 export default function SearchPage() {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResultItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [requestId, setRequestId] = useState<string | undefined>();
   const [hasSearched, setHasSearched] = useState(false);
-  const [minPrice, setMinPrice] = useState<string>("");
-  const [maxPrice, setMaxPrice] = useState<string>("");
-  const [rooms, setRooms] = useState<string>("");
-  const [propertyType, setPropertyType] = useState<string>("");
-  const [sortBy, setSortBy] = useState<string>("relevance");
-  const [sortOrder, setSortOrder] = useState<string>("desc");
-  const [exportFormat, setExportFormat] = useState<string>("csv");
-  const [exportColumns, setExportColumns] = useState<string>("");
+  const [minPrice, setMinPrice] = useState<string>('');
+  const [maxPrice, setMaxPrice] = useState<string>('');
+  const [rooms, setRooms] = useState<string>('');
+  const [propertyType, setPropertyType] = useState<string>('');
+  const [sortBy, setSortBy] = useState<string>('relevance');
+  const [sortOrder, setSortOrder] = useState<string>('desc');
+  const [exportFormat, setExportFormat] = useState<string>('csv');
+  const [exportColumns, setExportColumns] = useState<string>('');
   const [exportIncludeHeader, setExportIncludeHeader] = useState<boolean>(true);
-  const [csvDelimiter, setCsvDelimiter] = useState<string>(",");
-  const [csvDecimal, setCsvDecimal] = useState<string>(".");
+  const [csvDelimiter, setCsvDelimiter] = useState<string>(',');
+  const [csvDecimal, setCsvDecimal] = useState<string>('.');
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [useMapbox, setUseMapbox] = useState(false);
   const [mapFilterOptions, setMapFilterOptions] = useState<MapFilterOptions>({
     showHeatmap: false,
@@ -72,20 +80,22 @@ export default function SearchPage() {
     const max = maxPrice.trim() ? Number(maxPrice) : undefined;
     const minRooms = rooms.trim() ? Number(rooms) : undefined;
 
-    if (min !== undefined && Number.isNaN(min)) return { error: "Min price must be a valid number." };
-    if (max !== undefined && Number.isNaN(max)) return { error: "Max price must be a valid number." };
+    if (min !== undefined && Number.isNaN(min))
+      return { error: 'Min price must be a valid number.' };
+    if (max !== undefined && Number.isNaN(max))
+      return { error: 'Max price must be a valid number.' };
     if (minRooms !== undefined && Number.isNaN(minRooms)) {
-      return { error: "Minimum rooms must be a valid number." };
+      return { error: 'Minimum rooms must be a valid number.' };
     }
     if (min !== undefined && max !== undefined && min > max) {
-      return { error: "Min price cannot be greater than max price." };
+      return { error: 'Min price cannot be greater than max price.' };
     }
 
     const filters: Record<string, unknown> = {};
-    if (min !== undefined) filters["min_price"] = min;
-    if (max !== undefined) filters["max_price"] = max;
-    if (minRooms !== undefined) filters["rooms"] = minRooms;
-    if (propertyType.trim()) filters["property_type"] = propertyType;
+    if (min !== undefined) filters['min_price'] = min;
+    if (max !== undefined) filters['max_price'] = max;
+    if (minRooms !== undefined) filters['rooms'] = minRooms;
+    if (propertyType.trim()) filters['property_type'] = propertyType;
 
     return { filters: Object.keys(filters).length ? filters : undefined };
   };
@@ -99,7 +109,7 @@ export default function SearchPage() {
     try {
       if (!query.trim()) {
         setResults([]);
-        setError("Please enter a search query.");
+        setError('Please enter a search query.');
         return;
       }
 
@@ -112,19 +122,19 @@ export default function SearchPage() {
 
       const response = await searchProperties({
         query,
-        sort_by: sortBy as "relevance" | "price" | "price_per_sqm" | "area_sqm" | "year_built",
-        sort_order: sortOrder as "asc" | "desc",
+        sort_by: sortBy as 'relevance' | 'price' | 'price_per_sqm' | 'area_sqm' | 'year_built',
+        sort_order: sortOrder as 'asc' | 'desc',
         filters,
       });
       setResults(response.results);
-      setViewMode("list");
+      setViewMode('list');
     } catch (err) {
       setResults([]);
       if (err instanceof ApiError) {
         setError(err.message);
         setRequestId(err.request_id);
       } else {
-        setError("Failed to perform search. Please try again.");
+        setError('Failed to perform search. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -136,7 +146,7 @@ export default function SearchPage() {
     setExportError(null);
     try {
       if (!query.trim()) {
-        setExportError("Please enter a search query.");
+        setExportError('Please enter a search query.');
         return;
       }
 
@@ -149,26 +159,26 @@ export default function SearchPage() {
       const searchPayload = {
         query,
         limit: Math.max(results.length, 10) || 10,
-        sort_by: sortBy as "relevance" | "price" | "price_per_sqm" | "area_sqm" | "year_built",
-        sort_order: sortOrder as "asc" | "desc",
+        sort_by: sortBy as 'relevance' | 'price' | 'price_per_sqm' | 'area_sqm' | 'year_built',
+        sort_order: sortOrder as 'asc' | 'desc',
         filters,
       };
       const columns = exportColumns
-        .split(",")
+        .split(',')
         .map((c) => c.trim())
         .filter(Boolean);
       const { filename, blob } = await exportPropertiesBySearch(
         searchPayload,
-        exportFormat as "csv" | "xlsx" | "json" | "md" | "pdf",
+        exportFormat as 'csv' | 'xlsx' | 'json' | 'md' | 'pdf',
         {
           columns: columns.length ? columns : undefined,
           include_header: exportIncludeHeader,
-          csv_delimiter: exportFormat === "csv" ? csvDelimiter : undefined,
-          csv_decimal: exportFormat === "csv" ? csvDecimal : undefined,
+          csv_delimiter: exportFormat === 'csv' ? csvDelimiter : undefined,
+          csv_decimal: exportFormat === 'csv' ? csvDecimal : undefined,
         }
       );
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
+      const a = document.createElement('a');
       a.href = url;
       a.download = filename;
       document.body.appendChild(a);
@@ -177,9 +187,9 @@ export default function SearchPage() {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       if (err instanceof ApiError) {
-        setExportError(`${err.message}${err.request_id ? ` (request_id=${err.request_id})` : ""}`);
+        setExportError(`${err.message}${err.request_id ? ` (request_id=${err.request_id})` : ''}`);
       } else {
-        setExportError("Failed to export. Please try again.");
+        setExportError('Failed to export. Please try again.');
       }
     } finally {
       setExporting(false);
@@ -206,19 +216,24 @@ export default function SearchPage() {
         </div>
 
         {/* Search Bar */}
-        <form onSubmit={handleSearch} className="flex gap-4" role="search" aria-label="Property search">
+        <form
+          onSubmit={handleSearch}
+          className="flex gap-4"
+          role="search"
+          aria-label="Property search"
+        >
           <div className="relative flex-1">
             <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Describe what you're looking for (e.g., 2-bed apartment under $500k)..."
               className={[
-                "w-full rounded-md border border-input bg-background",
-                "pl-10 pr-4 py-2 text-sm ring-offset-background",
-                "placeholder:text-muted-foreground focus-visible:outline-none",
-                "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                "disabled:cursor-not-allowed disabled:opacity-50",
-              ].join(" ")}
+                'w-full rounded-md border border-input bg-background',
+                'pl-10 pr-4 py-2 text-sm ring-offset-background',
+                'placeholder:text-muted-foreground focus-visible:outline-none',
+                'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                'disabled:cursor-not-allowed disabled:opacity-50',
+              ].join(' ')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               aria-label="Search query"
@@ -230,15 +245,15 @@ export default function SearchPage() {
             type="submit"
             disabled={loading || !query.trim()}
             className={[
-              "inline-flex items-center justify-center rounded-md bg-primary px-8",
-              "text-sm font-medium text-primary-foreground shadow transition-colors",
-              "hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-              "disabled:pointer-events-none disabled:opacity-50",
-            ].join(" ")}
-            aria-busy={loading ? "true" : "false"}
-            aria-label={loading ? "Searching" : "Search"}
+              'inline-flex items-center justify-center rounded-md bg-primary px-8',
+              'text-sm font-medium text-primary-foreground shadow transition-colors',
+              'hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+              'disabled:pointer-events-none disabled:opacity-50',
+            ].join(' ')}
+            aria-busy={loading ? 'true' : 'false'}
+            aria-label={loading ? 'Searching' : 'Search'}
           >
-            {loading ? "Searching..." : "Search"}
+            {loading ? 'Searching...' : 'Search'}
           </button>
         </form>
 
@@ -361,18 +376,18 @@ export default function SearchPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      setMinPrice("");
-                      setMaxPrice("");
-                      setRooms("");
-                      setPropertyType("");
-                      setSortBy("relevance");
-                      setSortOrder("desc");
+                      setMinPrice('');
+                      setMaxPrice('');
+                      setRooms('');
+                      setPropertyType('');
+                      setSortBy('relevance');
+                      setSortOrder('desc');
                     }}
                     className={[
-                      "inline-flex items-center justify-center rounded-md border",
-                      "px-3 py-2 text-sm hover:bg-muted",
-                      "disabled:opacity-50",
-                    ].join(" ")}
+                      'inline-flex items-center justify-center rounded-md border',
+                      'px-3 py-2 text-sm hover:bg-muted',
+                      'disabled:opacity-50',
+                    ].join(' ')}
                     aria-label="Clear filters"
                     disabled={loading}
                   >
@@ -412,7 +427,7 @@ export default function SearchPage() {
                         disabled={loading}
                       />
                     </div>
-                    {exportFormat === "csv" ? (
+                    {exportFormat === 'csv' ? (
                       <div className="grid grid-cols-2 gap-4 col-span-2">
                         <div>
                           <label htmlFor="csv-delimiter" className="block text-sm font-medium mb-1">
@@ -464,19 +479,21 @@ export default function SearchPage() {
                         onClick={handleExport}
                         disabled={exporting || !query.trim() || results.length === 0}
                         className={[
-                          "inline-flex items-center justify-center rounded-md bg-primary px-3 py-2",
-                          "text-sm font-medium text-primary-foreground shadow transition-colors",
-                          "hover:bg-primary/90 disabled:opacity-50",
-                        ].join(" ")}
-                        aria-label={exporting ? "Exporting" : "Export"}
+                          'inline-flex items-center justify-center rounded-md bg-primary px-3 py-2',
+                          'text-sm font-medium text-primary-foreground shadow transition-colors',
+                          'hover:bg-primary/90 disabled:opacity-50',
+                        ].join(' ')}
+                        aria-label={exporting ? 'Exporting' : 'Export'}
                       >
                         <Download className="h-4 w-4 mr-2" />
-                        {exporting ? "Exporting..." : "Export"}
+                        {exporting ? 'Exporting...' : 'Export'}
                       </button>
                     </div>
                   </div>
                   {exportError ? (
-                    <div className="text-red-500 text-sm" role="alert">{exportError}</div>
+                    <div className="text-red-500 text-sm" role="alert">
+                      {exportError}
+                    </div>
                   ) : null}
                 </div>
               </div>
@@ -497,7 +514,8 @@ export default function SearchPage() {
                 </div>
                 <h2 className="text-2xl font-bold mb-2">Start Your Property Search</h2>
                 <p className="text-muted-foreground max-w-md mb-6">
-                  Enter a search query to explore thousands of property listings. Use natural language to describe what you&apos;re looking for.
+                  Enter a search query to explore thousands of property listings. Use natural
+                  language to describe what you&apos;re looking for.
                 </p>
                 <div className="space-y-2 mb-6">
                   <p className="text-sm font-medium text-foreground">Try these examples:</p>
@@ -510,8 +528,8 @@ export default function SearchPage() {
                         className="text-left text-sm text-primary hover:underline disabled:opacity-50 text-left w-full text-left"
                         disabled={loading}
                       >
-                          &ldquo;{example}&rdquo;
-                        </button>
+                        &ldquo;{example}&rdquo;
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -536,14 +554,23 @@ export default function SearchPage() {
                       <div className="h-48 bg-muted animate-pulse" aria-hidden="true" />
                       <div className="p-6 space-y-4">
                         <div className="h-6 bg-muted animate-pulse rounded" aria-hidden="true" />
-                        <div className="h-4 bg-muted animate-pulse rounded w-3/4" aria-hidden="true" />
-                        <div className="h-4 bg-muted animate-pulse rounded w-1/2" aria-hidden="true" />
+                        <div
+                          className="h-4 bg-muted animate-pulse rounded w-3/4"
+                          aria-hidden="true"
+                        />
+                        <div
+                          className="h-4 bg-muted animate-pulse rounded w-1/2"
+                          aria-hidden="true"
+                        />
                       </div>
                     </div>
                   ))}
                 </div>
                 {/* Map placeholder */}
-                <div className="h-[420px] w-full bg-muted animate-pulse rounded-lg border border-dashed" aria-hidden="true" />
+                <div
+                  className="h-[420px] w-full bg-muted animate-pulse rounded-lg border border-dashed"
+                  aria-hidden="true"
+                />
               </div>
             )}
 
@@ -558,9 +585,7 @@ export default function SearchPage() {
                   <AlertCircle className="h-12 w-12 text-destructive" aria-hidden="true" />
                 </div>
                 <h2 className="text-2xl font-bold mb-2 text-destructive">Search Failed</h2>
-                <p className="text-destructive/90 max-w-md mb-4">
-                  {error}
-                </p>
+                <p className="text-destructive/90 max-w-md mb-4">{error}</p>
                 {requestId && (
                   <p className="text-xs text-muted-foreground mb-6 font-mono">
                     Request ID: {requestId}
@@ -570,10 +595,10 @@ export default function SearchPage() {
                   type="button"
                   onClick={() => handleSearch()}
                   className={[
-                    "inline-flex items-center gap-2 rounded-md bg-primary px-6 py-2",
-                    "text-sm font-medium text-primary-foreground shadow transition-colors",
-                    "hover:bg-primary/90",
-                  ].join(" ")}
+                    'inline-flex items-center gap-2 rounded-md bg-primary px-6 py-2',
+                    'text-sm font-medium text-primary-foreground shadow transition-colors',
+                    'hover:bg-primary/90',
+                  ].join(' ')}
                   aria-label="Retry search"
                 >
                   <RefreshCw className="h-4 w-4" />
@@ -597,39 +622,52 @@ export default function SearchPage() {
                     </div>
                     <h3 className="text-lg font-semibold">No Results Found</h3>
                     <p className="text-sm text-muted-foreground max-w-sm mt-2">
-                      Try adjusting your search terms, filters, or sorting options to find more properties.
+                      Try adjusting your search terms, filters, or sorting options to find more
+                      properties.
                     </p>
                   </div>
                 ) : (
                   <>
                     <div className="flex items-center justify-between gap-4">
-                      <div className="inline-flex rounded-md border bg-background p-1">
-                        <button
-                          type="button"
-                          onClick={() => setViewMode("list")}
-                          className={[
-                            "px-3 py-1.5 text-sm rounded-md",
-                            viewMode === "list" ? "bg-muted font-medium" : "hover:bg-muted/50",
-                            "disabled:opacity-50",
-                          ].join(" ")}
-                          aria-pressed={viewMode === "list"}
-                        >
-                          List
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setViewMode("map")}
-                          className={[
-                            "px-3 py-1.5 text-sm rounded-md",
-                            viewMode === "map" ? "bg-muted font-medium" : "hover:bg-muted/50",
-                            "disabled:opacity-50",
-                          ].join(" ")}
-                          aria-pressed={viewMode === "map"}
-                        >
-                          Map
-                        </button>
+                      <div className="flex items-center gap-4">
+                        <div className="inline-flex rounded-md border bg-background p-1">
+                          <button
+                            type="button"
+                            onClick={() => setViewMode('list')}
+                            className={[
+                              'px-3 py-1.5 text-sm rounded-md',
+                              viewMode === 'list' ? 'bg-muted font-medium' : 'hover:bg-muted/50',
+                              'disabled:opacity-50',
+                            ].join(' ')}
+                            aria-pressed={viewMode === 'list'}
+                          >
+                            List
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setViewMode('map')}
+                            className={[
+                              'px-3 py-1.5 text-sm rounded-md',
+                              viewMode === 'map' ? 'bg-muted font-medium' : 'hover:bg-muted/50',
+                              'disabled:opacity-50',
+                            ].join(' ')}
+                            aria-pressed={viewMode === 'map'}
+                          >
+                            Map
+                          </button>
+                        </div>
+                        <SaveSearchButton
+                          filters={{
+                            query,
+                            min_price: minPrice.trim() ? Number(minPrice) : undefined,
+                            max_price: maxPrice.trim() ? Number(maxPrice) : undefined,
+                            min_rooms: rooms.trim() ? Number(rooms) : undefined,
+                            property_type: propertyType.trim() || undefined,
+                          }}
+                          query={query}
+                        />
                       </div>
-                      {viewMode === "map" && (
+                      {viewMode === 'map' && (
                         <div className="flex items-center gap-2">
                           <label className="flex items-center gap-2 text-sm">
                             <input
@@ -648,7 +686,7 @@ export default function SearchPage() {
                       </div>
                     </div>
 
-                    {viewMode === "map" ? (
+                    {viewMode === 'map' ? (
                       <div className="relative">
                         {mapPoints.length ? (
                           useMapbox ? (
@@ -663,9 +701,15 @@ export default function SearchPage() {
                               <MapControls
                                 options={mapFilterOptions}
                                 onChange={setMapFilterOptions}
-                                onZoomIn={() => {/* Handled by Mapbox */}}
-                                onZoomOut={() => {/* Handled by Mapbox */}}
-                                onFitBounds={() => {/* Handled by Mapbox */}}
+                                onZoomIn={() => {
+                                  /* Handled by Mapbox */
+                                }}
+                                onZoomOut={() => {
+                                  /* Handled by Mapbox */
+                                }}
+                                onFitBounds={() => {
+                                  /* Handled by Mapbox */
+                                }}
                               />
                             </>
                           ) : (
@@ -688,7 +732,7 @@ export default function SearchPage() {
                           const prop = item.property;
                           return (
                             <div
-                              key={`${prop.id ?? "unknown"}-${index}`}
+                              key={`${prop.id ?? 'unknown'}-${index}`}
                               className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden"
                             >
                               <div className="aspect-video w-full bg-muted relative">
@@ -701,13 +745,15 @@ export default function SearchPage() {
                               </div>
                               <div className="p-6 space-y-2">
                                 <h3 className="text-2xl font-semibold leading-none tracking-tight">
-                                  {prop.title || "Untitled Property"}
+                                  {prop.title || 'Untitled Property'}
                                 </h3>
                                 <p className="text-sm text-muted-foreground">
                                   {prop.city}, {prop.country}
                                 </p>
                                 <div className="font-bold text-lg">
-                                  {prop.price ? `$${prop.price.toLocaleString()}` : "Price on request"}
+                                  {prop.price
+                                    ? `$${prop.price.toLocaleString()}`
+                                    : 'Price on request'}
                                 </div>
                                 <p className="text-sm text-muted-foreground">
                                   {[
@@ -716,7 +762,7 @@ export default function SearchPage() {
                                     prop.area_sqm ? `${prop.area_sqm} m²` : null,
                                   ]
                                     .filter(Boolean)
-                                    .join(" • ")}
+                                    .join(' • ')}
                                 </p>
                               </div>
                             </div>

@@ -27,7 +27,7 @@ from notifications.notification_preferences import (
     NotificationPreferencesManager,
 )
 from utils.property_cache import load_collection, load_previous_collection
-from utils.saved_searches import SavedSearchManager
+from utils.saved_searches import SavedSearch, SavedSearchManager
 from vector_store.chroma_store import ChromaPropertyStore
 
 logger = logging.getLogger(__name__)
@@ -440,3 +440,58 @@ class NotificationScheduler:
                 self._history.mark_sent(record.id)
 
         return {"sent": sent, "deferred": deferred, "remaining": remaining}
+
+    # -------------------------------------------------------------------------
+    # DB Search Sync Methods
+    # -------------------------------------------------------------------------
+
+    def add_or_update_search(self, search: SavedSearch) -> None:
+        """
+        Add or update a search in the in-memory manager.
+
+        Called from API when a search is created or updated.
+        This keeps the scheduler's view of searches in sync with the database.
+
+        Args:
+            search: SavedSearch Pydantic model
+        """
+        self._search_manager.save_search(search)
+        logger.debug(f"Synced search to scheduler: {search.id}")
+
+    def remove_search(self, search_id: str) -> bool:
+        """
+        Remove a search from the in-memory manager.
+
+        Called from API when a search is deleted.
+
+        Args:
+            search_id: ID of the search to remove
+
+        Returns:
+            True if removed, False if not found
+        """
+        result = self._search_manager.delete_search(search_id)
+        if result:
+            logger.debug(f"Removed search from scheduler: {search_id}")
+        return result
+
+    def get_search(self, search_id: str) -> Optional[SavedSearch]:
+        """
+        Get a search by ID from the in-memory manager.
+
+        Args:
+            search_id: Search ID
+
+        Returns:
+            SavedSearch or None
+        """
+        return self._search_manager.get_search(search_id)
+
+    def get_all_searches(self) -> List[SavedSearch]:
+        """
+        Get all searches from the in-memory manager.
+
+        Returns:
+            List of all SavedSearch instances
+        """
+        return self._search_manager.get_all_searches()
