@@ -159,22 +159,22 @@ class TestMarketAPI:
         assert data["price_drops_7d"] >= 1
 
     @pytest.mark.asyncio
-    async def test_price_history_requires_auth(self, async_client):
+    async def test_price_history_requires_auth(self, unauth_client):
         """Test that price history endpoint requires authentication."""
-        response = await async_client.get("/api/v1/market/price-history/test-prop")
+        response = await unauth_client.get("/api/v1/market/price-history/test-prop")
 
         assert response.status_code == 401
 
     @pytest.mark.asyncio
-    async def test_market_trends_requires_auth(self, async_client):
+    async def test_market_trends_requires_auth(self, unauth_client):
         """Test that market trends endpoint requires authentication."""
-        response = await async_client.get("/api/v1/market/trends")
+        response = await unauth_client.get("/api/v1/market/trends")
 
         assert response.status_code == 401
 
     @pytest.mark.asyncio
-    async def test_market_indicators_requires_auth(self, async_client):
+    async def test_market_indicators_requires_auth(self, unauth_client):
         """Test that market indicators endpoint requires authentication."""
-        response = await async_client.get("/api/v1/market/indicators")
+        response = await unauth_client.get("/api/v1/market/indicators")
 
         assert response.status_code == 401

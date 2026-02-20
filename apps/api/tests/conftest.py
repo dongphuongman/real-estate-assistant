@@ -7,12 +7,21 @@ import importlib.util
 import os
 import sys
 import types
+from collections.abc import AsyncGenerator
 
 import pytest
+from httpx import ASGITransport, AsyncClient
 from langchain_core.documents import Document
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from agents.query_analyzer import QueryAnalyzer
+from core.jwt import create_access_token
 from data.schemas import Property, PropertyCollection, PropertyType
+from db.database import Base
 from vector_store.reranker import PropertyReranker
 
 
@@ -63,6 +72,7 @@ def _ensure_optional_excel_modules() -> None:
 def pytest_configure() -> None:
     os.environ.setdefault("ENVIRONMENT", "test")
     os.environ["API_ACCESS_KEY"] = "dev-secret-key"
+    os.environ["ENABLE_JWT_AUTH"] = "true"
     _ensure_optional_excel_modules()
 
 
@@ -157,3 +167,105 @@ def sample_documents(sample_properties):
 def reranker():
     """Fixture for property reranker."""
     return PropertyReranker()
+
+
+# === Async Database Fixtures ===
+
+# Use in-memory SQLite for tests
+TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+
+
+@pytest.fixture(scope="function")
+async def db_session() -> AsyncGenerator[AsyncSession, None]:
+    """Create a fresh database session for each test."""
+    # Create test engine
+    engine = create_async_engine(
+        TEST_DATABASE_URL,
+        echo=False,
+        connect_args={"check_same_thread": False},
+    )
+
+    # Create all tables
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    # Create session
+    session_factory = async_sessionmaker(
+        bind=engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+        autocommit=False,
+        autoflush=False,
+    )
+
+    async with session_factory() as session:
+        yield session
+
+    # Cleanup
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    await engine.dispose()
+
+
+@pytest.fixture(scope="function")
+async def async_client(
+    db_session: AsyncSession,
+) -> AsyncGenerator[AsyncClient, None]:
+    """Create an async HTTP client for testing API endpoints."""
+    from fastapi import FastAPI
+
+    from api.deps.auth import get_current_active_user
+    from api.routers import market
+    from db.database import get_db
+    from db.schemas import UserResponse
+
+    # Create a fresh test app with the market router
+    test_app = FastAPI()
+    test_app.include_router(market.router, prefix="/api/v1")
+
+    # Override the get_db dependency
+    async def override_get_db():
+        yield db_session
+
+    # Override auth to return a mock user
+    async def override_get_current_user():
+        return UserResponse(
+            id="test-user-123",
+            email="test@example.com",
+            roles=["user"],
+            created_at="2024-01-01T00:00:00Z",
+        )
+
+    test_app.dependency_overrides[get_db] = override_get_db
+    test_app.dependency_overrides[get_current_active_user] = override_get_current_user
+
+    transport = ASGITransport(app=test_app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        yield client
+
+    # Cleanup
+    test_app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def auth_headers() -> dict[str, str]:
+    """Create authentication headers for testing."""
+    token = create_access_token(subject="test-user-123", roles=["user"])
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(scope="function")
+async def unauth_client() -> AsyncGenerator[AsyncClient, None]:
+    """Create an unauthenticated async HTTP client for testing auth
+    requirements."""
+    from fastapi import FastAPI
+
+    from api.routers import market
+
+    # Create a fresh test app with the market router (no auth override)
+    test_app = FastAPI()
+    test_app.include_router(market.router, prefix="/api/v1")
+
+    transport = ASGITransport(app=test_app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        yield client
