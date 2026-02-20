@@ -9,6 +9,7 @@ import {
   BarChart3,
   BookOpen,
   Building2,
+  Heart,
   MessageSquare,
   Moon,
   Search,
@@ -34,6 +35,12 @@ export function MainNav() {
       label: 'Search',
       icon: Search,
       active: pathname === '/search',
+    },
+    {
+      href: '/favorites',
+      label: 'Favorites',
+      icon: Heart,
+      active: pathname === '/favorites',
     },
     {
       href: '/city-overview',

@@ -2,6 +2,7 @@
 
 import { type ReactNode } from 'react';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { FavoritesProvider } from '@/contexts/FavoritesContext';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -12,5 +13,9 @@ interface ProvidersProps {
  * This is used in the root layout to provide auth context throughout the app.
  */
 export function Providers({ children }: ProvidersProps) {
-  return <AuthProvider>{children}</AuthProvider>;
+  return (
+    <AuthProvider>
+      <FavoritesProvider>{children}</FavoritesProvider>
+    </AuthProvider>
+  );
 }

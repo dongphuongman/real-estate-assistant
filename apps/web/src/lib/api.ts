@@ -1,8 +1,17 @@
 import {
   ChatRequest,
   ChatResponse,
+  Collection,
+  CollectionCreate,
+  CollectionListResponse,
+  CollectionUpdate,
   ExcelSheetsRequest,
   ExcelSheetsResponse,
+  Favorite,
+  FavoriteCheckResponse,
+  FavoriteCreate,
+  FavoriteListResponse,
+  FavoriteUpdate,
   IngestRequest,
   IngestResponse,
   InvestmentAnalysisInput,
@@ -791,4 +800,157 @@ export async function markSavedSearchUsed(id: string): Promise<SavedSearch> {
     credentials: 'include',
   });
   return handleResponse<SavedSearch>(response);
+}
+
+// Favorites API functions for Task #37
+export async function getFavorites(
+  collectionId?: string,
+  limit: number = 50,
+  offset: number = 0
+): Promise<FavoriteListResponse> {
+  const params = new URLSearchParams();
+  if (collectionId) params.append('collection_id', collectionId);
+  params.append('limit', String(limit));
+  params.append('offset', String(offset));
+
+  const response = await safeFetch(`${getApiUrl()}/favorites?${params}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<FavoriteListResponse>(response);
+}
+
+export async function addFavorite(data: FavoriteCreate): Promise<Favorite> {
+  const response = await safeFetch(`${getApiUrl()}/favorites`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  return handleResponse<Favorite>(response);
+}
+
+export async function removeFavorite(favoriteId: string): Promise<void> {
+  const response = await safeFetch(`${getApiUrl()}/favorites/${favoriteId}`, {
+    method: 'DELETE',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '');
+    throw new ApiError(errorText || 'Failed to remove favorite', response.status);
+  }
+}
+
+export async function removeFavoriteByProperty(propertyId: string): Promise<void> {
+  const response = await safeFetch(`${getApiUrl()}/favorites/by-property/${propertyId}`, {
+    method: 'DELETE',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '');
+    throw new ApiError(errorText || 'Failed to remove favorite', response.status);
+  }
+}
+
+export async function checkFavorite(propertyId: string): Promise<FavoriteCheckResponse> {
+  const response = await safeFetch(`${getApiUrl()}/favorites/check/${propertyId}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<FavoriteCheckResponse>(response);
+}
+
+export async function getFavoriteIds(): Promise<string[]> {
+  const response = await safeFetch(`${getApiUrl()}/favorites/ids`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<string[]>(response);
+}
+
+export async function updateFavorite(favoriteId: string, data: FavoriteUpdate): Promise<Favorite> {
+  const response = await safeFetch(`${getApiUrl()}/favorites/${favoriteId}`, {
+    method: 'PATCH',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  return handleResponse<Favorite>(response);
+}
+
+export async function moveFavoriteToCollection(
+  favoriteId: string,
+  collectionId: string
+): Promise<Favorite> {
+  const response = await safeFetch(`${getApiUrl()}/favorites/${favoriteId}/move/${collectionId}`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<Favorite>(response);
+}
+
+// Collections API functions for Task #37
+export async function getCollections(): Promise<CollectionListResponse> {
+  const response = await safeFetch(`${getApiUrl()}/collections`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<CollectionListResponse>(response);
+}
+
+export async function createCollection(data: CollectionCreate): Promise<Collection> {
+  const response = await safeFetch(`${getApiUrl()}/collections`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  return handleResponse<Collection>(response);
+}
+
+export async function getDefaultCollection(): Promise<Collection> {
+  const response = await safeFetch(`${getApiUrl()}/collections/default`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<Collection>(response);
+}
+
+export async function getCollection(id: string): Promise<Collection> {
+  const response = await safeFetch(`${getApiUrl()}/collections/${id}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<Collection>(response);
+}
+
+export async function updateCollection(id: string, data: CollectionUpdate): Promise<Collection> {
+  const response = await safeFetch(`${getApiUrl()}/collections/${id}`, {
+    method: 'PUT',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  return handleResponse<Collection>(response);
+}
+
+export async function deleteCollection(id: string): Promise<void> {
+  const response = await safeFetch(`${getApiUrl()}/collections/${id}`, {
+    method: 'DELETE',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '');
+    throw new ApiError(errorText || 'Failed to delete collection', response.status);
+  }
 }

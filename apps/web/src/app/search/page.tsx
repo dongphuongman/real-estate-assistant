@@ -12,6 +12,7 @@ import {
 import { searchProperties, exportPropertiesBySearch, ApiError } from '@/lib/api';
 import { SearchResultItem } from '@/lib/types';
 import { extractMapPoints } from '@/components/search/property-map-utils';
+import { HeartButton } from '@/components/property';
 import dynamic from 'next/dynamic';
 import MapControls, { type MapFilterOptions } from '@/components/search/map-controls';
 import { SaveSearchButton } from '@/components/search/save-search-button';
@@ -742,6 +743,11 @@ export default function SearchPage() {
                                 >
                                   Property image
                                 </div>
+                                {prop.id && (
+                                  <div className="absolute top-2 right-2">
+                                    <HeartButton propertyId={prop.id} />
+                                  </div>
+                                )}
                               </div>
                               <div className="p-6 space-y-2">
                                 <h3 className="text-2xl font-semibold leading-none tracking-tight">

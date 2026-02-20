@@ -166,13 +166,13 @@
         "description": "Allow users to save their search criteria and receive email alerts when new properties match their saved searches.",
         "details": "1. Backend - Saved Search Model:\n   - Create SavedSearch model with user_id, filters, alert_frequency, is_active\n   - Store filter criteria (price_range, location, property_type, rooms, etc.)\n\n2. Backend - API Endpoints:\n   - GET /saved-searches - List user's saved searches\n   - POST /saved-searches - Create new saved search\n   - PUT /saved-searches/{id} - Update saved search\n   - DELETE /saved-searches/{id} - Delete saved search\n   - PATCH /saved-searches/{id}/toggle - Pause/resume alerts\n\n3. Backend - Alert System:\n   - Background job to check for new matching properties\n   - Email notification when matches found\n   - Daily/weekly digest options\n   - Rate limiting to prevent spam\n\n4. Frontend - UI:\n   - \"Save Search\" button on search results page\n   - Saved searches management in settings\n   - Alert frequency selector\n   - Toggle for pausing alerts",
         "testStrategy": "1. Unit tests for saved search model and filters\n2. Integration tests for CRUD operations\n3. Test alert triggering with mock properties\n4. Test email notification sending\n5. E2E test for save/search/alert flow",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [
           "35"
         ],
         "priority": "high",
         "subtasks": [],
-        "updatedAt": "2026-02-20T08:15:40.147Z"
+        "updatedAt": "2026-02-20T08:41:33.067Z"
       },
       {
         "id": "37",
@@ -180,12 +180,13 @@
         "description": "Implement a favorites/watchlist system where users can save individual properties for later review, organize them into collections, and add notes.",
         "details": "1. Backend - Favorites Model:\n   - Create Favorite model with user_id, property_id, collection_id, notes, created_at\n   - Create Collection model with user_id, name, description, is_default\n\n2. Backend - API Endpoints:\n   - GET /favorites - List user's favorites\n   - POST /favorites - Add property to favorites\n   - DELETE /favorites/{property_id} - Remove from favorites\n   - PATCH /favorites/{property_id} - Update notes/collection\n   - GET /collections - List collections\n   - POST /collections - Create collection\n   - PUT /collections/{id} - Update collection\n   - DELETE /collections/{id} - Delete collection\n\n3. Frontend - UI:\n   - Heart icon on property cards to add/remove favorites\n   - /favorites page with grid view of saved properties\n   - Collection sidebar for organizing favorites\n   - Notes editor for each saved property\n   - Share watchlist via link (optional)",
         "testStrategy": "1. Unit tests for favorites model\n2. Integration tests for CRUD operations\n3. Test collection management\n4. Test notes functionality\n5. E2E test for add/view/remove favorites",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "35"
         ],
         "priority": "high",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-02-20T11:15:55.120Z"
       },
       {
         "id": "38",
@@ -306,9 +307,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-20T08:15:40.147Z",
+      "lastModified": "2026-02-20T11:15:55.121Z",
       "taskCount": 23,
-      "completedCount": 10,
+      "completedCount": 12,
       "tags": [
         "master"
       ]

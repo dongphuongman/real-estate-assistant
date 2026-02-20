@@ -445,3 +445,70 @@ export interface SavedSearchListResponse {
   items: SavedSearch[];
   total: number;
 }
+
+// Collection types for Task #37
+export interface Collection {
+  id: string;
+  user_id: string;
+  name: string;
+  description?: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+  favorite_count: number;
+}
+
+export interface CollectionCreate {
+  name: string;
+  description?: string;
+}
+
+export interface CollectionUpdate {
+  name?: string;
+  description?: string;
+}
+
+export interface CollectionListResponse {
+  items: Collection[];
+  total: number;
+}
+
+// Favorite types for Task #37
+export interface Favorite {
+  id: string;
+  user_id: string;
+  property_id: string;
+  collection_id?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FavoriteWithProperty extends Favorite {
+  property?: Property;
+  is_available: boolean;
+}
+
+export interface FavoriteCreate {
+  property_id: string;
+  collection_id?: string;
+  notes?: string;
+}
+
+export interface FavoriteUpdate {
+  collection_id?: string;
+  notes?: string;
+}
+
+export interface FavoriteListResponse {
+  items: FavoriteWithProperty[];
+  total: number;
+  unavailable_count: number;
+}
+
+export interface FavoriteCheckResponse {
+  is_favorited: boolean;
+  favorite_id?: string;
+  collection_id?: string;
+  notes?: string;
+}

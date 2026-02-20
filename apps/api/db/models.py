@@ -233,3 +233,87 @@ class SavedSearchDB(Base):
 
     def __repr__(self) -> str:
         return f"<SavedSearchDB(id={self.id}, user_id={self.user_id}, name={self.name})>"
+
+
+class CollectionDB(Base):
+    """Database model for user property collections (folders for favorites)."""
+
+    __tablename__ = "collections"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    user_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+    # Relationships
+    user: Mapped["User"] = relationship("User", backref="collections")
+    favorites: Mapped[list["FavoriteDB"]] = relationship(
+        "FavoriteDB", back_populates="collection", cascade="all, delete-orphan"
+    )
+
+    __table_args__ = (Index("ix_collections_user_default", "user_id", "is_default"),)
+
+    def __repr__(self) -> str:
+        return f"<CollectionDB(id={self.id}, user_id={self.user_id}, name={self.name})>"
+
+
+class FavoriteDB(Base):
+    """Database model for user property favorites."""
+
+    __tablename__ = "favorites"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    user_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    property_id: Mapped[str] = mapped_column(
+        String(255),  # String to match ChromaDB document IDs
+        nullable=False,
+        index=True,
+    )
+    collection_id: Mapped[Optional[str]] = mapped_column(
+        String(36),
+        ForeignKey("collections.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+    # Relationships
+    user: Mapped["User"] = relationship("User", backref="favorites")
+    collection: Mapped[Optional["CollectionDB"]] = relationship(
+        "CollectionDB", back_populates="favorites"
+    )
+
+    # Unique constraint: one user can favorite a property once
+    __table_args__ = (Index("uq_favorites_user_property", "user_id", "property_id", unique=True),)
+
+    def __repr__(self) -> str:
+        return f"<FavoriteDB(id={self.id}, user_id={self.user_id}, property_id={self.property_id})>"

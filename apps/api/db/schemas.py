@@ -190,3 +190,103 @@ class SavedSearchListResponse(BaseModel):
 
     items: list[SavedSearchResponse]
     total: int
+
+
+# Collection Schemas
+class CollectionCreate(BaseModel):
+    """Schema for creating a collection."""
+
+    name: str = Field(..., min_length=1, max_length=255, description="Collection name")
+    description: Optional[str] = Field(None, max_length=1000, description="Collection description")
+
+
+class CollectionUpdate(BaseModel):
+    """Schema for updating a collection."""
+
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+    description: Optional[str] = Field(None, max_length=1000)
+
+
+class CollectionResponse(BaseModel):
+    """Schema for collection response."""
+
+    id: str
+    user_id: str
+    name: str
+    description: Optional[str] = None
+    is_default: bool = False
+    created_at: datetime
+    updated_at: datetime
+    favorite_count: int = 0  # Computed field
+
+    model_config = {"from_attributes": True}
+
+
+class CollectionListResponse(BaseModel):
+    """Schema for list of collections."""
+
+    items: list[CollectionResponse]
+    total: int
+
+
+# Favorite Schemas
+class FavoriteCreate(BaseModel):
+    """Schema for creating a favorite."""
+
+    property_id: str = Field(..., min_length=1, max_length=255, description="Property ID")
+    collection_id: Optional[str] = Field(None, description="Optional collection ID")
+    notes: Optional[str] = Field(None, max_length=2000, description="User notes about property")
+
+
+class FavoriteUpdate(BaseModel):
+    """Schema for updating a favorite."""
+
+    collection_id: Optional[str] = None  # None means "uncategorized"
+    notes: Optional[str] = Field(None, max_length=2000)
+
+
+class FavoriteResponse(BaseModel):
+    """Schema for favorite response (without property data)."""
+
+    id: str
+    user_id: str
+    property_id: str
+    collection_id: Optional[str] = None
+    notes: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class FavoriteWithPropertyResponse(BaseModel):
+    """Schema for favorite response with full property data from ChromaDB."""
+
+    id: str
+    user_id: str
+    property_id: str
+    collection_id: Optional[str] = None
+    notes: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+    property: Optional[dict[str, Any]] = None  # Full property data from ChromaDB
+    is_available: bool = True  # False if property no longer exists in ChromaDB
+
+    model_config = {"from_attributes": True}
+
+
+class FavoriteListResponse(BaseModel):
+    """Schema for list of favorites."""
+
+    items: list[FavoriteWithPropertyResponse]
+    total: int
+    unavailable_count: int = 0  # Count of properties no longer in ChromaDB
+
+
+class FavoriteCheckResponse(BaseModel):
+    """Schema for checking if a property is favorited."""
+
+    is_favorited: bool
+    favorite_id: Optional[str] = None
+    collection_id: Optional[str] = None
+    notes: Optional[str] = None

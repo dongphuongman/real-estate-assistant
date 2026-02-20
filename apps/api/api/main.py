@@ -27,7 +27,9 @@ from api.routers import (
     auth,
     auth_jwt,  # JWT authentication endpoints
     chat,
+    collections,  # Task #37: Property collections
     exports,
+    favorites,  # Task #37: Property favorites
     prompt_templates,
     saved_searches,
     search,
@@ -333,6 +335,9 @@ if settings.auth_jwt_enabled:
     app.include_router(auth_jwt.router, prefix="/api/v1")
     # Saved searches requires JWT auth
     app.include_router(saved_searches.router, prefix="/api/v1")
+    # Task #37: Favorites and Collections require JWT auth
+    app.include_router(collections.router, prefix="/api/v1")
+    app.include_router(favorites.router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["System"])
