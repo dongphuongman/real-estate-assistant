@@ -284,12 +284,13 @@
         "description": "Implement frontend authentication integration with JWT backend. Connect login/register pages to real API endpoints, create AuthContext for state management, and add protected routes.",
         "details": "This task depends on Task #35 (User Authentication System - Backend) which provides the JWT auth endpoints.\n\n1. Auth Context:\n   - Create AuthContext.tsx for user state management\n   - Create useAuth hook for easy access\n   - Handle loading states and error handling\n   - Store CSRF token from cookie\n\n2. Auth API Functions:\n   - Create lib/auth.ts with API functions\n   - login(email, password)\n   - register(email, password, name)\n   - logout()\n   - getCurrentUser()\n   - forgotPassword(email)\n   - resetPassword(token, password)\n   - getGoogleOAuthUrl()\n\n3. Auth Pages Refactor:\n   - Update /auth/login with real API calls and OAuth button\n   - Update /auth/register with real API calls\n   - Create /auth/forgot-password page\n   - Create /auth/reset-password page\n   - Create /auth/verify-email page\n   - Create /auth/oauth/callback page\n\n4. Protected Routes:\n   - Create middleware.ts for route protection\n   - Check for auth cookies\n   - Redirect unauthenticated users to /auth/login\n   - Allow public routes: /auth/*, /api/*, /health\n\n5. UI Components:\n   - Create LoginForm.tsx component\n   - Create RegisterForm.tsx component\n   - Create OAuthButtons.tsx component\n   - Create UserMenu.tsx component for header\n\n6. Integration:\n   - Update header to show user menu when authenticated\n   - Add logout functionality\n   - Handle token refresh on 401 responses",
         "testStrategy": "1. Component tests for AuthContext\n2. Form validation tests\n3. Protected route tests\n4. E2E tests for login/register/logout flows\n5. Test OAuth flow (mocked)",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "35"
         ],
         "priority": "high",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-02-20T17:46:50.397Z"
       },
       {
         "id": "47",
@@ -297,19 +298,20 @@
         "description": "Add security hardening measures for the authentication system including CSRF protection, rate limiting on auth endpoints, and audit logging integration.",
         "details": "This task depends on Task #35 (User Authentication System - Backend) which provides the JWT auth endpoints.\n\n1. CSRF Protection:\n   - Create api/middleware/csrf.py\n   - Implement double-submit cookie pattern\n   - Read CSRF token from cookie\n   - Validate against X-CSRF-Token header\n   - Skip for GET, HEAD, OPTIONS requests\n   - Skip for routes using Authorization header (API clients)\n\n2. Rate Limiting on Auth Endpoints:\n   - Login: 5 attempts per minute per IP\n   - Register: 3 per minute per IP\n   - Password reset: 3 per minute per IP\n   - Email verification resend: 3 per minute per IP\n   - Use existing rate limiter from middleware/observability.py\n\n3. Audit Logging Integration:\n   - Log all auth events (login, logout, register)\n   - Log failed login attempts\n   - Log password reset requests\n   - Integrate with existing audit.py system\n\n4. RBAC Integration:\n   - Map JWT roles to existing Role enum in rbac.py\n   - Extend UserContext with user_id from JWT\n   - Add get_user_context_from_jwt function\n\n5. Security Headers:\n   - Ensure auth cookies have Secure flag in production\n   - Verify SameSite=Strict is set\n   - Add rate limit headers to responses\n\n6. Additional Security:\n   - Add account lockout after 5 failed login attempts\n   - Add breached password checking (optional, haveibeenpwned API)\n   - Add password strength validation on server side",
         "testStrategy": "1. Unit tests for CSRF middleware\n2. Integration tests for rate limiting\n3. Test account lockout mechanism\n4. Security penetration tests\n5. Test audit logging captures all auth events",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "35"
         ],
         "priority": "high",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-02-20T18:45:08.275Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-20T11:15:55.121Z",
+      "lastModified": "2026-02-20T18:45:08.276Z",
       "taskCount": 23,
-      "completedCount": 12,
+      "completedCount": 14,
       "tags": [
         "master"
       ]

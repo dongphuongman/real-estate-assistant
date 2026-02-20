@@ -35,6 +35,10 @@ class User(Base):
         DateTime(timezone=True), nullable=True
     )
 
+    # Account lockout fields (Task #47: Auth Security Hardening)
+    failed_login_attempts: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    locked_until: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
     # Relationships
     refresh_tokens: Mapped[list["RefreshToken"]] = relationship(
         "RefreshToken", back_populates="user", cascade="all, delete-orphan"
@@ -45,6 +49,13 @@ class User(Base):
 
     def __repr__(self) -> str:
         return f"<User(id={self.id}, email={self.email})>"
+
+    @property
+    def is_locked(self) -> bool:
+        """Check if account is currently locked due to failed login attempts."""
+        if self.locked_until is None:
+            return False
+        return datetime.now(UTC) < self.locked_until
 
 
 class RefreshToken(Base):

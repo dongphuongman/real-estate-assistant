@@ -27,6 +27,7 @@ from fastapi import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.audit import AuditEvent, AuditEventType, AuditLevel, get_audit_logger
 from api.deps.auth import get_current_active_user
 from config.settings import get_settings
 from core.email import get_email_service
@@ -36,6 +37,7 @@ from core.jwt import (
     get_access_token_expire_minutes,
     get_refresh_token_expire_days,
 )
+from core.lockout import AccountLockoutService
 from core.password import hash_password, needs_rehash, verify_password
 from db.database import get_db
 from db.models import User
@@ -278,18 +280,75 @@ async def login(
 ) -> TokenResponse:
     """Login with email and password."""
     user_repo = UserRepository(session)
+    lockout_service = AccountLockoutService(session)
+    audit_logger = get_audit_logger()
+    ip_address = _get_client_ip(request)
 
     # Find user
     user = await user_repo.get_by_email(body.email)
     if not user:
+        # Log failed login attempt (user not found)
+        audit_logger.log(
+            AuditEvent(
+                event_type=AuditEventType.AUTH_LOGIN_FAILURE,
+                level=AuditLevel.HIGH,
+                resource="/auth/login",
+                action="login",
+                result="failure",
+                ip_address=ip_address,
+                metadata={"reason": "user_not_found", "email": body.email[:4] + "***"},
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
         )
 
+    # Check if account is locked (Task #47: Account Lockout)
+    is_locked, locked_for_seconds = await lockout_service.check_lockout(user)
+    if is_locked:
+        # Log lockout event
+        audit_logger.log(
+            AuditEvent(
+                event_type=AuditEventType.AUTH_ACCOUNT_LOCKED,
+                level=AuditLevel.HIGH,
+                user_id=user.id,
+                resource="/auth/login",
+                action="login",
+                result="blocked",
+                ip_address=ip_address,
+                metadata={"reason": "account_locked", "locked_for_seconds": locked_for_seconds},
+            )
+        )
+        raise HTTPException(
+            status_code=status.HTTP_423_LOCKED,
+            detail=f"Account is temporarily locked. Try again in {locked_for_seconds // 60} minutes.",
+            headers={"Retry-After": str(locked_for_seconds)},
+        )
+
     # Verify password
     password_valid = user.hashed_password and verify_password(body.password, user.hashed_password)
     if not password_valid:
+        # Record failed attempt (Task #47: Account Lockout)
+        is_now_locked, _ = await lockout_service.record_failed_attempt(user)
+
+        # Log failed login attempt
+        audit_logger.log(
+            AuditEvent(
+                event_type=AuditEventType.AUTH_LOGIN_FAILURE,
+                level=AuditLevel.HIGH,
+                user_id=user.id,
+                resource="/auth/login",
+                action="login",
+                result="failure",
+                ip_address=ip_address,
+                metadata={
+                    "reason": "invalid_password",
+                    "attempts": user.failed_login_attempts + 1,
+                    "account_locked": is_now_locked,
+                },
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
@@ -301,6 +360,23 @@ async def login(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account is deactivated",
         )
+
+    # Clear failed attempts on successful login (Task #47: Account Lockout)
+    await lockout_service.clear_failed_attempts(user)
+
+    # Log successful login
+    audit_logger.log(
+        AuditEvent(
+            event_type=AuditEventType.AUTH_LOGIN_SUCCESS,
+            level=AuditLevel.MEDIUM,
+            user_id=user.id,
+            resource="/auth/login",
+            action="login",
+            result="success",
+            ip_address=ip_address,
+            metadata={"method": "password"},
+        )
+    )
 
     # Rehash password if needed (algorithm upgrade)
     if needs_rehash(user.hashed_password):
@@ -687,6 +763,68 @@ async def reset_password(
     return MessageResponse(
         message="Password reset successfully",
         detail="You can now log in with your new password.",
+    )
+
+
+# Admin Endpoints (Task #47: Auth Security Hardening)
+
+
+@router.post(
+    "/admin/unlock-account",
+    response_model=MessageResponse,
+    summary="Unlock a locked account",
+    description="Admin endpoint to unlock a user account that was locked due to failed login attempts.",
+)
+async def admin_unlock_account(
+    body: dict[str, str],
+    session: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+) -> MessageResponse:
+    """
+    Unlock a locked user account (admin only).
+
+    Requires admin role. Provide user_id in request body.
+    """
+    from api.rbac import Role
+
+    # Check admin role
+    if current_user.role != Role.ADMIN.value and current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
+
+    user_id = body.get("user_id")
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="user_id is required",
+        )
+
+    user_repo = UserRepository(session)
+    user = await user_repo.get_by_id(user_id)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    lockout_service = AccountLockoutService(session)
+    await lockout_service.unlock_account(user)
+
+    logger.info(
+        "admin_account_unlocked",
+        extra={
+            "event": "admin_account_unlocked",
+            "admin_id": current_user.id,
+            "unlocked_user_id": user.id,
+        },
+    )
+
+    return MessageResponse(
+        message="Account unlocked successfully",
+        detail=f"Account for {user.email} has been unlocked.",
     )
 
 

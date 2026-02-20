@@ -115,6 +115,16 @@ class AppSettings(BaseModel):
         description="Refresh token expiration time in days",
     )
 
+    # Account Lockout (Task #47: Auth Security Hardening)
+    auth_lockout_max_attempts: int = Field(
+        default_factory=lambda: int(os.getenv("AUTH_LOCKOUT_MAX_ATTEMPTS", "5")),
+        description="Maximum failed login attempts before account lockout",
+    )
+    auth_lockout_duration_minutes: int = Field(
+        default_factory=lambda: int(os.getenv("AUTH_LOCKOUT_DURATION_MINUTES", "15")),
+        description="Account lockout duration in minutes",
+    )
+
     # Database
     database_url: Optional[str] = Field(
         default_factory=lambda: os.getenv("DATABASE_URL"),

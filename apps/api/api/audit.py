@@ -50,6 +50,19 @@ class AuditEventType(str, Enum):
     AUTH_INVALID_KEY = "auth.invalid_key"
     AUTH_PRODUCTION_MISCONFIG = "auth.production_misconfig"
 
+    # JWT Auth events (Task #47: Auth Security Hardening)
+    AUTH_REGISTER = "auth.register"
+    AUTH_LOGIN_SUCCESS = "auth.login.success"
+    AUTH_LOGIN_FAILURE = "auth.login.failure"
+    AUTH_LOGOUT = "auth.logout"
+    AUTH_TOKEN_REFRESH = "auth.token_refresh"
+    AUTH_PASSWORD_RESET_REQUEST = "auth.password_reset.request"
+    AUTH_PASSWORD_RESET_COMPLETE = "auth.password_reset.complete"
+    AUTH_EMAIL_VERIFIED = "auth.email_verified"
+    AUTH_ACCOUNT_LOCKED = "auth.account_locked"
+    AUTH_ACCOUNT_UNLOCKED = "auth.account_unlocked"
+    AUTH_OAUTH_LOGIN = "auth.oauth.login"
+
     # Authorization events
     AUTHZ_GRANTED = "authz.granted"
     AUTHZ_DENIED = "authz.denied"
