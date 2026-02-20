@@ -29,6 +29,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.deps.auth import get_current_active_user
 from config.settings import get_settings
+from core.email import get_email_service
 from core.jwt import (
     create_access_token,
     generate_refresh_token,
@@ -543,15 +544,18 @@ async def resend_verification(
     )
 
     # Send verification email
-    # In production, this would use the email service
-    # For now, we'll log the token in development
     settings = get_settings()
     if settings.environment.lower() == "development":
         logger.info(f"Verification token for {email}: {verification_token}")
-    else:
-        # TODO: Integrate with email service
-        # await send_verification_email(user.email, verification_token)
-        pass
+
+    # Send email using email service
+    email_service = get_email_service()
+    verification_url = f"{settings.frontend_url}/auth/verify-email"
+    await email_service.send_verification_email(
+        to=user.email,
+        verification_token=verification_token,
+        verification_url=verification_url,
+    )
 
     return MessageResponse(
         message="If the email exists and is not verified, a new verification email has been sent.",
@@ -607,10 +611,15 @@ async def forgot_password(
     settings = get_settings()
     if settings.environment.lower() == "development":
         logger.info(f"Password reset token for {email}: {reset_token}")
-    else:
-        # TODO: Integrate with email service
-        # await send_password_reset_email(user.email, reset_token)
-        pass
+
+    # Send email using email service
+    email_service = get_email_service()
+    reset_url = f"{settings.frontend_url}/auth/reset-password"
+    await email_service.send_password_reset_email(
+        to=user.email,
+        reset_token=reset_token,
+        reset_url=reset_url,
+    )
 
     return MessageResponse(
         message="If the email exists, a password reset email has been sent.",

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { UserMenu } from '@/components/auth/UserMenu';
 import {
   BarChart3,
   BookOpen,
@@ -93,7 +94,7 @@ export function MainNav() {
           {route.label}
         </Link>
       ))}
-      <div className="ml-auto">
+      <div className="ml-auto flex items-center gap-2">
         <Button
           type="button"
           variant="ghost"
@@ -104,6 +105,7 @@ export function MainNav() {
           <Sun className="h-4 w-4 hidden dark:block" />
           <Moon className="h-4 w-4 block dark:hidden" />
         </Button>
+        <UserMenu />
       </div>
     </nav>
   );

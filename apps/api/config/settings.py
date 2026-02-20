@@ -185,6 +185,12 @@ class AppSettings(BaseModel):
         description="Use TLS for SMTP connection",
     )
 
+    # Frontend URL (for email links)
+    frontend_url: str = Field(
+        default_factory=lambda: os.getenv("FRONTEND_URL", "http://localhost:3000"),
+        description="Frontend URL for email links (verification, password reset)",
+    )
+
     # Feature Flags
     auth_jwt_enabled: bool = Field(
         default_factory=lambda: (
