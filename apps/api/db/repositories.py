@@ -2,7 +2,7 @@
 
 import hashlib
 from datetime import UTC, datetime, timedelta
-from typing import Optional
+from typing import Any, Optional
 from uuid import uuid4
 
 from sqlalchemy import func, select, update
@@ -14,6 +14,7 @@ from db.models import (
     FavoriteDB,
     OAuthAccount,
     PasswordResetToken,
+    PriceSnapshot,
     RefreshToken,
     SavedSearchDB,
     User,
@@ -607,3 +608,141 @@ class FavoriteRepository:
             favorite.collection_id = collection_id
             await self.session.flush()
         return favorite
+
+
+class PriceSnapshotRepository:
+    """Repository for PriceSnapshot model operations."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def create(
+        self,
+        property_id: str,
+        price: float,
+        price_per_sqm: Optional[float] = None,
+        currency: Optional[str] = None,
+        source: Optional[str] = None,
+    ) -> PriceSnapshot:
+        """Create a new price snapshot."""
+        snapshot = PriceSnapshot(
+            id=str(uuid4()),
+            property_id=property_id,
+            price=price,
+            price_per_sqm=price_per_sqm,
+            currency=currency,
+            source=source,
+        )
+        self.session.add(snapshot)
+        await self.session.flush()
+        return snapshot
+
+    async def get_by_property(
+        self,
+        property_id: str,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> list[PriceSnapshot]:
+        """Get price history for a property."""
+        result = await self.session.execute(
+            select(PriceSnapshot)
+            .where(PriceSnapshot.property_id == property_id)
+            .order_by(PriceSnapshot.recorded_at.desc())
+            .offset(offset)
+            .limit(limit)
+        )
+        return list(result.scalars().all())
+
+    async def get_latest_for_property(self, property_id: str) -> Optional[PriceSnapshot]:
+        """Get the most recent price snapshot for a property."""
+        result = await self.session.execute(
+            select(PriceSnapshot)
+            .where(PriceSnapshot.property_id == property_id)
+            .order_by(PriceSnapshot.recorded_at.desc())
+            .limit(1)
+        )
+        return result.scalar_one_or_none()
+
+    async def count_for_property(self, property_id: str) -> int:
+        """Count snapshots for a property."""
+        result = await self.session.execute(
+            select(func.count(PriceSnapshot.id)).where(PriceSnapshot.property_id == property_id)
+        )
+        return result.scalar() or 0
+
+    async def get_snapshots_in_period(
+        self,
+        start_date: datetime,
+        end_date: datetime,
+        property_ids: Optional[list[str]] = None,
+    ) -> list[PriceSnapshot]:
+        """Get all snapshots in a time period, optionally filtered by property IDs."""
+        query = select(PriceSnapshot).where(
+            PriceSnapshot.recorded_at >= start_date,
+            PriceSnapshot.recorded_at <= end_date,
+        )
+        if property_ids:
+            query = query.where(PriceSnapshot.property_id.in_(property_ids))
+        query = query.order_by(PriceSnapshot.recorded_at.asc())
+
+        result = await self.session.execute(query)
+        return list(result.scalars().all())
+
+    async def get_properties_with_price_drops(
+        self,
+        threshold_percent: float = 5.0,
+        days_back: int = 7,
+    ) -> list[dict[str, Any]]:
+        """Find properties with price drops exceeding threshold in the past N days."""
+        cutoff_date = datetime.now(UTC) - timedelta(days=days_back)
+
+        # Get recent snapshots ordered by property and date
+        result = await self.session.execute(
+            select(PriceSnapshot)
+            .where(PriceSnapshot.recorded_at >= cutoff_date)
+            .order_by(PriceSnapshot.property_id, PriceSnapshot.recorded_at.desc())
+        )
+        snapshots = result.scalars().all()
+
+        # Group by property and detect drops
+        property_prices: dict[str, list[PriceSnapshot]] = {}
+        for snap in snapshots:
+            if snap.property_id not in property_prices:
+                property_prices[snap.property_id] = []
+            property_prices[snap.property_id].append(snap)
+
+        drops = []
+        for prop_id, snaps in property_prices.items():
+            if len(snaps) >= 2:
+                # Compare most recent to oldest in the period
+                latest = snaps[0]  # Most recent (first due to desc order)
+                oldest = snaps[-1]  # Oldest (last in the list)
+                if oldest.price > 0:
+                    change_pct = ((oldest.price - latest.price) / oldest.price) * 100
+                    if change_pct >= threshold_percent:
+                        drops.append(
+                            {
+                                "property_id": prop_id,
+                                "old_price": oldest.price,
+                                "new_price": latest.price,
+                                "percent_drop": change_pct,
+                                "recorded_at": latest.recorded_at,
+                            }
+                        )
+
+        return drops
+
+    async def cleanup_old_snapshots(self, days_to_keep: int = 365) -> int:
+        """Remove snapshots older than specified days."""
+        cutoff_date = datetime.now(UTC) - timedelta(days=days_to_keep)
+        result = await self.session.execute(
+            select(PriceSnapshot).where(PriceSnapshot.recorded_at < cutoff_date)
+        )
+        old_snapshots = result.scalars().all()
+
+        count = 0
+        for snapshot in old_snapshots:
+            await self.session.delete(snapshot)
+            count += 1
+
+        return count

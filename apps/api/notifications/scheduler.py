@@ -7,6 +7,7 @@ Handles:
 - Quiet hours enforcement (queuing alerts)
 """
 
+import asyncio
 import logging
 import threading
 from datetime import datetime
@@ -63,6 +64,10 @@ class NotificationScheduler:
         self._last_attempt_minute: Dict[tuple[str, NotificationType], str] = {}
         self._last_instant_check: Optional[datetime] = None
 
+        # Price snapshot tracking (Task #38: Price History & Trends)
+        self._price_snapshot_interval_seconds: int = 3600  # 1 hour default
+        self._last_price_snapshot: Optional[datetime] = None
+
     def start(self) -> None:
         """Start the scheduler thread."""
         if self._thread and self._thread.is_alive():
@@ -99,6 +104,7 @@ class NotificationScheduler:
             "queued_alerts": 0,
             "queued_alerts_sent": 0,
             "queued_alerts_deferred": 0,
+            "price_snapshots": 0,
         }
         errors: List[str] = []
 
@@ -120,6 +126,10 @@ class NotificationScheduler:
             queued_stats = self._process_queued_alerts(check_time)
             stats["queued_alerts_sent"] += queued_stats["sent"]
             stats["queued_alerts_deferred"] += queued_stats["deferred"]
+
+            # 3. Price Snapshot Capture (hourly) - Task #38
+            snapshot_stats = self._run_price_snapshot_capture(check_time)
+            stats["price_snapshots"] = snapshot_stats.get("captured", 0)
 
         except Exception as e:
             logger.error(f"Scheduler run error: {e}")
@@ -440,6 +450,66 @@ class NotificationScheduler:
                 self._history.mark_sent(record.id)
 
         return {"sent": sent, "deferred": deferred, "remaining": remaining}
+
+    # -------------------------------------------------------------------------
+    # Price Snapshot Capture (Task #38: Price History & Trends)
+    # -------------------------------------------------------------------------
+
+    def _run_price_snapshot_capture(self, now: datetime) -> Dict[str, Any]:
+        """
+        Synchronous wrapper for price snapshot capture.
+
+        Args:
+            now: Current timestamp
+
+        Returns:
+            Stats dictionary with capture results
+        """
+        # Check if we should run (hourly interval)
+        if self._last_price_snapshot is not None:
+            elapsed = (now - self._last_price_snapshot).total_seconds()
+            if elapsed < self._price_snapshot_interval_seconds:
+                return {"captured": 0, "skipped": 0, "reason": "interval_not_elapsed"}
+
+        try:
+            # Run async capture in new event loop
+            loop = asyncio.new_event_loop()
+            try:
+                asyncio.set_event_loop(loop)
+                stats = loop.run_until_complete(self._capture_price_snapshots_async(now))
+                self._last_price_snapshot = now
+                return stats
+            finally:
+                loop.close()
+        except Exception as e:
+            logger.error(f"Price snapshot capture failed: {e}")
+            return {"captured": 0, "error": str(e)}
+
+    async def _capture_price_snapshots_async(self, now: datetime) -> Dict[str, Any]:
+        """
+        Async implementation of price snapshot capture.
+
+        Args:
+            now: Current timestamp
+
+        Returns:
+            Stats dictionary with capture results
+        """
+        try:
+            from services.price_snapshot_service import get_price_snapshot_service
+
+            service = get_price_snapshot_service()
+            stats = await service.capture_all_property_prices(source="scheduled")
+
+            logger.info(
+                f"Captured {stats.get('captured', 0)} price snapshots "
+                f"(skipped: {stats.get('skipped', 0)})"
+            )
+            return stats
+
+        except Exception as e:
+            logger.error(f"Price snapshot async capture failed: {e}")
+            return {"captured": 0, "error": str(e)}
 
     # -------------------------------------------------------------------------
     # DB Search Sync Methods

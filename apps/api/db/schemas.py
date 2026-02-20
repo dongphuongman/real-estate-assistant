@@ -290,3 +290,77 @@ class FavoriteCheckResponse(BaseModel):
     favorite_id: Optional[str] = None
     collection_id: Optional[str] = None
     notes: Optional[str] = None
+
+
+# Price Snapshot Schemas (Task #38: Price History & Trends)
+TrendDirectionType = Literal["increasing", "decreasing", "stable", "insufficient_data"]
+MarketTrendType = Literal["rising", "falling", "stable"]
+ConfidenceType = Literal["high", "medium", "low"]
+IntervalType = Literal["month", "quarter", "year"]
+
+
+class PriceSnapshotResponse(BaseModel):
+    """Schema for a single price snapshot."""
+
+    id: str
+    property_id: str
+    price: float
+    price_per_sqm: Optional[float] = None
+    currency: Optional[str] = None
+    source: Optional[str] = None
+    recorded_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class PriceHistoryResponse(BaseModel):
+    """Schema for property price history."""
+
+    property_id: str
+    snapshots: list[PriceSnapshotResponse]
+    total: int
+    current_price: Optional[float] = None
+    first_recorded: Optional[datetime] = None
+    last_recorded: Optional[datetime] = None
+    price_change_percent: Optional[float] = None  # From first to last
+    trend: TrendDirectionType
+
+
+class MarketTrendPoint(BaseModel):
+    """Schema for a single point in market trend data."""
+
+    period: str  # e.g., "2024-01", "2024-Q1"
+    start_date: datetime
+    end_date: datetime
+    average_price: float
+    median_price: float
+    volume: int
+    avg_price_per_sqm: Optional[float] = None
+
+
+class MarketTrendsResponse(BaseModel):
+    """Schema for market trend data."""
+
+    city: Optional[str] = None
+    district: Optional[str] = None
+    interval: IntervalType
+    data_points: list[MarketTrendPoint]
+    trend_direction: TrendDirectionType
+    change_percent: Optional[float] = None
+    confidence: ConfidenceType
+
+
+class MarketIndicatorsResponse(BaseModel):
+    """Schema for market indicators."""
+
+    city: Optional[str] = None
+    overall_trend: MarketTrendType
+    avg_price_change_1m: Optional[float] = None
+    avg_price_change_3m: Optional[float] = None
+    avg_price_change_6m: Optional[float] = None
+    avg_price_change_1y: Optional[float] = None
+    total_listings: int
+    new_listings_7d: int
+    price_drops_7d: int
+    hottest_districts: list[dict[str, Any]]  # Top 5 districts by activity
+    coldest_districts: list[dict[str, Any]]  # Bottom 5 districts

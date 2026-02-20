@@ -512,3 +512,59 @@ export interface FavoriteCheckResponse {
   collection_id?: string;
   notes?: string;
 }
+
+// Price History types for Task #38
+export interface PriceSnapshot {
+  id: string;
+  property_id: string;
+  price: number;
+  price_per_sqm?: number;
+  currency?: string;
+  source?: string;
+  recorded_at: string;
+}
+
+export interface PriceHistory {
+  property_id: string;
+  snapshots: PriceSnapshot[];
+  total: number;
+  current_price?: number;
+  first_recorded?: string;
+  last_recorded?: string;
+  price_change_percent?: number;
+  trend: 'increasing' | 'decreasing' | 'stable' | 'insufficient_data';
+}
+
+export interface MarketTrendPoint {
+  period: string;
+  start_date: string;
+  end_date: string;
+  average_price: number;
+  median_price: number;
+  volume: number;
+  avg_price_per_sqm?: number;
+}
+
+export interface MarketTrends {
+  city?: string;
+  district?: string;
+  interval: 'month' | 'quarter' | 'year';
+  data_points: MarketTrendPoint[];
+  trend_direction: 'increasing' | 'decreasing' | 'stable' | 'insufficient_data';
+  change_percent?: number;
+  confidence: 'high' | 'medium' | 'low';
+}
+
+export interface MarketIndicators {
+  city?: string;
+  overall_trend: 'rising' | 'falling' | 'stable';
+  avg_price_change_1m?: number;
+  avg_price_change_3m?: number;
+  avg_price_change_6m?: number;
+  avg_price_change_1y?: number;
+  total_listings: number;
+  new_listings_7d: number;
+  price_drops_7d: number;
+  hottest_districts: Array<{ name: string; avg_price: number; count: number }>;
+  coldest_districts: Array<{ name: string; avg_price: number; count: number }>;
+}

@@ -16,6 +16,8 @@ import {
   IngestResponse,
   InvestmentAnalysisInput,
   InvestmentAnalysisResult,
+  MarketIndicators,
+  MarketTrends,
   ModelProviderCatalog,
   ModelPreferences,
   ModelRuntimeTestResponse,
@@ -29,6 +31,7 @@ import {
   PortalFiltersRequest,
   PortalIngestResponse,
   PortalAdaptersResponse,
+  PriceHistory,
   RagQaRequest,
   RagQaResponse,
   RagResetResponse,
@@ -953,4 +956,58 @@ export async function deleteCollection(id: string): Promise<void> {
     const errorText = await response.text().catch(() => '');
     throw new ApiError(errorText || 'Failed to delete collection', response.status);
   }
+}
+
+// Market API functions for Task #38: Price History & Trends
+export async function getPriceHistory(
+  propertyId: string,
+  limit: number = 100
+): Promise<PriceHistory> {
+  const response = await safeFetch(
+    `${getApiUrl()}/market/price-history/${encodeURIComponent(propertyId)}?limit=${limit}`,
+    {
+      method: 'GET',
+      headers: buildHeaders(),
+      credentials: 'include',
+    }
+  );
+  return handleResponse<PriceHistory>(response);
+}
+
+export async function getMarketTrends(params: {
+  city?: string;
+  district?: string;
+  interval?: 'month' | 'quarter' | 'year';
+  months_back?: number;
+}): Promise<MarketTrends> {
+  const searchParams = new URLSearchParams();
+  if (params.city) searchParams.append('city', params.city);
+  if (params.district) searchParams.append('district', params.district);
+  if (params.interval) searchParams.append('interval', params.interval);
+  if (params.months_back) searchParams.append('months_back', String(params.months_back));
+
+  const queryString = searchParams.toString();
+  const url = queryString
+    ? `${getApiUrl()}/market/trends?${queryString}`
+    : `${getApiUrl()}/market/trends`;
+
+  const response = await safeFetch(url, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<MarketTrends>(response);
+}
+
+export async function getMarketIndicators(city?: string): Promise<MarketIndicators> {
+  const url = city
+    ? `${getApiUrl()}/market/indicators?city=${encodeURIComponent(city)}`
+    : `${getApiUrl()}/market/indicators`;
+
+  const response = await safeFetch(url, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<MarketIndicators>(response);
 }

@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from typing import Optional
 from uuid import uuid4
 
-from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.database import Base
@@ -328,3 +328,29 @@ class FavoriteDB(Base):
 
     def __repr__(self) -> str:
         return f"<FavoriteDB(id={self.id}, user_id={self.user_id}, property_id={self.property_id})>"
+
+
+class PriceSnapshot(Base):
+    """Database model for property price snapshots (price history tracking)."""
+
+    __tablename__ = "price_snapshots"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    property_id: Mapped[str] = mapped_column(
+        String(255),  # String to match ChromaDB document IDs
+        nullable=False,
+        index=True,
+    )
+    price: Mapped[float] = mapped_column(Float, nullable=False)
+    price_per_sqm: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    currency: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
+    source: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)  # ingestion source
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+
+    # Composite index for efficient queries
+    __table_args__ = (Index("ix_price_snapshots_property_recorded", "property_id", "recorded_at"),)
+
+    def __repr__(self) -> str:
+        return f"<PriceSnapshot(property_id={self.property_id}, price={self.price}, recorded_at={self.recorded_at})>"
