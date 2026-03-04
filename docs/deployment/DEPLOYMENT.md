@@ -215,7 +215,7 @@ Expected response:
 
 ```bash
 curl -X POST https://your-frontend.vercel.app/api/v1/verify-auth \
-  -H "X-API-Key: your-api-key"
+  -H "X-API-Key: $API_KEY"
 ```
 
 Expected response:

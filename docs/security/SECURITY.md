@@ -52,7 +52,7 @@ The platform follows defense-in-depth principles with multiple layers of securit
 All API endpoints require authentication via the `X-API-Key` header:
 
 ```bash
-curl -H "X-API-Key: your-api-key" https://api.example.com/api/v1/search
+curl -H "X-API-Key: $API_KEY" https://api.example.com/api/v1/search
 ```
 
 **Implementation:** [api/auth.py](../api/auth.py)
@@ -183,7 +183,7 @@ REQUEST_MAX_UPLOAD_SIZE_MB=25     # File uploads
 All requests include a unique `X-Request-ID` header for tracing:
 
 ```bash
-curl -H "X-API-Key: your-api-key" https://api.example.com/api/v1/search
+curl -H "X-API-Key: $API_KEY" https://api.example.com/api/v1/search
 # Returns: X-Request-ID: 550e8400-e29b-41d4-a716-446655440000
 ```
 
