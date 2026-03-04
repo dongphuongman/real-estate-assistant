@@ -311,6 +311,8 @@ desktop.ini
 .cursorrules
 CLAUDE.md
 CLAUDE.local.md
+AGENTS.md
+WARP.md
 
 # Local test artifacts and snapshots
 artifacts/

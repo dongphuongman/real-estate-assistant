@@ -194,10 +194,11 @@
         "description": "Implement price history tracking and trend analysis to show how property prices have changed over time.",
         "details": "1. Backend - Price History Model:\n   - Create PriceSnapshot model with property_id, price, price_per_sqm, recorded_at\n   - Background job to capture price snapshots periodically\n\n2. Backend - API Endpoints:\n   - GET /market/price-history/{property_id} - Get price history for a property\n   - GET /market/trends - Get market trend data (avg prices by city/district)\n   - GET /market/indicators - Get market indicators (rising/falling/stable)\n\n3. Backend - Analytics:\n   - Calculate price trends (1m, 3m, 6m, 1y)\n   - Calculate market indicators\n   - Price drop detection and alerts\n\n4. Frontend - UI:\n   - Price history chart component (line chart)\n   - Trend indicators on property cards\n   - Market trends dashboard\n   - Price alert subscription",
         "testStrategy": "1. Unit tests for trend calculations\n2. Integration tests for price history API\n3. Test price snapshot capture\n4. Test alert triggering on price drops\n5. Verify chart rendering with sample data",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "medium",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-02-20T19:50:47.038Z"
       },
       {
         "id": "39",
@@ -309,9 +310,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-20T18:45:08.276Z",
+      "lastModified": "2026-02-20T19:50:47.039Z",
       "taskCount": 23,
-      "completedCount": 14,
+      "completedCount": 15,
       "tags": [
         "master"
       ]

@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 def _project_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return Path(__file__).resolve().parents[1]
 
 
 def _run(cmd: list[str], cwd: Path) -> None:

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Run the app locally (backend + frontend) with logging and auto-dependencies.
+    Run frontend only with logging and auto-dependencies.
 #>
 param(
   [Parameter(ValueFromRemainingArguments = $true)]
@@ -14,7 +14,7 @@ Set-Location $root
 # Setup logging
 $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $logDir = Join-Path $root "artifacts\logs"
-$logFile = Join-Path $logDir "run-$timestamp.log"
+$logFile = Join-Path $logDir "fe-$timestamp.log"
 
 if (-not (Test-Path $logDir)) {
     New-Item -ItemType Directory -Path $logDir -Force | Out-Null
@@ -38,29 +38,9 @@ function Get-AvailablePort {
     return $StartPort
 }
 
-Log "=== RUN.PS1 STARTED ==="
+Log "=== FE.PS1 STARTED (frontend only) ==="
 Log "Log file: $logFile"
 Log "Project root: $root"
-
-# Check uv
-Log "Checking uv..."
-if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
-    Log "ERROR: uv is not installed. Install with: pip install uv"
-    Log "See: https://docs.astral.sh/uv/"
-    exit 1
-}
-Log "uv found: $(uv --version)"
-
-# Check .venv
-$venvPath = Join-Path $root ".venv"
-if (-not (Test-Path $venvPath)) {
-    Log ".venv not found. Running bootstrap..."
-    python scripts/bootstrap.py --dev 2>&1 | ForEach-Object { Log $_ }
-    if ($LASTEXITCODE -ne 0) {
-        Log "ERROR: Bootstrap failed"
-        exit 1
-    }
-}
 
 # Check npm
 Log "Checking npm..."
@@ -116,14 +96,12 @@ if (-not (Test-Path $webNodeModules)) {
     }
 }
 
-# Detect available ports
-$backendPort = Get-AvailablePort -StartPort 8000
+# Detect available port
 $frontendPort = Get-AvailablePort -StartPort 3000
-Log "Backend port: $backendPort"
 Log "Frontend port: $frontendPort"
 
-Log "All dependencies ready. Starting app..."
-Log "========================================"
+Log "Frontend dependencies ready. Starting frontend..."
+Log "==========================================================="
 
 # Run start.py
 . (Join-Path $root "scripts\shared\resolve_python.ps1")
@@ -132,7 +110,7 @@ $invocation = Get-PythonInvocation -ProjectRoot $root
 $pythonArgs = @($invocation.Args) + @(
     (Join-Path $root "scripts\start.py"),
     "--mode", "local",
-    "--backend-port", $backendPort,
+    "--service", "frontend",
     "--frontend-port", $frontendPort
 ) + $Args
 
@@ -145,4 +123,4 @@ catch {
     exit 1
 }
 
-Log "=== RUN.PS1 FINISHED ==="
+Log "=== FE.PS1 FINISHED ==="

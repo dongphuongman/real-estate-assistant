@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 def _project_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return Path(__file__).resolve().parents[1]
 
 
 def _run_checked(cmd: list[str], cwd: Path, env: dict[str, str] | None = None) -> None:
@@ -42,7 +42,7 @@ def _get_default_api_access_key_from_env() -> str:
 
 def _ensure_uv_dev_env(root: Path) -> None:
     _run_checked(
-        [sys.executable, str(root / "scripts" / "launcher" / "bootstrap.py"), "--dev"],
+        [sys.executable, str(root / "scripts" / "bootstrap.py"), "--dev"],
         cwd=root,
     )
 
@@ -125,7 +125,9 @@ def _sanitize_env_for_display(env: dict[str, str]) -> dict[str, str]:
     return safe
 
 
-def _build_backend_env(*, port: int | None = None) -> dict[str, str]:
+def _build_backend_env(
+    *, port: int | None = None, root: Path | None = None
+) -> dict[str, str]:
     env = os.environ.copy()
     env.setdefault("ENVIRONMENT", "development")
     if (
@@ -135,11 +137,23 @@ def _build_backend_env(*, port: int | None = None) -> dict[str, str]:
         env["API_ACCESS_KEY"] = "dev-secret-key"
     if port is not None:
         env["PORT"] = str(port)
+    # Add apps/api to PYTHONPATH for correct imports
+    if root is not None:
+        api_path = str(root / "apps" / "api")
+        existing_pythonpath = env.get("PYTHONPATH", "")
+        if existing_pythonpath:
+            env["PYTHONPATH"] = f"{api_path}{os.pathsep}{existing_pythonpath}"
+        else:
+            env["PYTHONPATH"] = api_path
     return env
 
 
 def _build_frontend_env(
-    *, backend_env: dict[str, str], backend_port: int = 8000, frontend_port: int = 3000
+    *,
+    backend_env: dict[str, str],
+    backend_port: int = 8000,
+    frontend_port: int = 3000,
+    root: Path | None = None,
 ) -> dict[str, str]:
     env = os.environ.copy()
     env.setdefault("NEXT_PUBLIC_API_URL", "/api/v1")
@@ -155,6 +169,12 @@ def _build_frontend_env(
         )
         if effective_backend_key:
             env["API_ACCESS_KEY"] = effective_backend_key
+    # Add node_modules/.bin to PATH for Windows (so npm can find next, etc.)
+    if root is not None and os.name == "nt":
+        bin_path = str(root / "apps" / "web" / "node_modules" / ".bin")
+        if os.path.isdir(bin_path):
+            existing_path = env.get("PATH", "")
+            env["PATH"] = f"{bin_path}{os.pathsep}{existing_path}"
     return env
 
 
@@ -187,11 +207,12 @@ def _run_local(
     if os.name == "nt":
         frontend_cmd[0] = "npm.cmd"
 
-    env_backend = _build_backend_env(port=backend_port)
+    env_backend = _build_backend_env(port=backend_port, root=root)
     env_frontend = _build_frontend_env(
         backend_env=env_backend,
         backend_port=backend_port,
         frontend_port=frontend_port,
+        root=root,
     )
 
     if dry_run:
@@ -206,7 +227,13 @@ def _run_local(
                     {
                         k: env_backend[k]
                         for k in sorted(env_backend)
-                        if k in {"ENVIRONMENT", "API_ACCESS_KEY", "API_ACCESS_KEYS"}
+                        if k
+                        in {
+                            "ENVIRONMENT",
+                            "API_ACCESS_KEY",
+                            "API_ACCESS_KEYS",
+                            "PYTHONPATH",
+                        }
                     }
                 ),
             )
@@ -216,6 +243,7 @@ def _run_local(
                 "BACKEND_API_URL",
                 "API_ACCESS_KEY",
                 "API_ACCESS_KEYS",
+                "PORT",
             }
             print(
                 "FRONTEND_ENV:",
