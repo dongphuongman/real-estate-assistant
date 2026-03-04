@@ -12,6 +12,11 @@ from pathlib import Path
 from typing import Callable
 
 
+def _project_root() -> Path:
+    """Get project root directory (2 levels up from scripts/docker/)."""
+    return Path(__file__).resolve().parents[2]
+
+
 @dataclass(frozen=True)
 class SmokeConfig:
     compose_file: Path
@@ -111,7 +116,8 @@ def parse_args(argv: list[str]) -> SmokeConfig:
     parser = argparse.ArgumentParser(
         description="Docker Compose smoke test (backend + frontend)."
     )
-    parser.add_argument("--compose-file", default="deploy/compose/docker-compose.yml")
+    default_compose = _project_root() / "deploy" / "compose" / "docker-compose.yml"
+    parser.add_argument("--compose-file", default=str(default_compose))
     parser.add_argument("--backend-health-url", default="http://localhost:8001/health")
     parser.add_argument(
         "--backend-verify-auth-url", default="http://localhost:8001/api/v1/verify-auth"
