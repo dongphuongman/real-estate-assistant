@@ -128,7 +128,7 @@ PowerShell example (prints raw SSE frames):
 ```powershell
 $env:API_ACCESS_KEY="dev-secret-key"
 curl.exe -N `
-  -H "X-API-Key: your-api-key" `
+  -H "X-API-Key: $API_KEY" `
   -H "Content-Type: application/json" `
   -d "{\"message\":\"Hello\",\"stream\":true}" `
   "http://localhost:8000/api/v1/chat"

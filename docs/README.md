@@ -12,6 +12,13 @@ Welcome to the documentation for the AI Real Estate Assistant (V4).
 - **[Tools Guide](user/USER_GUIDE_TOOLS.md)**: How to use Tools.
 
 ## Development
+- **[Developer Guides](guides/)**: Comprehensive guides for setup, testing, and deployment.
+  - [Local Development](guides/local-development.md) - Set up your dev environment
+  - [Environment Setup](guides/environment-setup.md) - Configure environment variables
+  - [Testing](guides/testing.md) - Run tests and coverage
+  - [Deployment](guides/deployment.md) - Deploy to production
+  - [CI/CD](guides/ci-cd.md) - Understanding the pipeline
+  - [Troubleshooting](guides/troubleshooting.md) - Common issues and solutions
 - **[Quickstart](development/QUICKSTART.md)**: Run locally fast.
 - **[Developer Notes](development/DEVELOPER_NOTES.md)**: Practical dev notes and CI parity.
 - **[Project Structure](development/PROJECT_STRUCTURE.md)**: Directory layout explanation.

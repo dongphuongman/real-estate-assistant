@@ -3,9 +3,6 @@
   "version": "4.0.0",
   "description": "AI-powered assistant for real estate agencies with chat, search, and analytics",
   "private": true,
-  "workspaces": [
-    "apps/*"
-  ],
   "directories": {
     "doc": "docs",
     "test": "tests"
