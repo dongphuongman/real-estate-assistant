@@ -1709,6 +1709,282 @@ class CommuteRankingTool(BaseTool):
         return self._run(**kwargs)
 
 
+# ============================================================================
+# Task #39: Advanced Investment Analytics
+# ============================================================================
+
+
+class AdvancedInvestmentInput(BaseModel):
+    """Input for advanced investment analysis with projections."""
+
+    # Base property info
+    property_price: float = Field(description="Purchase price", gt=0)
+    monthly_rent: float = Field(description="Expected monthly rent", gt=0)
+
+    # Financing
+    down_payment_percent: float = Field(default=20.0, ge=0, le=100)
+    interest_rate: float = Field(default=4.5, ge=0)
+    loan_years: int = Field(default=30, gt=0, le=50)
+
+    # Operating expenses (monthly)
+    property_tax_monthly: float = Field(default=0.0, ge=0)
+    insurance_monthly: float = Field(default=0.0, ge=0)
+    hoa_monthly: float = Field(default=0.0, ge=0)
+    maintenance_percent: float = Field(default=1.0, ge=0)
+    vacancy_rate: float = Field(default=5.0, ge=0, le=100)
+    management_percent: float = Field(default=0.0, ge=0)
+
+    # Advanced projection settings
+    projection_years: int = Field(default=20, ge=1, le=30)
+    appreciation_rate: float = Field(default=3.0, description="Annual appreciation %")
+    rent_growth_rate: float = Field(default=2.0, description="Annual rent growth %")
+    marginal_tax_rate: float = Field(default=0.0, ge=0, le=50)
+    land_value_ratio: float = Field(default=0.2, ge=0, le=1)
+    market_volatility: float = Field(default=0.5, ge=0, le=1)
+
+
+class AdvancedInvestmentResult(BaseModel):
+    """Result from advanced investment analysis."""
+
+    # Base metrics (from standard analysis)
+    monthly_cash_flow: float
+    annual_cash_flow: float
+    cap_rate: float
+    cash_on_cash_roi: float
+    total_investment: float
+
+    # Projection results
+    cash_flow_projection: List[Dict[str, Any]] = Field(default_factory=list)
+    total_projected_cash_flow: float = 0.0
+    final_equity: float = 0.0
+    irr: Optional[float] = None
+
+    # Tax implications
+    annual_depreciation: float = 0.0
+    total_tax_deductions: float = 0.0
+    tax_benefit: float = 0.0
+
+    # Appreciation scenarios
+    appreciation_scenarios: List[Dict[str, Any]] = Field(default_factory=list)
+
+    # Risk assessment
+    risk_score: float = 0.0
+    risk_factors: List[str] = Field(default_factory=list)
+    recommendations: List[str] = Field(default_factory=list)
+
+
+class AdvancedInvestmentTool(BaseTool):
+    """Tool for advanced investment analysis with projections."""
+
+    name: str = "advanced_investment_analyzer"
+    description: str = (
+        "Advanced investment analysis with multi-year cash flow projections, "
+        "tax implications, appreciation scenarios, and risk assessment."
+    )
+    args_schema: type[AdvancedInvestmentInput] = AdvancedInvestmentInput
+
+    @staticmethod
+    def calculate(
+        property_price: float,
+        monthly_rent: float,
+        down_payment_percent: float = 20.0,
+        interest_rate: float = 4.5,
+        loan_years: int = 30,
+        property_tax_monthly: float = 0.0,
+        insurance_monthly: float = 0.0,
+        hoa_monthly: float = 0.0,
+        maintenance_percent: float = 1.0,
+        vacancy_rate: float = 5.0,
+        management_percent: float = 0.0,
+        projection_years: int = 20,
+        appreciation_rate: float = 3.0,
+        rent_growth_rate: float = 2.0,
+        marginal_tax_rate: float = 0.0,
+        land_value_ratio: float = 0.2,
+        market_volatility: float = 0.5,
+    ) -> AdvancedInvestmentResult:
+        """Calculate advanced investment metrics with projections."""
+        from analytics.financial_metrics import ExpenseParams, MortgageParams
+        from analytics.investment_analytics import InvestmentAnalyticsCalculator
+
+        # Calculate base investment metrics
+        base_result = InvestmentCalculatorTool.calculate(
+            property_price=property_price,
+            monthly_rent=monthly_rent,
+            down_payment_percent=down_payment_percent,
+            interest_rate=interest_rate,
+            loan_years=loan_years,
+            property_tax_monthly=property_tax_monthly,
+            insurance_monthly=insurance_monthly,
+            hoa_monthly=hoa_monthly,
+            maintenance_percent=maintenance_percent,
+            vacancy_rate=vacancy_rate,
+            management_percent=management_percent,
+        )
+
+        # Setup params for advanced calculations
+        mortgage = MortgageParams(
+            interest_rate=interest_rate,
+            loan_term_years=loan_years,
+            down_payment_percent=down_payment_percent,
+        )
+
+        expenses = ExpenseParams(
+            property_tax_rate=(property_tax_monthly * 12 / property_price) * 100
+            if property_price > 0
+            else 0,
+            insurance_annual=insurance_monthly * 12,
+            maintenance_rate=maintenance_percent,
+            vacancy_rate=vacancy_rate,
+            management_fee_rate=management_percent,
+            hoa_monthly=hoa_monthly,
+        )
+
+        # Cash flow projection
+        projection = InvestmentAnalyticsCalculator.project_cash_flows(
+            property_price=property_price,
+            monthly_rent=monthly_rent,
+            mortgage=mortgage,
+            expenses=expenses,
+            appreciation_rate=appreciation_rate,
+            rent_growth_rate=rent_growth_rate,
+            projection_years=projection_years,
+        )
+
+        # Tax implications
+        loan_amount = property_price * (1 - down_payment_percent / 100)
+        first_year_interest = loan_amount * (interest_rate / 100)
+
+        tax_implications = InvestmentAnalyticsCalculator.calculate_tax_implications(
+            property_price=property_price,
+            land_value_ratio=land_value_ratio,
+            mortgage_interest_annual=first_year_interest,
+            property_tax_annual=property_tax_monthly * 12,
+            marginal_tax_rate=marginal_tax_rate,
+        )
+
+        # Appreciation scenarios
+        scenarios = InvestmentAnalyticsCalculator.calculate_appreciation_scenarios(
+            property_price=property_price,
+            years=projection_years,
+        )
+
+        # Risk assessment
+        debt_service_ratio = (
+            (base_result.annual_cash_flow + base_result.monthly_expenses * 12)
+            / (base_result.monthly_expenses * 12)
+            if base_result.monthly_expenses > 0
+            else 1.0
+        )
+
+        risk = InvestmentAnalyticsCalculator.assess_risk(
+            property_price=property_price,
+            monthly_cash_flow=base_result.monthly_cash_flow,
+            cap_rate=base_result.cap_rate,
+            debt_service_ratio=debt_service_ratio,
+            vacancy_rate=vacancy_rate,
+            market_volatility=market_volatility,
+            loan_to_value=1 - down_payment_percent / 100,
+        )
+
+        # Convert projection to dict format
+        projection_list = [
+            {
+                "year": y.year,
+                "gross_income": y.gross_income,
+                "operating_expenses": y.operating_expenses,
+                "mortgage_payment": y.mortgage_payment,
+                "noi": y.noi,
+                "cash_flow": y.cash_flow,
+                "cumulative_cash_flow": y.cumulative_cash_flow,
+                "property_value": y.property_value,
+                "equity": y.equity,
+                "loan_balance": y.loan_balance,
+            }
+            for y in projection.yearly_breakdown
+        ]
+
+        # Convert scenarios to dict format
+        scenarios_list = [
+            {
+                "name": s.name,
+                "annual_rate": s.annual_rate,
+                "projected_values": s.projected_values,
+                "total_appreciation_percent": s.total_appreciation_percent,
+                "total_appreciation_amount": s.total_appreciation_amount,
+            }
+            for s in scenarios
+        ]
+
+        return AdvancedInvestmentResult(
+            monthly_cash_flow=base_result.monthly_cash_flow,
+            annual_cash_flow=base_result.annual_cash_flow,
+            cap_rate=base_result.cap_rate,
+            cash_on_cash_roi=base_result.cash_on_cash_roi,
+            total_investment=base_result.total_investment,
+            cash_flow_projection=projection_list,
+            total_projected_cash_flow=projection.total_cash_flow,
+            final_equity=projection.final_equity,
+            irr=projection.irr,
+            annual_depreciation=tax_implications.annual_depreciation,
+            total_tax_deductions=tax_implications.total_annual_deductions,
+            tax_benefit=tax_implications.effective_tax_benefit,
+            appreciation_scenarios=scenarios_list,
+            risk_score=risk.overall_score,
+            risk_factors=risk.risk_factors,
+            recommendations=risk.recommendations,
+        )
+
+    def _run(self, **kwargs: Any) -> str:
+        """Execute advanced investment analysis."""
+        try:
+            result = self.calculate(**kwargs)
+
+            output = [
+                "Advanced Investment Analysis",
+                "=" * 40,
+                "",
+                "BASE METRICS",
+                f"  Monthly Cash Flow: ${result.monthly_cash_flow:,.2f}",
+                f"  Annual Cash Flow: ${result.annual_cash_flow:,.2f}",
+                f"  Cap Rate: {result.cap_rate:.2f}%",
+                f"  Cash on Cash ROI: {result.cash_on_cash_roi:.2f}%",
+                "",
+                "PROJECTION SUMMARY",
+                f"  Projection Period: {len(result.cash_flow_projection)} years",
+                f"  Total Projected Cash Flow: ${result.total_projected_cash_flow:,.2f}",
+                f"  Final Equity: ${result.final_equity:,.2f}",
+                f"  IRR: {result.irr:.2f}%" if result.irr else "  IRR: N/A",
+                "",
+                "TAX IMPLICATIONS",
+                f"  Annual Depreciation: ${result.annual_depreciation:,.2f}",
+                f"  Total Tax Deductions: ${result.total_tax_deductions:,.2f}",
+                f"  Tax Benefit: ${result.tax_benefit:,.2f}/year",
+                "",
+                "RISK ASSESSMENT",
+                f"  Risk Score: {result.risk_score:.1f}/100",
+            ]
+
+            if result.risk_factors:
+                output.append("  Risk Factors:")
+                for factor in result.risk_factors:
+                    output.append(f"    - {factor}")
+
+            if result.recommendations:
+                output.append("  Recommendations:")
+                for rec in result.recommendations:
+                    output.append(f"    - {rec}")
+
+            return "\n".join(output)
+
+        except Exception as e:
+            return f"Advanced Investment Analysis Error: {str(e)}"
+
+    async def _arun(self, **kwargs: Any) -> str:
+        """Async version."""
+        return self._run(**kwargs)
+
+
 # Factory function to create all tools
 def create_property_tools(vector_store: Any = None) -> List[BaseTool]:
     """
@@ -1725,6 +2001,7 @@ def create_property_tools(vector_store: Any = None) -> List[BaseTool]:
         MortgageCalculatorTool(),
         TCOCalculatorTool(),
         InvestmentCalculatorTool(),
+        AdvancedInvestmentTool(),  # Task #39: Advanced analytics
         NeighborhoodQualityIndexTool(),
         PropertyComparisonTool(vector_store=vector_store),
         PriceAnalysisTool(vector_store=vector_store),

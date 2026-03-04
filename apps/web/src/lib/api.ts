@@ -46,6 +46,11 @@ import {
   ExportPropertiesRequest,
   PromptTemplateApplyResponse,
   PromptTemplateInfo,
+  // Task #39: Advanced Investment Analytics
+  AdvancedInvestmentInput,
+  AdvancedInvestmentResult,
+  PortfolioAnalysisInput,
+  PortfolioAnalysisResult,
 } from './types';
 
 function getApiUrl(): string {
@@ -1010,4 +1015,40 @@ export async function getMarketIndicators(city?: string): Promise<MarketIndicato
     credentials: 'include',
   });
   return handleResponse<MarketIndicators>(response);
+}
+
+// ============================================================================
+// Task #39: Advanced Investment Analytics
+// ============================================================================
+
+/**
+ * Calculate advanced investment analysis with multi-year projections,
+ * tax implications, appreciation scenarios, and risk assessment.
+ */
+export async function calculateAdvancedInvestment(
+  input: AdvancedInvestmentInput
+): Promise<AdvancedInvestmentResult> {
+  const response = await safeFetch(`${getApiUrl()}/tools/advanced-investment-analysis`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(input),
+  });
+  return handleResponse<AdvancedInvestmentResult>(response);
+}
+
+/**
+ * Analyze a portfolio of investment properties including aggregate metrics,
+ * diversification scores, and risk assessment.
+ */
+export async function analyzePortfolio(
+  input: PortfolioAnalysisInput
+): Promise<PortfolioAnalysisResult> {
+  const response = await safeFetch(`${getApiUrl()}/tools/portfolio-analysis`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(input),
+  });
+  return handleResponse<PortfolioAnalysisResult>(response);
 }
