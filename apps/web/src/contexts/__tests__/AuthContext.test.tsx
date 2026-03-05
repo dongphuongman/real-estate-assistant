@@ -12,13 +12,9 @@
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
 
-// Mock the auth API
-jest.mock('@/lib/auth', () => ({
-  login: jest.fn(),
-  register: jest.fn(),
-  logout: jest.fn(),
-  getCurrentUser: jest.fn(),
-}));
+// Mock fetch globally before any imports
+const mockFetch = jest.fn();
+(globalThis as unknown as { fetch: jest.Mock }).fetch = mockFetch;
 
 // Mock the API error
 jest.mock('@/lib/api', () => ({
@@ -32,12 +28,27 @@ jest.mock('@/lib/api', () => ({
 }));
 
 import { AuthProvider, useAuth } from '../AuthContext';
-import * as authApi from '@/lib/auth';
 import { ApiError } from '@/lib/api';
 
 // Test component to access auth context
 function TestComponent() {
   const { user, isLoading, isAuthenticated, error, login, logout, clearError } = useAuth();
+
+  const handleLogin = async () => {
+    try {
+      await login('test@example.com', 'password');
+    } catch {
+      // Error is already set in context
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch {
+      // Error is already set in context
+    }
+  };
 
   return (
     <div>
@@ -45,10 +56,10 @@ function TestComponent() {
       <span data-testid="authenticated">{isAuthenticated.toString()}</span>
       <span data-testid="user">{user ? user.email : 'null'}</span>
       <span data-testid="error">{error || 'null'}</span>
-      <button onClick={() => login('test@example.com', 'password')} data-testid="login-btn">
+      <button onClick={handleLogin} data-testid="login-btn">
         Login
       </button>
-      <button onClick={logout} data-testid="logout-btn">
+      <button onClick={handleLogout} data-testid="logout-btn">
         Logout
       </button>
       <button onClick={clearError} data-testid="clear-error-btn">
@@ -58,9 +69,22 @@ function TestComponent() {
   );
 }
 
+// Helper to create mock responses
+function createMockResponse(data: unknown, status = 200) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    statusText: status === 200 ? 'OK' : 'Error',
+    headers: new Headers(),
+    json: async () => data,
+    text: async () => JSON.stringify(data),
+  } as Response;
+}
+
 describe('AuthContext', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockFetch.mockReset();
   });
 
   afterEach(() => {
@@ -69,9 +93,8 @@ describe('AuthContext', () => {
 
   describe('Initial State', () => {
     it('starts with loading state', async () => {
-      (authApi.getCurrentUser as jest.Mock).mockImplementation(
-        () => new Promise(() => {}) // Never resolves
-      );
+      // Mock getCurrentUser to never resolve
+      mockFetch.mockImplementation(() => new Promise(() => {}));
 
       render(
         <AuthProvider>
@@ -83,7 +106,8 @@ describe('AuthContext', () => {
     });
 
     it('sets loading to false after fetching user', async () => {
-      (authApi.getCurrentUser as jest.Mock).mockResolvedValue(null);
+      // Mock getCurrentUser to return null (no user)
+      mockFetch.mockRejectedValueOnce(new Error('Not authenticated'));
 
       render(
         <AuthProvider>
@@ -97,7 +121,8 @@ describe('AuthContext', () => {
     });
 
     it('starts unauthenticated when no user', async () => {
-      (authApi.getCurrentUser as jest.Mock).mockResolvedValue(null);
+      // Mock getCurrentUser to fail
+      mockFetch.mockRejectedValueOnce(new Error('Not authenticated'));
 
       render(
         <AuthProvider>
@@ -114,8 +139,9 @@ describe('AuthContext', () => {
   describe('Login Flow', () => {
     it('logs in successfully', async () => {
       const mockUser = { id: '1', email: 'test@example.com' };
-      (authApi.getCurrentUser as jest.Mock).mockResolvedValue(null);
-      (authApi.login as jest.Mock).mockResolvedValue({ user: mockUser });
+
+      // First call: getCurrentUser (fails - no user initially)
+      mockFetch.mockRejectedValueOnce(new Error('Not authenticated'));
 
       render(
         <AuthProvider>
@@ -127,6 +153,15 @@ describe('AuthContext', () => {
       await waitFor(() => {
         expect(screen.getByTestId('loading').textContent).toBe('false');
       });
+
+      // Second call: login
+      mockFetch.mockResolvedValueOnce(createMockResponse({
+        access_token: 'token',
+        refresh_token: 'refresh',
+        token_type: 'bearer',
+        expires_in: 3600,
+        user: mockUser
+      }));
 
       // Click login button
       await act(async () => {
@@ -141,8 +176,8 @@ describe('AuthContext', () => {
     });
 
     it('handles login error', async () => {
-      (authApi.getCurrentUser as jest.Mock).mockResolvedValue(null);
-      (authApi.login as jest.Mock).mockRejectedValue(new ApiError('Invalid credentials', 401));
+      // First call: getCurrentUser (fails - no user initially)
+      mockFetch.mockRejectedValueOnce(new Error('Not authenticated'));
 
       render(
         <AuthProvider>
@@ -154,8 +189,25 @@ describe('AuthContext', () => {
         expect(screen.getByTestId('loading').textContent).toBe('false');
       });
 
+      // Second call: login fails with 401
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: new Headers(),
+        json: async () => ({ detail: 'Invalid credentials' }),
+        text: async () => JSON.stringify({ detail: 'Invalid credentials' }),
+      } as Response);
+
+      // Click login and catch the thrown error
       await act(async () => {
-        screen.getByTestId('login-btn').click();
+        try {
+          screen.getByTestId('login-btn').click();
+          // Wait for the login promise to reject
+          await new Promise(resolve => setTimeout(resolve, 100));
+        } catch {
+          // Expected - login throws on error
+        }
       });
 
       await waitFor(() => {
@@ -168,8 +220,9 @@ describe('AuthContext', () => {
   describe('Logout Flow', () => {
     it('logs out successfully', async () => {
       const mockUser = { id: '1', email: 'test@example.com' };
-      (authApi.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
-      (authApi.logout as jest.Mock).mockResolvedValue(undefined);
+
+      // First call: getCurrentUser (success - user logged in)
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockUser));
 
       render(
         <AuthProvider>
@@ -181,6 +234,9 @@ describe('AuthContext', () => {
       await waitFor(() => {
         expect(screen.getByTestId('authenticated').textContent).toBe('true');
       });
+
+      // Second call: logout
+      mockFetch.mockResolvedValueOnce(createMockResponse({ message: 'Logged out' }));
 
       // Click logout
       await act(async () => {
@@ -197,8 +253,8 @@ describe('AuthContext', () => {
 
   describe('Error Handling', () => {
     it('clears error when clearError is called', async () => {
-      (authApi.getCurrentUser as jest.Mock).mockResolvedValue(null);
-      (authApi.login as jest.Mock).mockRejectedValue(new ApiError('Login failed', 401));
+      // First call: getCurrentUser (fails - no user initially)
+      mockFetch.mockRejectedValueOnce(new Error('Not authenticated'));
 
       render(
         <AuthProvider>
@@ -210,9 +266,24 @@ describe('AuthContext', () => {
         expect(screen.getByTestId('loading').textContent).toBe('false');
       });
 
-      // Trigger error
+      // Second call: login fails
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: new Headers(),
+        json: async () => ({ detail: 'Login failed' }),
+        text: async () => JSON.stringify({ detail: 'Login failed' }),
+      } as Response);
+
+      // Trigger error (and catch the thrown error)
       await act(async () => {
-        screen.getByTestId('login-btn').click();
+        try {
+          screen.getByTestId('login-btn').click();
+          await new Promise(resolve => setTimeout(resolve, 100));
+        } catch {
+          // Expected - login throws on error
+        }
       });
 
       await waitFor(() => {

@@ -36,6 +36,9 @@ from api.models import (
     ValuationResponse,
 )
 from tools.property_tools import (
+    AdvancedInvestmentInput,
+    AdvancedInvestmentResult,
+    AdvancedInvestmentTool,
     InvestmentCalculatorTool,
     InvestmentAnalysisInput,
     InvestmentAnalysisResult,
@@ -48,6 +51,11 @@ from tools.property_tools import (
     TCOInput,
     TCOResult,
     create_property_tools,
+)
+from tools.portfolio_tools import (
+    PortfolioAnalysisInput,
+    PortfolioAnalysisResult,
+    PortfolioAnalyzerTool,
 )
 from vector_store.chroma_store import ChromaPropertyStore
 
@@ -166,6 +174,71 @@ async def calculate_investment_analysis(input_data: InvestmentAnalysisInput):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Calculation failed: {str(e)}",
+        ) from e
+
+
+# Task #39: Advanced Investment Analytics
+@router.post(
+    "/tools/advanced-investment-analysis",
+    response_model=AdvancedInvestmentResult,
+    tags=["Tools"],
+)
+async def calculate_advanced_investment(input_data: AdvancedInvestmentInput):
+    """
+    Advanced investment analysis with multi-year projections, tax implications,
+    appreciation scenarios, and risk assessment.
+    """
+    try:
+        return AdvancedInvestmentTool.calculate(
+            property_price=input_data.property_price,
+            monthly_rent=input_data.monthly_rent,
+            down_payment_percent=input_data.down_payment_percent,
+            interest_rate=input_data.interest_rate,
+            loan_years=input_data.loan_years,
+            property_tax_monthly=input_data.property_tax_monthly,
+            insurance_monthly=input_data.insurance_monthly,
+            hoa_monthly=input_data.hoa_monthly,
+            maintenance_percent=input_data.maintenance_percent,
+            vacancy_rate=input_data.vacancy_rate,
+            management_percent=input_data.management_percent,
+            projection_years=input_data.projection_years,
+            appreciation_rate=input_data.appreciation_rate,
+            rent_growth_rate=input_data.rent_growth_rate,
+            marginal_tax_rate=input_data.marginal_tax_rate,
+            land_value_ratio=input_data.land_value_ratio,
+            market_volatility=input_data.market_volatility,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Advanced analysis failed: {str(e)}",
+        ) from e
+
+
+# Task #39: Portfolio Analysis
+@router.post(
+    "/tools/portfolio-analysis",
+    response_model=PortfolioAnalysisResult,
+    tags=["Tools"],
+)
+async def analyze_portfolio(input_data: PortfolioAnalysisInput):
+    """
+    Analyze a portfolio of investment properties including aggregate metrics,
+    diversification scores, and risk assessment.
+    """
+    try:
+        return PortfolioAnalyzerTool.calculate(
+            properties=input_data.properties,
+            market_volatility_by_city=input_data.market_volatility_by_city,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Portfolio analysis failed: {str(e)}",
         ) from e
 
 

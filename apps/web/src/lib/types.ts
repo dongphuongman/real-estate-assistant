@@ -568,3 +568,105 @@ export interface MarketIndicators {
   hottest_districts: Array<{ name: string; avg_price: number; count: number }>;
   coldest_districts: Array<{ name: string; avg_price: number; count: number }>;
 }
+
+// Advanced Investment Analytics types for Task #39
+export interface YearlyCashFlow {
+  year: number;
+  gross_income: number;
+  operating_expenses: number;
+  mortgage_payment: number;
+  noi: number;
+  cash_flow: number;
+  cumulative_cash_flow: number;
+  property_value: number;
+  equity: number;
+  loan_balance: number;
+}
+
+export interface AdvancedInvestmentInput extends InvestmentAnalysisInput {
+  projection_years?: number;
+  appreciation_rate?: number;
+  rent_growth_rate?: number;
+  marginal_tax_rate?: number;
+  land_value_ratio?: number;
+  market_volatility?: number;
+}
+
+export interface AppreciationScenario {
+  name: string;
+  annual_rate: number;
+  projected_values: Record<number, number>;
+  total_appreciation_percent: number;
+  total_appreciation_amount: number;
+}
+
+export interface AdvancedInvestmentResult extends InvestmentAnalysisResult {
+  cash_flow_projection: YearlyCashFlow[];
+  total_projected_cash_flow: number;
+  final_equity: number;
+  irr: number | null;
+  annual_depreciation: number;
+  total_tax_deductions: number;
+  tax_benefit: number;
+  appreciation_scenarios: AppreciationScenario[];
+  risk_score: number;
+  risk_factors: string[];
+  recommendations: string[];
+}
+
+// Portfolio Analytics types for Task #39
+export interface PropertyHolding {
+  property_id: string;
+  property_price: number;
+  monthly_rent: number;
+  property_type: string;
+  city: string;
+  monthly_cash_flow: number;
+  cap_rate: number;
+}
+
+export interface PortfolioMetrics {
+  total_properties: number;
+  total_value: number;
+  total_monthly_cash_flow: number;
+  total_annual_cash_flow: number;
+  weighted_avg_cap_rate: number;
+  weighted_avg_yield: number;
+}
+
+export interface PortfolioDiversification {
+  geographic_score: number;
+  property_type_score: number;
+  city_distribution: Record<string, number>;
+  type_distribution: Record<string, number>;
+  concentration_risk: number;
+  largest_holding_percent: number;
+}
+
+export interface PortfolioRiskAssessment {
+  overall_risk_score: number;
+  geographic_diversification: number;
+  property_type_diversification: number;
+  concentration_risk: number;
+  cash_flow_risk: number;
+  recommendations: string[];
+}
+
+export interface PortfolioPerformance {
+  total_return: number;
+  annualized_return: number;
+  cash_on_cash_return: number;
+  appreciation: number;
+}
+
+export interface PortfolioAnalysisInput {
+  properties: PropertyHolding[];
+  market_volatility_by_city?: Record<string, number>;
+}
+
+export interface PortfolioAnalysisResult {
+  metrics: PortfolioMetrics;
+  diversification: PortfolioDiversification;
+  risk_assessment: PortfolioRiskAssessment;
+  performance: PortfolioPerformance;
+}

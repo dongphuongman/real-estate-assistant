@@ -2,9 +2,10 @@ import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
 import LoginPage from "../login/page"
 import { useRouter } from "next/navigation"
 
-// Mock useRouter
+// Mock useRouter and useSearchParams
 jest.mock("next/navigation", () => ({
   useRouter: jest.fn(),
+  useSearchParams: jest.fn(() => new URLSearchParams()),
 }))
 
 describe("LoginPage", () => {
