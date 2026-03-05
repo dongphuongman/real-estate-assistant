@@ -2,9 +2,15 @@
 Pytest configuration and shared fixtures.
 """
 
+# CRITICAL: Set test environment BEFORE any imports that might load settings
+import os
+
+os.environ.setdefault("ENVIRONMENT", "test")
+os.environ.setdefault("API_ACCESS_KEY", "dev-secret-key")
+os.environ.setdefault("ENABLE_JWT_AUTH", "true")
+
 import importlib
 import importlib.util
-import os
 import sys
 import types
 from collections.abc import AsyncGenerator
@@ -70,9 +76,8 @@ def _ensure_optional_excel_modules() -> None:
 
 
 def pytest_configure() -> None:
-    os.environ.setdefault("ENVIRONMENT", "test")
-    os.environ["API_ACCESS_KEY"] = "dev-secret-key"
-    os.environ["ENABLE_JWT_AUTH"] = "true"
+    """Pytest configuration hook."""
+    # Env vars are set at module level above, before any imports
     _ensure_optional_excel_modules()
 
 

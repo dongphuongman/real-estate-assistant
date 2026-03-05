@@ -11,7 +11,11 @@ from data.adapters.base import PortalFetchResult
 
 client = TestClient(app)
 
-HEADERS = {"X-API-Key": "test-key"}
+CSRF_TOKEN = "test-csrf-token"
+HEADERS = {"X-API-Key": "test-key", "X-CSRF-Token": CSRF_TOKEN}
+
+# Set the CSRF token cookie on the client
+client.cookies.set("csrf_token", CSRF_TOKEN)
 
 
 @patch("api.routers.admin.DataLoaderExcel")

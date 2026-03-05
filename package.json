@@ -34,7 +34,13 @@
     "type": "git",
     "url": "git+https://AleksNeStu@github.com/AleksNeStu/ai-real-estate-assistant.git"
   },
-  "keywords": ["real-estate", "ai", "assistant", "fastapi", "nextjs"],
+  "keywords": [
+    "real-estate",
+    "ai",
+    "assistant",
+    "fastapi",
+    "nextjs"
+  ],
   "author": "Alex Nesterovich",
   "license": "MIT",
   "type": "commonjs",
@@ -45,6 +51,7 @@
   "devDependencies": {
     "@playwright/test": "^1.57.0",
     "concurrently": "^8.2.2",
+    "eslint": "^9.39.3",
     "lint-staged": "^15.4.3",
     "prettier": "^3.5.2"
   },

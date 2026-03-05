@@ -1,3 +1,9 @@
+import os
+
+# Set test environment before importing app
+os.environ.setdefault("ENVIRONMENT", "test")
+os.environ.setdefault("API_ACCESS_KEY", "dev-secret-key")
+
 import pytest
 from fastapi.testclient import TestClient
 from langchain_core.documents import Document

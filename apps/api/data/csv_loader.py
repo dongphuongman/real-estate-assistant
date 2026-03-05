@@ -332,7 +332,7 @@ class DataLoaderCsv:
             if col in df_final.columns:
                 series = df_final[col].fillna(False)
                 series = series.map(lambda v: bool(v) if not pd.isna(v) else False)
-                df_final.loc[:, col] = series
+                df_final[col] = series.astype(bool)
 
         # Replace int to float where applicable (avoid silent downcasting)
         def _to_float_series(s: pd.Series) -> pd.Series:
