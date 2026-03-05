@@ -43,11 +43,6 @@ function OAuthCallbackContent() {
     <Card className="w-full max-w-sm">
       <CardHeader className="space-y-1 text-center">
         <div className="flex justify-center mb-2">
-          {status === 'loading' && (
-            <div className="rounded-full bg-primary/10 p-3">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            </div>
-          )}
           {status === 'success' && (
             <div className="rounded-full bg-green-100 dark:bg-green-900/20 p-3">
               <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
@@ -60,18 +55,12 @@ function OAuthCallbackContent() {
           )}
         </div>
         <CardTitle className="text-2xl">
-          {status === 'loading' && 'Signing in...'}
           {status === 'success' && 'Welcome!'}
           {status === 'error' && 'Authentication failed'}
         </CardTitle>
         <CardDescription>{message}</CardDescription>
       </CardHeader>
       <CardContent>
-        {status === 'loading' && (
-          <p className="text-sm text-center text-muted-foreground">
-            Please wait while we complete your sign in...
-          </p>
-        )}
         {status === 'error' && (
           <p className="text-sm text-center text-muted-foreground">Redirecting to login page...</p>
         )}

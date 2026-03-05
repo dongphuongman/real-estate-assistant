@@ -206,10 +206,11 @@
         "description": "Enhance the investment analysis tools with more advanced metrics including cash flow projections, tax implications, and risk assessment.",
         "details": "1. Backend - Enhanced Calculators:\n   - Cash flow projection (1, 5, 10, 20 years)\n   - Tax implications calculator (property tax, income tax deductions)\n   - Appreciation scenarios (pessimistic -2%, realistic +3%, optimistic +7%)\n   - Risk assessment score (0-100) based on market volatility\n\n2. Backend - Portfolio Metrics:\n   - Aggregate metrics for multiple properties\n   - Diversification score\n   - Overall portfolio risk\n\n3. Frontend - Enhanced UI:\n   - Cash flow projection chart\n   - Scenario comparison table\n   - Risk assessment visualization\n   - Portfolio dashboard view",
         "testStrategy": "1. Unit tests for all calculator functions\n2. Verify projection calculations\n3. Test risk scoring algorithm\n4. Verify chart data formatting\n5. Compare results with known investment scenarios",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "medium",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-03-05T22:28:59.647Z"
       },
       {
         "id": "40",
@@ -310,9 +311,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-20T19:50:47.039Z",
+      "lastModified": "2026-03-05T22:28:59.647Z",
       "taskCount": 23,
-      "completedCount": 15,
+      "completedCount": 16,
       "tags": [
         "master"
       ]

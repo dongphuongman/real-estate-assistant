@@ -1,6 +1,8 @@
-import { BarChart3, TrendingUp } from "lucide-react";
-import { MortgageCalculator } from "@/components/analytics/mortgage-calculator";
-import { InvestmentAnalyzer } from "@/components/analytics/investment-analyzer";
+import { BarChart3, TrendingUp, Calculator, PieChart } from 'lucide-react';
+import { MortgageCalculator } from '@/components/analytics/mortgage-calculator';
+import { InvestmentAnalyzer } from '@/components/analytics/investment-analyzer';
+import { AdvancedInvestmentAnalyzer } from '@/components/analytics/advanced-investment-analyzer';
+import { PortfolioAnalyzer } from '@/components/analytics/portfolio-analyzer';
 
 export default function AnalyticsPage() {
   return (
@@ -29,8 +31,20 @@ export default function AnalyticsPage() {
           <InvestmentAnalyzer />
         </section>
 
-        <section className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
-          <p>More analytics tools and market insights coming soon.</p>
+        <section>
+          <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+            <Calculator className="h-6 w-6" />
+            Advanced Investment Analytics
+          </h2>
+          <AdvancedInvestmentAnalyzer />
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+            <PieChart className="h-6 w-6" />
+            Portfolio Analyzer
+          </h2>
+          <PortfolioAnalyzer />
         </section>
       </div>
     </div>
