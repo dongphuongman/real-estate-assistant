@@ -6,14 +6,15 @@ permissions:
 
 on:
   push:
-    branches: [ main, dev, ver4 ]
+    branches: [main, dev, ver4]
   pull_request:
-    branches: [ main, dev, ver4 ]
+    branches: [main, dev, ver4]
   workflow_dispatch:
 
 jobs:
   gitleaks:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'NestLab-Tech'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,6 +28,7 @@ jobs:
 
   backend:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'NestLab-Tech'
     timeout-minutes: 20
     defaults:
       run:
@@ -40,7 +42,7 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v1
         with:
-          version: "latest"
+          version: 'latest'
 
       - name: Cache uv
         uses: actions/cache@v4
@@ -113,18 +115,18 @@ jobs:
         run: |
           git fetch origin ${{ github.base_ref }} --depth=1
 
-      - name: "Coverage gate (unit: diff)"
+      - name: 'Coverage gate (unit: diff)'
         if: ${{ github.event_name == 'pull_request' }}
         run: |
           python ../../scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --base-ref origin/${{ github.base_ref }} --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
-      - name: "Coverage gate (unit: diff fallback)"
+      - name: 'Coverage gate (unit: diff fallback)'
         if: ${{ github.event_name != 'pull_request' }}
         continue-on-error: true
         run: |
           python ../../scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
-      - name: "Coverage gate (unit: critical)"
+      - name: 'Coverage gate (unit: critical)'
         run: |
           python ../../scripts/ci/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include 'api/*.py' --include 'api/routers/*.py' --include 'rules/*.py' --include 'models/provider_factory.py' --include 'models/user_model_preferences.py' --include 'config/*.py'
 
@@ -156,12 +158,12 @@ jobs:
               fh.write(f"Line coverage: {rate:.2f}%\n")
           PY
 
-      - name: "Coverage gate (integration: diff)"
+      - name: 'Coverage gate (integration: diff)'
         if: ${{ github.event_name == 'pull_request' }}
         run: |
           python ../../scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --base-ref origin/${{ github.base_ref }} --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
-      - name: "Coverage gate (integration: diff fallback)"
+      - name: 'Coverage gate (integration: diff fallback)'
         if: ${{ github.event_name != 'pull_request' }}
         continue-on-error: true
         run: |
@@ -176,6 +178,7 @@ jobs:
 
   frontend:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'NestLab-Tech'
     defaults:
       run:
         working-directory: apps/web
@@ -218,6 +221,7 @@ jobs:
 
   compose_smoke:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'NestLab-Tech'
     needs: [backend, frontend]
     timeout-minutes: 20
     steps:
@@ -245,6 +249,7 @@ jobs:
 
   security:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'NestLab-Tech'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -275,6 +280,7 @@ jobs:
 
   audit:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'NestLab-Tech'
     defaults:
       run:
         working-directory: apps/api
@@ -309,6 +315,7 @@ jobs:
 
   semgrep:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'NestLab-Tech'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -332,6 +339,7 @@ jobs:
 
   trivy:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'NestLab-Tech'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -348,23 +356,23 @@ jobs:
         with:
           image-ref: ai-backend:ci
           format: table
-          exit-code: "0"
+          exit-code: '0'
           ignore-unfixed: true
-          vuln-type: "os,library"
-          severity: "CRITICAL,HIGH"
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
       - name: Trivy scan (frontend)
         uses: aquasecurity/trivy-action@0.20.0
         with:
           image-ref: ai-frontend:ci
           format: table
-          exit-code: "0"
+          exit-code: '0'
           ignore-unfixed: true
-          vuln-type: "os,library"
-          severity: "CRITICAL,HIGH"
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
 
   pipeline_health:
     runs-on: ubuntu-latest
-    if: always()
+    if: always() && github.repository_owner == 'NestLab-Tech'
     needs: [gitleaks, backend, frontend, security, audit, semgrep, trivy, compose_smoke]
     permissions:
       contents: read
