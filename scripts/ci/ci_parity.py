@@ -38,7 +38,7 @@ def build_rule_engine_check_cmd(python_exe: str) -> list[str]:
 
 
 def build_forbidden_tokens_cmd(python_exe: str) -> list[str]:
-    return [python_exe, "scripts/security/forbidden_tokens_check.py"]
+    return [python_exe, "scripts/security/forbidden_tokens.py"]
 
 
 def build_openapi_drift_cmd(python_exe: str) -> list[str]:

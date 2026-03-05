@@ -540,6 +540,62 @@ class CompareInvestmentsResponse(BaseModel):
 
 
 # Neighborhood Quality Index Models for TASK-020
+# ============================================================================
+# TASK-040: Enhanced Neighborhood Quality Models
+# ============================================================================
+
+
+class FactorDetail(BaseModel):
+    """Detailed breakdown for a scoring factor."""
+
+    raw_value: Optional[float] = Field(None, description="Original measurement value")
+    unit: str = Field(default="", description="Unit of measurement (e.g., 'count', 'AQI')")
+    normalized_score: float = Field(..., ge=0, le=100, description="Normalized score 0-100")
+    weight: float = Field(..., ge=0, le=1, description="Weight in overall score")
+    weighted_score: float = Field(..., description="Score × weight")
+    data_source: str = Field(default="", description="Source of the data")
+    confidence: float = Field(default=0.5, ge=0, le=1, description="Data quality confidence 0-1")
+
+
+class CityComparison(BaseModel):
+    """Comparison to city average scores."""
+
+    city_name: str
+    city_average_score: float = Field(..., description="City's overall average score")
+    percentile: int = Field(..., ge=0, le=100, description="Property's percentile in city")
+    better_than: List[str] = Field(
+        default_factory=list, description="Factors better than city average"
+    )
+    worse_than: List[str] = Field(
+        default_factory=list, description="Factors worse than city average"
+    )
+    factor_comparison: Optional[Dict[str, Dict[str, float]]] = Field(
+        None, description="Detailed factor-by-factor comparison"
+    )
+
+
+class NearbyPOI(BaseModel):
+    """A nearby point of interest."""
+
+    id: str
+    name: Optional[str] = None
+    type: str
+    category: str = Field(..., description="Category: school, amenity, green_space, transport")
+    latitude: float
+    longitude: float
+    distance_m: Optional[float] = Field(None, description="Distance in meters")
+
+
+class NearbyPOIs(BaseModel):
+    """Collection of nearby POIs for map visualization."""
+
+    schools: List[NearbyPOI] = Field(default_factory=list)
+    amenities: List[NearbyPOI] = Field(default_factory=list)
+    green_spaces: List[NearbyPOI] = Field(default_factory=list)
+    transport_stops: List[NearbyPOI] = Field(default_factory=list)
+    police_stations: List[NearbyPOI] = Field(default_factory=list)
+
+
 class NeighborhoodQualityRequest(BaseModel):
     """Request model for neighborhood quality analysis."""
 
@@ -548,6 +604,18 @@ class NeighborhoodQualityRequest(BaseModel):
     longitude: Optional[float] = Field(None, ge=-180, le=180, description="Longitude coordinate")
     city: Optional[str] = Field(None, description="City name for data enrichment")
     neighborhood: Optional[str] = Field(None, description="Neighborhood name")
+    custom_weights: Optional[Dict[str, float]] = Field(
+        None,
+        description="Custom weights for scoring factors (must sum to 1.0)",
+    )
+    compare_to_city_average: bool = Field(
+        True,
+        description="Include comparison to city average scores",
+    )
+    include_pois: bool = Field(
+        True,
+        description="Include nearby POIs for map visualization",
+    )
 
 
 class NeighborhoodQualityResponse(BaseModel):
@@ -557,17 +625,43 @@ class NeighborhoodQualityResponse(BaseModel):
     overall_score: float = Field(
         ..., ge=0, le=100, description="Overall neighborhood quality score (0-100)"
     )
+    # Core factors (existing)
     safety_score: float = Field(..., ge=0, le=100, description="Safety score (0-100)")
     schools_score: float = Field(..., ge=0, le=100, description="Schools score (0-100)")
     amenities_score: float = Field(..., ge=0, le=100, description="Amenities score (0-100)")
     walkability_score: float = Field(..., ge=0, le=100, description="Walkability score (0-100)")
     green_space_score: float = Field(..., ge=0, le=100, description="Green space score (0-100)")
-    score_breakdown: Dict[str, float] = Field(
-        default_factory=dict, description="Detailed scoring breakdown"
+    # New factors (Task #40)
+    air_quality_score: Optional[float] = Field(
+        None, ge=0, le=100, description="Air quality score (0-100)"
     )
+    noise_level_score: Optional[float] = Field(
+        None, ge=0, le=100, description="Noise level/quietness score (0-100)"
+    )
+    public_transport_score: Optional[float] = Field(
+        None, ge=0, le=100, description="Public transport accessibility score (0-100)"
+    )
+    # Detailed breakdown
+    score_breakdown: Dict[str, float] = Field(
+        default_factory=dict, description="Detailed scoring breakdown with weights"
+    )
+    factor_details: Optional[Dict[str, FactorDetail]] = Field(
+        None, description="Detailed information for each factor"
+    )
+    # City comparison
+    city_comparison: Optional[CityComparison] = Field(
+        None, description="Comparison to city average scores"
+    )
+    # POIs for map
+    nearby_pois: Optional[NearbyPOIs] = Field(None, description="Nearby POIs for map visualization")
+    # Metadata
     data_sources: List[str] = Field(
         default_factory=list, description="Data sources used for scoring"
     )
+    data_freshness: Optional[Dict[str, str]] = Field(
+        None, description="Timestamp of data fetch per source"
+    )
+    # Location
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     city: Optional[str] = None

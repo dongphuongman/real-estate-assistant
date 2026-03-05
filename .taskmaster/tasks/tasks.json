@@ -218,10 +218,11 @@
         "description": "Enhance the neighborhood quality index with more detailed data including crime statistics, school ratings, and public transport accessibility.",
         "details": "1. Backend - Data Sources:\n   - Integrate crime statistics API (if available for Poland)\n   - Integrate school ratings/distance data\n   - Add public transport accessibility score (GTFS data)\n   - Add air quality index integration\n   - Add noise level data\n\n2. Backend - Enhanced Scoring:\n   - Update NeighborhoodQualityIndexTool with new factors\n   - Add weighted scoring configuration\n   - Add historical comparison\n\n3. Frontend - Enhanced UI:\n   - Detailed neighborhood breakdown (crime, schools, transport)\n   - Comparison with city average\n   - Interactive map with POI markers\n   - \"What's nearby\" section",
         "testStrategy": "1. Unit tests for each scoring factor\n2. Integration tests with external APIs\n3. Verify scoring calculations\n4. Test fallback when data unavailable\n5. Verify map marker rendering",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [],
         "priority": "medium",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-03-05T22:50:14.348Z"
       },
       {
         "id": "41",
@@ -311,7 +312,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-05T22:28:59.647Z",
+      "lastModified": "2026-03-05T22:50:14.349Z",
       "taskCount": 23,
       "completedCount": 16,
       "tags": [

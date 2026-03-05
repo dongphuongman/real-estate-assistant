@@ -249,15 +249,48 @@ async def analyze_portfolio(input_data: PortfolioAnalysisInput):
 )
 async def neighborhood_quality(input_data: NeighborhoodQualityInput):
     """
-    Calculate neighborhood quality index including safety, schools, amenities, walkability, and green space.
+    Calculate enhanced neighborhood quality index.
+
+    Returns scores for 8 factors:
+    - Core: Safety, Schools, Amenities, Walkability, Green Space
+    - New: Air Quality, Noise Level, Public Transport
+
+    Includes city comparison and nearby POIs for map visualization.
     """
     try:
-        return NeighborhoodQualityIndexTool.calculate(
+        result = NeighborhoodQualityIndexTool.calculate(
             property_id=input_data.property_id,
             latitude=input_data.latitude,
             longitude=input_data.longitude,
             city=input_data.city,
             neighborhood=input_data.neighborhood,
+            custom_weights=input_data.custom_weights,
+            compare_to_city_average=input_data.compare_to_city_average,
+            include_pois=input_data.include_pois,
+        )
+
+        # Convert tool result to response model
+        return NeighborhoodQualityResponse(
+            property_id=result.property_id,
+            overall_score=result.overall_score,
+            safety_score=result.safety_score,
+            schools_score=result.schools_score,
+            amenities_score=result.amenities_score,
+            walkability_score=result.walkability_score,
+            green_space_score=result.green_space_score,
+            air_quality_score=result.air_quality_score,
+            noise_level_score=result.noise_level_score,
+            public_transport_score=result.public_transport_score,
+            score_breakdown=result.score_breakdown,
+            factor_details=result.factor_details,
+            city_comparison=result.city_comparison,
+            nearby_pois=result.nearby_pois,
+            data_sources=result.data_sources,
+            data_freshness=result.data_freshness,
+            latitude=result.latitude,
+            longitude=result.longitude,
+            city=result.city,
+            neighborhood=result.neighborhood,
         )
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e

@@ -378,7 +378,57 @@ export interface CompareInvestmentsResponse {
   summary: Record<string, unknown>;
 }
 
-// Neighborhood Quality Index types for TASK-020
+// Neighborhood Quality Index types for TASK-020 and Task #40
+
+/**
+ * Detailed information about a single scoring factor
+ */
+export interface FactorDetail {
+  raw_value: number;
+  unit: string;
+  confidence: number; // 0-1
+  data_source: string;
+}
+
+/**
+ * Comparison of neighborhood to city average
+ */
+export interface CityComparison {
+  percentile: number; // 0-100
+  city_average: number;
+  better_than: string[]; // Factor names where this neighborhood is better
+  worse_than: string[]; // Factor names where this neighborhood is worse
+}
+
+/**
+ * A single Point of Interest near the property
+ */
+export interface NearbyPOI {
+  name: string;
+  category: string;
+  distance_meters: number;
+  latitude?: number;
+  longitude?: number;
+}
+
+/**
+ * Grouped POIs by category
+ */
+export interface NearbyPOIs {
+  schools: NearbyPOI[];
+  amenities: NearbyPOI[];
+  green_spaces: NearbyPOI[];
+  transport_stops: NearbyPOI[];
+  police_stations: NearbyPOI[];
+}
+
+/**
+ * Data freshness information for each source
+ */
+export interface DataFreshness {
+  [key: string]: string; // ISO timestamp strings
+}
+
 export interface NeighborhoodQualityInput {
   property_id: string;
   latitude?: number;
@@ -387,16 +437,41 @@ export interface NeighborhoodQualityInput {
   neighborhood?: string;
 }
 
+/**
+ * Enhanced Neighborhood Quality Result with all 8 scoring factors
+ * Core factors (60%): Safety, Schools, Amenities, Walkability, Green Space
+ * New factors (40%): Air Quality, Noise Level, Public Transport
+ */
 export interface NeighborhoodQualityResult {
   property_id: string;
   overall_score: number;
+  // Core scores (60% total)
   safety_score: number;
   schools_score: number;
   amenities_score: number;
   walkability_score: number;
   green_space_score: number;
+  // New scores (40% total)
+  air_quality_score: number;
+  noise_level_score: number;
+  public_transport_score: number;
+  // Detailed breakdown for each factor
+  factor_details?: {
+    safety?: FactorDetail;
+    schools?: FactorDetail;
+    amenities?: FactorDetail;
+    walkability?: FactorDetail;
+    green_space?: FactorDetail;
+    air_quality?: FactorDetail;
+    noise_level?: FactorDetail;
+    public_transport?: FactorDetail;
+  };
   score_breakdown: Record<string, number>;
   data_sources: string[];
+  // New fields for Task #40
+  city_comparison?: CityComparison;
+  nearby_pois?: NearbyPOIs;
+  data_freshness?: DataFreshness;
   latitude?: number;
   longitude?: number;
   city?: string;
