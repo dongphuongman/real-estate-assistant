@@ -242,10 +242,11 @@
         "description": "Create a calculator that compares the financial implications of renting vs buying a property over time.",
         "details": "1. Backend - Calculator:\n   - Monthly rent vs mortgage payment comparison\n   - Total cost calculation over 5, 10, 15, 30 years\n   - Break-even point calculation (when buying becomes cheaper)\n   - Opportunity cost of down payment (if invested instead)\n   - Tax benefits of ownership (deductions)\n   - Maintenance and repair costs\n   - Property appreciation consideration\n\n2. API Endpoint:\n   - POST /tools/rent-vs-buy - Calculate comparison\n\n3. Frontend - UI:\n   - Rent vs Buy calculator form\n   - Side-by-side comparison chart\n   - Break-even timeline visualization\n   - Sensitivity analysis (what-if scenarios)",
         "testStrategy": "1. Unit tests for all calculations\n2. Verify break-even calculation\n3. Test with various input scenarios\n4. Compare with online calculators for validation\n5. E2E test for calculator flow",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "low",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-03-06T18:08:22.388Z"
       },
       {
         "id": "43",
@@ -313,9 +314,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-06T09:20:51.978Z",
+      "lastModified": "2026-03-06T18:08:22.388Z",
       "taskCount": 23,
-      "completedCount": 18,
+      "completedCount": 19,
       "tags": [
         "master"
       ]

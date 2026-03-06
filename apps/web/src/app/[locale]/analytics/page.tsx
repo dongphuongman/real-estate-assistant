@@ -1,8 +1,9 @@
-import { BarChart3, TrendingUp, Calculator, PieChart } from 'lucide-react';
+import { BarChart3, TrendingUp, Calculator, PieChart, Scale } from 'lucide-react';
 import { MortgageCalculator } from '@/components/analytics/mortgage-calculator';
 import { InvestmentAnalyzer } from '@/components/analytics/investment-analyzer';
 import { AdvancedInvestmentAnalyzer } from '@/components/analytics/advanced-investment-analyzer';
 import { PortfolioAnalyzer } from '@/components/analytics/portfolio-analyzer';
+import { RentVsBuyCalculator } from '@/components/analytics/rent-vs-buy-calculator';
 
 export default function AnalyticsPage() {
   return (
@@ -45,6 +46,14 @@ export default function AnalyticsPage() {
             Portfolio Analyzer
           </h2>
           <PortfolioAnalyzer />
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+            <Scale className="h-6 w-6" />
+            Rent vs Buy Calculator
+          </h2>
+          <RentVsBuyCalculator />
         </section>
       </div>
     </div>
