@@ -1,10 +1,12 @@
 import logging
 import platform
 import sys
-from typing import Annotated
+import tempfile
+from pathlib import Path
+from typing import Annotated, Optional
 
 import pandas as pd
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 
 from api.dependencies import get_vector_store
 from api.models import (
@@ -32,6 +34,22 @@ from vector_store.chroma_store import ChromaPropertyStore
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Admin"])
+
+# File upload constants
+_READ_CHUNK_BYTES = 1024 * 1024  # 1MB chunks
+_MAX_UPLOAD_FILE_BYTES = 25 * 1024 * 1024  # 25MB max file size
+
+
+async def _read_upload_file_limited(file: UploadFile, max_bytes: int) -> tuple[bytes, bool]:
+    """Read upload file with size limit. Returns (data, too_large)."""
+    buf = bytearray()
+    while True:
+        chunk = await file.read(_READ_CHUNK_BYTES)
+        if not chunk:
+            return bytes(buf), False
+        if len(buf) + len(chunk) > max_bytes:
+            return bytes(buf), True
+        buf.extend(chunk)
 
 
 def _format_python_version() -> str:
@@ -215,6 +233,203 @@ async def get_excel_sheets(request: ExcelSheetsRequest):
     except Exception as e:
         logger.error(f"Failed to get Excel sheets: {e}")
         raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.post("/admin/excel/sheets/upload", response_model=ExcelSheetsResponse)
+async def get_excel_sheets_upload(
+    file: UploadFile = File(..., description="Excel file to inspect"),
+):
+    """
+    Get sheet names from an uploaded Excel file.
+
+    Returns available sheets and their row counts for sheet selection UI.
+    Supports: .xlsx, .xls, .ods files.
+    """
+    # Validate file extension
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="No filename provided")
+
+    suffix = Path(file.filename).suffix.lower()
+    if suffix not in {".xlsx", ".xls", ".ods"}:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid file type: {suffix}. Supported: .xlsx, .xls, .ods",
+        )
+
+    # Read file with size limit
+    data, too_large = await _read_upload_file_limited(file, _MAX_UPLOAD_FILE_BYTES)
+    if too_large:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"File too large (max {_MAX_UPLOAD_FILE_BYTES} bytes)",
+        )
+
+    # Save to temp file for processing
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+        tmp.write(data)
+        tmp_path = tmp.name
+
+    try:
+        loader = DataLoaderExcel(tmp_path)
+        sheet_names = loader.get_sheet_names()
+        row_counts = {}
+
+        # Get row count for each sheet
+        for sheet in sheet_names:
+            try:
+                sheet_loader = DataLoaderExcel(tmp_path, sheet_name=sheet, source_type="excel")
+                df = sheet_loader.load_df()
+                row_counts[sheet] = len(df)
+            except Exception as e:
+                logger.warning(f"Could not read sheet '{sheet}': {e}")
+                row_counts[sheet] = 0
+
+        # Determine default sheet (first non-empty sheet)
+        default_sheet = None
+        for sheet, count in row_counts.items():
+            if count > 0:
+                default_sheet = sheet
+                break
+        if not default_sheet and sheet_names:
+            default_sheet = sheet_names[0]
+
+        return ExcelSheetsResponse(
+            file_url=f"upload://{file.filename}",
+            sheet_names=sheet_names,
+            default_sheet=default_sheet,
+            row_count=row_counts,
+        )
+    except ImportError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Excel libraries not available: {str(e)}",
+        ) from e
+    except Exception as e:
+        logger.error(f"Failed to get Excel sheets from upload: {e}")
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    finally:
+        # Clean up temp file
+        Path(tmp_path).unlink(missing_ok=True)
+
+
+@router.post("/admin/ingest/upload", response_model=IngestResponse)
+async def ingest_file_upload(
+    file: UploadFile = File(..., description="Excel or CSV file to ingest"),
+    sheet_name: Optional[str] = Form(None, description="Sheet name for Excel files"),
+    header_row: int = Form(0, ge=0, description="Header row (0-indexed)"),
+    source_name: Optional[str] = Form(None, description="Source identifier"),
+):
+    """
+    Upload and ingest property data from Excel/CSV files.
+
+    Supports: .xlsx, .xls, .ods, .csv files.
+    Maximum file size: 25MB.
+    Does NOT automatically reindex vector store (call /reindex for that).
+    """
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="No filename provided")
+
+    suffix = Path(file.filename).suffix.lower()
+    valid_extensions = {".xlsx", ".xls", ".ods", ".csv"}
+    if suffix not in valid_extensions:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid file type: {suffix}. Supported: {', '.join(valid_extensions)}",
+        )
+
+    # Read file with size limit
+    data, too_large = await _read_upload_file_limited(file, _MAX_UPLOAD_FILE_BYTES)
+    if too_large:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"File too large (max {_MAX_UPLOAD_FILE_BYTES} bytes)",
+        )
+
+    # Save to temp file for processing
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+        tmp.write(data)
+        tmp_path = tmp.name
+
+    try:
+        # Determine source type
+        source_type = "excel" if suffix in {".xlsx", ".xls", ".ods"} else "csv"
+        source_name_val = source_name or file.filename
+
+        # Create appropriate loader
+        if source_type == "excel":
+            loader = DataLoaderExcel(
+                tmp_path,
+                sheet_name=sheet_name,
+                header_row=header_row,
+                source_type=source_type,
+            )
+        else:
+            loader = DataLoaderCsv(tmp_path)
+
+        # Load and format data
+        df = loader.load_df()
+        max_properties = settings.max_properties
+        df_formatted = loader.load_format_df(df, rows_count=max_properties)
+
+        # Convert to Property objects
+        records = df_formatted.to_dict(orient="records")
+        all_properties: list[Property] = []
+        errors = []
+
+        for record in records:
+            try:
+                # Add source tracking to each property
+                if "source_url" not in record or pd.isna(record.get("source_url")):
+                    record["source_url"] = source_name_val
+                if "source_platform" not in record or pd.isna(record.get("source_platform")):
+                    record["source_platform"] = source_type
+                all_properties.append(Property(**record))
+            except Exception as e:
+                record_id = record.get("id", record.get("title", "unknown"))
+                logger.warning(
+                    "Skipped invalid property record during upload ingestion",
+                    extra={
+                        "record_id": str(record_id)[:50],
+                        "error_type": type(e).__name__,
+                        "error": str(e)[:200],
+                    },
+                )
+                errors.append(f"Record {record_id}: {type(e).__name__}")
+
+        if not all_properties:
+            raise HTTPException(
+                status_code=422,
+                detail="No valid properties could be extracted from file",
+            )
+
+        # Create collection and save
+        collection = PropertyCollection(
+            properties=all_properties,
+            total_count=len(all_properties),
+            source=source_name_val,
+            source_type=source_type,
+        )
+        save_collection(collection)
+
+        message = f"Successfully ingested {len(all_properties)} properties from {file.filename}"
+        if len(all_properties) >= max_properties:
+            message += f" (reached maximum property limit of {max_properties})"
+
+        return IngestResponse(
+            message=message,
+            properties_processed=len(all_properties),
+            errors=errors,
+            source_type=source_type,
+            source_name=source_name_val,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Upload ingestion failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    finally:
+        # Clean up temp file
+        Path(tmp_path).unlink(missing_ok=True)
 
 
 @router.post("/admin/reindex", response_model=ReindexResponse)

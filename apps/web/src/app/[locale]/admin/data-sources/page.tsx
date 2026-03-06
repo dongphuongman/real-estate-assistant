@@ -13,7 +13,7 @@ import {
   Globe,
   Filter,
 } from 'lucide-react';
-import { ingestData, getExcelSheets, listPortals, fetchFromPortal, ApiError } from '@/lib/api';
+import { ingestData, getExcelSheets, listPortals, fetchFromPortal, ingestFileUpload, getExcelSheetsUpload, ApiError } from '@/lib/api';
 import type { IngestResponse, PortalAdapterInfo } from '@/lib/types';
 
 interface ErrorState {
@@ -41,6 +41,10 @@ export default function DataSourcesPage() {
   const [sheets, setSheets] = useState<SheetInfo[]>([]);
   const [selectedSheet, setSelectedSheet] = useState<string>('');
   const [headerRow, setHeaderRow] = useState<number>(0);
+
+  // File upload state
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadMode, setUploadMode] = useState<'url' | 'file'>('url');
 
   // Portal state
   const [portals, setPortals] = useState<PortalAdapterInfo[]>([]);
@@ -75,6 +79,12 @@ export default function DataSourcesPage() {
   const isExcelFile = (url: string): boolean => {
     const lowerUrl = url.toLowerCase();
     return lowerUrl.endsWith('.xlsx') || lowerUrl.endsWith('.xls') || lowerUrl.endsWith('.ods');
+  };
+
+  const isExcelFileObj = (file: File | null): boolean => {
+    if (!file) return false;
+    const name = file.name.toLowerCase();
+    return name.endsWith('.xlsx') || name.endsWith('.xls') || name.endsWith('.ods');
   };
 
   const extractErrorState = (err: unknown): ErrorState => {
@@ -128,7 +138,68 @@ export default function DataSourcesPage() {
     }
   };
 
+  const onLoadSheetsUpload = async () => {
+    if (!uploadFile) {
+      setError({ message: 'Please select a file first.' });
+      return;
+    }
+
+    if (!isExcelFileObj(uploadFile)) {
+      setError({
+        message: 'File must be an Excel file (.xlsx, .xls, or .ods).',
+      });
+      return;
+    }
+
+    setLoadingSheets(true);
+    setError(null);
+    setSheets([]);
+
+    try {
+      const res = await getExcelSheetsUpload(uploadFile);
+      const sheetInfo: SheetInfo[] = res.sheet_names.map((name) => ({
+        name,
+        rowCount: res.row_count[name] || 0,
+      }));
+      setSheets(sheetInfo);
+      if (res.default_sheet) {
+        setSelectedSheet(res.default_sheet);
+      }
+    } catch (e: unknown) {
+      setError(extractErrorState(e));
+    } finally {
+      setLoadingSheets(false);
+    }
+  };
+
   const onIngest = async () => {
+    // File upload mode
+    if (uploadMode === 'file') {
+      if (!uploadFile) {
+        setError({ message: 'Please select a file to upload.' });
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+      setResult(null);
+
+      try {
+        const res = await ingestFileUpload(uploadFile, {
+          sheet_name: isExcelFileObj(uploadFile) ? selectedSheet || undefined : undefined,
+          header_row: headerRow,
+          source_name: sourceName.trim() || undefined,
+        });
+        setResult(res);
+      } catch (e: unknown) {
+        setError(extractErrorState(e));
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // URL mode
     const url = fileUrl.trim();
     if (!url) {
       setError({ message: 'Please enter a file URL.' });
@@ -240,28 +311,97 @@ export default function DataSourcesPage() {
         <section className="border rounded-lg p-6">
           <div className="flex items-center gap-2 mb-4">
             <Database className="w-5 h-5" />
-            <h2 className="text-xl font-semibold">Import from URL</h2>
+            <h2 className="text-xl font-semibold">Import Data</h2>
+          </div>
+
+          {/* Upload Mode Toggle */}
+          <div className="flex gap-2 mb-4">
+            <button
+              type="button"
+              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                uploadMode === 'url'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+              }`}
+              onClick={() => {
+                setUploadMode('url');
+                setSheets([]);
+                setSelectedSheet('');
+              }}
+            >
+              <Globe className="w-4 h-4 inline mr-2" />
+              From URL
+            </button>
+            <button
+              type="button"
+              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                uploadMode === 'file'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+              }`}
+              onClick={() => {
+                setUploadMode('file');
+                setSheets([]);
+                setSelectedSheet('');
+              }}
+            >
+              <Upload className="w-4 h-4 inline mr-2" />
+              Upload File
+            </button>
           </div>
 
           <div className="space-y-4">
-            <div>
-              <label htmlFor="fileUrl" className="block text-sm font-medium mb-2">
-                File URL
-              </label>
-              <input
-                id="fileUrl"
-                className="border p-2 w-full rounded"
-                type="text"
-                placeholder="https://example.com/data.xlsx"
-                value={fileUrl}
-                onChange={(e) => setFileUrl(e.target.value)}
-                disabled={loading}
-                aria-label="File URL"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Supports CSV (.csv) and Excel (.xlsx, .xls, .ods) files
-              </p>
-            </div>
+            {/* URL Input */}
+            {uploadMode === 'url' && (
+              <div>
+                <label htmlFor="fileUrl" className="block text-sm font-medium mb-2">
+                  File URL
+                </label>
+                <input
+                  id="fileUrl"
+                  className="border p-2 w-full rounded"
+                  type="text"
+                  placeholder="https://example.com/data.xlsx"
+                  value={fileUrl}
+                  onChange={(e) => setFileUrl(e.target.value)}
+                  disabled={loading}
+                  aria-label="File URL"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Supports CSV (.csv) and Excel (.xlsx, .xls, .ods) files
+                </p>
+              </div>
+            )}
+
+            {/* File Upload Input */}
+            {uploadMode === 'file' && (
+              <div>
+                <label htmlFor="fileUpload" className="block text-sm font-medium mb-2">
+                  Select File
+                </label>
+                <input
+                  id="fileUpload"
+                  className="border p-2 w-full rounded"
+                  type="file"
+                  accept=".xlsx,.xls,.ods,.csv"
+                  onChange={(e) => {
+                    setUploadFile(e.target.files?.[0] || null);
+                    setSheets([]);
+                    setSelectedSheet('');
+                  }}
+                  disabled={loading}
+                  aria-label="File Upload"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Max file size: 25MB. Supports: .xlsx, .xls, .ods, .csv
+                </p>
+                {uploadFile && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Selected: <strong>{uploadFile.name}</strong> ({(uploadFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </p>
+                )}
+              </div>
+            )}
 
             <div>
               <label htmlFor="sourceName" className="block text-sm font-medium mb-2">
@@ -280,7 +420,7 @@ export default function DataSourcesPage() {
             </div>
 
             {/* Excel-specific options */}
-            {isExcelFile(fileUrl) && (
+            {((uploadMode === 'url' && isExcelFile(fileUrl)) || (uploadMode === 'file' && isExcelFileObj(uploadFile))) && (
               <div className="border-t pt-4 mt-4">
                 <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                   <FileSpreadsheet className="w-4 h-4" />
@@ -292,7 +432,7 @@ export default function DataSourcesPage() {
                     <button
                       type="button"
                       className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 disabled:opacity-50"
-                      onClick={onLoadSheets}
+                      onClick={uploadMode === 'url' ? onLoadSheets : onLoadSheetsUpload}
                       disabled={loadingSheets || loading}
                     >
                       {loadingSheets ? (

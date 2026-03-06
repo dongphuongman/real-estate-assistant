@@ -45,7 +45,9 @@
         "title": "Update security script references and remove broken wrapper",
         "description": "Update documentation and CI references to use scripts/security/local_scan.py as the canonical security scanner, and remove the broken security-scan.py wrapper.",
         "status": "done",
-        "dependencies": ["26"],
+        "dependencies": [
+          "26"
+        ],
         "priority": "medium",
         "category": "infrastructure",
         "details": "1. Remove root-level security-scan.py wrapper (already broken - imports non-existent module)\n2. Update documentation references:\n   - CLAUDE.md: Update security section to reference scripts/security/local_scan.py\n   - README.md: Update security scan command\n   - .taskmaster/docs/prd_refactoring.md: Update planned paths\n3. Update CI workflow references if needed:\n   - .github/workflows/ci.yml already uses correct paths (scripts/security/)\n4. Verify local_scan.py works correctly:\n   - Run 'python scripts/security/local_scan.py --help'\n   - Run 'python scripts/security/local_scan.py --quick'\n5. Update docstring in local_scan.py to reference correct path\n6. No file rename needed - local_scan.py is already the canonical location",
@@ -58,7 +60,11 @@
         "title": "Update CI/CD workflows with new paths",
         "description": "Update .github/workflows/ci.yml and .github/workflows/semgrep.yml to use the new script paths and Docker file locations.",
         "status": "done",
-        "dependencies": ["25", "26", "28"],
+        "dependencies": [
+          "25",
+          "26",
+          "28"
+        ],
         "priority": "high",
         "category": "infrastructure",
         "details": "1. Update .github/workflows/ci.yml:\n   - Update script paths: scripts/xxx -> scripts/ci/xxx, scripts/dev/xxx, etc.\n   - Update docker-compose paths: docker-compose.yml -> deploy/compose/docker-compose.yml\n   - Update Dockerfile paths for build steps\n   - Update security scan command to use scripts/security/local_scan.py\n2. Update .github/workflows/semgrep.yml if it references any moved scripts\n3. Verify all environment variables and secrets references remain valid\n4. Ensure working-directory settings in workflow jobs are correct for new structure\n5. Update any relative path references in workflow commands",
@@ -71,7 +77,11 @@
         "title": "Create Makefile for common commands",
         "description": "Create a root-level Makefile with convenient targets for security scanning, testing, linting, docker operations, and running full CI locally.",
         "status": "done",
-        "dependencies": ["26", "28", "29"],
+        "dependencies": [
+          "26",
+          "28",
+          "29"
+        ],
         "priority": "medium",
         "category": "infrastructure",
         "details": "1. Create Makefile with the following targets:\n   - make security: runs 'python scripts/security/local_scan.py'\n   - make test: runs 'python -m pytest' or equivalent test command\n   - make lint: runs 'ruff check .' and 'ruff format --check .'\n   - make docker-up: runs 'docker-compose -f deploy/compose/docker-compose.yml up -d'\n   - make docker-down: runs 'docker-compose -f deploy/compose/docker-compose.yml down'\n   - make ci: runs full CI locally via scripts/dev/run-ci-full.ps1 or equivalent\n   - make setup: runs scripts/dev/setup.sh (or .ps1 on Windows)\n   - make dev: runs scripts/dev/start.py\n2. Add .PHONY declaration for all targets\n3. Include help target that displays all available commands\n4. Add variables for common paths (DOCKER_COMPOSE_FILE, SCRIPT_DIR, etc.)\n5. Ensure Makefile is cross-platform compatible (or document Windows limitations)",
@@ -84,7 +94,14 @@
         "title": "Update documentation with new structure",
         "description": "Update README.md, CLAUDE.md, and any other documentation files to reflect the new project structure, script locations, and commands.",
         "status": "done",
-        "dependencies": ["25", "26", "27", "28", "29", "30"],
+        "dependencies": [
+          "25",
+          "26",
+          "27",
+          "28",
+          "29",
+          "30"
+        ],
         "priority": "medium",
         "category": "infrastructure",
         "details": "1. Update README.md:\n   - Update project structure diagram\n   - Update all script path references (old -> new)\n   - Update Docker commands to use new paths\n   - Update development setup instructions\n   - Add Makefile usage examples\n2. Update CLAUDE.md:\n   - Update script paths for AI assistant context\n   - Reflect new directory structure in any path descriptions\n   - Update workflow references\n3. Update any inline documentation or comments in moved files\n4. Update CONTRIBUTING.md if it exists with new command patterns\n5. Search for references to old paths in other .md files and update accordingly",
@@ -97,7 +114,15 @@
         "title": "Final validation and integration testing",
         "description": "Perform comprehensive validation to ensure all refactored paths work correctly, Docker containers build and run, and all scripts execute without errors.",
         "status": "done",
-        "dependencies": ["25", "26", "27", "28", "29", "30", "31"],
+        "dependencies": [
+          "25",
+          "26",
+          "27",
+          "28",
+          "29",
+          "30",
+          "31"
+        ],
         "priority": "high",
         "category": "infrastructure",
         "details": "1. Run full CI pipeline to verify all changes work together\n2. Test Docker workflows:\n   - Build backend: 'docker build -f deploy/docker/Dockerfile.backend .'\n   - Build frontend: 'docker build -f deploy/docker/Dockerfile.frontend ./frontend'\n   - Start services: 'docker-compose -f deploy/compose/docker-compose.yml up -d'\n   - Verify services are accessible on expected ports\n3. Test all Makefile targets end-to-end\n4. Run security scan: 'python scripts/security/local_scan.py' or 'make security'\n5. Test dev container from fresh start:\n   - Delete .devcontainer cache\n   - Rebuild and reopen container\n   - Verify all setup completes\n6. Validate no broken imports or path references in any Python file\n7. Create a smoke test that exercises key functionality",
@@ -110,10 +135,16 @@
         "title": "Deploy to Vercel/Render (BLOCKED)",
         "description": "Deploy frontend to Vercel and backend to Render/Railway production environment. BLOCKED: Requires completion of local testing gates (#60, #61) and production optimization (#62).",
         "status": "pending",
-        "dependencies": ["62"],
+        "dependencies": [
+          "62"
+        ],
         "priority": "low",
         "category": "deployment",
-        "blockedBy": ["60", "61", "62"],
+        "blockedBy": [
+          "60",
+          "61",
+          "62"
+        ],
         "details": "1. Review and verify recent CI changes:\n   - Check .github/workflows/ci.yml for any recent modifications\n   - Verify all security scripts are working correctly\n   - Confirm pre-commit hooks are functioning\n2. Local validation (must pass first):\n   - Run backend locally: 'python -m uvicorn api.main:app --reload'\n   - Run frontend locally: 'cd apps/web && npm run dev'\n   - Test key functionality (chat API, property search)\n   - Run security scan: 'python scripts/security/local_scan.py'\n   - Run tests: 'npm run test'\n3. Prepare for Vercel deployment (FRONTEND):\n   - Update environment variables for Vercel\n   - Configure BACKEND_API_URL in Vercel dashboard\n   - Set up production API key\n4. Deploy frontend to Vercel:\n   - Connect GitHub repository to Vercel\n   - Configure build settings (root directory: apps/web, build command: npm run build)\n   - Set environment variables in Vercel dashboard\n   - Deploy and verify deployment is accessible\n5. Deploy backend to Render/Railway (BACKEND):\n   - Create new Web Service on Render or Railway\n   - Connect GitHub repository\n   - Configure build command: pip install -e .[dev]\n   - Configure start command: python -m uvicorn api.main:app --host 0.0.0.0 --port $PORT\n   - Set environment variables (API keys, CORS, etc.)\n   - Deploy and verify API health endpoint\n6. Post-deployment validation:\n   - Test live frontend at Vercel URL\n   - Test live backend at Render/Railway URL\n   - Monitor logs for errors\n   - Verify API connectivity from frontend",
         "testStrategy": "1. Backend runs on port 8000 without errors\n2. Frontend runs on port 3000 without errors\n3. Security scan passes (or acceptable warnings)\n4. Unit tests pass\n5. Application works locally end-to-end\n6. Vercel deployment completes successfully\n7. Render/Railway deployment completes successfully\n8. Live application is accessible and functional\n9. API endpoints respond correctly\n10. Frontend can communicate with backend",
         "subtasks": [],
@@ -150,7 +181,9 @@
         "title": "Saved Searches & Alerts",
         "description": "Allow users to save their search criteria and receive email alerts when new properties match their saved searches.",
         "status": "done",
-        "dependencies": ["35"],
+        "dependencies": [
+          "35"
+        ],
         "priority": "high",
         "category": "feature",
         "details": "1. Backend - Saved Search Model:\n   - Create SavedSearch model with user_id, filters, alert_frequency, is_active\n   - Store filter criteria (price_range, location, property_type, rooms, etc.)\n\n2. Backend - API Endpoints:\n   - GET /saved-searches - List user's saved searches\n   - POST /saved-searches - Create new saved search\n   - PUT /saved-searches/{id} - Update saved search\n   - DELETE /saved-searches/{id} - Delete saved search\n   - PATCH /saved-searches/{id}/toggle - Pause/resume alerts\n\n3. Backend - Alert System:\n   - Background job to check for new matching properties\n   - Email notification when matches found\n   - Daily/weekly digest options\n   - Rate limiting to prevent spam\n\n4. Frontend - UI:\n   - \"Save Search\" button on search results page\n   - Saved searches management in settings\n   - Alert frequency selector\n   - Toggle for pausing alerts",
@@ -163,7 +196,9 @@
         "title": "Property Favorites/Watchlist",
         "description": "Implement a favorites/watchlist system where users can save individual properties for later review, organize them into collections, and add notes.",
         "status": "done",
-        "dependencies": ["35"],
+        "dependencies": [
+          "35"
+        ],
         "priority": "high",
         "category": "feature",
         "details": "1. Backend - Favorites Model:\n   - Create Favorite model with user_id, property_id, collection_id, notes, created_at\n   - Create Collection model with user_id, name, description, is_default\n\n2. Backend - API Endpoints:\n   - GET /favorites - List user's favorites\n   - POST /favorites - Add property to favorites\n   - DELETE /favorites/{property_id} - Remove from favorites\n   - PATCH /favorites/{property_id} - Update notes/collection\n   - GET /collections - List collections\n   - POST /collections - Create collection\n   - PUT /collections/{id} - Update collection\n   - DELETE /collections/{id} - Delete collection\n\n3. Frontend - UI:\n   - Heart icon on property cards to add/remove favorites\n   - /favorites page with grid view of saved properties\n   - Collection sidebar for organizing favorites\n   - Notes editor for each saved property\n   - Share watchlist via link (optional)",
@@ -241,7 +276,9 @@
         "title": "Document Management",
         "description": "Implement a document management system where users can upload, store, and organize property-related documents such as contracts, inspection reports, and photos.",
         "status": "pending",
-        "dependencies": ["35"],
+        "dependencies": [
+          "35"
+        ],
         "priority": "low",
         "category": "feature",
         "details": "1. Backend - Document Model:\n   - Create Document model with user_id, property_id, filename, file_type, category, tags, expiry_date\n   - Support file types: PDF, DOC, DOCX, JPG, PNG\n\n2. Backend - Storage:\n   - Configure file storage (local S3-compatible or cloud storage)\n   - Implement secure file upload/download\n   - Add file size limits (10MB max)\n   - Add virus scanning (optional)\n\n3. Backend - API Endpoints:\n   - POST /documents - Upload document\n   - GET /documents - List documents\n   - GET /documents/{id} - Download document\n   - DELETE /documents/{id} - Delete document\n   - PATCH /documents/{id} - Update metadata\n\n4. Backend - OCR (optional):\n   - Extract text from PDFs/images\n   - Make documents searchable\n\n5. Frontend - UI:\n   - Document upload with drag-drop\n   - Document list with filters\n   - Document preview (PDF viewer)\n   - Expiry reminders",
@@ -280,7 +317,9 @@
         "title": "Frontend Auth Integration",
         "description": "Implement frontend authentication integration with JWT backend. Connect login/register pages to real API endpoints, create AuthContext for state management, and add protected routes.",
         "status": "done",
-        "dependencies": ["35"],
+        "dependencies": [
+          "35"
+        ],
         "priority": "high",
         "category": "feature",
         "details": "This task depends on Task #35 (User Authentication System - Backend) which provides the JWT auth endpoints.\n\n1. Auth Context:\n   - Create AuthContext.tsx for user state management\n   - Create useAuth hook for easy access\n   - Handle loading states and error handling\n   - Store CSRF token from cookie\n\n2. Auth API Functions:\n   - Create lib/auth.ts with API functions\n   - login(email, password)\n   - register(email, password, name)\n   - logout()\n   - getCurrentUser()\n   - forgotPassword(email)\n   - resetPassword(token, password)\n   - getGoogleOAuthUrl()\n\n3. Auth Pages Refactor:\n   - Update /auth/login with real API calls and OAuth button\n   - Update /auth/register with real API calls\n   - Create /auth/forgot-password page\n   - Create /auth/reset-password page\n   - Create /auth/verify-email page\n   - Create /auth/oauth/callback page\n\n4. Protected Routes:\n   - Create middleware.ts for route protection\n   - Check for auth cookies\n   - Redirect unauthenticated users to /auth/login\n   - Allow public routes: /auth/*, /api/*, /health\n\n5. UI Components:\n   - Create LoginForm.tsx component\n   - Create RegisterForm.tsx component\n   - Create OAuthButtons.tsx component\n   - Create UserMenu.tsx component for header\n\n6. Integration:\n   - Update header to show user menu when authenticated\n   - Add logout functionality\n   - Handle token refresh on 401 responses",
@@ -293,7 +332,9 @@
         "title": "Auth Security Hardening",
         "description": "Add security hardening measures for the authentication system including CSRF protection, rate limiting on auth endpoints, and audit logging integration.",
         "status": "done",
-        "dependencies": ["35"],
+        "dependencies": [
+          "35"
+        ],
         "priority": "high",
         "category": "feature",
         "details": "This task depends on Task #35 (User Authentication System - Backend) which provides the JWT auth endpoints.\n\n1. CSRF Protection:\n   - Create api/middleware/csrf.py\n   - Implement double-submit cookie pattern\n   - Read CSRF token from cookie\n   - Validate against X-CSRF-Token header\n   - Skip for GET, HEAD, OPTIONS requests\n   - Skip for routes using Authorization header (API clients)\n\n2. Rate Limiting on Auth Endpoints:\n   - Login: 5 attempts per minute per IP\n   - Register: 3 per minute per IP\n   - Password reset: 3 per minute per IP\n   - Email verification resend: 3 per minute per IP\n   - Use existing rate limiter from middleware/observability.py\n\n3. Audit Logging Integration:\n   - Log all auth events (login, logout, register)\n   - Log failed login attempts\n   - Log password reset requests\n   - Integrate with existing audit.py system\n\n4. RBAC Integration:\n   - Map JWT roles to existing Role enum in rbac.py\n   - Extend UserContext with user_id from JWT\n   - Add get_user_context_from_jwt function\n\n5. Security Headers:\n   - Ensure auth cookies have Secure flag in production\n   - Verify SameSite=Strict is set\n   - Add rate limit headers to responses\n\n6. Additional Security:\n   - Add account lockout after 5 failed login attempts\n   - Add breached password checking (optional, haveibeenpwned API)\n   - Add password strength validation on server side",
@@ -305,21 +346,23 @@
         "id": "48",
         "title": "Excel Data Loader",
         "description": "Extend the existing CSV data loader to support Excel files (.xlsx, .xls, .ods) for property data ingestion.",
-        "status": "pending",
+        "status": "review",
         "dependencies": [],
         "priority": "high",
         "category": "feature",
         "details": "1. Excel Loader Implementation:\n   - Create ExcelDataLoader class that extends CSV loader patterns\n   - Support sheet selection and header row configuration\n   - Reuse existing format_df logic for schema normalization\n   - Handle edge cases (empty sheets, merged cells, multiple sheets)\n\n2. Frontend File Upload UI:\n   - Add Excel file type support to upload component\n   - Show sheet selector when Excel file is detected\n   - Display file metadata (source name, row count)\n   - Progress indicator for large files\n\n3. Source Tagging and Persistence:\n   - Track source type (csv/excel) in PropertyCollection.metadata\n   - Implement delete_by_source() for data management\n   - Add source filter in search and analytics\n\n4. Files to create/modify:\n   - apps/api/data/excel_loader.py\n   - apps/web/src/components/data-source/sheet-selector.tsx\n   - Update existing CSV upload components",
         "testStrategy": "1. Upload .xlsx file with 100+ properties successfully\n2. Properties appear in search with correct source tagging\n3. Unit tests for Excel parsing with edge cases (empty sheets, merged cells)\n4. Test sheet selection UI\n5. Verify data normalization matches CSV loader output",
         "subtasks": [],
-        "updatedAt": "2026-03-06T19:00:00.000Z"
+        "updatedAt": "2026-03-06T23:12:55.477Z"
       },
       {
         "id": "49",
         "title": "Portal/API Integration Framework",
         "description": "Create an extensible adapter system for ingesting property data from external real estate portals and APIs.",
         "status": "pending",
-        "dependencies": ["48"],
+        "dependencies": [
+          "48"
+        ],
         "priority": "high",
         "category": "feature",
         "details": "1. External Source Adapter Interface:\n   - Define ExternalSourceAdapter Protocol with fetch() method\n   - Create adapter registry for managing available sources\n   - Implement error handling for rate limits and partial failures\n   - Add retry logic with exponential backoff\n\n2. UI Portal Configuration:\n   - Add \"Portal\" tab in Data Sources section\n   - Portal selector, filters (city, price range, rooms, type)\n   - Fetch button with progress indication\n   - Schedule for automatic updates\n\n3. First Real Portal Adapter:\n   - Implement adapter for a documented portal API (e.g., idealista, olx)\n   - Normalize portal data to internal DataFrame format\n   - Wire into existing ingestion pipeline\n   - Handle authentication and API limits\n\n4. Security and Secrets Management:\n   - Store portal API keys in environment variables only\n   - Never commit secrets; add to .env.example templates\n   - Validate API key presence before attempting connection\n   - Log all API calls for audit purposes",
@@ -345,7 +388,9 @@
         "title": "Commute Time Analysis",
         "description": "Calculate and visualize commute times from properties to user-defined destinations using multiple transport modes.",
         "status": "pending",
-        "dependencies": ["50"],
+        "dependencies": [
+          "50"
+        ],
         "priority": "medium",
         "category": "feature",
         "details": "1. Routing Integration:\n   - Integrate OpenRouteService or similar API\n   - Support car, public transport, bike, walking modes\n   - Handle rate limits and caching\n   - Store commute time results for performance\n\n2. Isochrone Generation:\n   - Generate \"30-minute commute\" polygons\n   - Overlay on property map\n   - Calculate actual commute time for each property\n   - Multiple isochrone layers (15, 30, 45, 60 min)\n\n3. User Inputs:\n   - Add work/school address input\n   - Transport mode selector\n   - Maximum commute time filter\n   - Save frequent destinations\n\n4. Results Ranking:\n   - Sort properties by commute convenience\n   - Show commute time in property cards\n   - Highlight \"commute-friendly\" properties\n   - Compare multiple destinations",
@@ -371,7 +416,9 @@
         "title": "Market Anomaly Detection",
         "description": "Automatically detect and alert on unusual market conditions including price spikes, drops, and trends.",
         "status": "pending",
-        "dependencies": ["38"],
+        "dependencies": [
+          "38"
+        ],
         "priority": "medium",
         "category": "feature",
         "details": "1. Anomaly Algorithms:\n   - Statistical outlier detection (z-score, IQR)\n   - Time series anomaly detection\n   - Price spike/drop thresholds\n   - Seasonal adjustment\n\n2. Monitoring Engine:\n   - Daily batch analysis of price changes\n   - Continuous monitoring of new listings\n   - Comparison to historical baselines\n   - Alert queue management\n\n3. Alerting System:\n   - Email alerts for significant anomalies\n   - In-app notifications for users\n   - Threshold configuration per user\n   - Digest mode (daily/weekly)\n\n4. Visualization:\n   - Highlight anomalies in charts\n   - Anomaly timeline view\n   - Drill-down to affected properties\n   - Export anomaly reports",
@@ -397,7 +444,9 @@
         "title": "Lead Scoring System",
         "description": "Score incoming leads by likelihood to close, budget fit, and urgency to help agents prioritize.",
         "status": "pending",
-        "dependencies": ["35"],
+        "dependencies": [
+          "35"
+        ],
         "priority": "medium",
         "category": "feature",
         "details": "1. Scoring Model:\n   - Define scoring factors (budget match, urgency, readiness)\n   - Weight factors based on historical data\n   - Calculate composite score 0-100\n   - Explainability for each score\n\n2. Data Collection:\n   - Track lead behavior (searches, favorites, inquiries)\n   - Capture qualification signals\n   - Store lead interactions in database\n   - Privacy compliance (GDPR)\n\n3. Dashboard UI:\n   - Lead list sorted by score\n   - Score breakdown for each lead\n   - Filter by score ranges\n   - Export lead reports\n\n4. Notifications:\n   - Alert on high-scoring new leads\n   - Daily digest of leads needing attention\n   - Integration with existing notification system\n   - Customizable alert thresholds",
@@ -410,7 +459,9 @@
         "title": "Agent Performance Analytics",
         "description": "Track and visualize per-agent metrics including leads, deals, time to close, and conversion rates.",
         "status": "pending",
-        "dependencies": ["55"],
+        "dependencies": [
+          "55"
+        ],
         "priority": "medium",
         "category": "feature",
         "details": "1. Data Model:\n   - Agent entity with properties\n   - Lead assignment tracking\n   - Deal outcome tracking\n   - Commission calculations\n\n2. Metrics Calculation:\n   - Total leads, active deals, closed deals\n   - Average time to close\n   - Conversion rate by stage\n   - Strength analysis (property types, locations)\n\n3. Analytics Dashboard:\n   - Agent overview cards with key metrics\n   - Performance trends over time\n   - Comparison to team averages\n   - Goal tracking and progress\n\n4. Insights:\n   - Identify top-performing agents\n   - Flag agents needing support\n   - Suggest coaching topics\n   - Predictive performance modeling",
@@ -423,7 +474,9 @@
         "title": "E-Signature Integration",
         "description": "Integrate document generation and e-signature workflow for rental/purchase agreements.",
         "status": "pending",
-        "dependencies": ["43"],
+        "dependencies": [
+          "43"
+        ],
         "priority": "low",
         "category": "feature",
         "details": "1. Document Templates:\n   - Rental agreement template\n   - Purchase offer template\n   - Lease renewal template\n   - Customizable clauses\n\n2. PDF Generation:\n   - Fill property and party details\n   - Generate professional PDF\n   - Include terms and conditions\n   - Add company branding\n\n3. E-Signature API:\n   - Integrate DocuSign or similar\n   - Signature request workflow\n   - Status tracking\n   - Reminder automation\n\n4. Document Management:\n   - Store signed documents securely\n   - Download/view signed agreements\n   - Audit log of all actions\n   - Expiry tracking for unsigned docs",
@@ -436,7 +489,21 @@
         "title": "Comprehensive Test Suite Update",
         "description": "Update all unit and integration tests for new features to achieve 90%+ code coverage.",
         "status": "pending",
-        "dependencies": ["43", "44", "45", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57"],
+        "dependencies": [
+          "43",
+          "44",
+          "45",
+          "48",
+          "49",
+          "50",
+          "51",
+          "52",
+          "53",
+          "54",
+          "55",
+          "56",
+          "57"
+        ],
         "priority": "high",
         "category": "testing",
         "details": "1. Backend Unit Tests:\n   - Test all new API endpoints\n   - Test data models and validation\n   - Test business logic calculations\n   - Mock external API calls\n\n2. Backend Integration Tests:\n   - Test endpoint-to-database flows\n   - Test authentication and authorization\n   - Test file upload/download\n   - Test caching behavior\n\n3. Frontend Unit Tests:\n   - Test all new components\n   - Test hooks and contexts\n   - Test form validation\n   - Test API client functions\n\n4. Coverage Requirements:\n   - Backend: 90%+ line coverage\n   - Frontend: 90%+ line coverage\n   - Critical paths: 100% coverage\n   - Generate coverage reports",
@@ -449,7 +516,9 @@
         "title": "Local E2E Validation",
         "description": "Run full end-to-end test suite locally and verify all features work together.",
         "status": "pending",
-        "dependencies": ["58"],
+        "dependencies": [
+          "58"
+        ],
         "priority": "high",
         "category": "testing",
         "details": "1. E2E Test Setup:\n   - Configure Playwright/Cypress for local testing\n   - Set up test database with fixtures\n   - Configure test environment variables\n   - Create test user accounts\n\n2. Critical Path Testing:\n   - User registration and login flow\n   - Property search and filtering\n   - Property details and favorites\n   - Chat with AI assistant\n   - Document upload and management\n\n3. Docker Compose Validation:\n   - Run full stack via docker-compose\n   - Verify service health checks\n   - Test inter-service communication\n   - Verify data persistence\n\n4. Integration Scenarios:\n   - Search → View → Favorite → Alert flow\n   - Document → Sign → Store flow\n   - Lead → Score → Assign flow\n   - Map → Filter → Property → Chat flow",
@@ -462,7 +531,9 @@
         "title": "Local Performance Benchmarking",
         "description": "Run performance benchmarks locally to ensure the application meets latency and throughput targets.",
         "status": "pending",
-        "dependencies": ["59"],
+        "dependencies": [
+          "59"
+        ],
         "priority": "high",
         "category": "testing",
         "details": "1. Lighthouse Audits:\n   - Run Lighthouse on all major pages\n   - Target: Performance score 90+\n   - Target: Accessibility score 90+\n   - Target: Best Practices score 90+\n\n2. API Response Time Testing:\n   - Search API: p95 < 2 seconds\n   - Chat API: p95 < 8 seconds\n   - Document upload: < 5 seconds for 10MB\n   - Map data loading: < 3 seconds\n\n3. Load Testing:\n   - Simulate 100 concurrent users\n   - Test sustained load for 10 minutes\n   - Monitor memory and CPU usage\n   - Identify performance bottlenecks\n\n4. Database Performance:\n   - Query execution time analysis\n   - Index effectiveness review\n   - Connection pool sizing\n   - N+1 query detection",
@@ -475,7 +546,9 @@
         "title": "Local Security Audit",
         "description": "Run comprehensive security scans locally and fix all critical/high vulnerabilities.",
         "status": "pending",
-        "dependencies": ["59"],
+        "dependencies": [
+          "59"
+        ],
         "priority": "high",
         "category": "testing",
         "details": "1. Static Analysis:\n   - Run Semgrep security rules\n   - Run Bandit for Python code\n   - Run ESLint security plugin\n   - Review and fix all findings\n\n2. Dependency Scanning:\n   - Run npm audit for frontend\n   - Run pip-audit for backend\n   - Run Trivy for container images\n   - Update vulnerable dependencies\n\n3. Secret Detection:\n   - Run Gitleaks on entire codebase\n   - Verify no API keys in code\n   - Check .env.example has no real secrets\n   - Review git history for accidental commits\n\n4. Authentication Testing:\n   - Test JWT token validation\n   - Test session management\n   - Test CSRF protection\n   - Test rate limiting effectiveness",
@@ -488,10 +561,16 @@
         "title": "Production Deployment Optimization",
         "description": "Optimize application for production deployment including caching, monitoring, and performance tuning. BLOCKED until local testing gates (#60, #61) pass.",
         "status": "pending",
-        "dependencies": ["60", "61"],
+        "dependencies": [
+          "60",
+          "61"
+        ],
         "priority": "low",
         "category": "deployment",
-        "blockedBy": ["60", "61"],
+        "blockedBy": [
+          "60",
+          "61"
+        ],
         "details": "1. Caching Strategy:\n   - Redis integration for session cache\n   - Response caching for search results\n   - Static asset CDN configuration\n   - Cache invalidation policies\n\n2. Performance Monitoring:\n   - Application Performance Monitoring (APM)\n   - Error tracking (Sentry integration)\n   - Custom metrics dashboard\n   - Performance budgets\n\n3. Database Optimization:\n   - Query optimization and indexing\n   - Connection pooling configuration\n   - Read replica setup for scaling\n   - Backup and restore procedures\n\n4. Auto-scaling Configuration:\n   - Horizontal scaling rules\n   - Load balancer configuration\n   - Container orchestration setup\n   - Blue-green deployment strategy",
         "testStrategy": "1. p95 latency < 2s for search, < 8s for chat\n2. System handles 1000 concurrent users\n3. Auto-scaling activates under load\n4. Backups restore successfully\n5. Monitoring dashboards functional",
         "subtasks": [],
@@ -499,12 +578,13 @@
       }
     ],
     "metadata": {
-      "version": "1.1.0",
-      "lastModified": "2026-03-06T19:00:00.000Z",
+      "version": "1.0.0",
+      "lastModified": "2026-03-06T23:12:55.478Z",
       "taskCount": 38,
       "completedCount": 19,
-      "tags": ["master"],
-      "notes": "Restructured for local testing first workflow. Deployment tasks (#33, #62) blocked by testing gates (#60, #61)."
+      "tags": [
+        "master"
+      ]
     }
   }
 }

@@ -1148,6 +1148,24 @@ class ChromaPropertyStore:
         except Exception as e:
             logger.error(f"Error deleting by source: {e}")
 
+    def delete_by_source_type(self, source_type: str) -> None:
+        """
+        Delete all properties from a specific source type.
+
+        Args:
+            source_type: Source type to filter by (csv, excel, url, portal)
+        """
+        try:
+            vector_store = self._get_vector_store()
+            if vector_store is None:
+                return
+            with self._vector_lock:
+                vector_store.delete(filter={"source_platform": source_type})
+            logger.info(f"Deleted properties from source_type: {source_type}")
+
+        except Exception as e:
+            logger.error(f"Error deleting by source_type: {e}")
+
     def __repr__(self) -> str:
         stats = self.get_stats()
         return (
