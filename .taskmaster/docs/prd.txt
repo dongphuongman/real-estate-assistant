@@ -1,109 +1,78 @@
-# AI Real Estate Assistant - Phase 1 Remaining Tasks
+# Taskmaster Task Structure - Local Testing First
 
-## TASK-005: Excel Data Loader Integration
+## Overview
 
-Extend the existing CSV data loader to support Excel files (.xlsx, .xls, .ods) for property data ingestion.
+This document describes the current task structure for the AI Real Estate Assistant project. Tasks are organized into three phases to ensure comprehensive local testing before any deployment.
 
-### Subtasks
-- [TASK-005.1] Excel Loader Implementation
-  - Create ExcelDataLoader class that extends CSV loader patterns
-  - Support sheet selection and header row configuration
-  - Reuse existing format_df logic for schema normalization
+## Task Phases
 
-- [TASK-005.2] Frontend File Upload UI
-  - Add Excel file type support to upload component
-  - Show sheet selector when Excel file is detected
-  - Display file metadata (source name, row count)
+### Phase 1: Local Feature Development (13 tasks)
 
-- [TASK-005.3] Source Tagging and Persistence
-  - Track source type (csv/excel) in PropertyCollection.metadata
-  - Implement delete_by_source() for data management
-  - Add source filter in search and analytics
+These tasks implement new features that are tested locally:
 
-### Dependencies
-- TASK-002 (Retrieval, Data, and Local RAG) must be complete
+| ID  | Task | Priority | Dependencies |
+|-----|------|----------|--------------|
+| #48 | Excel Data Loader | High | None |
+| #49 | Portal/API Integration | High | #48 |
+| #50 | Geographic Mapping | Medium | None |
+| #51 | Commute Time Analysis | Medium | #50 |
+| #52 | Total Cost of Ownership | Medium | None |
+| #53 | Market Anomaly Detection | Medium | #38 (done) |
+| #54 | Property Description Generator | Medium | None |
+| #55 | Lead Scoring System | Medium | #35 (done) |
+| #56 | Agent Performance Analytics | Medium | #55 |
+| #43 | Document Management | Low | #35 (done) |
+| #57 | E-Signature Integration | Low | #43 |
+| #44 | Mobile PWA | Low | None |
+| #45 | Agent/Broker Integration | Low | None |
 
-### Verification
-- Upload .xlsx file with 100+ properties successfully
-- Properties appear in search with correct source tagging
-- Unit tests for Excel parsing with edge cases
+### Phase 2: Local Testing Gates (4 tasks)
 
----
+These validation tasks must pass before deployment:
 
-## TASK-017: Production Deployment Optimization
+| ID  | Task | Dependencies |
+|-----|------|--------------|
+| #58 | Test Suite Update (90%+ coverage) | All Phase 1 tasks |
+| #59 | E2E Validation | #58 |
+| #60 | Performance Benchmarking | #59 |
+| #61 | Security Audit | #59 |
 
-Optimize application for production deployment including caching, monitoring, and performance tuning.
+### Phase 3: Deployment (2 tasks - BLOCKED)
 
-### Subtasks
-- [TASK-017.1] Caching Strategy
-  - Redis integration for session cache
-  - Response caching for search results
-  - Static asset CDN configuration
-  - Cache invalidation policies
+These tasks are blocked until Phase 2 completes:
 
-- [TASK-017.2] Performance Monitoring
-  - Application Performance Monitoring (APM)
-  - Error tracking (Sentry integration)
-  - Custom metrics dashboard
-  - Performance budgets
+| ID  | Task | Blocked By |
+|-----|------|------------|
+| #62 | Production Deployment Optimization | #60, #61 |
+| #33 | Deploy to Vercel/Render | #62 |
 
-- [TASK-017.3] Database Optimization
-  - Query optimization and indexing
-  - Connection pooling configuration
-  - Read replica setup for scaling
-  - Backup and restore procedures
+## Completed Tasks (19 tasks)
 
-- [TASK-017.4] Auto-scaling Configuration
-  - Horizontal scaling rules
-  - Load balancer configuration
-  - Container orchestration setup
-  - Blue-green deployment
+| ID Range | Category |
+|----------|----------|
+| #25-32 | Infrastructure refactoring |
+| #34 | Docker and PowerShell fixes |
+| #35-42 | Core features (auth, favorites, analytics, i18n) |
+| #46-47 | Auth integration and security |
 
-### Dependencies
-- TASK-001 through TASK-004 (all MVP tasks) required
+## Total Task Summary
 
-### Verification
-- p95 latency < 2s for search, < 8s for chat
-- System handles 1000 concurrent users
-- Auto-scaling activates under load
-- Backups restore successfully
+- **Total Tasks**: 38
+- **Completed**: 19 (50%)
+- **Pending**: 19 (50%)
+  - Phase 1 (Features): 13 tasks
+  - Phase 2 (Testing): 4 tasks
+  - Phase 3 (Deployment): 2 tasks
 
----
+## Workflow
 
-## TASK-018: Security Hardening
+1. Complete all Phase 1 feature tasks
+2. Run Phase 2 testing gates locally
+3. Fix any issues found in testing
+4. Only after ALL tests pass, proceed to Phase 3 deployment
 
-Implement comprehensive security measures including audit logging, penetration testing, and compliance checks.
+## Files Modified
 
-### Subtasks
-- [TASK-018.1] Audit Logging
-  - Log all sensitive operations (data access, changes)
-  - Immutable log storage
-  - Log analysis and alerting
-  - Compliance report generation
-
-- [TASK-018.2] Security Scanning
-  - Automated dependency scanning
-  - SAST/DAST integration in CI
-  - Container vulnerability scanning
-  - Regular penetration testing
-
-- [TASK-018.3] Data Protection
-  - Encryption at rest and in transit
-  - Data retention policies
-  - Right to be forgotten implementation
-  - PII redaction in logs
-
-- [TASK-018.4] Access Control
-  - Role-based access control (RBAC)
-  - Multi-factor authentication (MFA)
-  - Session management improvements
-  - API key rotation policies
-
-### Dependencies
-- TASK-001 (API Platform & Security) required
-
-### Verification
-- Passes third-party security audit
-- No critical/high vulnerabilities in scan results
-- Compliance documentation complete
-- Audit logs capture all required events
+- `.taskmaster/tasks/tasks.json` - Main task database
+- `.taskmaster/docs/prd.txt` - This file
+- `.taskmaster/docs/roadmap_tasks.txt` - Roadmap reference (tasks migrated)

@@ -1,7 +1,31 @@
 # Roadmap Tasks — AI Real Estate Assistant (Post-MVP)
 
+> **STATUS: MIGRATED TO TASKMASTER**
+> Tasks from this roadmap have been migrated to `.taskmaster/tasks/tasks.json`.
+> See `.taskmaster/docs/prd.txt` for current task structure.
+>
+> Migration mapping:
+> - TASK-005 → Taskmaster #48 (Excel Data Loader)
+> - TASK-006 → Taskmaster #49 (Portal/API Integration)
+> - TASK-007 → Taskmaster #50 (Geographic Mapping)
+> - TASK-008 → Already done as #40 (Neighborhood Insights)
+> - TASK-009 → Taskmaster #51 (Commute Time Analysis)
+> - TASK-010 → Taskmaster #52 (Total Cost of Ownership)
+> - TASK-011 → Taskmaster #54 (Property Description Generator)
+> - TASK-012 → Taskmaster #55 (Lead Scoring System)
+> - TASK-013 → Already done as #41 (Multi-language UI)
+> - TASK-014 → Taskmaster #56 (Agent Performance Analytics)
+> - TASK-015 → Taskmaster #53 (Market Anomaly Detection)
+> - TASK-016 → Taskmaster #57 (E-Signature Integration)
+> - TASK-017 → Taskmaster #62 (Production Deployment Optimization) - BLOCKED
+> - TASK-018 → Already done as #47 (Auth Security Hardening)
+
+---
+
 ## Overview
 This PRD defines the next phase of tasks for the AI Real Estate Assistant after completing the MVP V4. All tasks focus on production readiness, data integrations, analytics enhancements, and user experience improvements.
+
+> **NOTE: Content below is kept for reference only. Active tasks are in Taskmaster.**
 
 ---
 
