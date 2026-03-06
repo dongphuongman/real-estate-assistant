@@ -230,10 +230,11 @@
         "description": "Implement full internationalization (i18n) for the UI, supporting Polish (primary market), English, and Russian languages.",
         "details": "1. Setup i18n:\n   - Add next-intl package\n   - Configure i18n in next.config.ts\n   - Create locales directory structure\n\n2. Translations:\n   - Create translation files for PL, EN, RU\n   - Extract all UI strings to translation keys\n   - Add language switcher component\n\n3. Localization:\n   - Localized date formatting\n   - Localized number/currency formatting\n   - RTL support consideration (for future)\n\n4. Files to create/modify:\n   - apps/web/src/locales/en.json\n   - apps/web/src/locales/pl.json\n   - apps/web/src/locales/ru.json\n   - apps/web/src/components/ui/language-switcher.tsx",
         "testStrategy": "1. Verify all pages render in each language\n2. Test language switching\n3. Verify date/number formatting per locale\n4. Check for missing translation keys\n5. Test with long text (German/Polish words)",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "low",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-03-06T09:20:51.978Z"
       },
       {
         "id": "42",
@@ -312,9 +313,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-06T00:06:39.404Z",
+      "lastModified": "2026-03-06T09:20:51.978Z",
       "taskCount": 23,
-      "completedCount": 17,
+      "completedCount": 18,
       "tags": [
         "master"
       ]

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { LogOut, User, Settings, ChevronDown } from 'lucide-react';
@@ -14,6 +15,8 @@ export function UserMenu() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const locale = useLocale();
+  const t = useTranslations('auth');
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -45,13 +48,13 @@ export function UserMenu() {
   if (!isAuthenticated || !user) {
     return (
       <div className="flex items-center gap-2">
-        <Link href="/auth/login">
+        <Link href={`/${locale}/auth/login`}>
           <Button variant="ghost" size="sm">
-            Sign In
+            {t('signIn')}
           </Button>
         </Link>
-        <Link href="/auth/register">
-          <Button size="sm">Sign Up</Button>
+        <Link href={`/${locale}/auth/register`}>
+          <Button size="sm">{t('signUp')}</Button>
         </Link>
       </div>
     );
@@ -88,25 +91,25 @@ export function UserMenu() {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-56 rounded-md border bg-popover shadow-lg z-50">
           <div className="p-3 border-b">
-            <p className="text-sm font-medium">{user.full_name || 'User'}</p>
+            <p className="text-sm font-medium">{user.full_name || t('user')}</p>
             <p className="text-xs text-muted-foreground truncate">{user.email}</p>
           </div>
           <div className="p-1">
             <Link
-              href="/profile"
+              href={`/${locale}/profile`}
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-sm hover:bg-accent transition-colors"
             >
               <User className="h-4 w-4" />
-              Profile
+              {t('profile')}
             </Link>
             <Link
-              href="/settings"
+              href={`/${locale}/settings`}
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-sm hover:bg-accent transition-colors"
             >
               <Settings className="h-4 w-4" />
-              Settings
+              {t('settings')}
             </Link>
           </div>
           <div className="p-1 border-t">
@@ -116,7 +119,7 @@ export function UserMenu() {
               className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-sm hover:bg-accent transition-colors text-destructive"
             >
               <LogOut className="h-4 w-4" />
-              Sign Out
+              {t('signOut')}
             </button>
           </div>
         </div>

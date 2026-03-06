@@ -1,69 +1,21 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono, Cinzel } from 'next/font/google';
 import './globals.css';
-import { MainNav } from '@/components/layout/main-nav';
-import { Providers } from '@/components/providers';
-
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
-
-// Using Cinzel as a stand-in for "Phantom Templar" style
-const fontTemplar = Cinzel({
-  variable: '--font-templar',
-  subsets: ['latin'],
-});
 
 export const metadata: Metadata = {
   title: 'AI Real Estate Assistant',
   description: 'Next-gen real estate search and analytics',
 };
 
+/**
+ * Root layout - redirects to locale-specific layout.
+ * The actual layout with navigation and providers is in [locale]/layout.tsx
+ */
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function () {
-                try {
-                  var stored = localStorage.getItem("theme");
-                  var theme = stored === "dark" || stored === "light" ? stored : null;
-                  if (!theme) {
-                    var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-                    theme = prefersDark ? "dark" : "light";
-                  }
-                  if (theme === "dark") document.documentElement.classList.add("dark");
-                  else document.documentElement.classList.remove("dark");
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
-      </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${fontTemplar.variable} antialiased min-h-screen flex flex-col`}
-      >
-        <Providers>
-          <header className="border-b bg-background">
-            <div className="relative flex h-16 items-center px-4 container mx-auto">
-              <MainNav />
-            </div>
-          </header>
-          <main className="flex-1">{children}</main>
-        </Providers>
-      </body>
-    </html>
-  );
+  // This layout should not render anything - all content is in [locale]/layout.tsx
+  // Next.js will automatically redirect to the default locale
+  return children;
 }

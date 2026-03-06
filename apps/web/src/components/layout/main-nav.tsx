@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations, useLocale } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { UserMenu } from '@/components/auth/UserMenu';
+import { LanguageSwitcher } from '@/components/ui/language-switcher';
 import {
   BarChart3,
   BookOpen,
@@ -22,57 +24,59 @@ const THEME_STORAGE_KEY = 'theme';
 
 export function MainNav() {
   const pathname = usePathname();
+  const locale = useLocale();
+  const t = useTranslations('nav');
+  const tCommon = useTranslations('common');
 
   const routes = [
     {
       href: '/',
-      label: 'Home',
+      label: t('home'),
       icon: Building2,
-      active: pathname === '/',
     },
     {
       href: '/search',
-      label: 'Search',
+      label: t('search'),
       icon: Search,
-      active: pathname === '/search',
     },
     {
       href: '/favorites',
-      label: 'Favorites',
+      label: t('favorites'),
       icon: Heart,
-      active: pathname === '/favorites',
     },
     {
       href: '/city-overview',
-      label: 'Cities',
+      label: t('cities'),
       icon: Globe,
-      active: pathname === '/city-overview',
     },
     {
       href: '/chat',
-      label: 'Assistant',
+      label: t('assistant'),
       icon: MessageSquare,
-      active: pathname === '/chat',
     },
     {
       href: '/analytics',
-      label: 'Analytics',
+      label: t('analytics'),
       icon: BarChart3,
-      active: pathname === '/analytics',
     },
     {
       href: '/knowledge',
-      label: 'Knowledge',
+      label: t('knowledge'),
       icon: BookOpen,
-      active: pathname === '/knowledge',
     },
     {
       href: '/settings',
-      label: 'Settings',
+      label: t('settings'),
       icon: Settings,
-      active: pathname === '/settings',
     },
   ];
+
+  // Check if a route is active by comparing the pathname without locale prefix
+  const isActiveRoute = (href: string) => {
+    // Remove locale prefix from pathname for comparison
+    const pathWithoutLocale = pathname.replace(/^\/(pl|en|ru)/, '') || '/';
+    return pathWithoutLocale === href || (href !== '/' && pathWithoutLocale.startsWith(href));
+  };
 
   const toggleTheme = () => {
     const isDark = document.documentElement.classList.contains('dark');
@@ -91,10 +95,10 @@ export function MainNav() {
       {routes.map((route) => (
         <Link
           key={route.href}
-          href={route.href}
+          href={`/${locale}${route.href}`}
           className={cn(
             'text-sm font-medium transition-colors hover:text-primary flex items-center gap-x-2',
-            route.active ? 'text-foreground' : 'text-muted-foreground'
+            isActiveRoute(route.href) ? 'text-foreground' : 'text-muted-foreground'
           )}
         >
           <route.icon className="w-4 h-4" />
@@ -102,12 +106,13 @@ export function MainNav() {
         </Link>
       ))}
       <div className="ml-auto flex items-center gap-2">
+        <LanguageSwitcher />
         <Button
           type="button"
           variant="ghost"
           size="icon"
           onClick={toggleTheme}
-          aria-label="Toggle theme"
+          aria-label={tCommon('toggleTheme')}
         >
           <Sun className="h-4 w-4 hidden dark:block" />
           <Moon className="h-4 w-4 block dark:hidden" />

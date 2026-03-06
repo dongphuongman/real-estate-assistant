@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-
+import { useTranslations } from 'next-intl';
 import { HeartButton } from './heart-button';
 import type { Property } from '@/lib/types';
 
@@ -11,18 +11,20 @@ interface PropertyCardProps {
 }
 
 export function PropertyCard({ property, showFavoriteButton = true }: PropertyCardProps) {
+  const t = useTranslations('property.card');
+
   return (
     <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
       <div className="aspect-video w-full bg-muted relative">
         {property.images?.[0] ? (
           <img
             src={property.images[0]}
-            alt={property.title || 'Property'}
+            alt={property.title || t('untitled')}
             className="w-full h-full object-cover"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-            Property image
+            {t('imagePlaceholder')}
           </div>
         )}
 
@@ -35,20 +37,20 @@ export function PropertyCard({ property, showFavoriteButton = true }: PropertyCa
 
       <div className="p-6 space-y-2">
         <h3 className="text-2xl font-semibold leading-none tracking-tight">
-          {property.title || 'Untitled Property'}
+          {property.title || t('untitled')}
         </h3>
         <p className="text-sm text-muted-foreground">
           {property.city}
           {property.country ? `, ${property.country}` : ''}
         </p>
         <div className="font-bold text-lg">
-          {property.price ? `$${property.price.toLocaleString()}` : 'Price on request'}
+          {property.price ? `$${property.price.toLocaleString()}` : t('priceOnRequest')}
         </div>
         <p className="text-sm text-muted-foreground">
           {[
-            property.rooms ? `${property.rooms} beds` : null,
-            property.bathrooms ? `${property.bathrooms} baths` : null,
-            property.area_sqm ? `${property.area_sqm} m\u00B2` : null,
+            property.rooms ? t('beds', { count: property.rooms }) : null,
+            property.bathrooms ? t('baths', { count: property.bathrooms }) : null,
+            property.area_sqm ? `${property.area_sqm} ${t('areaUnit')}` : null,
           ]
             .filter(Boolean)
             .join(' \u2022 ')}

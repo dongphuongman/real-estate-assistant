@@ -1,9 +1,12 @@
 import type { NextConfig } from 'next';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
+import createNextIntlPlugin from 'next-intl/plugin';
 
 const configDir = dirname(fileURLToPath(import.meta.url));
 const turbopackRoot = resolve(configDir, '..', '..');
+
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const nextConfig: NextConfig = {
   output: 'standalone',
@@ -99,4 +102,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

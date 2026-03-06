@@ -1,64 +1,118 @@
+import createMiddleware from 'next-intl/middleware';
 import { NextResponse, type NextRequest } from 'next/server';
+import { locales, defaultLocale } from './i18n/config';
 
 /**
- * Next.js Middleware for route protection.
+ * Next.js Middleware for i18n routing and authentication protection.
  *
- * This middleware runs before each request to protect routes that require authentication.
- * It checks for valid session cookies and redirects unauthenticated users to the login page.
+ * This middleware:
+ * 1. Handles locale detection and redirection
+ * 2. Protects routes that require authentication
  *
  * Public routes (accessible without authentication):
- * - /auth/* - Authentication pages
+ * - /{locale}/auth/* - Authentication pages
  * - /api/v1/auth/* - Auth API endpoints
  * - /_next/* - Next.js internals
  * - /static/* - Static files
  * - /favicon.ico - Favicon
  *
  * Protected routes (require authentication):
- * - All other routes
- *
- * Note: This middleware checks for the access_token cookie set by the backend.
- * For more granular permission control, use the ProtectedRoute component on specific pages.
+ * - All other routes under /{locale}/*
  */
+
+// Create the next-intl middleware
+const intlMiddleware = createMiddleware({
+  locales,
+  defaultLocale,
+  localePrefix: 'always', // Always show locale prefix: /pl/search, /en/search
+});
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Public routes that don't require authentication
-  const isPublicRoute =
-    pathname.startsWith('/auth/') ||
-    pathname.startsWith('/api/v1/auth/') ||
+  // Handle API routes separately (no i18n)
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next();
+  }
+
+  // Handle static files and Next.js internals
+  if (
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/static/') ||
-    pathname === '/favicon.ico';
-
-  if (isPublicRoute) {
+    pathname === '/favicon.ico'
+  ) {
     return NextResponse.next();
+  }
+
+  // First, handle i18n routing
+  const intlResponse = intlMiddleware(request);
+
+  // Extract locale from pathname or use default
+  const pathSegments = pathname.split('/').filter(Boolean);
+  const localeFromPath = pathSegments[0];
+  const hasLocalePrefix = locales.includes(localeFromPath as typeof locales[number]);
+  const currentLocale = hasLocalePrefix ? localeFromPath : defaultLocale;
+
+  // Get the path without locale prefix for route checking
+  const pathWithoutLocale = hasLocalePrefix
+    ? '/' + pathSegments.slice(1).join('/')
+    : pathname;
+
+  // Check if this is a public route (auth pages)
+  const isAuthRoute =
+    pathWithoutLocale.startsWith('/auth/') ||
+    pathWithoutLocale === '/auth';
+
+  if (isAuthRoute) {
+    return intlResponse;
+  }
+
+  // If the intl middleware returned a redirect (for locale handling), return it
+  if (intlResponse.status === 307 || intlResponse.status === 308) {
+    // But still check auth for the redirect destination
+    const location = intlResponse.headers.get('location');
+    if (location) {
+      const redirectUrl = new URL(location);
+      const redirectPath = redirectUrl.pathname;
+
+      // Extract locale from redirect path
+      const redirectSegments = redirectPath.split('/').filter(Boolean);
+      const redirectLocale = redirectSegments[0];
+      const redirectPathWithoutLocale = locales.includes(redirectLocale as typeof locales[number])
+        ? '/' + redirectSegments.slice(1).join('/')
+        : redirectPath;
+
+      // Check if redirecting to auth route
+      if (redirectPathWithoutLocale.startsWith('/auth/') || redirectPathWithoutLocale === '/auth') {
+        return intlResponse;
+      }
+    }
+    // For non-auth redirects, continue with auth check
   }
 
   // Check for access_token cookie (set by backend auth)
   const accessToken = request.cookies.get('access_token')?.value;
 
   if (!accessToken) {
-    // No access token found, redirect to login
-    const loginUrl = new URL('/auth/login', request.url);
+    // No access token found, redirect to login with locale
+    const loginUrl = new URL(`/${currentLocale}/auth/login`, request.url);
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Token exists, allow request
-  // Note: The token will be validated on the backend when making API calls
-  return NextResponse.next();
+  // Token exists, return the intl response (or continue)
+  return intlResponse;
 }
 
 /**
  * Configure which routes the middleware should run on.
  *
- * By default, it runs on all routes except for:
- * - /api/v1/* - API routes (they have their own auth via the backend)
- * - /_next/* - Next.js internals
- * - /_vercel/* - Vercel internals
- * - /static/* - Static files
- * - /favicon.ico - Favicon
+ * Matches all request paths except:
+ * - api routes (handled by backend)
+ * - _next/static (static files)
+ * - _next/image (image optimization files)
+ * - favicon.ico (favicon file)
+ * - static files
  */
 export const config = {
   matcher: [
@@ -68,7 +122,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - static files
      */
-    '/((?!api/v1/|_next/static|_next/image|favicon.ico|static).*)',
+    '/((?!api/|_next/static|_next/image|favicon.ico|static|.*\\..*).*)',
   ],
 };
