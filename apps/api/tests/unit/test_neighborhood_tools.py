@@ -117,8 +117,7 @@ class TestNeighborhoodQualityIndexTool:
         assert "geographic_coordinates" in result_with_coords.data_sources
         assert "geographic_coordinates" not in result_without_coords.data_sources
 
-        # Both should include mock and OSM sources
-        assert "mock_safety_data" in result_with_coords.data_sources
+        # Both should include OSM sources; safety may use osm_overpass_api, city_estimate, or fallback
         assert "osm_overpass_api" in result_with_coords.data_sources
 
     def test_missing_coordinates_returns_default_scores(self, neighborhood_calc):
@@ -225,6 +224,52 @@ class TestNeighborhoodQualityIndexTool:
                 )
                 assert 0 <= result.green_space_score <= 100
 
+    @patch("data.adapters.safety_adapter.get_safety_adapter")
+    def test_real_safety_score_from_adapter(self, mock_get_adapter):
+        """Test that real safety score is used from SafetyAdapter."""
+        from data.adapters.safety_adapter import SafetyAdapter, SafetyResult
+
+        mock_adapter_instance = Mock(spec=SafetyAdapter)
+        mock_adapter_instance.get_safety_score.return_value = SafetyResult(
+            score=78.5,
+            police_stations_nearby=2,
+            emergency_services_nearby=1,
+            lighting_score=None,
+            pois=[],
+            data_source="osm_overpass_api",
+            confidence=0.7,
+        )
+        mock_get_adapter.return_value = mock_adapter_instance
+
+        result = NeighborhoodQualityIndexTool.calculate(
+            property_id="test_safety_real",
+            latitude=52.2297,
+            longitude=21.0122,
+        )
+
+        assert result.safety_score == 78.5
+        assert result.factor_details["safety"]["data_source"] == "osm_overpass_api"
+        assert result.factor_details["safety"]["confidence"] == 0.7
+        assert result.factor_details["safety"]["police_stations_nearby"] == 2
+        assert result.factor_details["safety"]["emergency_services_nearby"] == 1
+
+    @patch("data.adapters.safety_adapter.get_safety_adapter")
+    def test_safety_adapter_fallback_on_error(self, mock_get_adapter):
+        """Test fallback to mock when safety adapter fails."""
+        mock_get_adapter.side_effect = Exception("API failure")
+
+        result = NeighborhoodQualityIndexTool.calculate(
+            property_id="test_safety_fallback",
+            latitude=52.2297,
+            longitude=21.0122,
+            city="Warsaw",
+        )
+
+        # Should still return valid score using fallback
+        assert 0 <= result.safety_score <= 100
+        assert result.factor_details["safety"]["data_source"] == "fallback"
+        assert result.factor_details["safety"]["confidence"] == 0.2
+
 
 class TestNeighborhoodToolFactory:
     """Test neighborhood tool in factory function."""
@@ -275,7 +320,7 @@ class TestNeighborhoodToolPhase2:
         )
 
         # Phase 2 uses osm_overpass_api instead of osm_pois
-        assert "mock_safety_data" in result.data_sources
+        # Safety may use osm_overpass_api, city_estimate, or fallback
         assert "osm_overpass_api" in result.data_sources
         assert "geographic_coordinates" in result.data_sources
 

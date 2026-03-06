@@ -29,6 +29,12 @@ from data.adapters.registry import (
     get_adapter,
     register_adapter,
 )
+from data.adapters.safety_adapter import (
+    SafetyAdapter,
+    SafetyPOI,
+    SafetyResult,
+    get_safety_adapter,
+)
 from data.adapters.transport_adapter import (
     TransportAdapter,
     TransportResult,
@@ -59,9 +65,13 @@ __all__ = [
     "NoiseAdapter",
     "NoiseResult",
     "NoiseSource",
+    "SafetyAdapter",
+    "SafetyPOI",
+    "SafetyResult",
     # Adapter getters
     "get_neighborhood_adapter",
     "get_air_quality_adapter",
     "get_transport_adapter",
     "get_noise_adapter",
+    "get_safety_adapter",
 ]

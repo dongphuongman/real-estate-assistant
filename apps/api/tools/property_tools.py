@@ -1140,6 +1140,49 @@ class NeighborhoodQualityIndexTool(BaseTool):
         return max(0, min(100, round(base + variation, 1)))
 
     @staticmethod
+    def _calculate_safety_score(
+        latitude: Optional[float],
+        longitude: Optional[float],
+        city: Optional[str] = None,
+        neighborhood: Optional[str] = None,
+    ) -> Tuple[float, Optional[Dict[str, Any]]]:
+        """
+        Calculate safety score using SafetyAdapter.
+
+        Uses OSM data for police/emergency services with city fallback.
+        Returns (score 0-100, details dict).
+        """
+        if latitude is None or longitude is None:
+            # Use mock for city-only estimates
+            score = NeighborhoodQualityIndexTool._mock_safety_score(city, neighborhood)
+            return score, {"data_source": "city_estimate", "confidence": 0.3}
+
+        try:
+            from data.adapters.safety_adapter import get_safety_adapter
+
+            adapter = get_safety_adapter()
+            result = adapter.get_safety_score(
+                latitude, longitude, city, neighborhood, radius_m=1500
+            )
+
+            details = {
+                "raw_value": result.police_stations_nearby + result.emergency_services_nearby,
+                "unit": "safety_pois",
+                "normalized_score": result.score,
+                "data_source": result.data_source,
+                "confidence": result.confidence,
+                "police_stations_nearby": result.police_stations_nearby,
+                "emergency_services_nearby": result.emergency_services_nearby,
+            }
+
+            return round(result.score, 1), details
+
+        except Exception as e:
+            logger.warning(f"Safety score calculation failed: {e}")
+            score = NeighborhoodQualityIndexTool._mock_safety_score(city, neighborhood)
+            return score, {"data_source": "fallback", "confidence": 0.2, "error": str(e)}
+
+    @staticmethod
     def _calculate_schools_score(latitude: Optional[float], longitude: Optional[float]) -> float:
         """
         Calculate schools score based on nearby school count.
@@ -1384,7 +1427,7 @@ class NeighborhoodQualityIndexTool(BaseTool):
             from data.adapters.transport_adapter import get_transport_adapter
 
             adapter = get_transport_adapter()
-            result = adapter.calculate_accessibility_score(latitude, longitude)
+            result = adapter.get_full_result(latitude, longitude)
 
             details = {
                 "raw_value": result.total_stops,
@@ -1588,7 +1631,9 @@ class NeighborhoodQualityIndexTool(BaseTool):
         weights = NeighborhoodQualityIndexTool._validate_weights(custom_weights)
 
         # Calculate individual component scores
-        safety_score = NeighborhoodQualityIndexTool._mock_safety_score(city, neighborhood)
+        safety_score, safety_details = NeighborhoodQualityIndexTool._calculate_safety_score(
+            latitude, longitude, city, neighborhood
+        )
         schools_score = NeighborhoodQualityIndexTool._calculate_schools_score(latitude, longitude)
         amenities_score = NeighborhoodQualityIndexTool._calculate_amenities_score(
             latitude, longitude
@@ -1646,8 +1691,16 @@ class NeighborhoodQualityIndexTool(BaseTool):
                 "normalized_score": safety_score,
                 "weight": weights.get("safety", 0.15),
                 "weighted_score": score_breakdown["safety_weighted"],
-                "data_source": "city_based_estimate",
-                "confidence": 0.5,
+                "data_source": safety_details.get("data_source", "unknown")
+                if safety_details
+                else "unknown",
+                "confidence": safety_details.get("confidence", 0.5) if safety_details else 0.5,
+                "police_stations_nearby": safety_details.get("police_stations_nearby", 0)
+                if safety_details
+                else 0,
+                "emergency_services_nearby": safety_details.get("emergency_services_nearby", 0)
+                if safety_details
+                else 0,
             },
             "schools": {
                 "normalized_score": schools_score,

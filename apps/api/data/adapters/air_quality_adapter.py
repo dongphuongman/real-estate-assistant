@@ -193,14 +193,14 @@ class AirQualityAdapter:
             logger.error(f"Failed to parse WAQI response: {e}")
             return None
 
-    def get_aqi_score(self, lat: float, lon: float, city: str) -> AirQualityResult:
+    def get_aqi_score(self, lat: float, lon: float, city: Optional[str] = None) -> AirQualityResult:
         """
         Get air quality score for a location.
 
         Args:
             lat: Latitude coordinate
             lon: Longitude coordinate
-            city: City name for fallback data
+            city: City name for fallback data (optional)
 
         Returns:
             AirQualityResult with score and measurements
@@ -280,16 +280,29 @@ class AirQualityAdapter:
             logger.error(f"Failed to parse WAQI response: {e}")
             return None
 
-    def _get_fallback_result(self, city: str) -> AirQualityResult:
+    def _get_fallback_result(self, city: Optional[str]) -> AirQualityResult:
         """
         Get fallback air quality data using city averages.
 
         Args:
-            city: City name
+            city: City name (optional)
 
         Returns:
             AirQualityResult with city average data and reduced confidence
         """
+        # Handle None or empty city
+        if not city:
+            logger.info("Using default air quality (no city provided): AQI=50")
+            return AirQualityResult(
+                score=self._calculate_aqi_score(50),
+                aqi_value=50,
+                pm25=14.0,
+                pm10=22.0,
+                data_source="fallback",
+                confidence=0.3,
+                station_name="Unknown (default)",
+            )
+
         city_key = city.lower().strip()
         city_data = CITY_AQI_AVERAGES.get(city_key)
 
