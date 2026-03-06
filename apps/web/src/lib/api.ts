@@ -51,6 +51,9 @@ import {
   AdvancedInvestmentResult,
   PortfolioAnalysisInput,
   PortfolioAnalysisResult,
+  // Task #42: Rent vs Buy Calculator
+  RentVsBuyInput,
+  RentVsBuyResult,
 } from './types';
 
 function getApiUrl(): string {
@@ -1051,4 +1054,21 @@ export async function analyzePortfolio(
     body: JSON.stringify(input),
   });
   return handleResponse<PortfolioAnalysisResult>(response);
+}
+
+/**
+ * Task #42: Calculate rent vs buy comparison.
+ * Compares the financial implications of renting vs buying a property over time,
+ * including break-even analysis, opportunity costs, and tax benefits.
+ */
+export async function calculateRentVsBuy(
+  input: RentVsBuyInput
+): Promise<RentVsBuyResult> {
+  const response = await safeFetch(`${getApiUrl()}/tools/rent-vs-buy`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(input),
+  });
+  return handleResponse<RentVsBuyResult>(response);
 }

@@ -745,3 +745,55 @@ export interface PortfolioAnalysisResult {
   risk_assessment: PortfolioRiskAssessment;
   performance: PortfolioPerformance;
 }
+
+// Task #42: Rent vs Buy Calculator
+export interface RentVsBuyInput {
+  property_price: number;
+  monthly_rent: number;
+  down_payment_percent?: number;
+  interest_rate?: number;
+  loan_years?: number;
+  annual_property_tax?: number;
+  annual_insurance?: number;
+  monthly_hoa?: number;
+  maintenance_percent?: number;
+  appreciation_rate?: number;
+  rent_increase_rate?: number;
+  investment_return_rate?: number;
+  marginal_tax_rate?: number;
+  projection_years?: number;
+}
+
+export interface YearlyBreakdown {
+  year: number;
+  annual_rent: number;
+  cumulative_rent: number;
+  invested_savings_value: number;
+  annual_mortgage: number;
+  annual_property_tax: number;
+  annual_insurance: number;
+  annual_maintenance: number;
+  annual_hoa: number;
+  annual_total_ownership_cost: number;
+  cumulative_ownership_cost: number;
+  property_value: number;
+  loan_balance: number;
+  equity: number;
+  tax_savings: number;
+  net_ownership_cost: number;
+  net_benefit: number;
+}
+
+export interface RentVsBuyResult {
+  monthly_mortgage: number;
+  monthly_rent_initial: number;
+  break_even_years: number | null;
+  recommendation: string;
+  total_rent_paid: number;
+  total_ownership_cost: number;
+  total_equity_built: number;
+  final_property_value: number;
+  opportunity_cost_of_buying: number;
+  net_buying_advantage: number;
+  yearly_breakdown: YearlyBreakdown[];
+}

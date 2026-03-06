@@ -47,6 +47,9 @@ from tools.property_tools import (
     MortgageResult,
     NeighborhoodQualityIndexTool,
     NeighborhoodQualityInput,
+    RentVsBuyCalculatorTool,
+    RentVsBuyInput,
+    RentVsBuyResult,
     TCOCalculatorTool,
     TCOInput,
     TCOResult,
@@ -239,6 +242,50 @@ async def analyze_portfolio(input_data: PortfolioAnalysisInput):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Portfolio analysis failed: {str(e)}",
+        ) from e
+
+
+# Task #42: Rent vs Buy Calculator
+@router.post(
+    "/tools/rent-vs-buy",
+    response_model=RentVsBuyResult,
+    tags=["Tools"],
+)
+async def calculate_rent_vs_buy(input_data: RentVsBuyInput):
+    """
+    Compare renting vs buying a property over time.
+
+    Calculates:
+    - Monthly payment comparison
+    - Total cost over time
+    - Break-even point (when buying becomes cheaper)
+    - Opportunity cost of down payment
+    - Tax benefits of ownership
+    - Property appreciation impact
+    """
+    try:
+        return RentVsBuyCalculatorTool.calculate(
+            property_price=input_data.property_price,
+            monthly_rent=input_data.monthly_rent,
+            down_payment_percent=input_data.down_payment_percent,
+            interest_rate=input_data.interest_rate,
+            loan_years=input_data.loan_years,
+            annual_property_tax=input_data.annual_property_tax,
+            annual_insurance=input_data.annual_insurance,
+            monthly_hoa=input_data.monthly_hoa,
+            maintenance_percent=input_data.maintenance_percent,
+            appreciation_rate=input_data.appreciation_rate,
+            rent_increase_rate=input_data.rent_increase_rate,
+            investment_return_rate=input_data.investment_return_rate,
+            marginal_tax_rate=input_data.marginal_tax_rate,
+            projection_years=input_data.projection_years,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Rent vs Buy calculation failed: {str(e)}",
         ) from e
 
 

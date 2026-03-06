@@ -138,6 +138,105 @@ class TCOResult(BaseModel):
     breakdown: Dict[str, float]
 
 
+# Task #42: Rent vs Buy Calculator Models
+class RentVsBuyInput(BaseModel):
+    """Input for Rent vs Buy calculator."""
+
+    # Core inputs
+    property_price: float = Field(description="Property purchase price", gt=0)
+    monthly_rent: float = Field(description="Current monthly rent", ge=0)
+
+    # Mortgage parameters
+    down_payment_percent: float = Field(
+        default=20.0, description="Down payment as percentage", ge=0, le=100
+    )
+    interest_rate: float = Field(
+        default=6.5, description="Annual interest rate as percentage", ge=0
+    )
+    loan_years: int = Field(default=30, description="Loan term in years", gt=0, le=50)
+
+    # Ownership costs
+    annual_property_tax: float = Field(default=0.0, description="Annual property tax", ge=0)
+    annual_insurance: float = Field(default=1200.0, description="Annual home insurance", ge=0)
+    monthly_hoa: float = Field(default=0.0, description="Monthly HOA fees", ge=0)
+    maintenance_percent: float = Field(
+        default=1.0, description="Annual maintenance as percentage of property value", ge=0, le=5
+    )
+
+    # Growth rates
+    appreciation_rate: float = Field(
+        default=3.0, description="Annual property appreciation rate", ge=-10, le=20
+    )
+    rent_increase_rate: float = Field(
+        default=2.5, description="Annual rent increase rate", ge=0, le=15
+    )
+    investment_return_rate: float = Field(
+        default=7.0,
+        description="Expected investment return rate for down payment alternative",
+        ge=0,
+        le=20,
+    )
+
+    # Tax parameters
+    marginal_tax_rate: float = Field(
+        default=24.0, description="Marginal tax rate for deductions", ge=0, le=50
+    )
+
+    # Analysis settings
+    projection_years: int = Field(default=30, description="Number of years to project", gt=0, le=50)
+
+
+class YearlyBreakdown(BaseModel):
+    """Year-by-year cost breakdown for rent vs buy analysis."""
+
+    year: int
+
+    # Renting
+    annual_rent: float
+    cumulative_rent: float
+    invested_savings_value: float  # Opportunity cost if down payment was invested
+
+    # Buying
+    annual_mortgage: float
+    annual_property_tax: float
+    annual_insurance: float
+    annual_maintenance: float
+    annual_hoa: float
+    annual_total_ownership_cost: float
+    cumulative_ownership_cost: float
+    property_value: float
+    loan_balance: float
+    equity: float
+    tax_savings: float
+    net_ownership_cost: float  # After tax savings
+
+    # Comparison
+    net_benefit: float  # Positive = buying better, Negative = renting better
+
+
+class RentVsBuyResult(BaseModel):
+    """Result from Rent vs Buy calculator."""
+
+    # Summary metrics
+    monthly_mortgage: float
+    monthly_rent_initial: float
+    break_even_years: Optional[float] = None  # When buying becomes cheaper
+    recommendation: str  # "rent" | "buy" | "neutral"
+
+    # Totals at projection end
+    total_rent_paid: float
+    total_ownership_cost: float
+    total_equity_built: float
+    final_property_value: float
+    opportunity_cost_of_buying: float  # Lost investment returns on down payment
+
+    # Net comparison
+    net_buying_advantage: float  # Can be negative
+
+    # Year-by-year breakdown
+    yearly_breakdown: List[YearlyBreakdown]
+
+
 class MortgageCalculatorTool(BaseTool):
     """Tool for calculating mortgage payments and costs."""
 
@@ -413,6 +512,271 @@ TOTAL ALL-IN COST:       ${result.total_all_costs:,.2f}
             return f"Error: {str(e)}"
         except Exception as e:
             return f"Error calculating TCO: {str(e)}"
+
+    async def _arun(self, *args: Any, **kwargs: Any) -> str:
+        """Async version."""
+        return self._run(*args, **kwargs)
+
+
+# Task #42: Rent vs Buy Calculator Tool
+class RentVsBuyCalculatorTool(BaseTool):
+    """Tool for comparing renting vs buying a property over time."""
+
+    name: str = "rent_vs_buy_calculator"
+    description: str = (
+        "Compare the financial implications of renting vs buying a property over time. "
+        "Calculates break-even point, total costs, tax benefits, opportunity costs, and provides a recommendation. "
+        "Input includes property price, monthly rent, mortgage parameters, and growth rates."
+    )
+    args_schema: type[RentVsBuyInput] = RentVsBuyInput
+
+    @staticmethod
+    def calculate(
+        property_price: float,
+        monthly_rent: float,
+        down_payment_percent: float = 20.0,
+        interest_rate: float = 6.5,
+        loan_years: int = 30,
+        annual_property_tax: float = 0.0,
+        annual_insurance: float = 1200.0,
+        monthly_hoa: float = 0.0,
+        maintenance_percent: float = 1.0,
+        appreciation_rate: float = 3.0,
+        rent_increase_rate: float = 2.5,
+        investment_return_rate: float = 7.0,
+        marginal_tax_rate: float = 24.0,
+        projection_years: int = 30,
+    ) -> RentVsBuyResult:
+        """
+        Calculate comprehensive rent vs buy comparison.
+
+        Args:
+            property_price: Property purchase price
+            monthly_rent: Current monthly rent
+            down_payment_percent: Down payment percentage (default 20%)
+            interest_rate: Annual mortgage interest rate (default 6.5%)
+            loan_years: Loan term in years (default 30)
+            annual_property_tax: Annual property tax
+            annual_insurance: Annual home insurance
+            monthly_hoa: Monthly HOA fees
+            maintenance_percent: Annual maintenance as % of property value
+            appreciation_rate: Annual property appreciation rate
+            rent_increase_rate: Annual rent increase rate
+            investment_return_rate: Expected investment return for down payment alternative
+            marginal_tax_rate: Marginal tax rate for deductions
+            projection_years: Number of years to project
+
+        Returns:
+            RentVsBuyResult with yearly breakdown and recommendation
+        """
+        # Validate inputs
+        if property_price <= 0:
+            raise ValueError("Property price must be positive")
+        if monthly_rent < 0:
+            raise ValueError("Monthly rent cannot be negative")
+
+        # Calculate mortgage components
+        down_payment = property_price * (down_payment_percent / 100)
+        loan_amount = property_price - down_payment
+        monthly_rate = (interest_rate / 100) / 12
+        num_payments = loan_years * 12
+
+        # Monthly mortgage payment (standard amortization formula)
+        if monthly_rate == 0:
+            monthly_mortgage = loan_amount / num_payments
+        else:
+            monthly_mortgage = (
+                loan_amount * monthly_rate * math.pow(1 + monthly_rate, num_payments)
+            ) / (math.pow(1 + monthly_rate, num_payments) - 1)
+
+        # Year-by-year calculations
+        yearly_breakdown: List[YearlyBreakdown] = []
+        cumulative_rent = 0.0
+        cumulative_ownership_cost = 0.0
+        current_rent = monthly_rent
+        current_property_value = property_price
+        current_loan_balance = loan_amount
+        break_even_years: Optional[float] = None
+
+        # Track invested down payment (opportunity cost)
+        invested_down_payment = down_payment
+
+        for year in range(1, projection_years + 1):
+            # === RENTING COSTS ===
+            annual_rent = current_rent * 12
+            cumulative_rent += annual_rent
+
+            # Opportunity cost: down payment invested instead
+            invested_down_payment = invested_down_payment * (1 + investment_return_rate / 100)
+
+            # === BUYING COSTS ===
+            annual_mortgage = monthly_mortgage * 12
+            annual_maintenance = property_price * (maintenance_percent / 100)
+            annual_hoa = monthly_hoa * 12
+            annual_total_ownership = (
+                annual_mortgage
+                + annual_property_tax
+                + annual_insurance
+                + annual_maintenance
+                + annual_hoa
+            )
+
+            # Tax savings (mortgage interest + property tax deduction)
+            # Interest portion of mortgage payment (higher in early years)
+            interest_this_year = current_loan_balance * (interest_rate / 100)
+            # Mortgage interest deduction (capped at $750k loan)
+            deductible_interest = min(
+                interest_this_year, min(loan_amount, 750000) * (interest_rate / 100)
+            )
+            # Property tax deduction (SALT cap at $10k)
+            deductible_tax = min(annual_property_tax, 10000)
+            # Total tax savings
+            tax_savings = (deductible_interest + deductible_tax) * (marginal_tax_rate / 100)
+
+            net_ownership_cost = annual_total_ownership - tax_savings
+            cumulative_ownership_cost += net_ownership_cost
+
+            # Property appreciation
+            current_property_value = current_property_value * (1 + appreciation_rate / 100)
+
+            # Loan balance reduction (amortization)
+            principal_this_year = annual_mortgage - interest_this_year
+            current_loan_balance = max(0, current_loan_balance - principal_this_year)
+
+            # Equity built
+            equity = current_property_value - current_loan_balance
+
+            # Net benefit calculation:
+            # Compare total cost of renting (including opportunity cost)
+            # vs total cost of owning (offset by equity built)
+            rent_total_position = cumulative_rent + invested_down_payment
+            buy_total_position = cumulative_ownership_cost - equity
+            net_benefit = rent_total_position - buy_total_position
+
+            # Track break-even point
+            if break_even_years is None and net_benefit > 0:
+                break_even_years = float(year)
+
+            yearly_breakdown.append(
+                YearlyBreakdown(
+                    year=year,
+                    annual_rent=annual_rent,
+                    cumulative_rent=cumulative_rent,
+                    invested_savings_value=invested_down_payment,
+                    annual_mortgage=annual_mortgage,
+                    annual_property_tax=annual_property_tax,
+                    annual_insurance=annual_insurance,
+                    annual_maintenance=annual_maintenance,
+                    annual_hoa=annual_hoa,
+                    annual_total_ownership_cost=annual_total_ownership,
+                    cumulative_ownership_cost=cumulative_ownership_cost,
+                    property_value=current_property_value,
+                    loan_balance=current_loan_balance,
+                    equity=equity,
+                    tax_savings=tax_savings,
+                    net_ownership_cost=net_ownership_cost,
+                    net_benefit=net_benefit,
+                )
+            )
+
+            # Increase rent for next year
+            current_rent = current_rent * (1 + rent_increase_rate / 100)
+
+        # Determine recommendation
+        if break_even_years is None:
+            recommendation = "rent"
+        elif break_even_years <= 5:
+            recommendation = "buy"
+        elif break_even_years <= 10:
+            recommendation = "neutral"
+        else:
+            recommendation = "rent"
+
+        # Final calculations
+        final_breakdown = yearly_breakdown[-1]
+        opportunity_cost = invested_down_payment - down_payment
+
+        return RentVsBuyResult(
+            monthly_mortgage=monthly_mortgage,
+            monthly_rent_initial=monthly_rent,
+            break_even_years=break_even_years,
+            recommendation=recommendation,
+            total_rent_paid=cumulative_rent,
+            total_ownership_cost=cumulative_ownership_cost,
+            total_equity_built=final_breakdown.equity,
+            final_property_value=final_breakdown.property_value,
+            opportunity_cost_of_buying=opportunity_cost,
+            net_buying_advantage=final_breakdown.net_benefit,
+            yearly_breakdown=yearly_breakdown,
+        )
+
+    def _run(
+        self,
+        property_price: float,
+        monthly_rent: float,
+        down_payment_percent: float = 20.0,
+        interest_rate: float = 6.5,
+        loan_years: int = 30,
+        annual_property_tax: float = 0.0,
+        annual_insurance: float = 1200.0,
+        monthly_hoa: float = 0.0,
+        maintenance_percent: float = 1.0,
+        appreciation_rate: float = 3.0,
+        rent_increase_rate: float = 2.5,
+        investment_return_rate: float = 7.0,
+        marginal_tax_rate: float = 24.0,
+        projection_years: int = 30,
+    ) -> str:
+        """Execute rent vs buy calculation."""
+        try:
+            result = self.calculate(
+                property_price,
+                monthly_rent,
+                down_payment_percent,
+                interest_rate,
+                loan_years,
+                annual_property_tax,
+                annual_insurance,
+                monthly_hoa,
+                maintenance_percent,
+                appreciation_rate,
+                rent_increase_rate,
+                investment_return_rate,
+                marginal_tax_rate,
+                projection_years,
+            )
+
+            # Format result for display
+            break_even_str = (
+                f"{result.break_even_years:.1f} years"
+                if result.break_even_years
+                else "Not within projection period"
+            )
+
+            formatted = f"""
+Rent vs Buy Analysis for ${property_price:,.2f} Property (Current Rent: ${monthly_rent:,.2f}/mo)
+
+=== Summary ===
+Monthly Mortgage:      ${result.monthly_mortgage:,.2f}
+Monthly Rent:           ${result.monthly_rent_initial:,.2f}
+Break-Even Point:       {break_even_str}
+Recommendation:         {result.recommendation.upper()}
+
+=== 30-Year Projections ===
+Total Rent Paid:        ${result.total_rent_paid:,.2f}
+Total Ownership Cost:   ${result.total_ownership_cost:,.2f}
+Equity Built:           ${result.total_equity_built:,.2f}
+Final Property Value:   ${result.final_property_value:,.2f}
+
+Net Buying Advantage:  ${result.net_buying_advantage:,.2f}
+(Positive = buying better, Negative = renting better)
+"""
+            return formatted.strip()
+
+        except ValueError as e:
+            return f"Error: {str(e)}"
+        except Exception as e:
+            return f"Error calculating rent vs buy: {str(e)}"
 
     async def _arun(self, *args: Any, **kwargs: Any) -> str:
         """Async version."""
@@ -2508,6 +2872,7 @@ def create_property_tools(vector_store: Any = None) -> List[BaseTool]:
         TCOCalculatorTool(),
         InvestmentCalculatorTool(),
         AdvancedInvestmentTool(),  # Task #39: Advanced analytics
+        RentVsBuyCalculatorTool(),  # Task #42: Rent vs Buy Calculator
         NeighborhoodQualityIndexTool(),
         PropertyComparisonTool(vector_store=vector_store),
         PriceAnalysisTool(vector_store=vector_store),
