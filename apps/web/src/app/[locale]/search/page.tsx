@@ -8,10 +8,12 @@ import {
   Download,
   RefreshCw,
   AlertCircle,
+  Pencil,
 } from 'lucide-react';
 import { searchProperties, exportPropertiesBySearch, ApiError } from '@/lib/api';
 import { SearchResultItem } from '@/lib/types';
 import { extractMapPoints } from '@/components/search/property-map-utils';
+import type { PolygonCoordinates } from '@/components/search/geo-draw-control';
 import { HeartButton } from '@/components/property';
 import dynamic from 'next/dynamic';
 import MapControls, { type MapFilterOptions } from '@/components/search/map-controls';
@@ -60,10 +62,52 @@ export default function SearchPage() {
   const [mapFilterOptions, setMapFilterOptions] = useState<MapFilterOptions>({
     showHeatmap: false,
     heatmapIntensity: 1,
+    heatmapMode: "density",
     showClusters: true,
     priceRange: undefined,
     propertyType: undefined,
   });
+  const [enableDrawing, setEnableDrawing] = useState(false);
+  const [drawnPolygon, setDrawnPolygon] = useState<PolygonCoordinates[] | null>(null);
+
+  // Handlers for polygon drawing
+  const handlePolygonDraw = (coordinates: PolygonCoordinates[]) => {
+    setDrawnPolygon(coordinates);
+    setEnableDrawing(false);
+  };
+
+  const handlePolygonClear = () => {
+    setDrawnPolygon(null);
+  };
+
+  // Filter points by drawn polygon
+  const filteredByPolygon = useMemo(() => {
+    if (!drawnPolygon || drawnPolygon.length === 0) return filteredMapPoints;
+
+    return filteredMapPoints.filter((point) => {
+      // Simple point-in-polygon check using ray casting
+      const polygon = drawnPolygon[0]; // First ring
+      if (!polygon || polygon.length < 3) return true;
+
+      let inside = false;
+      const x = point.lon;
+      const y = point.lat;
+
+      for (let i = 0, j = polygon.length - 1; i < polygon.length; j++) {
+        const xi = polygon[i][0];
+        const yi_coord = polygon[i][1];
+        const xj = polygon[j][0];
+        const yj_coord = polygon[j][1];
+
+        if (((yi_coord > y) !== (yj_coord > y)) &&
+            (x < ((xj - xi) * (y - yi_coord)) / (yj_coord - yi_coord) + xi)) {
+          inside = !inside;
+        }
+      }
+
+      return inside;
+    });
+  }, [filteredMapPoints, drawnPolygon]);
 
   const mapPoints = useMemo(() => extractMapPoints(results), [results]);
 
@@ -680,10 +724,45 @@ export default function SearchPage() {
                             />
                             Enhanced Map
                           </label>
+                          {useMapbox && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEnableDrawing(!enableDrawing);
+                                if (enableDrawing) {
+                                  setDrawnPolygon(null);
+                                }
+                              }}
+                              className={[
+                                'inline-flex items-center gap-1 px-2 py-1 text-sm rounded-md border',
+                                enableDrawing
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'hover:bg-muted',
+                              ].join(' ')}
+                              aria-label={enableDrawing ? 'Disable drawing' : 'Enable drawing'}
+                            >
+                              <Pencil className="h-3 w-3" />
+                              {enableDrawing ? 'Drawing...' : 'Draw Area'}
+                            </button>
+                          )}
+                          {drawnPolygon && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDrawnPolygon(null);
+                                setEnableDrawing(false);
+                              }}
+                              className="text-xs text-muted-foreground hover:text-foreground"
+                              aria-label="Clear drawn area"
+                            >
+                              Clear Area
+                            </button>
+                          )}
                         </div>
                       )}
                       <div className="text-sm text-muted-foreground">
-                        {filteredMapPoints.length} / {mapPoints.length} / {results.length} shown
+                        {drawnPolygon ? filteredByPolygon.length : filteredMapPoints.length} / {mapPoints.length} / {results.length} shown
+                        {drawnPolygon && <span className="text-primary ml-1">(filtered by area)</span>}
                       </div>
                     </div>
 
@@ -693,11 +772,15 @@ export default function SearchPage() {
                           useMapbox ? (
                             <>
                               <PropertyMapboxMap
-                                points={filteredMapPoints}
+                                points={drawnPolygon ? filteredByPolygon : filteredMapPoints}
                                 mapboxToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
                                 showHeatmap={mapFilterOptions.showHeatmap}
                                 heatmapIntensity={mapFilterOptions.heatmapIntensity}
+                                heatmapMode={mapFilterOptions.heatmapMode}
                                 showClusters={mapFilterOptions.showClusters}
+                                enableDrawing={enableDrawing}
+                                onPolygonDraw={handlePolygonDraw}
+                                onPolygonClear={handlePolygonClear}
                               />
                               <MapControls
                                 options={mapFilterOptions}

@@ -755,6 +755,37 @@ class ChromaPropertyStore:
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
         return R * c
 
+    def _point_in_polygon(self, lat: float, lon: float, polygon: List[List[float]]) -> bool:
+        """
+        Check if a point is inside a polygon using ray casting algorithm.
+
+        Args:
+            lat: Point latitude
+            lon: Point longitude
+            polygon: List of [lon, lat] coordinate pairs (GeoJSON format)
+
+        Returns:
+            True if point is inside polygon, False otherwise
+        """
+        if len(polygon) < 3:
+            return False
+
+        n = len(polygon)
+        inside = False
+
+        j = n - 1
+        for i in range(n):
+            xi, yi = polygon[i][0], polygon[i][1]  # lon, lat
+            xj, yj = polygon[j][0], polygon[j][1]  # lon, lat
+
+            # Ray casting: check if ray from point crosses edge
+            if ((yi > lat) != (yj > lat)) and (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi):
+                inside = not inside
+
+            j = i
+
+        return inside
+
     def hybrid_search(
         self,
         query: str,
@@ -768,6 +799,7 @@ class ChromaPropertyStore:
         max_lat: Optional[float] = None,
         min_lon: Optional[float] = None,
         max_lon: Optional[float] = None,
+        polygon: Optional[List[List[float]]] = None,
         sort_by: Optional[str] = None,
         sort_order: Optional[str] = "desc",
     ) -> List[tuple[Document, float]]:
@@ -782,6 +814,7 @@ class ChromaPropertyStore:
             lat: Latitude for geo-search
             lon: Longitude for geo-search
             radius_km: Radius in km
+            polygon: GeoJSON polygon coordinates for polygon-based filtering
             sort_by: Field to sort by (e.g. 'price', 'price_per_sqm')
             sort_order: 'asc' or 'desc'
 
@@ -836,6 +869,17 @@ class ChromaPropertyStore:
                 if d_lat is not None and d_lon is not None:
                     dist = self._haversine(lat, lon, float(d_lat), float(d_lon))
                     if dist <= radius_km:
+                        filtered_results.append((doc, score))
+            vector_results = filtered_results
+
+        # Post-filter for polygon-based geo-search
+        if polygon is not None and len(polygon) >= 3:
+            filtered_results = []
+            for doc, score in vector_results:
+                d_lat = doc.metadata.get("lat")
+                d_lon = doc.metadata.get("lon")
+                if d_lat is not None and d_lon is not None:
+                    if self._point_in_polygon(float(d_lat), float(d_lon), polygon):
                         filtered_results.append((doc, score))
             vector_results = filtered_results
 

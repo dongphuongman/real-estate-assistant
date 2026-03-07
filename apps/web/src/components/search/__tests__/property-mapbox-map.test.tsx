@@ -19,14 +19,31 @@ jest.mock("mapbox-gl", () => ({
       getZoom: jest.fn(() => 12),
       addControl: jest.fn(),
       remove: jest.fn(),
+      removeControl: jest.fn(),
+      getCanvas: jest.fn(() => ({ style: {} })),
+      isStyleLoaded: jest.fn(() => true),
     })),
     NavigationControl: jest.fn(),
     Marker: jest.fn().mockImplementation(() => ({
       setPopup: jest.fn().mockReturnThis(),
       addTo: jest.fn().mockReturnThis(),
+      setLngLat: jest.fn().mockReturnThis(),
     })),
-    Popup: jest.fn(),
+    Popup: jest.fn().mockImplementation(() => ({
+      setHTML: jest.fn().mockReturnThis(),
+      offset: jest.fn().mockReturnThis(),
+    })),
   },
+}));
+
+// Mock @mapbox/mapbox-gl-draw
+jest.mock("@mapbox/mapbox-gl-draw", () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(() => ({
+    addControl: jest.fn(),
+    removeControl: jest.fn(),
+    deleteAll: jest.fn(),
+  })),
 }));
 
 describe("PropertyMapboxMap", () => {

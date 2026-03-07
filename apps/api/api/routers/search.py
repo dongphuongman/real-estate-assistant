@@ -51,6 +51,7 @@ async def search_properties(
             max_lat=request.max_lat,
             min_lon=request.min_lon,
             max_lon=request.max_lon,
+            polygon=request.polygon,
             sort_by=request.sort_by.value if request.sort_by else None,
             sort_order=request.sort_order.value if request.sort_order else None,
         )

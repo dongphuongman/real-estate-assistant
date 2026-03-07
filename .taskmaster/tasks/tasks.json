@@ -374,14 +374,14 @@
         "id": "50",
         "title": "Geographic Mapping Enhancement",
         "description": "Integrate professional mapping services (Mapbox) for property visualization with heatmaps, clustering, and interactive filters.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "medium",
         "category": "feature",
         "details": "1. Mapbox Integration Setup:\n   - Add Mapbox GL JS dependency to frontend\n   - Configure Mapbox API key via environment variable\n   - Create base map component with property markers\n   - Handle map loading states and errors\n\n2. Heatmap Visualization:\n   - Price heatmap mode (gradient by price/sqm)\n   - Yield heatmap for investment properties\n   - Toggle between heatmap and cluster modes\n   - Color gradient legend\n\n3. Map Filters and Interactions:\n   - Filter by price range, rooms, type on map\n   - Click marker to show property card preview\n   - Draw polygon/bounding box for geo-search\n   - Zoom level controls\n\n4. City Overview Map:\n   - Aggregate statistics by district/neighborhood\n   - Show neighborhood boundaries and labels\n   - Click district to filter search results\n   - Population density overlay (optional)",
         "testStrategy": "1. Map loads with 1000+ property markers without lag\n2. Heatmap renders correctly with color gradient legend\n3. Drawing a polygon correctly filters search results\n4. Test Mapbox API key configuration\n5. Verify responsive map on mobile devices",
         "subtasks": [],
-        "updatedAt": "2026-03-06T19:00:00.000Z"
+        "updatedAt": "2026-03-07T00:32:04.297Z"
       },
       {
         "id": "51",
@@ -579,9 +579,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-06T23:12:55.478Z",
+      "lastModified": "2026-03-07T00:32:04.298Z",
       "taskCount": 38,
-      "completedCount": 19,
+      "completedCount": 20,
       "tags": [
         "master"
       ]

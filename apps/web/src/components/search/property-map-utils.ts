@@ -1,5 +1,7 @@
 import { SearchResultItem } from "@/lib/types";
 
+export type HeatmapMode = 'density' | 'price' | 'price_per_sqm' | 'yield';
+
 export type PropertyMapPoint = {
   id: string;
   lat: number;
@@ -8,6 +10,10 @@ export type PropertyMapPoint = {
   city?: string;
   country?: string;
   price?: number;
+  price_per_sqm?: number;
+  area_sqm?: number;
+  rooms?: number;
+  property_type?: string;
 };
 
 export function extractMapPoints(results: SearchResultItem[]): PropertyMapPoint[] {
@@ -17,6 +23,12 @@ export function extractMapPoints(results: SearchResultItem[]): PropertyMapPoint[
     const lon = prop.longitude;
     if (typeof lat !== "number" || typeof lon !== "number") return acc;
     const id = prop.id ?? `unknown-${index}`;
+
+    // Calculate price_per_sqm if not provided
+    const pricePerSqm = prop.price && prop.area_sqm
+      ? prop.price / prop.area_sqm
+      : undefined;
+
     acc.push({
       id,
       lat,
@@ -25,6 +37,10 @@ export function extractMapPoints(results: SearchResultItem[]): PropertyMapPoint[
       city: prop.city ?? undefined,
       country: prop.country ?? undefined,
       price: prop.price ?? undefined,
+      price_per_sqm: pricePerSqm,
+      area_sqm: prop.area_sqm ?? undefined,
+      rooms: prop.rooms ?? undefined,
+      property_type: prop.property_type,
     });
     return acc;
   }, []);

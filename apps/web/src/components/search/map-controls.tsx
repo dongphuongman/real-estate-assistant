@@ -9,11 +9,15 @@ import {
   ZoomOut,
   Filter,
   X,
+  DollarSign,
+  TrendingUp,
 } from "lucide-react";
+import type { HeatmapMode } from "./property-map-utils";
 
 export interface MapFilterOptions {
   showHeatmap: boolean;
   heatmapIntensity: number;
+  heatmapMode: HeatmapMode;
   showClusters: boolean;
   priceRange?: [number, number];
   propertyType?: string;
@@ -116,6 +120,27 @@ export default function MapControls({
             />
           </label>
 
+          {/* Heatmap mode selector */}
+          {options.showHeatmap && (
+            <div className="space-y-1 pl-6">
+              <label htmlFor="heatmap-mode" className="text-xs text-muted-foreground">
+                Mode
+              </label>
+              <select
+                id="heatmap-mode"
+                value={options.heatmapMode || "density"}
+                onChange={(e) => onChange({ ...options, heatmapMode: e.target.value as HeatmapMode })}
+                className="w-full text-sm rounded border border-input bg-background px-2 py-1"
+                aria-label="Heatmap mode"
+              >
+                <option value="density">Density</option>
+                <option value="price">Price</option>
+                <option value="price_per_sqm">Price/m²</option>
+                <option value="yield">Yield</option>
+              </select>
+            </div>
+          )}
+
           {/* Heatmap intensity */}
           {options.showHeatmap && (
             <div className="space-y-1 pl-6">
@@ -212,6 +237,7 @@ export default function MapControls({
               onChange({
                 showHeatmap: false,
                 heatmapIntensity: 1,
+                heatmapMode: "density",
                 showClusters: true,
                 priceRange: undefined,
                 propertyType: undefined,

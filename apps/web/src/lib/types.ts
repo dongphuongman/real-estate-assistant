@@ -52,6 +52,7 @@ export interface SearchRequest {
   lat?: number;
   lon?: number;
   radius_km?: number;
+  polygon?: [number, number][];
   sort_by?: 'relevance' | 'price' | 'price_per_sqm' | 'area_sqm' | 'year_built';
   sort_order?: 'asc' | 'desc';
 }

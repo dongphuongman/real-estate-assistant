@@ -210,6 +210,7 @@ describe("MapControls", () => {
     expect(mockOnChange).toHaveBeenCalledWith({
       showHeatmap: false,
       heatmapIntensity: 1,
+      heatmapMode: "density",
       showClusters: true,
       priceRange: undefined,
       propertyType: undefined,

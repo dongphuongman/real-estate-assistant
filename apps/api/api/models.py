@@ -68,6 +68,12 @@ class SearchRequest(BaseModel):
         None, ge=-180, le=180, description="Bounding box max longitude"
     )
 
+    # Polygon filter for drawn areas (GeoJSON polygon coordinates)
+    polygon: Optional[List[List[float]]] = Field(
+        None,
+        description="GeoJSON polygon coordinates for geo-search (list of [lon, lat] pairs)",
+    )
+
     # Sorting
     sort_by: Optional[SortField] = SortField.RELEVANCE
     sort_order: Optional[SortOrder] = SortOrder.DESC
