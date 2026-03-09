@@ -387,7 +387,7 @@
         "id": "51",
         "title": "Commute Time Analysis",
         "description": "Calculate and visualize commute times from properties to user-defined destinations using multiple transport modes.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "50"
         ],
@@ -396,7 +396,7 @@
         "details": "1. Routing Integration:\n   - Integrate OpenRouteService or similar API\n   - Support car, public transport, bike, walking modes\n   - Handle rate limits and caching\n   - Store commute time results for performance\n\n2. Isochrone Generation:\n   - Generate \"30-minute commute\" polygons\n   - Overlay on property map\n   - Calculate actual commute time for each property\n   - Multiple isochrone layers (15, 30, 45, 60 min)\n\n3. User Inputs:\n   - Add work/school address input\n   - Transport mode selector\n   - Maximum commute time filter\n   - Save frequent destinations\n\n4. Results Ranking:\n   - Sort properties by commute convenience\n   - Show commute time in property cards\n   - Highlight \"commute-friendly\" properties\n   - Compare multiple destinations",
         "testStrategy": "1. Isochrone polygon renders accurately on map\n2. Commute times match realistic expectations\n3. Sorting by commute time works correctly\n4. Test routing API rate limiting\n5. Verify caching reduces API calls",
         "subtasks": [],
-        "updatedAt": "2026-03-06T19:00:00.000Z"
+        "updatedAt": "2026-03-09T19:52:36.494Z"
       },
       {
         "id": "52",
@@ -430,14 +430,14 @@
         "id": "54",
         "title": "Property Description Generator",
         "description": "Use LLM to generate listing descriptions, headline variants, and social media summaries from structured property data.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "medium",
         "category": "feature",
         "details": "1. Prompt Engineering:\n   - Create description generation prompt templates\n   - Handle tone variations (professional, casual, luxury)\n   - Include all key property facts\n   - Multi-language support\n\n2. API Endpoint:\n   - POST /api/v1/tools/generate-description\n   - Input: property data fields\n   - Output: full description, headlines, summary\n   - Rate limiting per user\n\n3. UI Integration:\n   - Add \"Generate Description\" button in property details\n   - Show generated text with edit capability\n   - Tone selector for different outputs\n   - Copy to clipboard functionality\n\n4. Platform Variants:\n   - Generate different lengths for portal vs social\n   - Adapt tone per platform guidelines\n   - Keep core facts consistent across variants\n   - Character count limits per platform",
         "testStrategy": "1. Generated descriptions are factually accurate\n2. Different tones produce appropriate variations\n3. Character limits respected for each platform\n4. Test rate limiting\n5. Verify multi-language output",
         "subtasks": [],
-        "updatedAt": "2026-03-06T19:00:00.000Z"
+        "updatedAt": "2026-03-09T19:15:43.932Z"
       },
       {
         "id": "55",
@@ -579,9 +579,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-09T16:22:23.892Z",
+      "lastModified": "2026-03-09T19:52:36.495Z",
       "taskCount": 38,
-      "completedCount": 21,
+      "completedCount": 23,
       "tags": [
         "master"
       ]
