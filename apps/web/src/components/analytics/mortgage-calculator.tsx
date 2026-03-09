@@ -7,7 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { calculateMortgage, calculateTCO, ApiError } from "@/lib/api";
 import { MortgageResult, TCOResult } from "@/lib/types";
-import { Loader2, AlertCircle, RefreshCw, Calculator, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, AlertCircle, RefreshCw, Calculator, ChevronDown, ChevronUp, Scale, Download } from "lucide-react";
+import { TCOBreakdownChart } from "./charts/tco-breakdown-chart";
+import { TCOComparison } from "./tco-comparison";
+import { exportTCOToPDF } from "@/lib/pdf-export";
 
 interface ErrorState {
   message: string;
@@ -37,6 +40,7 @@ export function MortgageCalculator() {
   const [tcoResult, setTcoResult] = useState<TCOResult | null>(null);
   const [lastFormData, setLastFormData] = useState<typeof formData | null>(null);
   const [showTcoOptions, setShowTcoOptions] = useState(false);
+  const [showComparison, setShowComparison] = useState(false);
 
   const [formData, setFormData] = useState({
     property_price: 500000,
@@ -475,6 +479,50 @@ export function MortgageCalculator() {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* TCO Breakdown Pie Chart */}
+      {tcoResult && (
+        <TCOBreakdownChart
+          tcoResult={tcoResult}
+          className="col-span-full md:col-span-2"
+        />
+      )}
+
+      {/* Export PDF Button */}
+      {tcoResult && (
+        <div className="col-span-full md:col-span-2 flex justify-center">
+          <Button
+            variant="outline"
+            onClick={() => exportTCOToPDF(tcoResult)}
+            className="gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Export to PDF
+          </Button>
+        </div>
+      )}
+
+      {/* Compare Scenarios Button */}
+      {tcoResult && (
+        <div className="col-span-full md:col-span-2 flex justify-center">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => setShowComparison(!showComparison)}
+            className="gap-2"
+          >
+            <Scale className="h-4 w-4" />
+            {showComparison ? "Hide Comparison" : "Compare Scenarios"}
+          </Button>
+        </div>
+      )}
+
+      {/* TCO Comparison Section */}
+      {showComparison && (
+        <div className="col-span-full md:col-span-2">
+          <TCOComparison />
+        </div>
       )}
     </div>
   );

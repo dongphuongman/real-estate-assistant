@@ -992,20 +992,17 @@ async def generate_listing(
     if request.language not in LISTING_LANGUAGES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=(f"Invalid language. Supported: "
-                    f"{', '.join(LISTING_LANGUAGES)}"),
+            detail=(f"Invalid language. Supported: {', '.join(LISTING_LANGUAGES)}"),
         )
     if request.headline_style not in HEADLINE_STYLES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=(f"Invalid headline style. Supported: "
-                    f"{', '.join(HEADLINE_STYLES)}"),
+            detail=(f"Invalid headline style. Supported: {', '.join(HEADLINE_STYLES)}"),
         )
     if request.social_platform not in SOCIAL_PLATFORMS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=(f"Invalid social platform. Supported: "
-                    f"{', '.join(SOCIAL_PLATFORMS)}"),
+            detail=(f"Invalid social platform. Supported: {', '.join(SOCIAL_PLATFORMS)}"),
         )
 
     property_id = request.property_id.strip()

@@ -138,6 +138,152 @@ class TCOResult(BaseModel):
     breakdown: Dict[str, float]
 
 
+# Task #52: Enhanced TCO Models
+class TCOProjection(BaseModel):
+    """Year-by-year TCO projection for multi-year analysis."""
+
+    year: int = Field(description="Year number (1, 5, 10, 20, etc.)")
+    cumulative_cost: float = Field(description="Total cumulative cost up to this year")
+    cumulative_principal_paid: float = Field(description="Total principal paid on mortgage")
+    cumulative_interest_paid: float = Field(description="Total interest paid on mortgage")
+    cumulative_equity: float = Field(description="Equity built (down payment + principal paid)")
+    property_value_estimate: float = Field(description="Estimated property value at this year")
+    loan_balance: float = Field(description="Remaining loan balance")
+    annual_cost: float = Field(description="Total cost in this specific year")
+
+
+class TCOLocationDefaults(BaseModel):
+    """Location-based default cost estimates for TCO calculations."""
+
+    country: str = Field(description="Country code (e.g., 'DE', 'US')")
+    region: str = Field(description="Region/city name")
+    property_tax_rate: float = Field(description="Annual property tax as % of property value")
+    avg_insurance_rate: float = Field(description="Annual insurance as % of property value")
+    avg_utilities_per_sqm: float = Field(description="Average monthly utilities per sqm")
+    avg_internet: float = Field(description="Average monthly internet cost")
+    avg_parking: float = Field(description="Average monthly parking cost")
+    currency: str = Field(default="USD", description="Default currency")
+
+
+class EnhancedTCOResult(BaseModel):
+    """Extended TCO result with projections and analysis."""
+
+    # Base TCO components (inherited from TCOResult)
+    monthly_payment: float
+    total_interest: float
+    down_payment: float
+    loan_amount: float
+
+    # TCO components (monthly)
+    monthly_mortgage: float
+    monthly_property_tax: float
+    monthly_insurance: float
+    monthly_hoa: float
+    monthly_utilities: float
+    monthly_internet: float
+    monthly_parking: float
+    monthly_maintenance: float
+    monthly_tco: float
+
+    # TCO components (annual)
+    annual_mortgage: float
+    annual_property_tax: float
+    annual_insurance: float
+    annual_hoa: float
+    annual_utilities: float
+    annual_internet: float
+    annual_parking: float
+    annual_maintenance: float
+    annual_tco: float
+
+    # Total over loan term
+    total_ownership_cost: float
+    total_all_costs: float
+    breakdown: Dict[str, float]
+
+    # Enhanced fields
+    projections: List[TCOProjection] = Field(
+        default_factory=list, description="Multi-year projections at 5, 10, 20 years"
+    )
+    percentage_breakdown: Dict[str, float] = Field(
+        default_factory=dict, description="Cost category percentages for pie charts"
+    )
+    fixed_costs_monthly: float = Field(
+        default=0.0, description="Fixed monthly costs (mortgage, HOA, insurance)"
+    )
+    variable_costs_monthly: float = Field(
+        default=0.0, description="Variable monthly costs (utilities, maintenance)"
+    )
+    discretionary_costs_monthly: float = Field(
+        default=0.0, description="Discretionary costs (parking, internet)"
+    )
+
+
+class TCOComparisonInput(BaseModel):
+    """Input for comparing two property TCO scenarios."""
+
+    # Scenario A
+    scenario_a: TCOInput = Field(description="First property scenario")
+    scenario_a_name: str = Field(default="Property A", description="Name for scenario A")
+
+    # Scenario B
+    scenario_b: TCOInput = Field(description="Second property scenario")
+    scenario_b_name: str = Field(default="Property B", description="Name for scenario B")
+
+    # Comparison settings
+    comparison_years: int = Field(
+        default=10, description="Number of years for comparison", gt=0, le=30
+    )
+    appreciation_rate: float = Field(
+        default=3.0, description="Annual property appreciation rate %", ge=0
+    )
+
+    # User priorities for recommendation (weights 0-1)
+    priority_monthly_cashflow: float = Field(
+        default=0.3, description="Weight for monthly cashflow priority", ge=0, le=1
+    )
+    priority_long_term_equity: float = Field(
+        default=0.4, description="Weight for long-term equity building", ge=0, le=1
+    )
+    priority_total_cost: float = Field(
+        default=0.3, description="Weight for minimizing total cost", ge=0, le=1
+    )
+
+
+class TCOComparisonResult(BaseModel):
+    """Result comparing two TCO scenarios with recommendations."""
+
+    # Individual scenario results
+    scenario_a: EnhancedTCOResult
+    scenario_b: EnhancedTCOResult
+    scenario_a_name: str
+    scenario_b_name: str
+
+    # Comparison metrics
+    monthly_cost_difference: float = Field(
+        description="Monthly cost difference (A - B). Positive means A costs more."
+    )
+    total_cost_difference: float = Field(
+        description="Total cost difference over comparison period (A - B)"
+    )
+    equity_difference: float = Field(
+        description="Equity difference at comparison period end (A - B)"
+    )
+    break_even_years: Optional[float] = Field(
+        default=None, description="Years until costs equalize (if applicable)"
+    )
+
+    # Trade-off analysis
+    a_advantages: List[str] = Field(default_factory=list, description="Advantages of scenario A")
+    b_advantages: List[str] = Field(default_factory=list, description="Advantages of scenario B")
+
+    # Recommendation
+    recommendation: str = Field(description="'scenario_a', 'scenario_b', or 'neutral'")
+    recommendation_reason: str = Field(description="Explanation for the recommendation")
+    priority_score_a: float = Field(description="Weighted priority score for A (0-100)")
+    priority_score_b: float = Field(description="Weighted priority score for B (0-100)")
+
+
 # Task #42: Rent vs Buy Calculator Models
 class RentVsBuyInput(BaseModel):
     """Input for Rent vs Buy calculator."""
@@ -512,6 +658,409 @@ TOTAL ALL-IN COST:       ${result.total_all_costs:,.2f}
             return f"Error: {str(e)}"
         except Exception as e:
             return f"Error calculating TCO: {str(e)}"
+
+    async def _arun(self, *args: Any, **kwargs: Any) -> str:
+        """Async version."""
+        return self._run(*args, **kwargs)
+
+
+# Task #52: TCO Comparison Tool
+class TCOComparisonTool(BaseTool):
+    """Tool for comparing Total Cost of Ownership between two property scenarios."""
+
+    name: str = "tco_comparison"
+    description: str = (
+        "Compare the Total Cost of Ownership between two property scenarios. "
+        "Analyzes trade-offs, calculates break-even points, and provides recommendations "
+        "based on user priorities (monthly cashflow, long-term equity, total cost)."
+    )
+    args_schema: type[TCOComparisonInput] = TCOComparisonInput
+
+    @staticmethod
+    def _calculate_enhanced_tco(
+        input_data: TCOInput, projection_years: List[int], appreciation_rate: float
+    ) -> EnhancedTCOResult:
+        """Calculate enhanced TCO with projections."""
+        # Get base TCO result
+        base_result = TCOCalculatorTool.calculate(
+            property_price=input_data.property_price,
+            down_payment_percent=input_data.down_payment_percent,
+            interest_rate=input_data.interest_rate,
+            loan_years=input_data.loan_years,
+            monthly_hoa=input_data.monthly_hoa,
+            annual_property_tax=input_data.annual_property_tax,
+            annual_insurance=input_data.annual_insurance,
+            monthly_utilities=input_data.monthly_utilities,
+            monthly_internet=input_data.monthly_internet,
+            monthly_parking=input_data.monthly_parking,
+            maintenance_percent=input_data.maintenance_percent,
+        )
+
+        # Calculate percentage breakdown for pie chart
+        total_monthly = base_result.monthly_tco
+        percentage_breakdown = {}
+        if total_monthly > 0:
+            for key, value in base_result.breakdown.items():
+                percentage_breakdown[key] = round((value / total_monthly) * 100, 1)
+
+        # Group costs by category
+        fixed_costs = (
+            base_result.monthly_mortgage
+            + base_result.monthly_hoa
+            + base_result.monthly_insurance
+            + base_result.monthly_property_tax
+        )
+        variable_costs = base_result.monthly_utilities + base_result.monthly_maintenance
+        discretionary_costs = base_result.monthly_internet + base_result.monthly_parking
+
+        # Calculate projections
+        projections = []
+        loan_amount = base_result.loan_amount
+        monthly_rate = (input_data.interest_rate / 100) / 12
+        down_payment = base_result.down_payment
+
+        cumulative_cost = 0.0
+        cumulative_principal = 0.0
+        cumulative_interest = 0.0
+        property_value = input_data.property_price
+
+        for year in range(1, input_data.loan_years + 1):
+            # Annual costs for this year
+            annual_cost = base_result.annual_tco
+            cumulative_cost += annual_cost
+
+            # Calculate principal and interest for this year (12 payments)
+            year_principal = 0.0
+            year_interest = 0.0
+
+            for _ in range(12):
+                if loan_amount > 0:
+                    interest_payment = loan_amount * monthly_rate
+                    principal_payment = base_result.monthly_payment - interest_payment
+                    year_principal += principal_payment
+                    year_interest += interest_payment
+                    loan_amount = max(0, loan_amount - principal_payment)
+
+            cumulative_principal += year_principal
+            cumulative_interest += year_interest
+
+            # Property value appreciation
+            property_value *= 1 + appreciation_rate / 100
+
+            # Equity = down payment + principal paid
+            equity = down_payment + cumulative_principal
+
+            if year in projection_years:
+                projections.append(
+                    TCOProjection(
+                        year=year,
+                        cumulative_cost=cumulative_cost + down_payment,
+                        cumulative_principal_paid=cumulative_principal,
+                        cumulative_interest_paid=cumulative_interest,
+                        cumulative_equity=equity,
+                        property_value_estimate=property_value,
+                        loan_balance=loan_amount,
+                        annual_cost=annual_cost,
+                        monthly_cost_at_year=base_result.monthly_tco,
+                    )
+                )
+
+        return EnhancedTCOResult(
+            # Copy base fields
+            monthly_payment=base_result.monthly_payment,
+            total_interest=base_result.total_interest,
+            down_payment=base_result.down_payment,
+            loan_amount=base_result.loan_amount,
+            monthly_mortgage=base_result.monthly_mortgage,
+            monthly_property_tax=base_result.monthly_property_tax,
+            monthly_insurance=base_result.monthly_insurance,
+            monthly_hoa=base_result.monthly_hoa,
+            monthly_utilities=base_result.monthly_utilities,
+            monthly_internet=base_result.monthly_internet,
+            monthly_parking=base_result.monthly_parking,
+            monthly_maintenance=base_result.monthly_maintenance,
+            monthly_tco=base_result.monthly_tco,
+            annual_mortgage=base_result.annual_mortgage,
+            annual_property_tax=base_result.annual_property_tax,
+            annual_insurance=base_result.annual_insurance,
+            annual_hoa=base_result.annual_hoa,
+            annual_utilities=base_result.annual_utilities,
+            annual_internet=base_result.annual_internet,
+            annual_parking=base_result.annual_parking,
+            annual_maintenance=base_result.annual_maintenance,
+            annual_tco=base_result.annual_tco,
+            total_ownership_cost=base_result.total_ownership_cost,
+            total_all_costs=base_result.total_all_costs,
+            breakdown=base_result.breakdown,
+            # Enhanced fields
+            projections=projections,
+            percentage_breakdown=percentage_breakdown,
+            fixed_costs_monthly=fixed_costs,
+            variable_costs_monthly=variable_costs,
+            discretionary_costs_monthly=discretionary_costs,
+        )
+
+    @staticmethod
+    def calculate(
+        scenario_a: TCOInput,
+        scenario_b: TCOInput,
+        scenario_a_name: str = "Property A",
+        scenario_b_name: str = "Property B",
+        comparison_years: int = 10,
+        appreciation_rate: float = 3.0,
+        priority_monthly_cashflow: float = 0.3,
+        priority_long_term_equity: float = 0.4,
+        priority_total_cost: float = 0.3,
+    ) -> TCOComparisonResult:
+        """
+        Compare two TCO scenarios and provide recommendation.
+
+        Args:
+            scenario_a: First property TCO input
+            scenario_b: Second property TCO input
+            scenario_a_name: Name for scenario A
+            scenario_b_name: Name for scenario B
+            comparison_years: Years to compare over
+            appreciation_rate: Annual property appreciation %
+            priority_monthly_cashflow: Weight for monthly cashflow (0-1)
+            priority_long_term_equity: Weight for equity building (0-1)
+            priority_total_cost: Weight for minimizing total cost (0-1)
+
+        Returns:
+            TCOComparisonResult with comparison and recommendation
+        """
+        # Calculate enhanced TCO for both scenarios
+        projection_years = [5, 10, 15, 20, comparison_years]
+        projection_years = sorted(set(projection_years))
+
+        result_a = TCOComparisonTool._calculate_enhanced_tco(
+            scenario_a, projection_years, appreciation_rate
+        )
+        result_b = TCOComparisonTool._calculate_enhanced_tco(
+            scenario_b, projection_years, appreciation_rate
+        )
+
+        # Calculate comparison metrics
+        monthly_diff = result_a.monthly_tco - result_b.monthly_tco
+
+        # Find projections for comparison years
+        proj_a = next((p for p in result_a.projections if p.year == comparison_years), None)
+        proj_b = next((p for p in result_b.projections if p.year == comparison_years), None)
+
+        total_cost_diff = 0.0
+        equity_diff = 0.0
+        break_even_years = None
+
+        if proj_a and proj_b:
+            total_cost_diff = proj_a.cumulative_cost - proj_b.cumulative_cost
+            equity_diff = proj_a.cumulative_equity - proj_b.cumulative_equity
+
+            # Calculate break-even if one is cheaper monthly but has different equity
+            if monthly_diff != 0:
+                # Simple break-even: when cumulative cost difference equals equity difference
+                for year in range(1, comparison_years + 1):
+                    pa = next((p for p in result_a.projections if p.year == year), None)
+                    pb = next((p for p in result_b.projections if p.year == year), None)
+                    if pa and pb:
+                        net_a = pa.cumulative_equity - pa.cumulative_cost
+                        net_b = pb.cumulative_equity - pb.cumulative_cost
+                        if (net_a > net_b) != (result_a.monthly_tco < result_b.monthly_tco):
+                            break_even_years = float(year)
+                            break
+
+        # Build advantages lists
+        a_advantages = []
+        b_advantages = []
+
+        if result_a.monthly_tco < result_b.monthly_tco:
+            a_advantages.append(f"Lower monthly cost by ${abs(monthly_diff):,.0f}/month")
+        else:
+            b_advantages.append(f"Lower monthly cost by ${abs(monthly_diff):,.0f}/month")
+
+        if proj_a and proj_b:
+            if proj_a.cumulative_equity > proj_b.cumulative_equity:
+                a_advantages.append(
+                    f"Builds ${abs(equity_diff):,.0f} more equity over {comparison_years} years"
+                )
+            else:
+                b_advantages.append(
+                    f"Builds ${abs(equity_diff):,.0f} more equity over {comparison_years} years"
+                )
+
+            if proj_a.cumulative_cost < proj_b.cumulative_cost:
+                a_advantages.append(
+                    f"Lower total cost by ${abs(total_cost_diff):,.0f} over {comparison_years} years"
+                )
+            else:
+                b_advantages.append(
+                    f"Lower total cost by ${abs(total_cost_diff):,.0f} over {comparison_years} years"
+                )
+
+        if scenario_a.property_price < scenario_b.property_price:
+            a_advantages.append(
+                f"Lower purchase price (${scenario_a.property_price:,.0f} vs ${scenario_b.property_price:,.0f})"
+            )
+        else:
+            b_advantages.append(
+                f"Lower purchase price (${scenario_b.property_price:,.0f} vs ${scenario_a.property_price:,.0f})"
+            )
+
+        # Calculate priority scores (normalize to 0-100)
+        # Monthly cashflow score: lower is better
+        max_monthly = max(result_a.monthly_tco, result_b.monthly_tco)
+        min_monthly = min(result_a.monthly_tco, result_b.monthly_tco)
+        if max_monthly > min_monthly:
+            score_monthly_a = 100 * (
+                1 - (result_a.monthly_tco - min_monthly) / (max_monthly - min_monthly)
+            )
+            score_monthly_b = 100 * (
+                1 - (result_b.monthly_tco - min_monthly) / (max_monthly - min_monthly)
+            )
+        else:
+            score_monthly_a = score_monthly_b = 50
+
+        # Equity score: higher is better
+        if proj_a and proj_b:
+            max_equity = max(proj_a.cumulative_equity, proj_b.cumulative_equity)
+            min_equity = min(proj_a.cumulative_equity, proj_b.cumulative_equity)
+            if max_equity > min_equity:
+                score_equity_a = (
+                    100 * (proj_a.cumulative_equity - min_equity) / (max_equity - min_equity)
+                )
+                score_equity_b = (
+                    100 * (proj_b.cumulative_equity - min_equity) / (max_equity - min_equity)
+                )
+            else:
+                score_equity_a = score_equity_b = 50
+        else:
+            score_equity_a = score_equity_b = 50
+
+        # Total cost score: lower is better
+        if proj_a and proj_b:
+            max_cost = max(proj_a.cumulative_cost, proj_b.cumulative_cost)
+            min_cost = min(proj_a.cumulative_cost, proj_b.cumulative_cost)
+            if max_cost > min_cost:
+                score_cost_a = 100 * (
+                    1 - (proj_a.cumulative_cost - min_cost) / (max_cost - min_cost)
+                )
+                score_cost_b = 100 * (
+                    1 - (proj_b.cumulative_cost - min_cost) / (max_cost - min_cost)
+                )
+            else:
+                score_cost_a = score_cost_b = 50
+        else:
+            score_cost_a = score_cost_b = 50
+
+        # Weighted total scores
+        priority_score_a = (
+            score_monthly_a * priority_monthly_cashflow
+            + score_equity_a * priority_long_term_equity
+            + score_cost_a * priority_total_cost
+        )
+        priority_score_b = (
+            score_monthly_b * priority_monthly_cashflow
+            + score_equity_b * priority_long_term_equity
+            + score_cost_b * priority_total_cost
+        )
+
+        # Determine recommendation
+        score_diff = priority_score_a - priority_score_b
+        if abs(score_diff) < 5:
+            recommendation = "neutral"
+            recommendation_reason = (
+                f"Both properties have similar overall scores ({priority_score_a:.0f} vs {priority_score_b:.0f}). "
+                f"Consider non-financial factors like location, size, and personal preferences."
+            )
+        elif score_diff > 0:
+            recommendation = "scenario_a"
+            recommendation_reason = (
+                f"{scenario_a_name} scores higher ({priority_score_a:.0f} vs {priority_score_b:.0f}) based on your priorities. "
+                f"Key advantages: {'; '.join(a_advantages[:2])}"
+            )
+        else:
+            recommendation = "scenario_b"
+            recommendation_reason = (
+                f"{scenario_b_name} scores higher ({priority_score_b:.0f} vs {priority_score_a:.0f}) based on your priorities. "
+                f"Key advantages: {'; '.join(b_advantages[:2])}"
+            )
+
+        return TCOComparisonResult(
+            scenario_a=result_a,
+            scenario_b=result_b,
+            scenario_a_name=scenario_a_name,
+            scenario_b_name=scenario_b_name,
+            monthly_cost_difference=monthly_diff,
+            total_cost_difference=total_cost_diff,
+            equity_difference=equity_diff,
+            break_even_years=break_even_years,
+            a_advantages=a_advantages,
+            b_advantages=b_advantages,
+            recommendation=recommendation,
+            recommendation_reason=recommendation_reason,
+            priority_score_a=round(priority_score_a, 1),
+            priority_score_b=round(priority_score_b, 1),
+        )
+
+    def _run(
+        self,
+        scenario_a: dict,
+        scenario_b: dict,
+        scenario_a_name: str = "Property A",
+        scenario_b_name: str = "Property B",
+        comparison_years: int = 10,
+        appreciation_rate: float = 3.0,
+        priority_monthly_cashflow: float = 0.3,
+        priority_long_term_equity: float = 0.4,
+        priority_total_cost: float = 0.3,
+    ) -> str:
+        """Execute TCO comparison."""
+        try:
+            # Convert dicts to TCOInput models
+            input_a = TCOInput(**scenario_a)
+            input_b = TCOInput(**scenario_b)
+
+            result = self.calculate(
+                scenario_a=input_a,
+                scenario_b=input_b,
+                scenario_a_name=scenario_a_name,
+                scenario_b_name=scenario_b_name,
+                comparison_years=comparison_years,
+                appreciation_rate=appreciation_rate,
+                priority_monthly_cashflow=priority_monthly_cashflow,
+                priority_long_term_equity=priority_long_term_equity,
+                priority_total_cost=priority_total_cost,
+            )
+
+            # Format output
+            output = f"""
+=== TCO COMPARISON: {scenario_a_name} vs {scenario_b_name} ===
+
+MONTHLY COSTS:
+  {scenario_a_name}: ${result.scenario_a.monthly_tco:,.0f}
+  {scenario_b_name}: ${result.scenario_b.monthly_tco:,.0f}
+  Difference: ${abs(result.monthly_cost_difference):,.0f}/month ({scenario_a_name if result.monthly_cost_difference > 0 else scenario_b_name} costs more)
+
+{comparison_years}-YEAR OUTLOOK:
+  {scenario_a_name} Total Cost: ${next((p.cumulative_cost for p in result.scenario_a.projections if p.year == comparison_years), 0):,.0f}
+  {scenario_b_name} Total Cost: ${next((p.cumulative_cost for p in result.scenario_b.projections if p.year == comparison_years), 0):,.0f}
+  {scenario_a_name} Equity Built: ${next((p.cumulative_equity for p in result.scenario_a.projections if p.year == comparison_years), 0):,.0f}
+  {scenario_b_name} Equity Built: ${next((p.cumulative_equity for p in result.scenario_b.projections if p.year == comparison_years), 0):,.0f}
+
+ADVANTAGES:
+  {scenario_a_name}: {"; ".join(result.a_advantages[:3]) if result.a_advantages else "None identified"}
+  {scenario_b_name}: {"; ".join(result.b_advantages[:3]) if result.b_advantages else "None identified"}
+
+RECOMMENDATION: {result.recommendation.upper()}
+  {result.recommendation_reason}
+
+Priority Scores: {scenario_a_name}={result.priority_score_a}, {scenario_b_name}={result.priority_score_b}
+"""
+            return output.strip()
+
+        except ValueError as e:
+            return f"Error: {str(e)}"
+        except Exception as e:
+            return f"Error comparing TCO: {str(e)}"
 
     async def _arun(self, *args: Any, **kwargs: Any) -> str:
         """Async version."""
