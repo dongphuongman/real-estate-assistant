@@ -3,14 +3,24 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { HeartButton } from './heart-button';
-import type { Property } from '@/lib/types';
+import { CommuteBadge } from '@/components/commute';
+import type { Property, CommuteTimeResult, CommuteMode } from '@/lib/types';
 
 interface PropertyCardProps {
   property: Property;
   showFavoriteButton?: boolean;
+  /** Optional: Commute time data to display on the card */
+  commuteData?: CommuteTimeResult | null;
+  /** Optional: Whether to show commute time on the card image */
+  showCommuteBadge?: boolean;
 }
 
-export function PropertyCard({ property, showFavoriteButton = true }: PropertyCardProps) {
+export function PropertyCard({
+  property,
+  showFavoriteButton = true,
+  commuteData,
+  showCommuteBadge = false,
+}: PropertyCardProps) {
   const t = useTranslations('property.card');
 
   return (
@@ -33,6 +43,17 @@ export function PropertyCard({ property, showFavoriteButton = true }: PropertyCa
             <HeartButton propertyId={property.id} />
           </div>
         )}
+
+        {/* Commute time badge on the card */}
+        {showCommuteBadge && commuteData && commuteData.duration_seconds > 0 && (
+          <div className="absolute bottom-2 left-2">
+            <CommuteBadge
+              duration={commuteData.duration_seconds}
+              mode={commuteData.mode as CommuteMode}
+              className="bg-white/95 dark:bg-gray-900/90 backdrop-blur-sm"
+            />
+          </div>
+        )}
       </div>
 
       <div className="p-6 space-y-2">
@@ -53,7 +74,7 @@ export function PropertyCard({ property, showFavoriteButton = true }: PropertyCa
             property.area_sqm ? `${property.area_sqm} ${t('areaUnit')}` : null,
           ]
             .filter(Boolean)
-            .join(' \u2022 ')}
+                       .join(' \u2022 ')}
         </p>
       </div>
     </div>

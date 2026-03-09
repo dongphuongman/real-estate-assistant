@@ -62,6 +62,11 @@ import {
   // Task #54: Listing Generation
   ListingGenerationRequest,
   ListingGenerationResult,
+  // Task #51: Commute Time Analysis
+  CommuteTimeRequest,
+  CommuteTimeResponse,
+  CommuteRankingRequest,
+  CommuteRankingResponse,
 } from './types';
 
 function getApiUrl(): string {
@@ -1179,4 +1184,38 @@ export async function generateListing(
     body: JSON.stringify(input),
   });
   return handleResponse<ListingGenerationResult>(response);
+}
+
+// Task #51: Commute Time Analysis
+
+/**
+ * Calculate commute time from a single property to a destination.
+ * Uses Google Routes API for accurate routing with real-time traffic.
+ */
+export async function calculateCommuteTime(
+  input: CommuteTimeRequest
+): Promise<CommuteTimeResponse> {
+  const response = await safeFetch(`${getApiUrl()}/tools/commute-time`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(input),
+  });
+  return handleResponse<CommuteTimeResponse>(response);
+}
+
+/**
+ * Rank multiple properties by commute time to a destination.
+ * Returns properties sorted by commute duration (fastest first).
+ */
+export async function rankPropertiesByCommute(
+  input: CommuteRankingRequest
+): Promise<CommuteRankingResponse> {
+  const response = await safeFetch(`${getApiUrl()}/tools/commute-ranking`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(input),
+  });
+  return handleResponse<CommuteRankingResponse>(response);
 }

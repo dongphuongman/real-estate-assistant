@@ -896,3 +896,66 @@ export interface ListingGenerationResult {
   char_counts: Record<string, number>;
   error?: string;
 }
+
+// Task #51: Commute Time Analysis
+export type CommuteMode = 'driving' | 'walking' | 'bicycling' | 'transit';
+
+export interface CommuteTimeRequest {
+  property_id: string;
+  destination_lat: number;
+  destination_lon: number;
+  mode?: CommuteMode;
+  destination_name?: string;
+  departure_time?: string; // ISO format
+}
+
+export interface CommuteTimeResult {
+  property_id: string;
+  origin_lat: number;
+  origin_lon: number;
+  destination_lat: number;
+  destination_lon: number;
+  destination_name?: string;
+  duration_seconds: number;
+  duration_text: string; // e.g., "45m"
+  distance_meters: number;
+  distance_text: string; // e.g., "12.5 km"
+  mode: string;
+  polyline?: string; // Encoded route for map visualization
+  arrival_time?: string;
+  departure_time?: string;
+}
+
+export interface CommuteTimeResponse {
+  result: CommuteTimeResult;
+}
+
+export interface CommuteRankingRequest {
+  property_ids: string; // Comma-separated property IDs
+  destination_lat: number;
+  destination_lon: number;
+  mode?: CommuteMode;
+  destination_name?: string;
+  departure_time?: string; // ISO format
+}
+
+export interface CommuteRankingResponse {
+  destination_name?: string;
+  destination_lat: number;
+  destination_lon: number;
+  mode: string;
+  rankings: CommuteTimeResult[];
+  count: number;
+  fastest_duration_seconds?: number | null;
+  slowest_duration_seconds?: number | null;
+}
+
+// Saved destination for frequent commute calculations
+export interface SavedDestination {
+  id: string;
+  name: string;
+  address?: string;
+  latitude: number;
+  longitude: number;
+  is_default?: boolean;
+}
