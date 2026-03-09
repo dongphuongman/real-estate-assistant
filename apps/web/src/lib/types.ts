@@ -169,6 +169,70 @@ export interface TCOResult {
   breakdown: Record<string, number>;
 }
 
+// Task #52: Enhanced TCO types
+export interface TCOProjection {
+  year: number;
+  cumulative_cost: number;
+  cumulative_principal_paid: number;
+  cumulative_interest_paid: number;
+  cumulative_equity: number;
+  property_value_estimate: number;
+  loan_balance: number;
+  annual_cost: number;
+}
+
+export interface EnhancedTCOResult extends TCOResult {
+  projections: TCOProjection[];
+  percentage_breakdown: Record<string, number>;
+  fixed_costs_monthly: number;
+  variable_costs_monthly: number;
+  discretionary_costs_monthly: number;
+}
+
+export interface TCOLocationDefaults {
+  country: string;
+  region: string;
+  property_tax_rate: number;
+  avg_insurance_rate: number;
+  avg_utilities_per_sqm: number;
+  avg_internet: number;
+  avg_parking: number;
+  currency: string;
+}
+
+export interface TCOComparisonInput {
+  scenario_a: TCOInput;
+  scenario_b: TCOInput;
+  scenario_a_name?: string;
+  scenario_b_name?: string;
+  comparison_years?: number;
+  appreciation_rate?: number;
+  priority_monthly_cashflow?: number;
+  priority_long_term_equity?: number;
+  priority_total_cost?: number;
+}
+
+export interface TCOComparisonResult {
+  scenario_a: EnhancedTCOResult;
+  scenario_b: EnhancedTCOResult;
+  scenario_a_name: string;
+  scenario_b_name: string;
+  monthly_cost_difference: number;
+  total_cost_difference: number;
+  equity_difference: number;
+  break_even_years: number | null;
+  a_advantages: string[];
+  b_advantages: string[];
+  recommendation: string;
+  recommendation_reason: string;
+  priority_score_a: number;
+  priority_score_b: number;
+}
+
+export interface AvailableLocationsResponse {
+  locations: Record<string, string[]>;
+}
+
 export interface NotificationSettings {
   email_digest: boolean;
   frequency: 'daily' | 'weekly';
@@ -797,4 +861,38 @@ export interface RentVsBuyResult {
   opportunity_cost_of_buying: number;
   net_buying_advantage: number;
   yearly_breakdown: YearlyBreakdown[];
+}
+
+// Task #54: Listing Generation
+export type ListingTone = 'professional' | 'friendly' | 'luxury' | 'engaging';
+export type ListingLanguage =
+  | 'en'
+  | 'pl'
+  | 'es'
+  | 'de'
+  | 'fr'
+  | 'it'
+  | 'pt'
+  | 'ru';
+export type HeadlineStyle = 'catchy' | 'professional' | 'seo';
+export type SocialPlatform = 'facebook' | 'instagram' | 'linkedin' | 'twitter';
+
+export interface ListingGenerationRequest {
+  property_id: string;
+  tone?: ListingTone;
+  language?: ListingLanguage;
+  generate_description?: boolean;
+  generate_headlines?: boolean;
+  headline_count?: number;
+  headline_style?: HeadlineStyle;
+  generate_social?: boolean;
+  social_platform?: SocialPlatform;
+}
+
+export interface ListingGenerationResult {
+  description: string | null;
+  headlines: string[] | null;
+  social_content: string | null;
+  char_counts: Record<string, number>;
+  error?: string;
 }

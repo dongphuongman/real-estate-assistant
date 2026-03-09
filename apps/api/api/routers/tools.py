@@ -50,15 +50,24 @@ from tools.property_tools import (
     RentVsBuyCalculatorTool,
     RentVsBuyInput,
     RentVsBuyResult,
+    TCOComparisonInput,
+    TCOComparisonResult,
+    TCOComparisonTool,
     TCOCalculatorTool,
     TCOInput,
     TCOResult,
     create_property_tools,
 )
+from data.location_defaults import get_location_defaults, get_available_locations
 from tools.portfolio_tools import (
     PortfolioAnalysisInput,
     PortfolioAnalysisResult,
     PortfolioAnalyzerTool,
+)
+from tools.listing_generator_tools import (
+    PropertyDescriptionGeneratorTool,
+    HeadlineGeneratorTool,
+    SocialMediaContentGeneratorTool,
 )
 from vector_store.chroma_store import ChromaPropertyStore
 
@@ -147,6 +156,107 @@ async def calculate_tco(input_data: TCOInput):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Calculation failed: {str(e)}",
+        ) from e
+
+
+# Task #52: TCO Comparison Endpoint
+@router.post("/tools/tco-comparison", response_model=TCOComparisonResult, tags=["Tools"])
+async def compare_tco(input_data: TCOComparisonInput):
+    """
+    Compare Total Cost of Ownership between two property scenarios.
+
+    Provides:
+    - Side-by-side enhanced TCO analysis with projections
+    - Cost difference calculations (monthly and total)
+    - Break-even analysis (when one scenario becomes better)
+    - Trade-off analysis with pros/cons
+    - Priority-weighted recommendation based on user preferences
+    """
+    try:
+        return TCOComparisonTool.calculate(input_data)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Comparison failed: {str(e)}",
+        ) from e
+
+
+# Task #52: Location Defaults Endpoint
+class LocationDefaultsResponse(BaseModel):
+    """Response model for location defaults."""
+
+    country: str
+    region: str
+    property_tax_rate: float
+    avg_insurance_rate: float
+    avg_utilities_per_sqm: float
+    avg_internet: float
+    avg_parking: float
+    currency: str = "USD"
+
+
+class AvailableLocationsResponse(BaseModel):
+    """Response model for available locations."""
+
+    locations: dict[str, list[str]]
+
+
+@router.get(
+    "/tools/tco-location-defaults",
+    response_model=LocationDefaultsResponse,
+    tags=["Tools"],
+)
+async def get_tco_location_defaults(country: str, region: str | None = None):
+    """
+    Get location-based default cost estimates for TCO Calculator.
+
+    Returns reasonable default values for:
+    - Property tax rates (annual % of property value)
+    - Insurance rates (annual % of property value)
+    - Utilities per sqm (monthly)
+    - Internet costs (monthly)
+    - Parking costs (monthly)
+
+    Supports EU (DE, ES, GB, FR, IT, NL) and USA regions.
+    """
+    try:
+        defaults = get_location_defaults(country, region)
+        return LocationDefaultsResponse(
+            country=country.upper(),
+            region=region.lower().replace(" ", "_").replace("-", "_") if region else "default",
+            property_tax_rate=defaults["property_tax_rate"],
+            avg_insurance_rate=defaults["avg_insurance_rate"],
+            avg_utilities_per_sqm=defaults["avg_utilities_per_sqm"],
+            avg_internet=defaults["avg_internet"],
+            avg_parking=defaults["avg_parking"],
+            currency=defaults.get("currency", "USD"),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get location defaults: {str(e)}",
+        ) from e
+
+
+@router.get(
+    "/tools/tco-available-locations",
+    response_model=AvailableLocationsResponse,
+    tags=["Tools"],
+)
+async def list_tco_available_locations():
+    """
+    List all available locations with TCO default values.
+
+    Returns a dictionary mapping country codes to lists of available regions.
+    """
+    try:
+        return AvailableLocationsResponse(locations=get_available_locations())
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get available locations: {str(e)}",
         ) from e
 
 
@@ -807,6 +917,232 @@ async def commute_ranking(
         count=len(ranking_results),
         fastest_duration_seconds=fastest_duration,
         slowest_duration_seconds=slowest_duration,
+    )
+
+
+# ============================================================================
+# Task #54: Listing Generation
+# ============================================================================
+
+# Tone options supported by the tools
+LISTING_TONES = ["professional", "friendly", "luxury", "engaging"]
+# Languages supported by the tools
+LISTING_LANGUAGES = ["en", "pl", "es", "de", "fr", "it", "pt", "ru"]
+# Headline styles
+HEADLINE_STYLES = ["catchy", "professional", "seo"]
+# Social media platforms
+SOCIAL_PLATFORMS = ["facebook", "instagram", "linkedin", "twitter"]
+
+
+class ListingGenerationRequest(BaseModel):
+    """Request for generating property listing content."""
+
+    property_id: str
+    tone: str = "professional"
+    language: str = "en"
+    generate_description: bool = True
+    generate_headlines: bool = True
+    headline_count: int = 5
+    headline_style: str = "catchy"
+    generate_social: bool = True
+    social_platform: str = "facebook"
+
+
+class ListingGenerationResponse(BaseModel):
+    """Response with generated listing content."""
+
+    description: Optional[str] = None
+    headlines: Optional[List[str]] = None
+    social_content: Optional[str] = None
+    char_counts: dict[str, int] = {}
+    error: Optional[str] = None
+
+
+@router.post(
+    "/tools/generate-listing",
+    response_model=ListingGenerationResponse,
+    tags=["Tools"],
+)
+async def generate_listing(
+    request: ListingGenerationRequest,
+    store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
+):
+    """
+    Generate AI-powered listing content for a property.
+
+    Generates:
+    - Property description with customizable tone and language
+    - Multiple headline variants
+    - Platform-specific social media content
+
+    All generated content respects platform character limits.
+    """
+    if not store:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Vector store unavailable",
+        )
+
+    # Validate inputs
+    if request.tone not in LISTING_TONES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid tone. Supported: {', '.join(LISTING_TONES)}",
+        )
+    if request.language not in LISTING_LANGUAGES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(f"Invalid language. Supported: "
+                    f"{', '.join(LISTING_LANGUAGES)}"),
+        )
+    if request.headline_style not in HEADLINE_STYLES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(f"Invalid headline style. Supported: "
+                    f"{', '.join(HEADLINE_STYLES)}"),
+        )
+    if request.social_platform not in SOCIAL_PLATFORMS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(f"Invalid social platform. Supported: "
+                    f"{', '.join(SOCIAL_PLATFORMS)}"),
+        )
+
+    property_id = request.property_id.strip()
+    if not property_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="property_id is required",
+        )
+
+    # Fetch property from vector store
+    docs = store.get_properties_by_ids([property_id])
+    if not docs:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Property not found",
+        )
+
+    # Convert property to text for the tools
+    md = docs[0].metadata or {}
+
+    # Build property data string
+    property_parts = []
+    if md.get("city"):
+        loc = f"{md.get('city')}, {md.get('country', '')}"
+        property_parts.append(f"Location: {loc}")
+    if md.get("property_type"):
+        property_parts.append(f"Type: {md.get('property_type')}")
+    if md.get("rooms"):
+        property_parts.append(f"Rooms: {md.get('rooms')}")
+    if md.get("bathrooms"):
+        property_parts.append(f"Bathrooms: {md.get('bathrooms')}")
+    if md.get("area_sqm"):
+        property_parts.append(f"Area: {md.get('area_sqm')} sqm")
+    if md.get("price"):
+        price_str = f"{md.get('price')} {md.get('currency', 'EUR')}"
+        property_parts.append(f"Price: {price_str}")
+    if md.get("year_built"):
+        property_parts.append(f"Year built: {md.get('year_built')}")
+
+    # Add amenities
+    amenities = []
+    if md.get("has_parking"):
+        amenities.append("parking")
+    if md.get("has_garden"):
+        amenities.append("garden")
+    if md.get("has_balcony"):
+        amenities.append("balcony")
+    if md.get("has_elevator"):
+        amenities.append("elevator")
+    if md.get("has_pool"):
+        amenities.append("pool")
+    if md.get("is_furnished"):
+        amenities.append("furnished")
+    if amenities:
+        property_parts.append(f"Amenities: {', '.join(amenities)}")
+
+    # Add existing description if available
+    if md.get("description"):
+        property_parts.append(f"Description: {md.get('description')}")
+
+    property_data = "\n".join(property_parts)
+
+    # Initialize tools
+    description_tool = PropertyDescriptionGeneratorTool()
+    headline_tool = HeadlineGeneratorTool()
+    social_tool = SocialMediaContentGeneratorTool()
+
+    # Generate content
+    description = None
+    headlines = None
+    social_content = None
+    char_counts: dict[str, int] = {}
+    error = None
+
+    try:
+        if request.generate_description:
+            description = description_tool._run(
+                property_data=property_data,
+                tone=request.tone,
+                language=request.language,
+                max_words=150,
+            )
+            if not description.startswith("Error:"):
+                char_counts["description"] = len(description)
+            else:
+                error = description
+                description = None
+
+        if request.generate_headlines and not error:
+            headline_result = headline_tool._run(
+                property_data=property_data,
+                count=request.headline_count,
+                style=request.headline_style,
+                language=request.language,
+            )
+            if not headline_result.startswith("Error:"):
+                # Parse headlines from result
+                headlines = [
+                    line.split(" [")[0].strip()
+                    for line in headline_result.split("\n")
+                    if line.strip() and not line.startswith("Error:")
+                ]
+                hl_len = sum(len(h) for h in headlines) if headlines else 0
+                char_counts["headlines"] = hl_len
+            else:
+                if not error:
+                    error = headline_result
+
+        if request.generate_social and not error:
+            social_content = social_tool._run(
+                property_data=property_data,
+                platform=request.social_platform,
+                tone=request.tone,
+                language=request.language,
+                include_emojis=True,
+                include_call_to_action=True,
+            )
+            if not social_content.startswith("Error:"):
+                # Remove the header line
+                if social_content.startswith("=== "):
+                    lines = social_content.split("\n")[1:]
+                    social_content = "\n".join(lines).strip()
+                if social_content:
+                    char_counts["social"] = len(social_content)
+            else:
+                if not error:
+                    error = social_content
+
+    except Exception as e:
+        error = f"Generation failed: {str(e)}"
+
+    return ListingGenerationResponse(
+        description=description,
+        headlines=headlines,
+        social_content=social_content,
+        char_counts=char_counts,
+        error=error,
     )
 
 

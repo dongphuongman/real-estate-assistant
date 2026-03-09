@@ -14,7 +14,7 @@ import { searchProperties, exportPropertiesBySearch, ApiError } from '@/lib/api'
 import { SearchResultItem } from '@/lib/types';
 import { extractMapPoints } from '@/components/search/property-map-utils';
 import type { PolygonCoordinates } from '@/components/search/geo-draw-control';
-import { HeartButton } from '@/components/property';
+import { HeartButton, ListingGenerator } from '@/components/property';
 import dynamic from 'next/dynamic';
 import MapControls, { type MapFilterOptions } from '@/components/search/map-controls';
 import { SaveSearchButton } from '@/components/search/save-search-button';
@@ -853,6 +853,14 @@ export default function SearchPage() {
                                     .filter(Boolean)
                                     .join(' • ')}
                                 </p>
+                                {prop.id && (
+                                  <div className="pt-2">
+                                    <ListingGenerator
+                                      propertyId={prop.id}
+                                      compact
+                                    />
+                                  </div>
+                                )}
                               </div>
                             </div>
                           );

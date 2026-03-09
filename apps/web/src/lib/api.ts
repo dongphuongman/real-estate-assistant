@@ -54,6 +54,14 @@ import {
   // Task #42: Rent vs Buy Calculator
   RentVsBuyInput,
   RentVsBuyResult,
+  // Task #52: Enhanced TCO Calculator
+  TCOComparisonInput,
+  TCOComparisonResult,
+  TCOLocationDefaults,
+  AvailableLocationsResponse,
+  // Task #54: Listing Generation
+  ListingGenerationRequest,
+  ListingGenerationResult,
 } from './types';
 
 function getApiUrl(): string {
@@ -324,6 +332,45 @@ export async function calculateTCO(input: TCOInput): Promise<TCOResult> {
     body: JSON.stringify(input),
   });
   return handleResponse<TCOResult>(response);
+}
+
+// Task #52: TCO Comparison API
+export async function compareTCO(
+  input: TCOComparisonInput
+): Promise<TCOComparisonResult> {
+  const response = await fetch(`${getApiUrl()}/tools/tco-comparison`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    body: JSON.stringify(input),
+  });
+  return handleResponse<TCOComparisonResult>(response);
+}
+
+// Task #52: Location Defaults API
+export async function getTCOLocationDefaults(
+  country: string,
+  region?: string
+): Promise<TCOLocationDefaults> {
+  const params = new URLSearchParams({ country });
+  if (region) {
+    params.append('region', region);
+  }
+  const response = await fetch(
+    `${getApiUrl()}/tools/tco-location-defaults?${params.toString()}`,
+    {
+      method: 'GET',
+      headers: buildHeaders(),
+    }
+  );
+  return handleResponse<TCOLocationDefaults>(response);
+}
+
+export async function getTCOAvailableLocations(): Promise<AvailableLocationsResponse> {
+  const response = await fetch(`${getApiUrl()}/tools/tco-available-locations`, {
+    method: 'GET',
+    headers: buildHeaders(),
+  });
+  return handleResponse<AvailableLocationsResponse>(response);
 }
 
 export async function calculateInvestment(
@@ -1106,4 +1153,30 @@ export async function calculateRentVsBuy(
     body: JSON.stringify(input),
   });
   return handleResponse<RentVsBuyResult>(response);
+}
+
+// ============================================================================
+// Task #54: Listing Generation
+// ============================================================================
+
+/**
+ * Generate AI-powered listing content for a property.
+ *
+ * Generates:
+ * - Property description with customizable tone and language
+ * - Multiple headline variants for different platforms
+ * - Platform-specific social media content
+ *
+ * All generated content respects platform character limits.
+ */
+export async function generateListing(
+  input: ListingGenerationRequest
+): Promise<ListingGenerationResult> {
+  const response = await safeFetch(`${getApiUrl()}/tools/generate-listing`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(input),
+  });
+  return handleResponse<ListingGenerationResult>(response);
 }
