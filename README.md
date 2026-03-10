@@ -444,9 +444,27 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 ---
 
-## 📞 Support
+## Support & Customization
 
-For questions or issues:
+If you find this project useful, you can support its development:
+
+- [GitHub Sponsors](https://github.com/sponsors/AleksNeStu) — best for long-term support and roadmap work
+- [Ko-fi](https://ko-fi.com/AleksNeStu) — best for a one-time “thank you”
+- [Buy Me a Coffee](https://www.buymeacoffee.com/AleksNeStu) — one-time support for API/compute costs
+
+Suggested donation message: “Support new market-analysis prompts and property evaluation workflows.”
+
+### 🏠 For Business (Commercial Support)
+
+Need help with installation, deployment, customization for your agency, or CRM integration (Bitrix24, amoCRM, custom pipelines)?
+
+- Start a [Discussion](https://github.com/AleksNeStu/ai-real-estate-assistant/discussions) with the prefix: `[Commercial]`
+- Contact the author via the links on the [GitHub profile](https://github.com/AleksNeStu)
+
+## Support (Community)
+
+For questions or issues (community support):
+
 - Create an [Issue](https://github.com/AleksNeStu/ai-real-estate-assistant/issues)
 - Check existing [Discussions](https://github.com/AleksNeStu/ai-real-estate-assistant/discussions)
 - Review the [PRD](docs/PRD.MD) for detailed specifications

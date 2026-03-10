@@ -198,11 +198,12 @@ Official SDKs:
 ## Support
 
 For API support:
-- GitHub Issues: https://github.com/your-org/ai-real-estate-assistant/issues
-- Documentation: https://docs.example.com
+- GitHub Issues: https://github.com/AleksNeStu/ai-real-estate-assistant/issues
+- GitHub Discussions: https://github.com/AleksNeStu/ai-real-estate-assistant/discussions
+- Documentation: https://github.com/AleksNeStu/ai-real-estate-assistant/tree/main/docs
 
 ## Changelog
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.0.0 | 2024-01-15 | Initial release |
+| 1.0.0 | 15.01.2024 | Initial release |

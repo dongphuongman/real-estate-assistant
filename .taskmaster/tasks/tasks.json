@@ -443,7 +443,7 @@
         "id": "55",
         "title": "Lead Scoring System",
         "description": "Score incoming leads by likelihood to close, budget fit, and urgency to help agents prioritize.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "35"
         ],
@@ -452,7 +452,7 @@
         "details": "1. Scoring Model:\n   - Define scoring factors (budget match, urgency, readiness)\n   - Weight factors based on historical data\n   - Calculate composite score 0-100\n   - Explainability for each score\n\n2. Data Collection:\n   - Track lead behavior (searches, favorites, inquiries)\n   - Capture qualification signals\n   - Store lead interactions in database\n   - Privacy compliance (GDPR)\n\n3. Dashboard UI:\n   - Lead list sorted by score\n   - Score breakdown for each lead\n   - Filter by score ranges\n   - Export lead reports\n\n4. Notifications:\n   - Alert on high-scoring new leads\n   - Daily digest of leads needing attention\n   - Integration with existing notification system\n   - Customizable alert thresholds",
         "testStrategy": "1. Scores predict lead conversion with >70% accuracy\n2. Agents report improved prioritization\n3. High-score leads generate more viewings\n4. Test data collection privacy compliance\n5. Verify dashboard performance with 1000+ leads",
         "subtasks": [],
-        "updatedAt": "2026-03-06T19:00:00.000Z"
+        "updatedAt": "2026-03-10T11:30:22.350Z"
       },
       {
         "id": "56",
@@ -579,7 +579,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-09T20:55:38.475Z",
+      "lastModified": "2026-03-10T19:30:00.000Z",
       "taskCount": 38,
       "completedCount": 24,
       "tags": [

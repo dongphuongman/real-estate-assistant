@@ -92,3 +92,4 @@ Before contributing, please read:
 - Check the [Troubleshooting](troubleshooting.md) guide for common issues
 - Review existing [Architecture Documentation](../architecture/ARCHITECTURE.md)
 - See [CLAUDE.md](../../CLAUDE.md) for project-specific conventions
+- See [Support & Customization](../../README.md#support--customization) for sponsorship and commercial support
