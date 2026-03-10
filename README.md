@@ -8,6 +8,22 @@
 [![CI](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
+## 💖 Support the Ecosystem
+
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-Sponsor-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/AleksNeStu)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Support-ffdd00?style=for-the-badge&logo=buymeacoffee&logoColor=000000)](https://www.buymeacoffee.com/AleksNeStu)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-ff5f5f?style=for-the-badge&logo=kofi&logoColor=white)](https://ko-fi.com/AleksNeStu)
+
+If you find my tools helpful and want to support the development of practical, open-source AI systems, you can contribute here:
+
+| Platform | Link |
+| :--- | :--- |
+| GitHub Sponsors | https://github.com/sponsors/AleksNeStu |
+| Buy Me a Coffee | https://www.buymeacoffee.com/AleksNeStu |
+| Ko-fi | https://ko-fi.com/AleksNeStu |
+
+> Your support helps cover compute costs, API usage, and specialized data services, and keeps the tools free and accessible.
+
 ![AI Real Estate Assistant (Docker Run)](assets/image.png)
 
 ## 🌿 Branching & Versioning
