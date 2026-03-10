@@ -62,7 +62,7 @@ export default function SearchPage() {
   const [mapFilterOptions, setMapFilterOptions] = useState<MapFilterOptions>({
     showHeatmap: false,
     heatmapIntensity: 1,
-    heatmapMode: "density",
+    heatmapMode: 'density',
     showClusters: true,
     priceRange: undefined,
     propertyType: undefined,
@@ -79,6 +79,17 @@ export default function SearchPage() {
   const handlePolygonClear = () => {
     setDrawnPolygon(null);
   };
+
+  const mapPoints = useMemo(() => extractMapPoints(results), [results]);
+
+  const filteredMapPoints = useMemo(() => {
+    let points = mapPoints;
+    if (mapFilterOptions.priceRange) {
+      const [min, max] = mapFilterOptions.priceRange;
+      points = points.filter((p) => p.price !== undefined && p.price >= min && p.price <= max);
+    }
+    return points;
+  }, [mapPoints, mapFilterOptions.priceRange]);
 
   // Filter points by drawn polygon
   const filteredByPolygon = useMemo(() => {
@@ -99,8 +110,10 @@ export default function SearchPage() {
         const xj = polygon[j][0];
         const yj_coord = polygon[j][1];
 
-        if (((yi_coord > y) !== (yj_coord > y)) &&
-            (x < ((xj - xi) * (y - yi_coord)) / (yj_coord - yi_coord) + xi)) {
+        if (
+          yi_coord > y !== yj_coord > y &&
+          x < ((xj - xi) * (y - yi_coord)) / (yj_coord - yi_coord) + xi
+        ) {
           inside = !inside;
         }
       }
@@ -108,17 +121,6 @@ export default function SearchPage() {
       return inside;
     });
   }, [filteredMapPoints, drawnPolygon]);
-
-  const mapPoints = useMemo(() => extractMapPoints(results), [results]);
-
-  const filteredMapPoints = useMemo(() => {
-    let points = mapPoints;
-    if (mapFilterOptions.priceRange) {
-      const [min, max] = mapFilterOptions.priceRange;
-      points = points.filter((p) => p.price !== undefined && p.price >= min && p.price <= max);
-    }
-    return points;
-  }, [mapPoints, mapFilterOptions.priceRange]);
 
   const buildFilters = (): { filters?: Record<string, unknown>; error?: string } => {
     const min = minPrice.trim() ? Number(minPrice) : undefined;
@@ -761,8 +763,11 @@ export default function SearchPage() {
                         </div>
                       )}
                       <div className="text-sm text-muted-foreground">
-                        {drawnPolygon ? filteredByPolygon.length : filteredMapPoints.length} / {mapPoints.length} / {results.length} shown
-                        {drawnPolygon && <span className="text-primary ml-1">(filtered by area)</span>}
+                        {drawnPolygon ? filteredByPolygon.length : filteredMapPoints.length} /{' '}
+                        {mapPoints.length} / {results.length} shown
+                        {drawnPolygon && (
+                          <span className="text-primary ml-1">(filtered by area)</span>
+                        )}
                       </div>
                     </div>
 
@@ -855,10 +860,7 @@ export default function SearchPage() {
                                 </p>
                                 {prop.id && (
                                   <div className="pt-2">
-                                    <ListingGenerator
-                                      propertyId={prop.id}
-                                      compact
-                                    />
+                                    <ListingGenerator propertyId={prop.id} compact />
                                   </div>
                                 )}
                               </div>

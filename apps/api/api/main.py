@@ -31,6 +31,7 @@ from api.routers import (
     collections,  # Task #37: Property collections
     exports,
     favorites,  # Task #37: Property favorites
+    leads,  # Task #55: Lead Scoring System
     market,  # Task #38: Price History & Trends
     prompt_templates,
     saved_searches,
@@ -348,6 +349,8 @@ if settings.auth_jwt_enabled:
     # Task #38: Market analytics (price history, trends, indicators)
     app.include_router(market.router, prefix="/api/v1")
     app.include_router(anomalies.router, prefix="/api/v1")
+    # Task #55: Lead Scoring System
+    app.include_router(leads.router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["System"])

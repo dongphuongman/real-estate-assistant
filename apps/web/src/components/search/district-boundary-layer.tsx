@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
-import type { Map as MapboxMap } from "mapbox-gl";
-import type { DistrictStats, DistrictBoundary } from "@/lib/district-aggregation";
-import { getDistrictColor } from "@/lib/district-aggregation";
+import { useEffect, useRef } from 'react';
+import type { Map as MapboxMap } from 'mapbox-gl';
+import type { DistrictStats, DistrictBoundary } from '@/lib/district-aggregation';
+import { getDistrictColor } from '@/lib/district-aggregation';
 
 interface DistrictBoundaryLayerProps {
   map: MapboxMap | null;
@@ -14,11 +14,11 @@ interface DistrictBoundaryLayerProps {
   onDistrictClick?: (districtId: string) => void;
 }
 
-const SOURCE_ID = "districts-source";
-const FILL_LAYER_ID = "districts-fill";
-const LINE_LAYER_ID = "districts-line";
-const LABELS_SOURCE_ID = "districts-labels-source";
-const LABELS_LAYER_ID = "districts-labels";
+const SOURCE_ID = 'districts-source';
+const FILL_LAYER_ID = 'districts-fill';
+const LINE_LAYER_ID = 'districts-line';
+const LABELS_SOURCE_ID = 'districts-labels-source';
+const LABELS_LAYER_ID = 'districts-labels';
 
 export default function DistrictBoundaryLayer({
   map,
@@ -31,10 +31,7 @@ export default function DistrictBoundaryLayer({
   const clickHandlerRef = useRef<((e: unknown) => void) | null>(null);
 
   // Calculate max price for color scaling
-  const maxPrice = Math.max(
-    ...stats.map((s) => s.avgPrice ?? 0).filter((p) => p > 0),
-    1
-  );
+  const maxPrice = Math.max(...stats.map((s) => s.avgPrice ?? 0).filter((p) => p > 0), 1);
 
   // Create GeoJSON from districts
   useEffect(() => {
@@ -61,13 +58,13 @@ export default function DistrictBoundaryLayer({
 
     // Create GeoJSON FeatureCollection
     const geojson: GeoJSON.FeatureCollection = {
-      type: "FeatureCollection",
+      type: 'FeatureCollection',
       features: districts.map((district) => {
         const districtStats = stats.find((s) => s.name === district.name);
         const color = getDistrictColor(districtStats?.avgPrice ?? null, maxPrice);
 
         return {
-          type: "Feature" as const,
+          type: 'Feature' as const,
           properties: {
             id: district.id,
             name: district.name,
@@ -76,7 +73,7 @@ export default function DistrictBoundaryLayer({
             avgPrice: districtStats?.avgPrice,
           },
           geometry: {
-            type: "Polygon" as const,
+            type: 'Polygon' as const,
             coordinates: [district.polygon],
           },
         };
@@ -85,76 +82,77 @@ export default function DistrictBoundaryLayer({
 
     // Add source
     map.addSource(SOURCE_ID, {
-      type: "geojson",
+      type: 'geojson',
       data: geojson,
     });
 
     // Add fill layer
     map.addLayer({
       id: FILL_LAYER_ID,
-      type: "fill",
+      type: 'fill',
       source: SOURCE_ID,
       paint: {
-        "fill-color": ["get", "color"],
-        "fill-opacity": 0.6,
+        'fill-color': ['get', 'color'],
+        'fill-opacity': 0.6,
       },
     });
 
     // Add line layer
     map.addLayer({
       id: LINE_LAYER_ID,
-      type: "line",
+      type: 'line',
       source: SOURCE_ID,
       paint: {
-        "line-color": "#374151",
-        "line-width": 1.5,
+        'line-color': '#374151',
+        'line-width': 1.5,
       },
     });
 
     // Add labels if enabled
     if (showLabels) {
       const labelsGeojson: GeoJSON.FeatureCollection = {
-        type: "FeatureCollection",
+        type: 'FeatureCollection',
         features: districts.map((district) => ({
-          type: "Feature" as const,
+          type: 'Feature' as const,
           properties: {
             name: district.name,
           },
           geometry: {
-            type: "Point" as const,
+            type: 'Point' as const,
             coordinates: district.center,
           },
         })),
       };
 
       map.addSource(LABELS_SOURCE_ID, {
-        type: "geojson",
+        type: 'geojson',
         data: labelsGeojson,
       });
 
       map.addLayer({
         id: LABELS_LAYER_ID,
-        type: "symbol",
+        type: 'symbol',
         source: LABELS_SOURCE_ID,
         layout: {
-          "text-field": ["get", "name"],
-          "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-          "text-size": 11,
-          "text-anchor": "center",
+          'text-field': ['get', 'name'],
+          'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+          'text-size': 11,
+          'text-anchor': 'center',
         },
         paint: {
-          "text-color": "#1f2937",
-          "text-halo-color": "#ffffff",
-          "text-halo-width": 1.5,
+          'text-color': '#1f2937',
+          'text-halo-color': '#ffffff',
+          'text-halo-width': 1.5,
         },
       });
     }
 
     // Add click handler
-    clickHandlerRef.current = (e: { features?: GeoJSON.Feature[]; lngLat?: { lng: number; lat: number } }) => {
-      if (!e.features || e.features.length === 0) return;
+    clickHandlerRef.current = (e: unknown) => {
+      const event = e as { features?: GeoJSON.Feature[]; lngLat?: { lng: number; lat: number } };
+      if (!event.features || event.features.length === 0) return;
 
-      const feature = e.features[0];
+      const feature = event.features[0];
       const districtId = feature.properties?.id as string | undefined;
 
       if (districtId && onDistrictClick) {
@@ -162,24 +160,24 @@ export default function DistrictBoundaryLayer({
       }
     };
 
-    map.on("click", FILL_LAYER_ID, clickHandlerRef.current);
+    map.on('click', FILL_LAYER_ID, clickHandlerRef.current);
 
     // Change cursor on hover
-    map.on("mouseenter", FILL_LAYER_ID, () => {
-      map.getCanvas().style.cursor = "pointer";
+    map.on('mouseenter', FILL_LAYER_ID, () => {
+      map.getCanvas().style.cursor = 'pointer';
     });
 
-    map.on("mouseleave", FILL_LAYER_ID, () => {
-      map.getCanvas().style.cursor = "";
+    map.on('mouseleave', FILL_LAYER_ID, () => {
+      map.getCanvas().style.cursor = '';
     });
 
     return () => {
       if (map) {
         if (clickHandlerRef.current) {
-          map.off("click", FILL_LAYER_ID, clickHandlerRef.current);
+          map.off('click', FILL_LAYER_ID, clickHandlerRef.current as (e: unknown) => void);
         }
-        map.off("mouseenter", FILL_LAYER_ID);
-        map.off("mouseleave", FILL_LAYER_ID);
+        map.off('mouseenter', FILL_LAYER_ID);
+        map.off('mouseleave', FILL_LAYER_ID);
 
         try {
           if (map.getLayer(LABELS_LAYER_ID)) {

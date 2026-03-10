@@ -428,3 +428,339 @@ class AnomalyDismissRequest(BaseModel):
     reason: Optional[str] = None
 
     model_config = {"from_attributes": True}
+
+
+# =============================================================================
+# Lead Scoring System Schemas (Task #55)
+# =============================================================================
+
+LeadStatusType = Literal["new", "contacted", "qualified", "converted", "lost"]
+LeadSourceType = Literal["organic", "referral", "ads", "direct", "email", "social"]
+InteractionType = Literal[
+    "search",
+    "view",
+    "favorite",
+    "unfavorite",
+    "inquiry",
+    "contact",
+    "schedule_viewing",
+    "share",
+    "save_search",
+    "download_report",
+]
+
+
+# = Lead Schemas =
+
+
+class LeadCreate(BaseModel):
+    """Schema for creating a new lead (usually from tracking)."""
+
+    visitor_id: str = Field(
+        ..., min_length=1, max_length=36, description="Visitor UUID from cookie"
+    )
+    user_id: Optional[str] = Field(None, description="Linked user ID if registered")
+    email: Optional[EmailStr] = Field(None, description="Lead email address")
+    phone: Optional[str] = Field(None, max_length=50, description="Lead phone number")
+    name: Optional[str] = Field(None, max_length=255, description="Lead name")
+    source: Optional[LeadSourceType] = Field(None, description="Lead source")
+    consent_given: bool = Field(default=False, description="GDPR consent status")
+
+
+class LeadUpdate(BaseModel):
+    """Schema for updating lead information."""
+
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = Field(None, max_length=50)
+    name: Optional[str] = Field(None, max_length=255)
+    budget_min: Optional[float] = Field(None, ge=0)
+    budget_max: Optional[float] = Field(None, ge=0)
+    preferred_locations: Optional[list[str]] = None
+    status: Optional[LeadStatusType] = None
+    consent_given: Optional[bool] = None
+
+
+class LeadResponse(BaseModel):
+    """Schema for lead response."""
+
+    id: str
+    visitor_id: str
+    user_id: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    name: Optional[str] = None
+    budget_min: Optional[float] = None
+    budget_max: Optional[float] = None
+    preferred_locations: Optional[list[str]] = None
+    status: str
+    source: Optional[str] = None
+    current_score: int
+    first_seen_at: datetime
+    last_activity_at: datetime
+    created_at: datetime
+    updated_at: datetime
+    consent_given: bool
+    consent_at: Optional[datetime] = None
+
+    # Computed fields
+    assigned_agent_id: Optional[str] = None
+    assigned_agent_name: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class LeadWithScoreResponse(LeadResponse):
+    """Schema for lead response with latest score breakdown."""
+
+    latest_score: Optional["LeadScoreResponse"] = None
+    interaction_count: int = 0
+
+
+class LeadListResponse(BaseModel):
+    """Schema for paginated list of leads."""
+
+    items: list[LeadWithScoreResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
+class LeadDetailResponse(LeadWithScoreResponse):
+    """Schema for detailed lead response with interactions."""
+
+    recent_interactions: list["LeadInteractionResponse"] = []
+    score_history: list["LeadScoreResponse"] = []
+
+
+# = Lead Interaction Schemas =
+
+
+class TrackInteractionRequest(BaseModel):
+    """Schema for tracking a lead interaction."""
+
+    visitor_id: str = Field(
+        ..., min_length=1, max_length=36, description="Visitor UUID from cookie"
+    )
+    interaction_type: InteractionType = Field(..., description="Type of interaction")
+    property_id: Optional[str] = Field(
+        None, max_length=255, description="Property ID if applicable"
+    )
+    search_query: Optional[str] = Field(None, max_length=1000, description="Search query if search")
+    metadata: Optional[dict[str, Any]] = Field(None, description="Additional context")
+    session_id: Optional[str] = Field(None, max_length=36, description="Session ID")
+    page_url: Optional[str] = Field(None, max_length=500, description="Current page URL")
+    referrer: Optional[str] = Field(None, max_length=500, description="Referrer URL")
+    time_spent_seconds: Optional[int] = Field(None, ge=0, description="Time on page")
+
+
+class LeadInteractionResponse(BaseModel):
+    """Schema for lead interaction response."""
+
+    id: str
+    lead_id: str
+    interaction_type: str
+    property_id: Optional[str] = None
+    search_query: Optional[str] = None
+    metadata: Optional[dict[str, Any]] = None
+    session_id: Optional[str] = None
+    page_url: Optional[str] = None
+    time_spent_seconds: Optional[int] = None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class LeadInteractionListResponse(BaseModel):
+    """Schema for paginated list of interactions."""
+
+    items: list[LeadInteractionResponse]
+    total: int
+    page: int
+    page_size: int
+
+
+# = Lead Score Schemas =
+
+
+class LeadScoreResponse(BaseModel):
+    """Schema for lead score response with breakdown."""
+
+    id: str
+    lead_id: str
+    total_score: int = Field(..., ge=0, le=100, description="Total score 0-100")
+    search_activity_score: int = Field(..., ge=0, le=100)
+    engagement_score: int = Field(..., ge=0, le=100)
+    intent_score: int = Field(..., ge=0, le=100)
+    score_factors: dict[str, Any] = Field(default_factory=dict)
+    recommendations: Optional[list[str]] = None
+    model_version: str
+    calculated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class LeadScoreBreakdown(BaseModel):
+    """Schema for detailed score breakdown explanation."""
+
+    total_score: int
+    components: dict[str, int] = Field(
+        ...,
+        description="Component scores: search_activity, engagement, intent",
+    )
+    factors: dict[str, Any] = Field(
+        ...,
+        description="Raw factors: search_count, view_count, favorite_count, etc.",
+    )
+    weights: dict[str, float] = Field(
+        ...,
+        description="Weights used for each component",
+    )
+    recommendations: list[str] = Field(
+        default_factory=list,
+        description="AI-generated recommendations",
+    )
+    percentile: Optional[float] = Field(
+        None,
+        description="Percentile rank among all leads",
+    )
+
+
+# = Agent Assignment Schemas =
+
+
+class AgentAssignmentCreate(BaseModel):
+    """Schema for assigning an agent to a lead."""
+
+    agent_id: str = Field(..., description="User ID of the agent")
+    notes: Optional[str] = Field(None, max_length=2000, description="Assignment notes")
+    is_primary: bool = Field(default=False, description="Is this the primary agent?")
+
+
+class AgentAssignmentUpdate(BaseModel):
+    """Schema for updating an assignment."""
+
+    notes: Optional[str] = Field(None, max_length=2000)
+    is_primary: Optional[bool] = None
+    is_active: Optional[bool] = None
+
+
+class AgentAssignmentResponse(BaseModel):
+    """Schema for agent assignment response."""
+
+    id: str
+    lead_id: str
+    agent_id: str
+    agent_name: Optional[str] = None
+    agent_email: Optional[str] = None
+    assigned_at: datetime
+    assigned_by: Optional[str] = None
+    notes: Optional[str] = None
+    is_primary: bool
+    is_active: bool
+
+    model_config = {"from_attributes": True}
+
+
+# = Lead Filters and Query Schemas =
+
+
+class LeadFilters(BaseModel):
+    """Schema for filtering leads."""
+
+    status: Optional[LeadStatusType] = None
+    score_min: Optional[int] = Field(None, ge=0, le=100)
+    score_max: Optional[int] = Field(None, ge=0, le=100)
+    source: Optional[LeadSourceType] = None
+    assigned_agent_id: Optional[str] = None
+    has_email: Optional[bool] = None
+    has_phone: Optional[bool] = None
+    created_after: Optional[datetime] = None
+    created_before: Optional[datetime] = None
+    last_activity_after: Optional[datetime] = None
+    search_query: Optional[str] = Field(None, max_length=255, description="Search in name/email")
+
+
+class LeadSortOptions(BaseModel):
+    """Schema for sorting leads."""
+
+    sort_by: Literal["score", "last_activity", "created_at", "name"] = "score"
+    sort_order: Literal["asc", "desc"] = "desc"
+
+
+# = Bulk Operations Schemas =
+
+
+class BulkAssignRequest(BaseModel):
+    """Schema for bulk assigning leads to an agent."""
+
+    lead_ids: list[str] = Field(..., min_length=1, max_length=100)
+    agent_id: str
+    notes: Optional[str] = None
+
+
+class BulkStatusUpdateRequest(BaseModel):
+    """Schema for bulk updating lead status."""
+
+    lead_ids: list[str] = Field(..., min_length=1, max_length=100)
+    status: LeadStatusType
+
+
+class BulkOperationResponse(BaseModel):
+    """Schema for bulk operation response."""
+
+    success_count: int
+    failed_count: int
+    failed_ids: Optional[list[str]] = None
+    message: str
+
+
+# = Export Schemas =
+
+
+class LeadExportRequest(BaseModel):
+    """Schema for exporting leads."""
+
+    filters: Optional[LeadFilters] = None
+    format: Literal["csv", "json"] = "csv"
+    include_interactions: bool = False
+    include_scores: bool = True
+
+
+class LeadExportResponse(BaseModel):
+    """Schema for export response."""
+
+    download_url: str
+    expires_at: datetime
+    total_records: int
+    format: str
+
+
+# = Recalculate Scores Schema =
+
+
+class RecalculateScoresRequest(BaseModel):
+    """Schema for triggering score recalculation."""
+
+    lead_ids: Optional[list[str]] = Field(
+        None,
+        description="Specific lead IDs to recalculate. If None, recalculate all.",
+    )
+    force: bool = Field(
+        default=False,
+        description="Force recalculation even if recently calculated",
+    )
+
+
+class RecalculateScoresResponse(BaseModel):
+    """Schema for recalculation response."""
+
+    recalculated_count: int
+    failed_count: int
+    duration_seconds: float
+    message: str
+
+
+# Resolve forward references
+LeadWithScoreResponse.model_rebuild()
+LeadDetailResponse.model_rebuild()

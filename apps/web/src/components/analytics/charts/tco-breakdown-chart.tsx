@@ -33,6 +33,10 @@ const CATEGORY_LABELS: Record<string, string> = {
   maintenance: 'Maintenance',
 };
 
+function formatCurrency(value: number) {
+  return `$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+}
+
 export function TCOBreakdownChart({
   tcoResult,
   className,
@@ -42,7 +46,11 @@ export function TCOBreakdownChart({
   // Build chart data from TCO result
   const chartData = [
     { name: CATEGORY_LABELS.mortgage, value: tcoResult.monthly_mortgage, key: 'mortgage' },
-    { name: CATEGORY_LABELS.property_tax, value: tcoResult.monthly_property_tax, key: 'property_tax' },
+    {
+      name: CATEGORY_LABELS.property_tax,
+      value: tcoResult.monthly_property_tax,
+      key: 'property_tax',
+    },
     { name: CATEGORY_LABELS.insurance, value: tcoResult.monthly_insurance, key: 'insurance' },
     { name: CATEGORY_LABELS.hoa, value: tcoResult.monthly_hoa, key: 'hoa' },
     { name: CATEGORY_LABELS.utilities, value: tcoResult.monthly_utilities, key: 'utilities' },
@@ -51,14 +59,12 @@ export function TCOBreakdownChart({
     { name: CATEGORY_LABELS.maintenance, value: tcoResult.monthly_maintenance, key: 'maintenance' },
   ].filter((item) => item.value > 0); // Only show non-zero categories
 
-  const formatCurrency = (value: number) => `$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-
   const renderLabel = ({ name, percent }: { name: string; percent: number }) => {
     if (percent < 0.05) return null;
     return `${name} (${(percent * 100).toFixed(0)}%)`;
   };
 
-  const CustomTooltip = ({
+  const renderTooltip = ({
     active,
     payload,
   }: {
@@ -71,9 +77,7 @@ export function TCOBreakdownChart({
       return (
         <div className="bg-background border rounded-lg p-3 shadow-lg">
           <p className="font-medium">{data.name}</p>
-          <p className="text-sm text-muted-foreground">
-            {formatCurrency(data.value)}/month
-          </p>
+          <p className="text-sm text-muted-foreground">{formatCurrency(data.value)}/month</p>
           <p className="text-xs text-muted-foreground">{percent.toFixed(1)}% of total</p>
         </div>
       );
@@ -104,10 +108,8 @@ export function TCOBreakdownChart({
                   <Cell key={`cell-${entry.key}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip content={<CustomTooltip />} />
-              <Legend
-                formatter={(value: string) => <span className="text-sm">{value}</span>}
-              />
+              <Tooltip content={renderTooltip} />
+              <Legend formatter={(value: string) => <span className="text-sm">{value}</span>} />
             </PieChart>
           </ResponsiveContainer>
         </div>

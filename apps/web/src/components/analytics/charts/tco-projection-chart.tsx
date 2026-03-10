@@ -9,7 +9,6 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  ReferenceDot,
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { TCOProjection } from '@/lib/types';
@@ -20,18 +19,18 @@ interface TCOProjectionChartProps {
   highlightYears?: number[];
 }
 
+function formatCurrency(value: number) {
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(1)}M`;
+  }
+  return `$${(value / 1000).toFixed(0)}K`;
+}
+
 export function TCOProjectionChart({
   projections,
   className,
   highlightYears = [5, 10, 20],
 }: TCOProjectionChartProps) {
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(1)}M`;
-    }
-    return `$${(value / 1000).toFixed(0)}K`;
-  };
-
   const chartData = projections.map((proj) => ({
     year: proj.year,
     cumulative_cost: proj.cumulative_cost,
@@ -44,7 +43,7 @@ export function TCOProjectionChart({
   // Find projection points for highlighted years
   const highlightPoints = projections.filter((p) => highlightYears.includes(p.year));
 
-  const CustomTooltip = ({
+  const renderTooltip = ({
     active,
     payload,
     label,
@@ -93,7 +92,7 @@ export function TCOProjectionChart({
                 tickFormatter={formatCurrency}
                 domain={['auto', 'auto']}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={renderTooltip} />
               <Legend />
               <Line
                 type="monotone"

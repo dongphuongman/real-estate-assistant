@@ -180,6 +180,31 @@ async def get_current_user(
     return user
 
 
+async def get_current_user_optional(
+    request: Request,
+    access_token: Optional[str] = Cookie(default=None, alias="access_token"),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_security),
+    session: AsyncSession = Depends(get_db),
+) -> Optional[User]:
+    """
+    Get the current authenticated user if available.
+
+    This is similar to get_current_user but returns None instead of raising
+    an exception when not authenticated. Useful for endpoints that work
+    with both authenticated and anonymous users.
+
+    Returns:
+        User model instance if authenticated, None otherwise
+    """
+    token = await _extract_token(request, access_token, credentials)
+
+    if not token:
+        return None
+
+    user, _ = await _get_user_from_token(token, session)
+    return user
+
+
 async def get_current_active_user(
     user: User = Depends(get_current_user),
 ) -> User:

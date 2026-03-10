@@ -67,7 +67,7 @@ export function AnomalyList() {
     }
   };
 
-  const handleFilterChange = (key: keyof AnomalyFilters, value: string) => {
+  const handleFilterChange = (key: keyof AnomalyFilters, value: string | undefined) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value,
@@ -135,7 +135,10 @@ export function AnomalyList() {
           <select
             value={filters.severity || ''}
             onChange={(e) =>
-              handleFilterChange('severity', e.target.value as AnomalySeverity | undefined)
+              handleFilterChange(
+                'severity',
+                (e.target.value || undefined) as AnomalySeverity | undefined
+              )
             }
             className="rounded-md border bg-background px-3 py-2 text-sm"
           >
@@ -151,7 +154,10 @@ export function AnomalyList() {
           <select
             value={filters.anomaly_type || ''}
             onChange={(e) =>
-              handleFilterChange('anomaly_type', e.target.value as AnomalyType | undefined)
+              handleFilterChange(
+                'anomaly_type',
+                (e.target.value || undefined) as AnomalyType | undefined
+              )
             }
             className="rounded-md border bg-background px-3 py-2 text-sm"
           >

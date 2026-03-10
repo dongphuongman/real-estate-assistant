@@ -165,7 +165,10 @@ export async function exportTCOToPDF(
   }
 
   // Cost Category Analysis (if EnhancedTCOResult)
-  if (enhancedResult.percentage_breakdown && Object.keys(enhancedResult.percentage_breakdown).length > 0) {
+  if (
+    enhancedResult.percentage_breakdown &&
+    Object.keys(enhancedResult.percentage_breakdown).length > 0
+  ) {
     y += 10;
 
     // Check if we need a new page
@@ -207,12 +210,9 @@ export async function exportTCOToPDF(
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150);
-    doc.text(
-      `Page ${i} of ${pageCount}`,
-      pageWidth / 2,
-      doc.internal.pageSize.getHeight() - 10,
-      { align: 'center' }
-    );
+    doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, {
+      align: 'center',
+    });
   }
 
   // Save the PDF
@@ -270,9 +270,17 @@ export async function exportTCOComparisonToPDF(
   doc.setFont('helvetica', 'normal');
   y += 6;
 
-  doc.text(`Monthly TCO: ${formatCurrency(comparisonResult.scenario_a.monthly_tco)}`, margin + 10, y);
+  doc.text(
+    `Monthly TCO: ${formatCurrency(comparisonResult.scenario_a.monthly_tco)}`,
+    margin + 10,
+    y
+  );
   y += 5;
-  doc.text(`Total Cost: ${formatCurrency(comparisonResult.scenario_a.total_ownership_cost)}`, margin + 10, y);
+  doc.text(
+    `Total Cost: ${formatCurrency(comparisonResult.scenario_a.total_ownership_cost)}`,
+    margin + 10,
+    y
+  );
   y += 8;
 
   // Scenario B
@@ -281,9 +289,17 @@ export async function exportTCOComparisonToPDF(
   doc.setFont('helvetica', 'normal');
   y += 6;
 
-  doc.text(`Monthly TCO: ${formatCurrency(comparisonResult.scenario_b.monthly_tco)}`, margin + 10, y);
+  doc.text(
+    `Monthly TCO: ${formatCurrency(comparisonResult.scenario_b.monthly_tco)}`,
+    margin + 10,
+    y
+  );
   y += 5;
-  doc.text(`Total Cost: ${formatCurrency(comparisonResult.scenario_b.total_ownership_cost)}`, margin + 10, y);
+  doc.text(
+    `Total Cost: ${formatCurrency(comparisonResult.scenario_b.total_ownership_cost)}`,
+    margin + 10,
+    y
+  );
   y += 10;
 
   // Differences
@@ -331,7 +347,10 @@ export async function exportTCOComparisonToPDF(
   y += 6;
 
   // Wrap recommendation reason text
-  const reasonLines = doc.splitTextToSize(comparisonResult.recommendation_reason, pageWidth - 2 * margin);
+  const reasonLines = doc.splitTextToSize(
+    comparisonResult.recommendation_reason,
+    pageWidth - 2 * margin
+  );
   reasonLines.forEach((line: string) => {
     doc.text(line, margin, y);
     y += 5;
@@ -385,12 +404,9 @@ export async function exportTCOComparisonToPDF(
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150);
-    doc.text(
-      `Page ${i} of ${pageCount}`,
-      pageWidth / 2,
-      doc.internal.pageSize.getHeight() - 10,
-      { align: 'center' }
-    );
+    doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, {
+      align: 'center',
+    });
   }
 
   // Save the PDF
@@ -436,7 +452,7 @@ export async function captureElementToPDF(
 
   // Check if image needs multiple pages
   const startY = title ? 30 : 20;
-  let currentY = startY;
+  const currentY = startY;
 
   if (imgHeight + startY > pageHeight - 20) {
     // Image is too tall, scale it down

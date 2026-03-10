@@ -223,7 +223,7 @@ export function PriceHistoryChart({
                 stroke="#1f77b4"
                 strokeWidth={2}
                 dot={(props: { cx?: number; cy?: number; payload?: { hasAnomaly?: boolean } }) => {
-                  const { cx, cy, payload } = props;
+                  const { cx = 0, cy = 0, payload } = props;
                   if (payload?.hasAnomaly) {
                     return (
                       <svg x={cx - 6} y={cy - 6} width={12} height={12} viewBox="0 0 12 12">
@@ -231,7 +231,12 @@ export function PriceHistoryChart({
                       </svg>
                     );
                   }
-                  return null;
+                  // Return a small transparent dot for normal points
+                  return (
+                    <svg x={cx - 2} y={cy - 2} width={4} height={4} viewBox="0 0 4 4">
+                      <circle cx={2} cy={2} r={2} fill="transparent" />
+                    </svg>
+                  );
                 }}
                 name="Price"
               />

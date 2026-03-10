@@ -878,3 +878,99 @@ class MarketUpdateTemplate(EmailTemplate):
 """
 
         return subject, EmailTemplate._base_wrapper(subject, content)
+
+
+class HighValueLeadTemplate(EmailTemplate):
+    """Template for high-value lead notifications."""
+
+    @staticmethod
+    def render(lead_data: Dict[str, Any], user_name: Optional[str] = None) -> tuple[str, str]:
+        """
+        Render high-value lead notification email.
+
+        Args:
+            lead_data: Lead information (name, email, score, source, etc.)
+            user_name: User's name (optional)
+
+        Returns:
+            Tuple of (subject, html_body)
+        """
+        greeting = f"Hi {user_name}," if user_name else "Hello,"
+
+        lead_name = lead_data.get("name", "Anonymous Lead")
+        lead_email = lead_data.get("email", "")
+        lead_phone = lead_data.get("phone", "")
+        lead_score = lead_data.get("score", 0)
+        lead_source = lead_data.get("source", "website")
+        interactions = lead_data.get("interactions", 0)
+        last_activity = lead_data.get("last_activity", "recently")
+
+        # Score color based on value
+        if lead_score >= 80:
+            score_color = EmailTemplate.COLORS["success"]
+            urgency = "🔥 Hot Lead!"
+        elif lead_score >= 60:
+            score_color = EmailTemplate.COLORS["primary"]
+            urgency = "⭐ High Value"
+        else:
+            score_color = EmailTemplate.COLORS["warning"]
+            urgency = "📈 Rising Lead"
+
+        subject = f"🔥 High-Value Lead: {lead_name} (Score: {lead_score})"
+
+        content = f"""
+<h2 style="color: {EmailTemplate.COLORS["primary"]};">{urgency} New High-Value Lead</h2>
+<p>{greeting}</p>
+<p>A new high-value lead has been identified. Here are the details:</p>
+
+<div style="background-color: {EmailTemplate.COLORS["background"]}; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <div style="display: inline-block; padding: 10px 20px; background-color: {score_color}; color: white; border-radius: 20px; font-size: 24px; font-weight: bold; margin-bottom: 15px;">
+        Score: {lead_score}/100
+    </div>
+
+    <h3 style="margin-top: 0; margin-bottom: 15px;">Lead Information</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 8px 0; color: {EmailTemplate.COLORS["text_light"]}; width: 120px;">Name:</td>
+            <td style="padding: 8px 0; font-weight: 600;">{lead_name}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; color: {EmailTemplate.COLORS["text_light"]};">Email:</td>
+            <td style="padding: 8px 0;"><a href="mailto:{lead_email}" style="color: {EmailTemplate.COLORS["primary"]};">{lead_email or "Not provided"}</a></td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; color: {EmailTemplate.COLORS["text_light"]};">Phone:</td>
+            <td style="padding: 8px 0;">{lead_phone or "Not provided"}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; color: {EmailTemplate.COLORS["text_light"]};">Source:</td>
+            <td style="padding: 8px 0;">{lead_source}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; color: {EmailTemplate.COLORS["text_light"]};">Interactions:</td>
+            <td style="padding: 8px 0;">{interactions}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; color: {EmailTemplate.COLORS["text_light"]};">Last Activity:</td>
+            <td style="padding: 8px 0;">{last_activity}</td>
+        </tr>
+    </table>
+</div>
+
+<h3 style="color: {EmailTemplate.COLORS["primary"]};">Recommended Actions</h3>
+<ul>
+    <li>Contact this lead within the next 30 minutes for best results</li>
+    <li>Review their search history to understand their preferences</li>
+    <li>Prepare relevant property recommendations</li>
+</ul>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="#" class="button">View Lead Details</a>
+</div>
+
+<p style="color: {EmailTemplate.COLORS["text_light"]}; font-size: 14px;">
+    High-value leads convert 3x more often when contacted within the first hour.
+</p>
+"""
+
+        return subject, EmailTemplate._base_wrapper(subject, content)

@@ -8,6 +8,8 @@ interface UseAnomalyStreamResult {
   anomalies: MarketAnomaly[];
   connected: boolean;
   error: string | null;
+  clearAnomalies: () => void;
+  removeAnomaly: (anomalyId: string) => void;
 }
 
 /**

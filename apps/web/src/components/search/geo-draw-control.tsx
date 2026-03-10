@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useCallback } from "react";
-import mapboxgl, { type Map as MapboxMap } from "mapbox-gl";
-import MapboxDraw from "@mapbox/mapbox-gl-draw";
-import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
+import { useEffect, useRef, useCallback } from 'react';
+import { type Map as MapboxMap } from 'mapbox-gl';
+import MapboxDraw from '@mapbox/mapbox-gl-draw';
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 
 export type PolygonCoordinates = [number, number][]; // [lon, lat] pairs
 
@@ -18,46 +18,46 @@ interface GeoDrawControlProps {
 const drawStyles = [
   // Polygon fill
   {
-    id: "gl-draw-polygon-fill",
-    type: "fill",
-    filter: ["all", ["==", "$type", "Polygon"]],
+    id: 'gl-draw-polygon-fill',
+    type: 'fill',
+    filter: ['all', ['==', '$type', 'Polygon']],
     paint: {
-      "fill-color": "#3b82f6",
-      "fill-outline-color": "#3b82f6",
-      "fill-opacity": 0.15,
+      'fill-color': '#3b82f6',
+      'fill-outline-color': '#3b82f6',
+      'fill-opacity': 0.15,
     },
   },
   // Polygon outline stroke
   {
-    id: "gl-draw-polygon-stroke",
-    type: "line",
-    filter: ["all", ["==", "$type", "Polygon"]],
+    id: 'gl-draw-polygon-stroke',
+    type: 'line',
+    filter: ['all', ['==', '$type', 'Polygon']],
     layout: {
-      "line-cap": "round",
-      "line-join": "round",
+      'line-cap': 'round',
+      'line-join': 'round',
     },
     paint: {
-      "line-color": "#3b82f6",
-      "line-width": 2,
+      'line-color': '#3b82f6',
+      'line-width': 2,
     },
   },
   // Vertex points
   {
-    id: "gl-draw-polygon-and-line-vertex-halo-active",
-    type: "circle",
-    filter: ["all", ["==", "meta", "vertex"], ["==", "$type", "Point"]],
+    id: 'gl-draw-polygon-and-line-vertex-halo-active',
+    type: 'circle',
+    filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point']],
     paint: {
-      "circle-radius": 6,
-      "circle-color": "#fff",
+      'circle-radius': 6,
+      'circle-color': '#fff',
     },
   },
   {
-    id: "gl-draw-polygon-and-line-vertex-active",
-    type: "circle",
-    filter: ["all", ["==", "meta", "vertex"], ["==", "$type", "Point"]],
+    id: 'gl-draw-polygon-and-line-vertex-active',
+    type: 'circle',
+    filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point']],
     paint: {
-      "circle-radius": 4,
-      "circle-color": "#3b82f6",
+      'circle-radius': 4,
+      'circle-color': '#3b82f6',
     },
   },
 ];
@@ -73,7 +73,7 @@ export default function GeoDrawControl({
   const handleDrawCreate = useCallback(
     (e: { features: GeoJSON.Feature[] }) => {
       const feature = e.features[0];
-      if (feature && feature.geometry.type === "Polygon") {
+      if (feature && feature.geometry.type === 'Polygon') {
         const coordinates = feature.geometry.coordinates as PolygonCoordinates[];
         onPolygonComplete?.(coordinates);
       }
@@ -95,19 +95,19 @@ export default function GeoDrawControl({
         polygon: true,
         trash: true,
       },
-      styles: drawStyles as unknown[],
+      styles: drawStyles as object[],
     });
 
     drawRef.current = draw;
 
     // Add event listeners
-    map.on("draw.create", handleDrawCreate);
-    map.on("draw.delete", handleDrawDelete);
+    map.on('draw.create', handleDrawCreate);
+    map.on('draw.delete', handleDrawDelete);
 
     return () => {
       if (map && drawRef.current) {
-        map.off("draw.create", handleDrawCreate);
-        map.off("draw.delete", handleDrawDelete);
+        map.off('draw.create', handleDrawCreate);
+        map.off('draw.delete', handleDrawDelete);
         try {
           map.removeControl(drawRef.current);
         } catch {
@@ -124,7 +124,7 @@ export default function GeoDrawControl({
 
     if (enabled) {
       try {
-        map.addControl(drawRef.current, "top-left");
+        map.addControl(drawRef.current, 'top-left');
       } catch {
         // May already be added
       }
@@ -148,7 +148,7 @@ export default function GeoDrawControl({
 
   // Expose via window for external access (optional)
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       (window as unknown as { clearMapDrawings: () => void }).clearMapDrawings = clearDrawings;
     }
   }, [clearDrawings]);
@@ -157,11 +157,7 @@ export default function GeoDrawControl({
 }
 
 // Export utility function to check if a point is in a polygon
-export function pointInPolygon(
-  lat: number,
-  lon: number,
-  polygon: PolygonCoordinates[]
-): boolean {
+export function pointInPolygon(lat: number, lon: number, polygon: PolygonCoordinates[]): boolean {
   // Use the first ring of the polygon
   const coords = polygon[0];
   if (!coords || coords.length < 3) return false;
@@ -173,9 +169,7 @@ export function pointInPolygon(
     const xj = coords[j][0];
     const yj = coords[j][1];
 
-    const intersect =
-      yi > lat !== yj > lat &&
-      lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi;
+    const intersect = yi > lat !== yj > lat && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi;
 
     if (intersect) inside = !inside;
   }

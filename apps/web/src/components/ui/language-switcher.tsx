@@ -32,6 +32,7 @@ export function LanguageSwitcher() {
 
     // Store preference in cookie before navigation
     const maxAge = 365 * 24 * 60 * 60; // 1 year
+    // eslint-disable-next-line react-hooks/immutability -- cookie setting is a side effect needed for locale persistence
     document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=${maxAge};SameSite=Lax`;
 
     router.push(newPath);

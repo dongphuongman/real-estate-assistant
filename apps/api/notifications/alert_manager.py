@@ -36,6 +36,7 @@ class AlertType(str, Enum):
     MARKET_UPDATE = "market_update"
     DIGEST = "digest"
     ANOMALY = "anomaly"  # Market anomaly detected
+    HIGH_VALUE_LEAD = "high_value_lead"  # High-value lead detected
 
 
 @dataclass

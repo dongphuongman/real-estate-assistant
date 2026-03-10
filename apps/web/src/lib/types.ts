@@ -1012,3 +1012,176 @@ export interface AnomalyFilterParams {
   scope_type?: AnomalyScope;
   scope_id?: string;
 }
+
+// ============================================
+// Lead Scoring Types (Task #55)
+// ============================================
+
+export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'converted' | 'lost';
+
+export interface Lead {
+  id: string;
+  visitor_id: string;
+  user_id?: string;
+  email?: string;
+  phone?: string;
+  name?: string;
+  budget_min?: number;
+  budget_max?: number;
+  preferred_locations?: string[];
+  status: LeadStatus;
+  source?: string;
+  current_score: number;
+  first_seen_at: string;
+  last_activity_at: string;
+  created_at: string;
+  updated_at: string;
+  consent_given: boolean;
+  consent_at?: string;
+}
+
+export interface LeadWithScore extends Lead {
+  assigned_agent_id?: string;
+  assigned_agent_name?: string;
+  latest_score?: LeadScore;
+  interaction_count: number;
+  // Flattened score properties for convenience
+  total_score: number;
+  search_activity_score: number;
+  engagement_score: number;
+  intent_score: number;
+}
+
+export interface LeadScore {
+  id: string;
+  lead_id: string;
+  total_score: number;
+  search_activity_score: number;
+  engagement_score: number;
+  intent_score: number;
+  score_factors: Record<string, unknown>;
+  recommendations?: string[];
+  model_version: string;
+  calculated_at: string;
+}
+
+export interface LeadScoreBreakdown {
+  total_score: number;
+  components: {
+    search_activity: number;
+    engagement: number;
+    intent: number;
+  };
+  factors: Record<string, unknown>;
+  weights: {
+    search_activity: number;
+    engagement: number;
+    intent: number;
+  };
+  recommendations: string[];
+  percentile?: number;
+}
+
+export interface LeadInteraction {
+  id: string;
+  lead_id: string;
+  interaction_type: string;
+  property_id?: string;
+  search_query?: string;
+  metadata?: Record<string, unknown>;
+  session_id?: string;
+  page_url?: string;
+  time_spent_seconds?: number;
+  created_at: string;
+}
+
+export interface AgentAssignment {
+  id: string;
+  lead_id: string;
+  agent_id: string;
+  assigned_by?: string;
+  notes?: string;
+  is_primary: boolean;
+  is_active: boolean;
+  assigned_at: string;
+}
+
+export interface LeadListResponse {
+  items: LeadWithScore[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+export interface LeadDetailResponse extends LeadWithScore {
+  recent_interactions: LeadInteraction[];
+  score_history: LeadScore[];
+}
+
+export interface LeadFilters {
+  status?: LeadStatus;
+  score_min?: number;
+  score_max?: number;
+  source?: string;
+  has_email?: boolean;
+  agent_id?: string;
+  sort_by?: 'score' | 'created_at' | 'last_activity';
+  sort_order?: 'asc' | 'desc';
+  search?: string;
+  sort?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface BulkAssignRequest {
+  lead_ids: string[];
+  agent_id: string;
+  notes?: string;
+}
+
+export interface BulkStatusUpdateRequest {
+  lead_ids: string[];
+  status: LeadStatus;
+  notes?: string;
+}
+
+export interface BulkOperationResponse {
+  success_count: number;
+  failed_count: number;
+  failed_ids?: string[];
+  message: string;
+}
+
+export interface RecalculateScoresRequest {
+  lead_ids?: string[];
+  force?: boolean;
+}
+
+export interface RecalculateScoresResponse {
+  recalculated_count: number;
+  failed_count: number;
+  duration_seconds: number;
+  message: string;
+}
+
+export interface ScoringStatistics {
+  total_leads: number;
+  high_value_leads: number;
+  avg_score: number;
+  conversion_rate: number;
+  converted_leads: number;
+  new_leads_24h: number;
+  score_distribution: {
+    high_80_100: number;
+    medium_50_79: number;
+    low_0_49: number;
+  };
+  scores_calculated_today: number;
+  model_version: string;
+  weights: {
+    search_activity: number;
+    engagement: number;
+    intent: number;
+  };
+}

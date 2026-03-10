@@ -429,3 +429,256 @@ class MarketAnomaly(Base):
 
     def __repr__(self) -> str:
         return f"<MarketAnomaly(id={self.id}, type={self.anomaly_type}, severity={self.severity}, scope={self.scope_type}:{self.scope_id})>"
+
+
+# =============================================================================
+# Lead Scoring System Models (Task #55)
+# =============================================================================
+
+
+class Lead(Base):
+    """Lead model for tracking all visitors (anonymous + registered).
+
+    A lead represents a potential buyer/renter who has interacted with the platform.
+    Can be anonymous (tracked via cookie) or registered user.
+    """
+
+    __tablename__ = "leads"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+
+    # Visitor identification (cookie-based for anonymous users)
+    visitor_id: Mapped[str] = mapped_column(
+        String(36), unique=True, nullable=False, index=True
+    )  # Cookie UUID
+    user_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+
+    # Contact information (optional, captured via forms)
+    email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
+    phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
+    # Budget preferences
+    budget_min: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    budget_max: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    preferred_locations: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
+
+    # Lead status
+    status: Mapped[str] = mapped_column(
+        String(50), default="new", nullable=False
+    )  # new, contacted, qualified, converted, lost
+    source: Mapped[Optional[str]] = mapped_column(
+        String(100), nullable=True
+    )  # organic, referral, ads, direct
+
+    # Current score (denormalized for quick access)
+    current_score: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    # Timestamps
+    first_seen_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    last_activity_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+    # GDPR compliance
+    consent_given: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    consent_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Relationships
+    user: Mapped[Optional["User"]] = relationship("User", backref="leads")
+    interactions: Mapped[list["LeadInteraction"]] = relationship(
+        "LeadInteraction", back_populates="lead", cascade="all, delete-orphan"
+    )
+    scores: Mapped[list["LeadScore"]] = relationship(
+        "LeadScore", back_populates="lead", cascade="all, delete-orphan"
+    )
+    assignments: Mapped[list["AgentAssignment"]] = relationship(
+        "AgentAssignment", back_populates="lead", cascade="all, delete-orphan"
+    )
+
+    # Indexes
+    __table_args__ = (
+        Index("ix_leads_status", "status"),
+        Index("ix_leads_score", "current_score"),
+        Index("ix_leads_last_activity", "last_activity_at"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<Lead(id={self.id}, visitor_id={self.visitor_id[:8]}..., score={self.current_score}, status={self.status})>"
+
+
+class LeadInteraction(Base):
+    """Lead interaction model for tracking all visitor behaviors.
+
+    Records every interaction a lead has with the platform:
+    - Searches performed
+    - Properties viewed
+    - Favorites added
+    - Inquiries submitted
+    - Contact requests
+    """
+
+    __tablename__ = "lead_interactions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    lead_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("leads.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+
+    # Interaction type and details
+    interaction_type: Mapped[str] = mapped_column(
+        String(50), nullable=False, index=True
+    )  # search, view, favorite, inquiry, contact, schedule_viewing
+    property_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
+    search_query: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Additional context (filters used, form data, etc.)
+    interaction_metadata: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+
+    # Session information
+    session_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
+    page_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    referrer: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    user_agent: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
+
+    # Time spent (for view interactions, in seconds)
+    time_spent_seconds: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
+    # Timestamp
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False, index=True
+    )
+
+    # Relationships
+    lead: Mapped["Lead"] = relationship("Lead", back_populates="interactions")
+
+    # Indexes for common queries
+    __table_args__ = (
+        Index("ix_interactions_lead_type", "lead_id", "interaction_type"),
+        Index("ix_interactions_lead_created", "lead_id", "created_at"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<LeadInteraction(id={self.id}, lead_id={self.lead_id[:8]}..., type={self.interaction_type})>"
+
+
+class LeadScore(Base):
+    """Lead score model for tracking score history and breakdowns.
+
+    Stores calculated scores with full explainability:
+    - Total score (0-100)
+    - Component scores (search activity, engagement, intent)
+    - Factors that contributed to the score
+    - AI-generated recommendations
+    """
+
+    __tablename__ = "lead_scores"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    lead_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("leads.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+
+    # Total composite score (0-100)
+    total_score: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    # Component scores (0-100 each)
+    search_activity_score: Mapped[int] = mapped_column(Integer, nullable=False)
+    engagement_score: Mapped[int] = mapped_column(Integer, nullable=False)
+    intent_score: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    # Detailed breakdown for explainability
+    score_factors: Mapped[dict] = mapped_column(
+        JSON, nullable=False, default=dict
+    )  # {"search_count": 15, "favorites": 3, "views": 42, ...}
+
+    # AI-generated insights and recommendations
+    recommendations: Mapped[Optional[list]] = mapped_column(
+        JSON, nullable=True
+    )  # ["High interest in Berlin apartments", ...]
+
+    # Model version for tracking scoring algorithm changes
+    model_version: Mapped[str] = mapped_column(String(20), default="1.0.0", nullable=False)
+
+    # Timestamp
+    calculated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False, index=True
+    )
+
+    # Relationships
+    lead: Mapped["Lead"] = relationship("Lead", back_populates="scores")
+
+    # Indexes
+    __table_args__ = (Index("ix_scores_lead_calculated", "lead_id", "calculated_at"),)
+
+    def __repr__(self) -> str:
+        return f"<LeadScore(id={self.id}, lead_id={self.lead_id[:8]}..., total={self.total_score})>"
+
+
+class AgentAssignment(Base):
+    """Agent assignment model for assigning leads to agents.
+
+    Supports:
+    - Multiple agents per lead (team approach)
+    - Primary agent designation
+    - Assignment history tracking
+    """
+
+    __tablename__ = "agent_assignments"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    lead_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("leads.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    agent_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+
+    # Assignment details
+    assigned_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    assigned_by: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    is_primary: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    # Status tracking
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    unassigned_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    unassigned_by: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+
+    # Relationships
+    lead: Mapped["Lead"] = relationship("Lead", back_populates="assignments")
+    agent: Mapped["User"] = relationship("User", foreign_keys=[agent_id], backref="assigned_leads")
+    assigner: Mapped[Optional["User"]] = relationship(
+        "User", foreign_keys=[assigned_by], backref="assigned_by_me"
+    )
+
+    # Ensure one primary agent per lead
+    __table_args__ = (
+        Index("uq_assignments_lead_primary", "lead_id", "is_active", "is_primary", unique=False),
+        Index("ix_assignments_agent_active", "agent_id", "is_active"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<AgentAssignment(lead_id={self.lead_id[:8]}..., agent_id={self.agent_id[:8]}..., primary={self.is_primary})>"
