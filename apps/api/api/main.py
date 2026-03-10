@@ -24,6 +24,7 @@ from api.middleware.security import add_security_headers
 from api.observability import REQUEST_ID_HEADER, add_observability
 from api.routers import (
     admin,
+    anomalies,  # Task #53: Market Anomaly Detection
     auth,
     auth_jwt,  # JWT authentication endpoints
     chat,
@@ -36,8 +37,12 @@ from api.routers import (
     search,
     tools,
 )
-from api.routers import rag as rag_router
-from api.routers import settings as settings_router
+from api.routers import (
+    rag as rag_router,
+)
+from api.routers import (
+    settings as settings_router,
+)
 from config.settings import get_settings
 from notifications.email_service import (
     EmailConfig,
@@ -68,6 +73,7 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/openapi.json",
 )
+
 
 add_observability(app, logger)
 add_security_headers(app)
@@ -341,6 +347,7 @@ if settings.auth_jwt_enabled:
     app.include_router(favorites.router, prefix="/api/v1")
     # Task #38: Market analytics (price history, trends, indicators)
     app.include_router(market.router, prefix="/api/v1")
+    app.include_router(anomalies.router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["System"])

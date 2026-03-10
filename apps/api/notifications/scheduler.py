@@ -27,6 +27,7 @@ from notifications.notification_preferences import (
     NotificationPreferences,
     NotificationPreferencesManager,
 )
+from services.anomaly_service import AnomalyService
 from utils.property_cache import load_collection, load_previous_collection
 from utils.saved_searches import SavedSearch, SavedSearchManager
 from vector_store.chroma_store import ChromaPropertyStore
@@ -68,6 +69,11 @@ class NotificationScheduler:
         self._price_snapshot_interval_seconds: int = 3600  # 1 hour default
         self._last_price_snapshot: Optional[datetime] = None
 
+        # Anomaly detection tracking (Task #53: Market Anomaly Detection)
+        self._anomaly_service: Optional[AnomalyService] = None
+        self._anomaly_check_interval_seconds: float = 3600.0  # 1 hour default
+        self._last_anomaly_check: Optional[datetime] = None
+
     def start(self) -> None:
         """Start the scheduler thread."""
         if self._thread and self._thread.is_alive():
@@ -105,6 +111,7 @@ class NotificationScheduler:
             "queued_alerts_sent": 0,
             "queued_alerts_deferred": 0,
             "price_snapshots": 0,
+            "anomaly_alerts": 0,
         }
         errors: List[str] = []
 
@@ -130,6 +137,10 @@ class NotificationScheduler:
             # 3. Price Snapshot Capture (hourly) - Task #38
             snapshot_stats = self._run_price_snapshot_capture(check_time)
             stats["price_snapshots"] = snapshot_stats.get("captured", 0)
+
+            # 4. Anomaly Detection (hourly) - Task #53
+            anomaly_stats = self._run_anomaly_detection(check_time)
+            stats["anomaly_alerts"] = anomaly_stats.get("alerts_sent", 0)
 
         except Exception as e:
             logger.error(f"Scheduler run error: {e}")
@@ -510,6 +521,90 @@ class NotificationScheduler:
         except Exception as e:
             logger.error(f"Price snapshot async capture failed: {e}")
             return {"captured": 0, "error": str(e)}
+
+    # -------------------------------------------------------------------------
+    # Anomaly Detection (Task #53: Market Anomaly Detection)
+    # -------------------------------------------------------------------------
+
+    def _run_anomaly_detection(self, now: datetime) -> Dict[str, Any]:
+        """
+        Synchronous wrapper for anomaly detection.
+
+        Runs daily analysis to detect price spikes, drops, and unusual patterns.
+        Sends alerts for high/critical severity anomalies.
+
+        Args:
+            now: Current timestamp
+
+        Returns:
+            Stats dictionary with detection results
+        """
+        # Check if we should run (hourly interval)
+        if self._last_anomaly_check is not None:
+            elapsed = (now - self._last_anomaly_check).total_seconds()
+            if elapsed < self._anomaly_check_interval_seconds:
+                return {"alerts_sent": 0, "skipped": 0, "reason": "interval_not_elapsed"}
+
+        try:
+            # Run async detection in new event loop
+            loop = asyncio.new_event_loop()
+            try:
+                asyncio.set_event_loop(loop)
+                stats = loop.run_until_complete(self._run_anomaly_detection_async(now))
+                self._last_anomaly_check = now
+                return stats
+            finally:
+                loop.close()
+        except Exception as e:
+            logger.error(f"Anomaly detection failed: {e}")
+            return {"alerts_sent": 0, "error": str(e)}
+
+    async def _run_anomaly_detection_async(self, now: datetime) -> Dict[str, Any]:
+        """
+        Async implementation of anomaly detection.
+
+        Uses AnomalyService to run daily analysis and send alerts
+        for high/critical severity anomalies.
+
+        Args:
+            now: Current timestamp
+
+        Returns:
+            Stats dictionary with detection results
+        """
+        try:
+            from db.database import async_session_factory
+            from db.repositories import AnomalyRepository, PriceSnapshotRepository
+
+            async with async_session_factory() as session:
+                anomaly_repo = AnomalyRepository(session)
+                price_snapshot_repo = PriceSnapshotRepository(session)
+
+                # Create anomaly service with alert manager
+                am = AlertManager(
+                    email_service=self._email_service,
+                    storage_path=self._storage_path_alerts,
+                )
+
+                service = AnomalyService(
+                    anomaly_repo=anomaly_repo,
+                    price_snapshot_repo=price_snapshot_repo,
+                    alert_manager=am,
+                )
+
+                # Run daily analysis
+                stats = await service.run_daily_analysis()
+
+                logger.info(
+                    f"Anomaly detection complete: "
+                    f"{stats.get('total_anomalies', 0)} anomalies found, "
+                    f"{stats.get('alerts_sent', 0)} alerts sent"
+                )
+                return stats
+
+        except Exception as e:
+            logger.error(f"Anomaly detection async failed: {e}")
+            return {"alerts_sent": 0, "error": str(e)}
 
     # -------------------------------------------------------------------------
     # DB Search Sync Methods

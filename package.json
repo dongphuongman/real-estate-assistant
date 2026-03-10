@@ -58,7 +58,7 @@
   "lint-staged": {
     "apps/web/**/*.{ts,tsx,js,jsx}": [
       "prettier --write",
-      "cd apps/web && eslint --fix"
+      "npx eslint --fix --config apps/web/eslint.config.mjs"
     ],
     "apps/web/**/*.{css,scss,json,md}": [
       "prettier --write"

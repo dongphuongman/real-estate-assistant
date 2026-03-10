@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import {
   LineChart,
   Line,
@@ -12,19 +12,26 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, AlertCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { getPriceHistory, ApiError } from '@/lib/api';
-import { PriceHistory, PriceSnapshot } from '@/lib/types';
+import { Loader2, AlertCircle, TrendingUp, TrendingDown, Minus, AlertTriangle } from 'lucide-react';
+import { getPriceHistory, getAnomalies, ApiError } from '@/lib/api';
+import { PriceHistory, PriceSnapshot, MarketAnomaly } from '@/lib/types';
+import { AnomalyBadge } from './anomaly-badge';
 
 interface PriceHistoryChartProps {
   propertyId: string;
   className?: string;
+  showAnomalies?: boolean;
 }
 
-export function PriceHistoryChart({ propertyId, className }: PriceHistoryChartProps) {
+export function PriceHistoryChart({
+  propertyId,
+  className,
+  showAnomalies = true,
+}: PriceHistoryChartProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<PriceHistory | null>(null);
+  const [anomalies, setAnomalies] = useState<MarketAnomaly[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,8 +39,14 @@ export function PriceHistoryChart({ propertyId, className }: PriceHistoryChartPr
       setError(null);
 
       try {
-        const history = await getPriceHistory(propertyId, 100);
+        const [history, anomalyResponse] = await Promise.all([
+          getPriceHistory(propertyId, 100),
+          showAnomalies
+            ? getAnomalies({ scope_type: 'property', scope_id: propertyId, limit: 50 })
+            : Promise.resolve({ anomalies: [] }),
+        ]);
         setData(history);
+        setAnomalies(anomalyResponse.anomalies);
       } catch (err) {
         if (err instanceof ApiError) {
           setError(err.message);
@@ -50,17 +63,36 @@ export function PriceHistoryChart({ propertyId, className }: PriceHistoryChartPr
     if (propertyId) {
       fetchData();
     }
-  }, [propertyId]);
+  }, [propertyId, showAnomalies]);
+
+  // Create a lookup for anomalies by date
+  const anomaliesByDate = useMemo(() => {
+    const lookup: Record<string, MarketAnomaly[]> = {};
+    for (const anomaly of anomalies) {
+      const date = new Date(anomaly.detected_at).toLocaleDateString();
+      if (!lookup[date]) {
+        lookup[date] = [];
+      }
+      lookup[date].push(anomaly);
+    }
+    return lookup;
+  }, [anomalies]);
 
   const chartData =
     data?.snapshots
       .slice()
       .reverse()
-      .map((snapshot: PriceSnapshot) => ({
-        date: new Date(snapshot.recorded_at).toLocaleDateString(),
-        price: snapshot.price,
-        pricePerSqm: snapshot.price_per_sqm,
-      })) || [];
+      .map((snapshot: PriceSnapshot) => {
+        const date = new Date(snapshot.recorded_at).toLocaleDateString();
+        const snapshotAnomalies = anomaliesByDate[date] || [];
+        return {
+          date,
+          price: snapshot.price,
+          pricePerSqm: snapshot.price_per_sqm,
+          hasAnomaly: snapshotAnomalies.length > 0,
+          anomalies: snapshotAnomalies,
+        };
+      }) || [];
 
   const TrendIcon =
     data?.trend === 'increasing' ? TrendingUp : data?.trend === 'decreasing' ? TrendingDown : Minus;
@@ -125,6 +157,18 @@ export function PriceHistoryChart({ propertyId, className }: PriceHistoryChartPr
         </div>
       </CardHeader>
       <CardContent>
+        {/* Anomaly Alert Banner */}
+        {showAnomalies && anomalies.length > 0 && (
+          <div className="mb-4 p-3 rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+            <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+              <AlertTriangle className="h-4 w-4" />
+              <span className="text-sm font-medium">
+                {anomalies.length} price {anomalies.length === 1 ? 'anomaly' : 'anomalies'} detected
+              </span>
+            </div>
+          </div>
+        )}
+
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
@@ -136,8 +180,41 @@ export function PriceHistoryChart({ propertyId, className }: PriceHistoryChartPr
                 tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
               />
               <Tooltip
-                formatter={(value: number) => [`$${value.toLocaleString()}`, 'Price']}
-                labelFormatter={(label) => `Date: ${label}`}
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length > 0) {
+                    const data = payload[0].payload;
+                    const hasAnomaly = data?.hasAnomaly;
+                    const anomalies = data?.anomalies || [];
+                    return (
+                      <div className="bg-white dark:bg-gray-800 p-2 rounded shadow-lg border dark:border-gray-700">
+                        <p className="font-medium text-sm">{data.date}</p>
+                        <p className="text-sm">Price: ${data.price?.toLocaleString()}</p>
+                        {data.pricePerSqm && (
+                          <p className="text-xs text-muted">
+                            Price/sqm: ${data.pricePerSqm?.toLocaleString()}
+                          </p>
+                        )}
+                        {hasAnomaly && anomalies.length > 0 && (
+                          <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                            <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                              {anomalies.length} {anomalies.length === 1 ? 'Anomaly' : 'Anomalies'}
+                            </p>
+                            {anomalies.slice(0, 2).map((a: MarketAnomaly, i: number) => (
+                              <div key={i} className="mt-1">
+                                <AnomalyBadge
+                                  severity={a.severity}
+                                  type={a.anomaly_type}
+                                  size="sm"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
               />
               <Legend />
               <Line
@@ -145,7 +222,17 @@ export function PriceHistoryChart({ propertyId, className }: PriceHistoryChartPr
                 dataKey="price"
                 stroke="#1f77b4"
                 strokeWidth={2}
-                dot={false}
+                dot={(props: { cx?: number; cy?: number; payload?: { hasAnomaly?: boolean } }) => {
+                  const { cx, cy, payload } = props;
+                  if (payload?.hasAnomaly) {
+                    return (
+                      <svg x={cx - 6} y={cy - 6} width={12} height={12} viewBox="0 0 12 12">
+                        <circle cx={6} cy={6} r={5} fill="#f59e0b" stroke="#fff" strokeWidth={2} />
+                      </svg>
+                    );
+                  }
+                  return null;
+                }}
                 name="Price"
               />
               {chartData[0]?.pricePerSqm && (

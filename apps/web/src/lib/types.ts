@@ -865,15 +865,7 @@ export interface RentVsBuyResult {
 
 // Task #54: Listing Generation
 export type ListingTone = 'professional' | 'friendly' | 'luxury' | 'engaging';
-export type ListingLanguage =
-  | 'en'
-  | 'pl'
-  | 'es'
-  | 'de'
-  | 'fr'
-  | 'it'
-  | 'pt'
-  | 'ru';
+export type ListingLanguage = 'en' | 'pl' | 'es' | 'de' | 'fr' | 'it' | 'pt' | 'ru';
 export type HeadlineStyle = 'catchy' | 'professional' | 'seo';
 export type SocialPlatform = 'facebook' | 'instagram' | 'linkedin' | 'twitter';
 
@@ -958,4 +950,65 @@ export interface SavedDestination {
   latitude: number;
   longitude: number;
   is_default?: boolean;
+}
+
+// Task #53: Market Anomaly Detection
+export type AnomalyType =
+  | 'price_spike'
+  | 'price_drop'
+  | 'volume_spike'
+  | 'volume_drop'
+  | 'unusual_pattern';
+
+export type AnomalySeverity = 'low' | 'medium' | 'high' | 'critical';
+
+export type AnomalyScope = 'property' | 'city' | 'district' | 'market' | 'region';
+
+export interface MarketAnomaly {
+  id: string;
+  anomaly_type: AnomalyType;
+  severity: AnomalySeverity;
+  scope_type: AnomalyScope;
+  scope_id: string;
+  detected_at: string;
+  algorithm: string;
+  threshold_used: number;
+  metric_name: string;
+  expected_value: number;
+  actual_value: number;
+  deviation_percent: number;
+  z_score?: number;
+  alert_sent: boolean;
+  alert_sent_at?: string;
+  dismissed_by?: string;
+  dismissed_at?: string;
+  context: Record<string, unknown>;
+}
+
+export interface AnomalyListResponse {
+  anomalies: MarketAnomaly[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface AnomalyStatsResponse {
+  total: number;
+  by_severity: Record<string, number>;
+  by_type: Record<string, number>;
+  undismissed: number;
+}
+
+export interface AnomalyDismissRequest {
+  dismissed_by?: string;
+  reason?: string;
+}
+
+export interface AnomalyFilterParams {
+  limit?: number;
+  offset?: number;
+  severity?: AnomalySeverity;
+  anomaly_type?: AnomalyType;
+  scope_type?: AnomalyScope;
+  scope_id?: string;
 }

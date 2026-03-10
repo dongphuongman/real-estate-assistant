@@ -31,7 +31,6 @@ LOCATION_DEFAULTS: dict[str, dict[str, dict[str, Any]]] = {
     # ===========================================
     # EUROPEAN UNION
     # ===========================================
-
     "DE": {  # Germany
         "berlin": {
             "property_tax_rate": 0.011,  # Grundsteuer ~1.1%
@@ -90,7 +89,6 @@ LOCATION_DEFAULTS: dict[str, dict[str, dict[str, Any]]] = {
             "currency": "EUR",
         },
     },
-
     "ES": {  # Spain
         "madrid": {
             "property_tax_rate": 0.004,  # IBI ~0.4%
@@ -125,7 +123,6 @@ LOCATION_DEFAULTS: dict[str, dict[str, dict[str, Any]]] = {
             "currency": "EUR",
         },
     },
-
     "GB": {  # United Kingdom
         "london": {
             "property_tax_rate": 0.005,  # Council tax varies, approximate
@@ -164,7 +161,6 @@ LOCATION_DEFAULTS: dict[str, dict[str, dict[str, Any]]] = {
             "council_tax_annual": 1250.0,
         },
     },
-
     "FR": {  # France
         "paris": {
             "property_tax_rate": 0.008,  # Taxe foncière
@@ -200,7 +196,6 @@ LOCATION_DEFAULTS: dict[str, dict[str, dict[str, Any]]] = {
             "currency": "EUR",
         },
     },
-
     "IT": {  # Italy
         "rome": {
             "property_tax_rate": 0.008,  # IMU
@@ -219,7 +214,6 @@ LOCATION_DEFAULTS: dict[str, dict[str, dict[str, Any]]] = {
             "currency": "EUR",
         },
     },
-
     "NL": {  # Netherlands
         "amsterdam": {
             "property_tax_rate": 0.006,  # Onroerendezaakbelasting
@@ -238,11 +232,9 @@ LOCATION_DEFAULTS: dict[str, dict[str, dict[str, Any]]] = {
             "currency": "EUR",
         },
     },
-
     # ===========================================
     # UNITED STATES
     # ===========================================
-
     "US": {
         # New York
         "new_york_city": {
@@ -261,7 +253,6 @@ LOCATION_DEFAULTS: dict[str, dict[str, dict[str, Any]]] = {
             "avg_parking": 50.0,
             "currency": "USD",
         },
-
         # California
         "san_francisco": {
             "property_tax_rate": 0.011,  # Prop 13 caps at 1%
@@ -287,7 +278,6 @@ LOCATION_DEFAULTS: dict[str, dict[str, dict[str, Any]]] = {
             "avg_parking": 100.0,
             "currency": "USD",
         },
-
         # Texas (no state income tax, but high property tax)
         "austin": {
             "property_tax_rate": 0.022,
@@ -313,7 +303,6 @@ LOCATION_DEFAULTS: dict[str, dict[str, dict[str, Any]]] = {
             "avg_parking": 65.0,
             "currency": "USD",
         },
-
         # Florida (no state income tax)
         "miami": {
             "property_tax_rate": 0.010,
@@ -339,7 +328,6 @@ LOCATION_DEFAULTS: dict[str, dict[str, dict[str, Any]]] = {
             "avg_parking": 60.0,
             "currency": "USD",
         },
-
         # Other major metros
         "chicago": {
             "property_tax_rate": 0.020,

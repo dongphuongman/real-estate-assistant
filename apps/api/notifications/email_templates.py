@@ -701,6 +701,133 @@ class TestEmailTemplate(EmailTemplate):
         return subject, EmailTemplate._base_wrapper(subject, content)
 
 
+class AnomalyAlertTemplate(EmailTemplate):
+    """Template for market anomaly notifications."""
+
+    @staticmethod
+    def render(
+        anomaly_data: Dict[str, Any],
+        user_name: Optional[str] = None,
+    ) -> tuple[str, str]:
+        """
+        Render anomaly alert email.
+
+        Args:
+            anomaly_data: Anomaly data (type, severity, metric, values)
+            user_name: User's name (optional)
+
+        Returns:
+            Tuple of (subject, html_body)
+        """
+        greeting = f"Hi {user_name}," if user_name else "Hello,"
+
+        anomaly_type = anomaly_data.get("anomaly_type", "anomaly")
+        severity = anomaly_data.get("severity", "medium")
+        scope_type = anomaly_data.get("scope_type", "property")
+        scope_id = anomaly_data.get("scope_id", "")
+        metric_name = anomaly_data.get("metric_name", "price")
+        expected_value = anomaly_data.get("expected_value", 0)
+        actual_value = anomaly_data.get("actual_value", 0)
+        deviation_percent = anomaly_data.get("deviation_percent", 0)
+        z_score = anomaly_data.get("z_score")
+        detected_at = anomaly_data.get("detected_at", "")
+        _context_data = anomaly_data.get("context", {})  # noqa: F841
+
+        # Severity-based colors
+        severity_colors = {
+            "low": EmailTemplate.COLORS["primary"],
+            "medium": EmailTemplate.COLORS["warning"],
+            "high": "#ff9800",  # Orange
+            "critical": EmailTemplate.COLORS["danger"],
+        }
+        severity_color = severity_colors.get(severity, EmailTemplate.COLORS["primary"])
+
+        # Anomaly type labels
+        type_labels = {
+            "price_spike": "📈 Price Spike",
+            "price_drop": "📉 Price Drop",
+            "volume_spike": "📊 Volume Spike",
+            "volume_drop": "📉 Volume Drop",
+            "unusual_pattern": "⚠️ Unusual Pattern",
+        }
+        type_label = type_labels.get(anomaly_type, anomaly_type.title())
+
+        subject = f"⚠️ Anomaly Detected: {type_label} ({severity.title()}) - {scope_type.title()}"
+
+        # Format values
+        def fmt_val(v: Any) -> str:
+            if isinstance(v, float):
+                if v >= 1000000:
+                    return f"{v / 1000000:.1f}M"
+                return f"{v / 1000:.2f}K"
+            return str(v)
+
+        # Format deviation with sign
+        def fmt_deviation(pct: float) -> str:
+            sign = "↑" if pct > 0 else "↓"
+            return f"{sign}{abs(pct):.1f}%"
+
+        content = f"""
+<h2 style="color: {severity_color};">⚠️ Market Anomaly Detected</h2>
+<p>{greeting}</p>
+<p>An unusual market pattern has been detected that requires your attention:</p>
+
+<div style="background-color: {EmailTemplate.COLORS["background"]}; padding: 25px; border-radius: 8px; margin: 20px 0;">
+    <h3 style="margin-top: 0; color: {severity_color};">{type_label}</h3>
+
+    <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+        <tr>
+            <td style="padding: 10px; border-bottom: 1px solid {EmailTemplate.COLORS["border"]};"><strong>Severity</strong></td>
+            <td style="padding: 10px; border-bottom: 1px solid {EmailTemplate.COLORS["border"]};">
+                <span style="color: {severity_color}; font-weight: bold;">{severity.upper()}</span>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 10px; border-bottom: 1px solid {EmailTemplate.COLORS["border"]};"><strong>Scope</strong></td>
+            <td style="padding: 10px; border-bottom: 1px solid {EmailTemplate.COLORS["border"]};">{scope_type.title()}: {scope_id}</td>
+        </tr>
+        <tr>
+            <td style="padding: 10px; border-bottom: 1px solid {EmailTemplate.COLORS["border"]};"><strong>Metric</strong></td>
+            <td style="padding: 10px; border-bottom: 1px solid {EmailTemplate.COLORS["border"]};">{metric_name.replace("_", " ").title()}</td>
+        </tr>
+    </table>
+
+    <h4 style="margin-top: 20px;">Analysis Details</h4>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
+        <div style="background-color: {EmailTemplate.COLORS["white"]}; padding: 15px; border-radius: 5px; border: 1px solid {EmailTemplate.COLORS["border"]};">
+            <p style="margin: 0; font-size: 12px; color: {EmailTemplate.COLORS["text_light"]};">Expected Value</p>
+            <p style="margin: 5px 0 0; font-size: 18px; font-weight: bold;">{fmt_val(expected_value)}</p>
+        </div>
+        <div style="background-color: {EmailTemplate.COLORS["white"]}; padding: 15px; border-radius: 5px; border: 1px solid {EmailTemplate.COLORS["border"]};">
+            <p style="margin: 0; font-size: 12px; color: {EmailTemplate.COLORS["text_light"]};">Actual Value</p>
+            <p style="margin: 5px 0 0; font-size: 18px; font-weight: bold; color: {severity_color};">{fmt_val(actual_value)}</p>
+        </div>
+    </div>
+
+    <div style="background-color: {severity_color}20; color: white; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center;">
+        <strong>Deviation: {fmt_deviation(deviation_percent)}</strong>
+        {f"(Z-score: {z_score:.2f})" if z_score else ""}
+    </div>
+
+    <p style="color: {EmailTemplate.COLORS["text_light"]}; font-size: 14px;">
+        <strong>Detected:</strong> {detected_at}<br>
+        <strong>Algorithm:</strong> {anomaly_data.get("algorithm", "statistical")}
+    </p>
+
+    <div style="text-align: center; margin: 30px 0;">
+        <a href="#" class="button">View Details</a>
+    </ </div>
+
+    <p style="color: {EmailTemplate.COLORS["text_light"]}; font-size: 14px;">
+        This anomaly was flagged based on our anomaly detection algorithms.
+        Please review the and take appropriate action.
+    </p>
+"""
+
+        return subject, EmailTemplate._base_wrapper(subject, content)
+
+
 class MarketUpdateTemplate(EmailTemplate):
     """Template for market update notifications."""
 

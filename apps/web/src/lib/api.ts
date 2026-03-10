@@ -67,6 +67,12 @@ import {
   CommuteTimeResponse,
   CommuteRankingRequest,
   CommuteRankingResponse,
+  // Task #53: Market Anomaly Detection
+  MarketAnomaly,
+  AnomalyListResponse,
+  AnomalyStatsResponse,
+  AnomalyDismissRequest,
+  AnomalyFilterParams,
 } from './types';
 
 function getApiUrl(): string {
@@ -340,9 +346,7 @@ export async function calculateTCO(input: TCOInput): Promise<TCOResult> {
 }
 
 // Task #52: TCO Comparison API
-export async function compareTCO(
-  input: TCOComparisonInput
-): Promise<TCOComparisonResult> {
+export async function compareTCO(input: TCOComparisonInput): Promise<TCOComparisonResult> {
   const response = await fetch(`${getApiUrl()}/tools/tco-comparison`, {
     method: 'POST',
     headers: buildHeaders(),
@@ -360,13 +364,10 @@ export async function getTCOLocationDefaults(
   if (region) {
     params.append('region', region);
   }
-  const response = await fetch(
-    `${getApiUrl()}/tools/tco-location-defaults?${params.toString()}`,
-    {
-      method: 'GET',
-      headers: buildHeaders(),
-    }
-  );
+  const response = await fetch(`${getApiUrl()}/tools/tco-location-defaults?${params.toString()}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+  });
   return handleResponse<TCOLocationDefaults>(response);
 }
 
@@ -1148,9 +1149,7 @@ export async function analyzePortfolio(
  * Compares the financial implications of renting vs buying a property over time,
  * including break-even analysis, opportunity costs, and tax benefits.
  */
-export async function calculateRentVsBuy(
-  input: RentVsBuyInput
-): Promise<RentVsBuyResult> {
+export async function calculateRentVsBuy(input: RentVsBuyInput): Promise<RentVsBuyResult> {
   const response = await safeFetch(`${getApiUrl()}/tools/rent-vs-buy`, {
     method: 'POST',
     headers: buildHeaders(),
@@ -1218,4 +1217,173 @@ export async function rankPropertiesByCommute(
     body: JSON.stringify(input),
   });
   return handleResponse<CommuteRankingResponse>(response);
+}
+
+// ============================================================================
+// Task #53: Market Anomaly Detection
+// ============================================================================
+
+/**
+ * Get list of detected market anomalies with optional filters.
+ *
+ * Supports filtering by:
+ * - severity: low, medium, high, critical
+ * - anomaly_type: price_spike, price_drop, volume_spike, volume_drop, unusual_pattern
+ * - scope_type: property, city, district, market, region
+ * - scope_id: specific property/city/district ID
+ */
+export async function getAnomalies(params?: AnomalyFilterParams): Promise<AnomalyListResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.limit) searchParams.append('limit', String(params.limit));
+  if (params?.offset) searchParams.append('offset', String(params.offset));
+  if (params?.severity) searchParams.append('severity', params.severity);
+  if (params?.anomaly_type) searchParams.append('anomaly_type', params.anomaly_type);
+  if (params?.scope_type) searchParams.append('scope_type', params.scope_type);
+  if (params?.scope_id) searchParams.append('scope_id', params.scope_id);
+
+  const queryString = searchParams.toString();
+  const url = queryString ? `${getApiUrl()}/anomalies?${queryString}` : `${getApiUrl()}/anomalies`;
+
+  const response = await safeFetch(url, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<AnomalyListResponse>(response);
+}
+
+/**
+ * Get a single anomaly by ID with full details.
+ */
+export async function getAnomaly(id: string): Promise<MarketAnomaly> {
+  const response = await safeFetch(`${getApiUrl()}/anomalies/${encodeURIComponent(id)}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<MarketAnomaly>(response);
+}
+
+/**
+ * Dismiss an anomaly (mark as reviewed/acknowledged).
+ *
+ * Once dismissed, the anomaly won't trigger future alerts.
+ */
+export async function dismissAnomaly(
+  id: string,
+  request?: AnomalyDismissRequest
+): Promise<MarketAnomaly> {
+  const response = await safeFetch(`${getApiUrl()}/anomalies/${encodeURIComponent(id)}/dismiss`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(request || {}),
+  });
+  return handleResponse<MarketAnomaly>(response);
+}
+
+/**
+ * Get anomaly statistics summary.
+ *
+ * Returns:
+ * - Total anomalies
+ * - Count by severity
+ * - Count by type
+ * - Undismissed count
+ */
+export async function getAnomalyStats(): Promise<AnomalyStatsResponse> {
+  const response = await safeFetch(`${getApiUrl()}/anomalies/stats`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<AnomalyStatsResponse>(response);
+}
+
+/**
+ * Subscribe to real-time anomaly notifications via Server-Sent Events.
+ *
+ * Returns an EventSource that emits anomaly events as they're detected.
+ *
+ * @example
+ * ```ts
+ * const eventSource = subscribeToAnomalies();
+ * eventSource.onmessage = (event) => {
+ *   const anomaly = JSON.parse(event.data);
+ *   console.log('New anomaly:', anomaly);
+ * };
+ *
+ * // Don't forget to close when done
+ * eventSource.close();
+ * ```
+ */
+export function subscribeToAnomalies(): EventSource {
+  const url = `${getApiUrl()}/anomalies/stream`;
+  return new EventSource(url);
+}
+
+// ============================================================================
+// Task #53: Market Anomaly Detection API
+// ============================================================================
+
+/**
+ * Get a list of detected market anomalies with optional filters.
+ *
+ * Supports filtering by:
+ * - severity (low, medium, high, critical)
+ * - anomaly_type (price_spike, price_drop, volume_spike, volume_drop, unusual_pattern)
+ * - scope_type (property, city, district, market, region)
+ * - scope_id (specific property/city/district ID)
+ */
+export async function getAnomalies(params: AnomalyFilterParams = {}): Promise<AnomalyListResponse> {
+  const searchParams = new URLSearchParams();
+  if (params.limit !== undefined) searchParams.append('limit', String(params.limit));
+  if (params.offset !== undefined) searchParams.append('offset', String(params.offset));
+  if (params.severity) searchParams.append('severity', params.severity);
+  if (params.anomaly_type) searchParams.append('anomaly_type', params.anomaly_type);
+  if (params.scope_type) searchParams.append('scope_type', params.scope_type);
+  if (params.scope_id) searchParams.append('scope_id', params.scope_id);
+
+  const queryString = searchParams.toString();
+  const url = queryString ? `${getApiUrl()}/anomalies?${queryString}` : `${getApiUrl()}/anomalies`;
+
+  const response = await safeFetch(url, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<AnomalyListResponse>(response);
+}
+
+/**
+ * Get a single anomaly by ID.
+ */
+export async function getAnomaly(anomalyId: string): Promise<MarketAnomaly> {
+  const response = await safeFetch(`${getApiUrl()}/anomalies/${encodeURIComponent(anomalyId)}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<MarketAnomaly>(response);
+}
+
+/**
+ * Dismiss an anomaly.
+ *
+ * Mark an anomaly as reviewed/dismissed so it no longer appears in active alerts.
+ */
+export async function dismissAnomaly(
+  anomalyId: string,
+  request?: AnomalyDismissRequest
+): Promise<MarketAnomaly> {
+  const response = await safeFetch(
+    `${getApiUrl()}/anomalies/${encodeURIComponent(anomalyId)}/dismiss`,
+    {
+      method: 'POST',
+      headers: buildHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(request || {}),
+    }
+  );
+  return handleResponse<MarketAnomaly>(response);
 }

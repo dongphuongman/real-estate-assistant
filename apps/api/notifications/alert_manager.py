@@ -35,6 +35,7 @@ class AlertType(str, Enum):
     SAVED_SEARCH_MATCH = "saved_search_match"
     MARKET_UPDATE = "market_update"
     DIGEST = "digest"
+    ANOMALY = "anomaly"  # Market anomaly detected
 
 
 @dataclass

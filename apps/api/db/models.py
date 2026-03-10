@@ -354,3 +354,78 @@ class PriceSnapshot(Base):
 
     def __repr__(self) -> str:
         return f"<PriceSnapshot(property_id={self.property_id}, price={self.price}, recorded_at={self.recorded_at})>"
+
+
+class MarketAnomaly(Base):
+    """Database model for detected market anomalies."""
+
+    __tablename__ = "market_anomalies"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+
+    # Anomaly classification
+    anomaly_type: Mapped[str] = mapped_column(
+        String(50), nullable=False
+    )  # price_spike, price_drop, volume_spike, volume_drop
+    severity: Mapped[str] = mapped_column(String(20), nullable=False)  # low, medium, high, critical
+
+    # Scope (what entity has the anomaly)
+    scope_type: Mapped[str] = mapped_column(
+        String(20), nullable=False
+    )  # property, city, district, market
+    scope_id: Mapped[str] = mapped_column(
+        String(255), nullable=False
+    )  # property_id, city name, district name
+
+    # Detection details
+    detected_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    algorithm: Mapped[str] = mapped_column(String(50), nullable=False)  # z_score, iqr, seasonal
+    threshold_used: Mapped[float] = mapped_column(Float, nullable=False)
+
+    # Anomaly data
+    metric_name: Mapped[str] = mapped_column(
+        String(50), nullable=False
+    )  # price, price_per_sqm, volume
+    expected_value: Mapped[float] = mapped_column(Float, nullable=False)
+    actual_value: Mapped[float] = mapped_column(Float, nullable=False)
+    deviation_percent: Mapped[float] = mapped_column(Float, nullable=False)
+    z_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+
+    # Time periods for comparison
+    baseline_period_start: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    baseline_period_end: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    comparison_period_start: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    comparison_period_end: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+    # Alert tracking
+    alert_sent: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    alert_sent_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    dismissed_by: Mapped[Optional[str]] = mapped_column(
+        String(36), nullable=True
+    )  # user_id who dismissed
+    dismissed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Additional context (property details, related anomalies, etc.)
+    context: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+
+    # Indexes for efficient queries
+    __table_args__ = (
+        Index("ix_anomalies_scope_detected", "scope_type", "scope_id", "detected_at"),
+        Index("ix_anomalies_severity", "severity"),
+        Index("ix_anomalies_type", "anomaly_type"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<MarketAnomaly(id={self.id}, type={self.anomaly_type}, severity={self.severity}, scope={self.scope_type}:{self.scope_id})>"

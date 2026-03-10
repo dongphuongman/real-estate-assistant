@@ -12,6 +12,7 @@ from db.models import (
     CollectionDB,
     EmailVerificationToken,
     FavoriteDB,
+    MarketAnomaly,
     OAuthAccount,
     PasswordResetToken,
     PriceSnapshot,
@@ -746,3 +747,153 @@ class PriceSnapshotRepository:
             count += 1
 
         return count
+
+
+class AnomalyRepository:
+    """Repository for MarketAnomaly model operations."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def create(
+        self,
+        anomaly_type: str,
+        severity: str,
+        scope_type: str,
+        scope_id: str,
+        algorithm: str,
+        threshold_used: float,
+        metric_name: str,
+        expected_value: float,
+        actual_value: float,
+        deviation_percent: float,
+        z_score: Optional[float] = None,
+        baseline_period_start: Optional[datetime] = None,
+        baseline_period_end: Optional[datetime] = None,
+        comparison_period_start: Optional[datetime] = None,
+        comparison_period_end: Optional[datetime] = None,
+        context: Optional[dict] = None,
+    ):
+        """Create a new market anomaly record."""
+        from db.models import MarketAnomaly
+
+        anomaly = MarketAnomaly(
+            id=str(uuid4()),
+            anomaly_type=anomaly_type,
+            severity=severity,
+            scope_type=scope_type,
+            scope_id=scope_id,
+            algorithm=algorithm,
+            threshold_used=threshold_used,
+            metric_name=metric_name,
+            expected_value=expected_value,
+            actual_value=actual_value,
+            deviation_percent=deviation_percent,
+            z_score=z_score,
+            baseline_period_start=baseline_period_start,
+            baseline_period_end=baseline_period_end,
+            comparison_period_start=comparison_period_start,
+            comparison_period_end=comparison_period_end,
+            context=context or {},
+        )
+        self.session.add(anomaly)
+        await self.session.flush()
+        return anomaly
+
+    async def get_by_id(self, anomaly_id: str):
+        """Get anomaly by ID."""
+        result = await self.session.execute(
+            select(MarketAnomaly).where(MarketAnomaly.id == anomaly_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def get_by_scope(
+        self,
+        scope_type: str,
+        scope_id: str,
+        limit: int = 50,
+        offset: int = 0,
+    ):
+        """Get anomalies for a specific scope (e.g., property, city, district)."""
+        result = await self.session.execute(
+            select(MarketAnomaly)
+            .where(MarketAnomaly.scope_type == scope_type, MarketAnomaly.scope_id == scope_id)
+            .order_by(MarketAnomaly.detected_at.desc())
+            .offset(offset)
+            .limit(limit)
+        )
+        return list(result.scalars().all())
+
+    async def get_recent(
+        self,
+        limit: int = 50,
+        severity_filter: Optional[str] = None,
+        anomaly_type_filter: Optional[str] = None,
+    ):
+        """Get recent anomalies, optional filters."""
+        query = select(MarketAnomaly)
+
+        if severity_filter:
+            query = query.where(MarketAnomaly.severity == severity_filter)
+        if anomaly_type_filter:
+            query = query.where(MarketAnomaly.anomaly_type == anomaly_type_filter)
+
+        query = query.order_by(MarketAnomaly.detected_at.desc()).limit(limit)
+
+        result = await self.session.execute(query)
+        return list(result.scalars().all())
+
+    async def get_undismissed_count(self) -> int:
+        """Count undismissed anomalies."""
+        result = await self.session.execute(
+            select(func.count(MarketAnomaly.id)).where(MarketAnomaly.dismissed_at.is_(None))
+        )
+        return result.scalar() or 0
+
+    async def mark_alert_sent(self, anomaly_id: str) -> None:
+        """Mark that an alert has been sent for this anomaly."""
+        await self.session.execute(
+            update(MarketAnomaly)
+            .where(MarketAnomaly.id == anomaly_id)
+            .values(alert_sent=True, alert_sent_at=datetime.now(UTC))
+        )
+
+    async def dismiss(self, anomaly_id: str, dismissed_by: Optional[str] = None) -> None:
+        """Dismiss an anomaly."""
+        await self.session.execute(
+            update(MarketAnomaly)
+            .where(MarketAnomaly.id == anomaly_id)
+            .values(dismissed_at=datetime.now(UTC), dismissed_by=dismissed_by)
+        )
+
+    async def get_stats(self) -> dict[str, Any]:
+        """Get anomaly statistics."""
+        # Total count
+        total_result = await self.session.execute(select(func.count(MarketAnomaly.id)))
+        total = total_result.scalar() or 0
+
+        # Count by severity
+        severity_result = await self.session.execute(
+            select(MarketAnomaly.severity, func.count(MarketAnomaly.id)).group_by(
+                MarketAnomaly.severity
+            )
+        )
+        severity_counts = {row.severity: row.count for row in severity_result}
+
+        # Count by type
+        type_result = await self.session.execute(
+            select(MarketAnomaly.anomaly_type, func.count(MarketAnomaly.id)).group_by(
+                MarketAnomaly.anomaly_type
+            )
+        )
+        type_counts = {row.anomaly_type: row.count for row in type_result}
+
+        # Undismissed count
+        undismissed = await self.get_undismissed_count()
+
+        return {
+            "total": total,
+            "by_severity": severity_counts,
+            "by_type": type_counts,
+            "undismissed": undismissed,
+        }

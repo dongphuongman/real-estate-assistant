@@ -364,3 +364,67 @@ class MarketIndicatorsResponse(BaseModel):
     price_drops_7d: int
     hottest_districts: list[dict[str, Any]]  # Top 5 districts by activity
     coldest_districts: list[dict[str, Any]]  # Bottom 5 districts
+
+
+# = Anomaly-related schemas =
+AnomalyType = Literal["price_spike", "price_drop", "volume_spike", "volume_drop", "unusual_pattern"]
+AnomalySeverity = Literal["low", "medium", "high", "critical"]
+AnomalyScope = Literal["property", "city", "district", "market", "region"]
+
+
+class AnomalyBase(BaseModel):
+    """Base schema for anomaly data."""
+
+    id: str
+    anomaly_type: AnomalyType  # type: ignore
+    severity: AnomalySeverity  # type: ignore
+    scope_type: AnomalyScope  # type: ignore
+    scope_id: str
+    detected_at: datetime
+    algorithm: str
+    threshold_used: float
+    metric_name: str
+    expected_value: float
+    actual_value: float
+    deviation_percent: float
+    z_score: Optional[float] = None
+    alert_sent: bool = False
+    alert_sent_at: Optional[datetime] = None
+    dismissed_by: Optional[str] = None
+    dismissed_at: Optional[datetime] = None
+    context: dict[str, Any] = Field(default_factory=dict)
+
+    model_config = {"from_attributes": True}
+
+
+class AnomalyResponse(AnomalyBase):
+    """Schema for anomaly response - includes all fields from AnomalyBase."""
+
+    pass
+
+
+class AnomalyListResponse(BaseModel):
+    """Schema for list of anomalies."""
+
+    anomalies: list[AnomalyResponse]
+    total: int
+    limit: int
+    offset: int
+
+
+class AnomalyStatsResponse(BaseModel):
+    """Schema for anomaly statistics."""
+
+    total: int
+    by_severity: dict[str, int]
+    by_type: dict[str, int]
+    undismissed: int
+
+
+class AnomalyDismissRequest(BaseModel):
+    """Schema for dismissing an anomaly."""
+
+    dismissed_by: Optional[str] = None
+    reason: Optional[str] = None
+
+    model_config = {"from_attributes": True}
