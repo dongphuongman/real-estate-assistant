@@ -88,6 +88,18 @@ import {
   RecalculateScoresRequest,
   RecalculateScoresResponse,
   ScoringStatistics,
+  // Task #56: Agent Performance Analytics
+  Deal,
+  DealCreate,
+  DealStatus,
+  DealListResponse,
+  AgentMetrics,
+  TeamComparison,
+  PerformanceTrendsResponse,
+  CoachingInsightsResponse,
+  GoalProgressListResponse,
+  TopPerformersResponse,
+  AgentsNeedingSupportResponse,
 } from './types';
 
 function getApiUrl(): string {
@@ -1564,4 +1576,221 @@ export async function deleteLead(leadId: string): Promise<{ message: string }> {
     credentials: 'include',
   });
   return handleResponse<{ message: string }>(response);
+}
+
+// =============================================================================
+// Agent Performance Analytics API (Task #56)
+// =============================================================================
+
+/**
+ * Get current agent's performance metrics.
+ */
+export async function getAgentMetrics(params?: {
+  period_start?: string;
+  period_end?: string;
+}): Promise<AgentMetrics> {
+  const searchParams = new URLSearchParams();
+  if (params?.period_start) searchParams.append('period_start', params.period_start);
+  if (params?.period_end) searchParams.append('period_end', params.period_end);
+
+  const queryString = searchParams.toString();
+  const url = queryString
+    ? `${getApiUrl()}/agent-analytics/me?${queryString}`
+    : `${getApiUrl()}/agent-analytics/me`;
+
+  const response = await safeFetch(url, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<AgentMetrics>(response);
+}
+
+/**
+ * Get team comparison for current agent.
+ */
+export async function getTeamComparison(params?: {
+  period_start?: string;
+  period_end?: string;
+}): Promise<TeamComparison> {
+  const searchParams = new URLSearchParams();
+  if (params?.period_start) searchParams.append('period_start', params.period_start);
+  if (params?.period_end) searchParams.append('period_end', params.period_end);
+
+  const queryString = searchParams.toString();
+  const url = queryString
+    ? `${getApiUrl()}/agent-analytics/me/comparison?${queryString}`
+    : `${getApiUrl()}/agent-analytics/me/comparison`;
+
+  const response = await safeFetch(url, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<TeamComparison>(response);
+}
+
+/**
+ * Get performance trends over time.
+ */
+export async function getPerformanceTrends(params?: {
+  interval?: 'day' | 'week' | 'month' | 'quarter';
+  periods?: number;
+}): Promise<PerformanceTrendsResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.interval) searchParams.append('interval', params.interval);
+  if (params?.periods) searchParams.append('periods', String(params.periods));
+
+  const response = await safeFetch(
+    `${getApiUrl()}/agent-analytics/me/trends?${searchParams.toString()}`,
+    {
+      method: 'GET',
+      headers: buildHeaders(),
+      credentials: 'include',
+    }
+  );
+  return handleResponse<PerformanceTrendsResponse>(response);
+}
+
+/**
+ * Get coaching insights for current agent.
+ */
+export async function getCoachingInsights(): Promise<CoachingInsightsResponse> {
+  const response = await safeFetch(`${getApiUrl()}/agent-analytics/me/insights`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<CoachingInsightsResponse>(response);
+}
+
+/**
+ * Get goal progress for current agent.
+ */
+export async function getGoalProgress(): Promise<GoalProgressListResponse> {
+  const response = await safeFetch(`${getApiUrl()}/agent-analytics/me/goals`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<GoalProgressListResponse>(response);
+}
+
+/**
+ * Get top performers (admin only).
+ */
+export async function getTopPerformers(params?: {
+  metric?: 'deals' | 'revenue' | 'conversion';
+  limit?: number;
+  period_days?: number;
+}): Promise<TopPerformersResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.metric) searchParams.append('metric', params.metric);
+  if (params?.limit) searchParams.append('limit', String(params.limit));
+  if (params?.period_days) searchParams.append('period_days', String(params.period_days));
+
+  const response = await safeFetch(
+    `${getApiUrl()}/agent-analytics/top-performers?${searchParams.toString()}`,
+    {
+      method: 'GET',
+      headers: buildHeaders(),
+      credentials: 'include',
+    }
+  );
+  return handleResponse<TopPerformersResponse>(response);
+}
+
+/**
+ * Get agents needing support (admin only).
+ */
+export async function getAgentsNeedingSupport(params?: {
+  threshold_days?: number;
+}): Promise<AgentsNeedingSupportResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.threshold_days) searchParams.append('threshold_days', String(params.threshold_days));
+
+  const response = await safeFetch(
+    `${getApiUrl()}/agent-analytics/needs-support?${searchParams.toString()}`,
+    {
+      method: 'GET',
+      headers: buildHeaders(),
+      credentials: 'include',
+    }
+  );
+  return handleResponse<AgentsNeedingSupportResponse>(response);
+}
+
+/**
+ * Create a new deal.
+ */
+export async function createDeal(dealData: DealCreate): Promise<Deal> {
+  const response = await safeFetch(`${getApiUrl()}/agent-analytics/deals`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(dealData),
+  });
+  return handleResponse<Deal>(response);
+}
+
+/**
+ * Get deals for current agent.
+ */
+export async function getMyDeals(params?: {
+  status?: DealStatus;
+  page?: number;
+  page_size?: number;
+}): Promise<DealListResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.status) searchParams.append('status', params.status);
+  if (params?.page) searchParams.append('page', String(params.page));
+  if (params?.page_size) searchParams.append('page_size', String(params.page_size));
+
+  const response = await safeFetch(
+    `${getApiUrl()}/agent-analytics/deals?${searchParams.toString()}`,
+    {
+      method: 'GET',
+      headers: buildHeaders(),
+      credentials: 'include',
+    }
+  );
+  return handleResponse<DealListResponse>(response);
+}
+
+/**
+ * Get a specific deal by ID.
+ */
+export async function getDeal(dealId: string): Promise<Deal> {
+  const response = await safeFetch(
+    `${getApiUrl()}/agent-analytics/deals/${encodeURIComponent(dealId)}`,
+    {
+      method: 'GET',
+      headers: buildHeaders(),
+      credentials: 'include',
+    }
+  );
+  return handleResponse<Deal>(response);
+}
+
+/**
+ * Update a deal.
+ */
+export async function updateDeal(
+  dealId: string,
+  data: Partial<{
+    status: DealStatus;
+    deal_value: number;
+    notes: string;
+  }>
+): Promise<Deal> {
+  const response = await safeFetch(
+    `${getApiUrl()}/agent-analytics/deals/${encodeURIComponent(dealId)}`,
+    {
+      method: 'PATCH',
+      headers: buildHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(data),
+    }
+  );
+  return handleResponse<Deal>(response);
 }

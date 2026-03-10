@@ -458,7 +458,7 @@
         "id": "56",
         "title": "Agent Performance Analytics",
         "description": "Track and visualize per-agent metrics including leads, deals, time to close, and conversion rates.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "55"
         ],
@@ -467,7 +467,7 @@
         "details": "1. Data Model:\n   - Agent entity with properties\n   - Lead assignment tracking\n   - Deal outcome tracking\n   - Commission calculations\n\n2. Metrics Calculation:\n   - Total leads, active deals, closed deals\n   - Average time to close\n   - Conversion rate by stage\n   - Strength analysis (property types, locations)\n\n3. Analytics Dashboard:\n   - Agent overview cards with key metrics\n   - Performance trends over time\n   - Comparison to team averages\n   - Goal tracking and progress\n\n4. Insights:\n   - Identify top-performing agents\n   - Flag agents needing support\n   - Suggest coaching topics\n   - Predictive performance modeling",
         "testStrategy": "1. Metrics match CRM data (integration test)\n2. Dashboard loads in < 2 seconds\n3. Actionable insights are accurate\n4. Test commission calculations\n5. Verify team comparison accuracy",
         "subtasks": [],
-        "updatedAt": "2026-03-06T19:00:00.000Z"
+        "updatedAt": "2026-03-10T22:02:37.151Z"
       },
       {
         "id": "57",
@@ -579,9 +579,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-10T19:30:00.000Z",
+      "lastModified": "2026-03-10T22:02:37.152Z",
       "taskCount": 38,
-      "completedCount": 24,
+      "completedCount": 26,
       "tags": [
         "master"
       ]

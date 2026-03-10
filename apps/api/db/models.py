@@ -682,3 +682,191 @@ class AgentAssignment(Base):
 
     def __repr__(self) -> str:
         return f"<AgentAssignment(lead_id={self.lead_id[:8]}..., agent_id={self.agent_id[:8]}..., primary={self.is_primary})>"
+
+
+# =============================================================================
+# Agent Performance Analytics Models (Task #56)
+# =============================================================================
+
+
+class Deal(Base):
+    """Deal model for tracking closed transactions.
+
+    Created when a lead's status changes to 'converted'.
+    Tracks the full deal lifecycle from offer to closing.
+    """
+
+    __tablename__ = "deals"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+
+    # Lead reference
+    lead_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("leads.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+
+    # Property reference (nullable - may be off-platform deal)
+    property_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
+    # Agent reference
+    agent_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=False, index=True
+    )
+
+    # Deal details
+    deal_type: Mapped[str] = mapped_column(String(20), nullable=False)  # sale, rent
+    property_type: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    property_city: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    property_district: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+
+    # Financial
+    deal_value: Mapped[float] = mapped_column(Float, nullable=False)
+    currency: Mapped[str] = mapped_column(String(10), default="EUR")
+
+    # Deal stages
+    status: Mapped[str] = mapped_column(
+        String(20), default="offer_submitted", nullable=False
+    )  # offer_submitted, offer_accepted, contract_signed, closed, fell_through
+
+    # Timestamps for time tracking
+    offer_submitted_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    offer_accepted_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    contract_signed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    closed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Metadata
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
+
+    # Relationships
+    lead: Mapped["Lead"] = relationship("Lead", backref="deals")
+    agent: Mapped[Optional["User"]] = relationship("User", backref="deals")
+    commissions: Mapped[list["Commission"]] = relationship(
+        "Commission", back_populates="deal", cascade="all, delete-orphan"
+    )
+
+    __table_args__ = (
+        Index("ix_deals_agent_status", "agent_id", "status"),
+        Index("ix_deals_closed_at", "closed_at"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<Deal(id={self.id}, agent_id={self.agent_id[:8] if self.agent_id else 'None'}..., value={self.deal_value}, status={self.status})>"
+
+
+class Commission(Base):
+    """Commission model for tracking agent earnings.
+
+    Supports split commissions and tiered rates.
+    """
+
+    __tablename__ = "commissions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+
+    # References
+    deal_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("deals.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    agent_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=False, index=True
+    )
+
+    # Commission details
+    commission_type: Mapped[str] = mapped_column(
+        String(20), default="primary"
+    )  # primary, split, referral
+    commission_rate: Mapped[float] = mapped_column(Float, nullable=False)  # e.g., 0.03 for 3%
+    commission_amount: Mapped[float] = mapped_column(Float, nullable=False)
+
+    # Status
+    status: Mapped[str] = mapped_column(
+        String(20), default="pending", nullable=False
+    )  # pending, approved, paid, clawed_back
+
+    # Payment tracking
+    paid_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    payment_reference: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
+    # Metadata
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
+
+    # Relationships
+    deal: Mapped["Deal"] = relationship("Deal", back_populates="commissions")
+    agent: Mapped[Optional["User"]] = relationship("User", backref="commissions")
+
+    def __repr__(self) -> str:
+        return f"<Commission(id={self.id}, deal_id={self.deal_id[:8]}..., amount={self.commission_amount}, status={self.status})>"
+
+
+class AgentGoal(Base):
+    """Agent goal model for tracking performance targets.
+
+    Supports multiple goal types (leads, deals, revenue).
+    """
+
+    __tablename__ = "agent_goals"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    agent_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+
+    # Goal details
+    goal_type: Mapped[str] = mapped_column(
+        String(20), nullable=False
+    )  # leads, deals, revenue, gci (gross commission income)
+    target_value: Mapped[float] = mapped_column(Float, nullable=False)
+    current_value: Mapped[float] = mapped_column(Float, default=0)
+
+    # Period
+    period_type: Mapped[str] = mapped_column(
+        String(10), nullable=False
+    )  # daily, weekly, monthly, quarterly, yearly
+    period_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    period_end: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    # Status
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    achieved_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
+
+    # Relationships
+    agent: Mapped[Optional["User"]] = relationship("User", backref="goals")
+
+    __table_args__ = (
+        Index("ix_agent_goals_agent_active", "agent_id", "is_active"),
+        Index("ix_agent_goals_period", "period_start", "period_end"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<AgentGoal(id={self.id}, agent_id={self.agent_id[:8]}..., type={self.goal_type}, target={self.target_value})>"

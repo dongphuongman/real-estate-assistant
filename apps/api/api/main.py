@@ -24,6 +24,7 @@ from api.middleware.security import add_security_headers
 from api.observability import REQUEST_ID_HEADER, add_observability
 from api.routers import (
     admin,
+    agent_analytics,  # Task #56: Agent Performance Analytics
     anomalies,  # Task #53: Market Anomaly Detection
     auth,
     auth_jwt,  # JWT authentication endpoints
@@ -351,6 +352,8 @@ if settings.auth_jwt_enabled:
     app.include_router(anomalies.router, prefix="/api/v1")
     # Task #55: Lead Scoring System
     app.include_router(leads.router, prefix="/api/v1")
+    # Task #56: Agent Performance Analytics
+    app.include_router(agent_analytics.router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["System"])

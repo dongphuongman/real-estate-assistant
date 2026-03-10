@@ -1185,3 +1185,195 @@ export interface ScoringStatistics {
     intent: number;
   };
 }
+
+// =============================================================================
+// Agent Performance Analytics Types (Task #56)
+// =============================================================================
+
+export type DealStatus =
+  | 'offer_submitted'
+  | 'offer_accepted'
+  | 'contract_signed'
+  | 'closed'
+  | 'fell_through';
+export type DealType = 'sale' | 'rent';
+export type CommissionStatus = 'pending' | 'approved' | 'paid' | 'clawed_back';
+export type CommissionType = 'primary' | 'split' | 'referral';
+export type GoalType = 'leads' | 'deals' | 'revenue' | 'gci';
+export type PeriodType = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
+
+export interface Deal {
+  id: string;
+  lead_id: string;
+  agent_id: string;
+  property_id?: string;
+  deal_type: DealType;
+  deal_value: number;
+  currency: string;
+  status: DealStatus;
+  property_type?: string;
+  property_city?: string;
+  property_district?: string;
+  offer_submitted_at: string;
+  offer_accepted_at?: string;
+  contract_signed_at?: string;
+  closed_at?: string;
+  days_to_close?: number;
+  created_at: string;
+}
+
+export interface DealCreate {
+  lead_id: string;
+  property_id?: string;
+  deal_type: DealType;
+  deal_value: number;
+  property_type?: string;
+  property_city?: string;
+  property_district?: string;
+  notes?: string;
+}
+
+export interface DealListResponse {
+  items: Deal[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface Commission {
+  id: string;
+  deal_id: string;
+  agent_id: string;
+  commission_type: CommissionType;
+  commission_rate: number;
+  commission_amount: number;
+  status: CommissionStatus;
+  paid_at?: string;
+  payment_reference?: string;
+  created_at: string;
+}
+
+export interface AgentMetrics {
+  // Lead metrics
+  total_leads: number;
+  active_leads: number;
+  new_leads_week: number;
+  high_value_leads: number;
+  // Deal metrics
+  total_deals: number;
+  active_deals: number;
+  closed_deals: number;
+  fell_through_deals: number;
+  // Conversion metrics
+  lead_to_qualified_rate: number;
+  qualified_to_deal_rate: number;
+  overall_conversion_rate: number;
+  // Time metrics
+  avg_time_to_first_contact_hours: number | null;
+  avg_time_to_qualify_days: number | null;
+  avg_time_to_close_days: number | null;
+  // Financial metrics
+  total_deal_value: number;
+  avg_deal_value: number;
+  total_commission: number;
+  pending_commission: number;
+  // Strengths
+  top_property_types: Array<{ type: string; count: number; percentage: number }>;
+  top_locations: Array<{ location: string; count: number; percentage: number }>;
+  avg_lead_score: number;
+  // Period comparison
+  deals_change_percent: number | null;
+  revenue_change_percent: number | null;
+}
+
+export interface TeamComparison {
+  agent_id: string;
+  agent_name: string;
+  rank_by_deals: number;
+  rank_by_revenue: number;
+  rank_by_conversion: number;
+  total_agents: number;
+  deals_vs_avg_percent: number;
+  revenue_vs_avg_percent: number;
+  conversion_vs_avg_percent: number;
+  time_to_close_vs_avg_percent: number;
+  team_avg_deals: number;
+  team_avg_revenue: number;
+  team_avg_conversion: number;
+  team_avg_time_to_close_days: number;
+}
+
+export interface PerformanceTrendPoint {
+  period: string;
+  period_start: string;
+  period_end: string;
+  leads: number;
+  deals_closed: number;
+  revenue: number;
+  conversion_rate: number;
+  avg_deal_value: number;
+}
+
+export interface PerformanceTrendsResponse {
+  trends: PerformanceTrendPoint[];
+  interval: string;
+}
+
+export interface CoachingInsight {
+  category: 'strength' | 'improvement' | 'opportunity';
+  title: string;
+  description: string;
+  actionable_recommendation: string;
+  priority: number;
+}
+
+export interface CoachingInsightsResponse {
+  insights: CoachingInsight[];
+}
+
+export interface GoalProgress {
+  id: string;
+  goal_type: GoalType;
+  target_value: number;
+  current_value: number;
+  progress_percent: number;
+  period_type: PeriodType;
+  period_start: string;
+  period_end: string;
+  is_achieved: boolean;
+  days_remaining: number;
+}
+
+export interface GoalProgressListResponse {
+  goals: GoalProgress[];
+}
+
+export interface TopPerformerEntry {
+  agent_id: string;
+  agent_name: string;
+  agent_email?: string;
+  metric_value: number;
+  rank: number;
+}
+
+export interface TopPerformersResponse {
+  performers: TopPerformerEntry[];
+  metric: string;
+  period_days: number;
+}
+
+export interface AgentNeedingSupport {
+  agent_id: string;
+  agent_name: string;
+  agent_email?: string;
+  days_without_deal: number;
+  total_leads: number;
+  conversion_rate: number;
+  last_deal_at?: string;
+  suggested_actions: string[];
+}
+
+export interface AgentsNeedingSupportResponse {
+  agents: AgentNeedingSupport[];
+  threshold_days: number;
+}

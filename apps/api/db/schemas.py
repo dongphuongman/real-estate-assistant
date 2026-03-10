@@ -761,6 +761,289 @@ class RecalculateScoresResponse(BaseModel):
     message: str
 
 
+# =============================================================================
+# Agent Performance Analytics Schemas (Task #56)
+# =============================================================================
+
+# Type literals
+DealStatusType = Literal[
+    "offer_submitted", "offer_accepted", "contract_signed", "closed", "fell_through"
+]
+DealTypeType = Literal["sale", "rent"]
+CommissionStatusType = Literal["pending", "approved", "paid", "clawed_back"]
+CommissionTypeType = Literal["primary", "split", "referral"]
+GoalTypeType = Literal["leads", "deals", "revenue", "gci"]
+PeriodTypeType = Literal["daily", "weekly", "monthly", "quarterly", "yearly"]
+
+
+# Deal Schemas
+class DealCreate(BaseModel):
+    """Schema for creating a deal."""
+
+    lead_id: str
+    property_id: Optional[str] = None
+    deal_type: DealTypeType
+    deal_value: float = Field(..., ge=0)
+    property_type: Optional[str] = None
+    property_city: Optional[str] = None
+    property_district: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class DealUpdate(BaseModel):
+    """Schema for updating a deal."""
+
+    status: Optional[DealStatusType] = None
+    deal_value: Optional[float] = Field(None, ge=0)
+    notes: Optional[str] = None
+    offer_accepted_at: Optional[datetime] = None
+    contract_signed_at: Optional[datetime] = None
+    closed_at: Optional[datetime] = None
+
+
+class DealResponse(BaseModel):
+    """Schema for deal response."""
+
+    id: str
+    lead_id: str
+    agent_id: str
+    property_id: Optional[str] = None
+    deal_type: str
+    deal_value: float
+    currency: str
+    status: str
+    property_type: Optional[str] = None
+    property_city: Optional[str] = None
+    property_district: Optional[str] = None
+    offer_submitted_at: datetime
+    offer_accepted_at: Optional[datetime] = None
+    contract_signed_at: Optional[datetime] = None
+    closed_at: Optional[datetime] = None
+    days_to_close: Optional[int] = None  # Calculated field
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class DealListResponse(BaseModel):
+    """Schema for paginated list of deals."""
+
+    items: list[DealResponse]
+    total: int
+    page: int
+    page_size: int
+
+
+# Commission Schemas
+class CommissionCreate(BaseModel):
+    """Schema for creating a commission."""
+
+    agent_id: str
+    commission_type: CommissionTypeType = "primary"
+    commission_rate: float = Field(..., ge=0, le=1)  # 0-1 range (e.g., 0.03 for 3%)
+    notes: Optional[str] = None
+
+
+class CommissionResponse(BaseModel):
+    """Schema for commission response."""
+
+    id: str
+    deal_id: str
+    agent_id: str
+    commission_type: str
+    commission_rate: float
+    commission_amount: float
+    status: str
+    paid_at: Optional[datetime] = None
+    payment_reference: Optional[str] = None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+# Agent Metrics Schemas
+class AgentMetricsResponse(BaseModel):
+    """Schema for agent performance metrics."""
+
+    # Lead metrics
+    total_leads: int
+    active_leads: int
+    new_leads_week: int
+    high_value_leads: int  # Score >= 70
+
+    # Deal metrics
+    total_deals: int
+    active_deals: int
+    closed_deals: int
+    fell_through_deals: int
+
+    # Conversion metrics
+    lead_to_qualified_rate: float  # percentage 0-100
+    qualified_to_deal_rate: float
+    overall_conversion_rate: float
+
+    # Time metrics
+    avg_time_to_first_contact_hours: Optional[float] = None
+    avg_time_to_qualify_days: Optional[float] = None
+    avg_time_to_close_days: Optional[float] = None
+
+    # Financial metrics
+    total_deal_value: float
+    avg_deal_value: float
+    total_commission: float
+    pending_commission: float
+
+    # Strengths analysis
+    top_property_types: list[dict[str, Any]]
+    top_locations: list[dict[str, Any]]
+    avg_lead_score: float
+
+    # Period comparison
+    deals_change_percent: Optional[float] = None
+    revenue_change_percent: Optional[float] = None
+
+
+class TeamComparisonResponse(BaseModel):
+    """Schema for team comparison data."""
+
+    agent_id: str
+    agent_name: str
+
+    # Rank in team
+    rank_by_deals: int
+    rank_by_revenue: int
+    rank_by_conversion: int
+    total_agents: int
+
+    # Comparison to average (percentage difference)
+    deals_vs_avg_percent: float  # e.g., +15.5 means 15.5% above average
+    revenue_vs_avg_percent: float
+    conversion_vs_avg_percent: float
+    time_to_close_vs_avg_percent: float
+
+    # Team averages
+    team_avg_deals: float
+    team_avg_revenue: float
+    team_avg_conversion: float
+    team_avg_time_to_close_days: float
+
+
+class PerformanceTrendPoint(BaseModel):
+    """Schema for a single performance trend data point."""
+
+    period: str  # "2024-01", "2024-W05", etc.
+    period_start: datetime
+    period_end: datetime
+    leads: int
+    deals_closed: int
+    revenue: float
+    conversion_rate: float
+    avg_deal_value: float
+
+
+class PerformanceTrendsResponse(BaseModel):
+    """Schema for performance trends over time."""
+
+    trends: list[PerformanceTrendPoint]
+    interval: str  # day, week, month, quarter
+
+
+class CoachingInsightResponse(BaseModel):
+    """Schema for a coaching insight."""
+
+    category: str  # strength, improvement, opportunity
+    title: str
+    description: str
+    actionable_recommendation: str
+    priority: int  # 1-5, 1 being highest
+
+
+class CoachingInsightsResponse(BaseModel):
+    """Schema for coaching insights."""
+
+    insights: list[CoachingInsightResponse]
+
+
+class GoalProgressResponse(BaseModel):
+    """Schema for a single goal progress."""
+
+    id: str
+    goal_type: str
+    target_value: float
+    current_value: float
+    progress_percent: float
+    period_type: str
+    period_start: datetime
+    period_end: datetime
+    is_achieved: bool
+    days_remaining: int
+
+    model_config = {"from_attributes": True}
+
+
+class GoalProgressListResponse(BaseModel):
+    """Schema for goal progress list."""
+
+    goals: list[GoalProgressResponse]
+
+
+class TopPerformerEntry(BaseModel):
+    """Schema for a top performer entry."""
+
+    agent_id: str
+    agent_name: str
+    agent_email: Optional[str] = None
+    metric_value: float
+    rank: int
+
+
+class TopPerformersResponse(BaseModel):
+    """Schema for top performers list."""
+
+    performers: list[TopPerformerEntry]
+    metric: str  # deals, revenue, conversion
+    period_days: int
+
+
+class AgentNeedingSupport(BaseModel):
+    """Schema for an agent flagged as needing support."""
+
+    agent_id: str
+    agent_name: str
+    agent_email: Optional[str] = None
+    days_without_deal: int
+    total_leads: int
+    conversion_rate: float
+    last_deal_at: Optional[datetime] = None
+    suggested_actions: list[str]
+
+
+class AgentsNeedingSupportResponse(BaseModel):
+    """Schema for agents needing support list."""
+
+    agents: list[AgentNeedingSupport]
+    threshold_days: int
+
+
+# Goal Management Schemas
+class AgentGoalCreate(BaseModel):
+    """Schema for creating an agent goal."""
+
+    goal_type: GoalTypeType
+    target_value: float = Field(..., gt=0)
+    period_type: PeriodTypeType
+    period_start: datetime
+    period_end: datetime
+
+
+class AgentGoalUpdate(BaseModel):
+    """Schema for updating an agent goal."""
+
+    target_value: Optional[float] = Field(None, gt=0)
+    current_value: Optional[float] = None
+    is_active: Optional[bool] = None
+
+
 # Resolve forward references
 LeadWithScoreResponse.model_rebuild()
 LeadDetailResponse.model_rebuild()
