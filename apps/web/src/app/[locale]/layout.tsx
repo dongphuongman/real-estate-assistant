@@ -51,6 +51,12 @@ export async function generateMetadata({
       template: `%s | ${titles[locale as Locale] || titles.en}`,
     },
     description: descriptions[locale as Locale] || descriptions.en,
+    viewport: {
+      width: 'device-width',
+      initialScale: 1,
+      maximumScale: 1,
+      userScalable: false,
+    },
     alternates: {
       canonical: `/${locale}`,
       languages: {
@@ -58,6 +64,18 @@ export async function generateMetadata({
         en: '/en',
         ru: '/ru',
       },
+    },
+    manifest: '/manifest.json',
+    themeColor: '#2563eb',
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: 'default',
+      title: 'AI Real Estate Assistant',
+    },
+    formatDetection: {
+      telephone: false,
+      date: true,
+      address: true,
     },
   };
 }

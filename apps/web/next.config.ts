@@ -2,11 +2,19 @@ import type { NextConfig } from 'next';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import createNextIntlPlugin from 'next-intl/plugin';
+import withPWAInit from '@ducanh2912/next-pwa';
 
 const configDir = dirname(fileURLToPath(import.meta.url));
 const turbopackRoot = resolve(configDir, '..', '..');
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
+// PWA configuration - simplified for v10.2.9
+const withPWA = withPWAInit({
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
+  register: true,
+});
 
 const nextConfig: NextConfig = {
   output: 'standalone',
@@ -30,6 +38,10 @@ const nextConfig: NextConfig = {
             "'self'",
             process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1',
             'https://*.vercel.app',
+            // Push notification services
+            'https://fcm.googleapis.com',
+            'https://updates.push.services.mozilla.com',
+            'https://*.push.apple.com',
           ],
           'frame-src': ["'none'"],
           'object-src': ["'none'"],
@@ -102,4 +114,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+export default withPWA(withNextIntl(nextConfig));

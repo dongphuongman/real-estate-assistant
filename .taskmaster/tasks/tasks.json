@@ -2,7 +2,7 @@
   "master": {
     "tasks": [
       {
-        "id": "25",
+        "id": 25,
         "title": "Create deploy/ directory structure and move Docker files",
         "description": "Create the new deploy/ directory with docker/ and compose/ subdirectories, and move all Docker-related files from root and frontend locations to the new structure.",
         "status": "done",
@@ -15,7 +15,7 @@
         "updatedAt": "2026-02-11T20:55:19.167Z"
       },
       {
-        "id": "26",
+        "id": 26,
         "title": "Restructure scripts/ directory into subdirectories",
         "description": "Reorganize the scripts/ directory by creating subdirectories (ci, dev, docs, security, validation) and moving existing scripts into their appropriate categories.",
         "status": "done",
@@ -28,7 +28,7 @@
         "updatedAt": "2026-02-11T20:55:52.506Z"
       },
       {
-        "id": "27",
+        "id": 27,
         "title": "Update .devcontainer configuration for FastAPI + Next.js",
         "description": "Update the .devcontainer/devcontainer.json file to reflect the new FastAPI backend and Next.js frontend stack, removing outdated Streamlit references.",
         "status": "done",
@@ -41,7 +41,7 @@
         "updatedAt": "2026-02-11T20:57:12.692Z"
       },
       {
-        "id": "28",
+        "id": 28,
         "title": "Update security script references and remove broken wrapper",
         "description": "Update documentation and CI references to use scripts/security/local_scan.py as the canonical security scanner, and remove the broken security-scan.py wrapper.",
         "status": "done",
@@ -56,7 +56,7 @@
         "updatedAt": "2026-02-19T10:15:28.267Z"
       },
       {
-        "id": "29",
+        "id": 29,
         "title": "Update CI/CD workflows with new paths",
         "description": "Update .github/workflows/ci.yml and .github/workflows/semgrep.yml to use the new script paths and Docker file locations.",
         "status": "done",
@@ -73,7 +73,7 @@
         "updatedAt": "2026-02-19T10:59:16.740Z"
       },
       {
-        "id": "30",
+        "id": 30,
         "title": "Create Makefile for common commands",
         "description": "Create a root-level Makefile with convenient targets for security scanning, testing, linting, docker operations, and running full CI locally.",
         "status": "done",
@@ -90,7 +90,7 @@
         "updatedAt": "2026-02-19T11:03:55.333Z"
       },
       {
-        "id": "31",
+        "id": 31,
         "title": "Update documentation with new structure",
         "description": "Update README.md, CLAUDE.md, and any other documentation files to reflect the new project structure, script locations, and commands.",
         "status": "done",
@@ -110,7 +110,7 @@
         "updatedAt": "2026-02-19T11:10:24.749Z"
       },
       {
-        "id": "32",
+        "id": 32,
         "title": "Final validation and integration testing",
         "description": "Perform comprehensive validation to ensure all refactored paths work correctly, Docker containers build and run, and all scripts execute without errors.",
         "status": "done",
@@ -131,7 +131,7 @@
         "updatedAt": "2026-02-19T11:15:16.095Z"
       },
       {
-        "id": "33",
+        "id": 33,
         "title": "Deploy to Vercel/Render (BLOCKED)",
         "description": "Deploy frontend to Vercel and backend to Render/Railway production environment. BLOCKED: Requires completion of local testing gates (#60, #61) and production optimization (#62).",
         "status": "pending",
@@ -151,7 +151,7 @@
         "updatedAt": "2026-03-06T19:00:00.000Z"
       },
       {
-        "id": "34",
+        "id": 34,
         "title": "Refactor repo for local PowerShell scripts and Docker",
         "description": "Fix port consistency, Docker configuration issues, update documentation, and add convenience scripts for easier local development.",
         "status": "done",
@@ -164,7 +164,7 @@
         "updatedAt": "2026-02-19T12:07:00.519Z"
       },
       {
-        "id": "35",
+        "id": 35,
         "title": "User Authentication System",
         "description": "Implement real authentication to replace the current simulated auth system. Users should be able to register, login, and manage their sessions securely.",
         "status": "done",
@@ -177,7 +177,7 @@
         "updatedAt": "2026-02-20T01:19:00.735Z"
       },
       {
-        "id": "36",
+        "id": 36,
         "title": "Saved Searches & Alerts",
         "description": "Allow users to save their search criteria and receive email alerts when new properties match their saved searches.",
         "status": "done",
@@ -192,7 +192,7 @@
         "updatedAt": "2026-02-20T08:41:33.067Z"
       },
       {
-        "id": "37",
+        "id": 37,
         "title": "Property Favorites/Watchlist",
         "description": "Implement a favorites/watchlist system where users can save individual properties for later review, organize them into collections, and add notes.",
         "status": "done",
@@ -207,7 +207,7 @@
         "updatedAt": "2026-02-20T11:15:55.120Z"
       },
       {
-        "id": "38",
+        "id": 38,
         "title": "Price History & Trends",
         "description": "Implement price history tracking and trend analysis to show how property prices have changed over time.",
         "status": "done",
@@ -220,7 +220,7 @@
         "updatedAt": "2026-02-20T19:50:47.038Z"
       },
       {
-        "id": "39",
+        "id": 39,
         "title": "Advanced Investment Analytics",
         "description": "Enhance the investment analysis tools with more advanced metrics including cash flow projections, tax implications, and risk assessment.",
         "status": "done",
@@ -233,7 +233,7 @@
         "updatedAt": "2026-03-05T22:28:59.647Z"
       },
       {
-        "id": "40",
+        "id": 40,
         "title": "Neighborhood Insights Enhancement",
         "description": "Enhance the neighborhood quality index with more detailed data including crime statistics, school ratings, and public transport accessibility.",
         "status": "done",
@@ -246,7 +246,7 @@
         "updatedAt": "2026-03-06T00:06:39.404Z"
       },
       {
-        "id": "41",
+        "id": 41,
         "title": "Multi-language UI",
         "description": "Implement full internationalization (i18n) for the UI, supporting Polish (primary market), English, and Russian languages.",
         "status": "done",
@@ -259,7 +259,7 @@
         "updatedAt": "2026-03-06T09:20:51.978Z"
       },
       {
-        "id": "42",
+        "id": 42,
         "title": "Rent vs Buy Calculator",
         "description": "Create a calculator that compares the financial implications of renting vs buying a property over time.",
         "status": "done",
@@ -272,7 +272,7 @@
         "updatedAt": "2026-03-06T18:08:22.388Z"
       },
       {
-        "id": "43",
+        "id": 43,
         "title": "Document Management",
         "description": "Implement a document management system where users can upload, store, and organize property-related documents such as contracts, inspection reports, and photos.",
         "status": "pending",
@@ -287,20 +287,20 @@
         "updatedAt": "2026-03-06T19:00:00.000Z"
       },
       {
-        "id": "44",
+        "id": 44,
         "title": "Mobile PWA",
         "description": "Convert the web application into a Progressive Web App (PWA) to provide a mobile-friendly experience with offline capabilities.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "low",
         "category": "feature",
         "details": "1. PWA Configuration:\n   - Create manifest.json with app icons, name, theme colors\n   - Register service worker for caching\n   - Configure offline page fallbacks\n\n2. Offline Capabilities:\n   - Cache property search results\n   - Cache viewed property details\n   - Offline form submission (sync when online)\n   - Cache static assets\n\n3. Push Notifications:\n   - Configure push notification service\n   - Subscribe to price alerts\n   - Subscribe to new property alerts\n   - Notification preferences in settings\n\n4. Mobile Optimization:\n   - Add to home screen prompt\n   - Mobile-optimized navigation\n   - Touch-friendly UI improvements\n   - Responsive image loading\n\n5. Files to create:\n   - apps/web/public/manifest.json\n   - apps/web/public/sw.js (service worker)\n   - apps/web/src/lib/push-notifications.ts",
         "testStrategy": "1. Verify manifest.json is valid\n2. Test offline mode in Chrome DevTools\n3. Test add to home screen on mobile\n4. Verify push notification subscription\n5. Test cached content access offline\n6. Lighthouse PWA audit score > 90",
         "subtasks": [],
-        "updatedAt": "2026-03-06T19:00:00.000Z"
+        "updatedAt": "2026-03-11T14:40:21.506Z"
       },
       {
-        "id": "45",
+        "id": 45,
         "title": "Agent/Broker Integration",
         "description": "Integrate real estate agent/broker functionality to connect users with professionals for property inquiries, viewing appointments, and listing management.",
         "status": "pending",
@@ -313,7 +313,7 @@
         "updatedAt": "2026-03-06T19:00:00.000Z"
       },
       {
-        "id": "46",
+        "id": 46,
         "title": "Frontend Auth Integration",
         "description": "Implement frontend authentication integration with JWT backend. Connect login/register pages to real API endpoints, create AuthContext for state management, and add protected routes.",
         "status": "done",
@@ -328,7 +328,7 @@
         "updatedAt": "2026-02-20T17:46:50.397Z"
       },
       {
-        "id": "47",
+        "id": 47,
         "title": "Auth Security Hardening",
         "description": "Add security hardening measures for the authentication system including CSRF protection, rate limiting on auth endpoints, and audit logging integration.",
         "status": "done",
@@ -343,7 +343,7 @@
         "updatedAt": "2026-02-20T18:45:08.275Z"
       },
       {
-        "id": "48",
+        "id": 48,
         "title": "Excel Data Loader",
         "description": "Extend the existing CSV data loader to support Excel files (.xlsx, .xls, .ods) for property data ingestion.",
         "status": "review",
@@ -356,7 +356,7 @@
         "updatedAt": "2026-03-06T23:12:55.477Z"
       },
       {
-        "id": "49",
+        "id": 49,
         "title": "Portal/API Integration Framework",
         "description": "Create an extensible adapter system for ingesting property data from external real estate portals and APIs.",
         "status": "pending",
@@ -371,7 +371,7 @@
         "updatedAt": "2026-03-06T19:00:00.000Z"
       },
       {
-        "id": "50",
+        "id": 50,
         "title": "Geographic Mapping Enhancement",
         "description": "Integrate professional mapping services (Mapbox) for property visualization with heatmaps, clustering, and interactive filters.",
         "status": "done",
@@ -384,7 +384,7 @@
         "updatedAt": "2026-03-07T00:32:04.297Z"
       },
       {
-        "id": "51",
+        "id": 51,
         "title": "Commute Time Analysis",
         "description": "Calculate and visualize commute times from properties to user-defined destinations using multiple transport modes.",
         "status": "done",
@@ -399,7 +399,7 @@
         "updatedAt": "2026-03-09T19:52:36.494Z"
       },
       {
-        "id": "52",
+        "id": 52,
         "title": "Total Cost of Ownership Calculator",
         "description": "Extend mortgage calculator to include utilities, parking, taxes, insurance, and other ownership costs.",
         "status": "done",
@@ -412,7 +412,7 @@
         "updatedAt": "2026-03-09T16:22:23.892Z"
       },
       {
-        "id": "53",
+        "id": 53,
         "title": "Market Anomaly Detection",
         "description": "Automatically detect and alert on unusual market conditions including price spikes, drops, and trends.",
         "status": "done",
@@ -427,7 +427,7 @@
         "updatedAt": "2026-03-09T20:55:38.473Z"
       },
       {
-        "id": "54",
+        "id": 54,
         "title": "Property Description Generator",
         "description": "Use LLM to generate listing descriptions, headline variants, and social media summaries from structured property data.",
         "status": "done",
@@ -440,7 +440,7 @@
         "updatedAt": "2026-03-09T19:15:43.932Z"
       },
       {
-        "id": "55",
+        "id": 55,
         "title": "Lead Scoring System",
         "description": "Score incoming leads by likelihood to close, budget fit, and urgency to help agents prioritize.",
         "status": "done",
@@ -455,7 +455,7 @@
         "updatedAt": "2026-03-10T11:30:22.350Z"
       },
       {
-        "id": "56",
+        "id": 56,
         "title": "Agent Performance Analytics",
         "description": "Track and visualize per-agent metrics including leads, deals, time to close, and conversion rates.",
         "status": "done",
@@ -470,7 +470,7 @@
         "updatedAt": "2026-03-10T22:02:37.151Z"
       },
       {
-        "id": "57",
+        "id": 57,
         "title": "E-Signature Integration",
         "description": "Integrate document generation and e-signature workflow for rental/purchase agreements.",
         "status": "pending",
@@ -485,7 +485,7 @@
         "updatedAt": "2026-03-06T19:00:00.000Z"
       },
       {
-        "id": "58",
+        "id": 58,
         "title": "Comprehensive Test Suite Update",
         "description": "Update all unit and integration tests for new features to achieve 90%+ code coverage.",
         "status": "pending",
@@ -512,7 +512,7 @@
         "updatedAt": "2026-03-06T19:00:00.000Z"
       },
       {
-        "id": "59",
+        "id": 59,
         "title": "Local E2E Validation",
         "description": "Run full end-to-end test suite locally and verify all features work together.",
         "status": "pending",
@@ -527,7 +527,7 @@
         "updatedAt": "2026-03-06T19:00:00.000Z"
       },
       {
-        "id": "60",
+        "id": 60,
         "title": "Local Performance Benchmarking",
         "description": "Run performance benchmarks locally to ensure the application meets latency and throughput targets.",
         "status": "pending",
@@ -542,7 +542,7 @@
         "updatedAt": "2026-03-06T19:00:00.000Z"
       },
       {
-        "id": "61",
+        "id": 61,
         "title": "Local Security Audit",
         "description": "Run comprehensive security scans locally and fix all critical/high vulnerabilities.",
         "status": "pending",
@@ -557,7 +557,7 @@
         "updatedAt": "2026-03-06T19:00:00.000Z"
       },
       {
-        "id": "62",
+        "id": 62,
         "title": "Production Deployment Optimization",
         "description": "Optimize application for production deployment including caching, monitoring, and performance tuning. BLOCKED until local testing gates (#60, #61) pass.",
         "status": "pending",
@@ -575,16 +575,30 @@
         "testStrategy": "1. p95 latency < 2s for search, < 8s for chat\n2. System handles 1000 concurrent users\n3. Auto-scaling activates under load\n4. Backups restore successfully\n5. Monitoring dashboards functional",
         "subtasks": [],
         "updatedAt": "2026-03-06T19:00:00.000Z"
+      },
+      {
+        "id": 63,
+        "title": "Backend Push Notification Support",
+        "description": "Implement backend support for push notifications including VAPID key generation, push subscription storage, and notification sending service.",
+        "details": "1. VAPID Key Generation:\n   - Generate VAPID keys for web push authentication\n   - Create /api/v1/push/vapid-public-key endpoint\n   - Store keys securely in environment variables\n\n2. Push Subscription Storage:\n   - Create /api/v1/push/subscribe endpoint (POST)\n   - Create /api/v1/push/unsubscribe endpoint (DELETE)\n   - Store subscriptions in database (user device tokens)\n   - Associate subscriptions with user accounts\n\n3. Push Notification Service:\n   - Create notification service module\n   - Integrate with web push libraries (web-push or similar)\n   - Support sending notifications to specific users or all users\n\n4. Trigger Hooks:\n   - Price drop detection for saved properties\n   - New property matching saved searches\n   - Market anomaly alerts",
+        "testStrategy": "1. Test VAPID key generation endpoint\n2. Test subscription storage (create/delete)\n3. Test notification sending to subscribed devices\n4. Verify price drop triggers notification\n5. Verify new property triggers notification",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": []
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-10T22:02:37.152Z",
+      "lastModified": "2026-03-11T14:40:21.506Z",
       "taskCount": 38,
-      "completedCount": 26,
+      "completedCount": 27,
       "tags": [
         "master"
-      ]
+      ],
+      "created": "2026-03-11T14:48:20.977Z",
+      "description": "Tasks for master context",
+      "updated": "2026-03-11T14:48:20.981Z"
     }
   }
 }

@@ -238,6 +238,11 @@ export interface NotificationSettings {
   frequency: 'daily' | 'weekly';
   expert_mode: boolean;
   marketing_emails: boolean;
+  // Push notification settings (PWA)
+  push_enabled: boolean;
+  push_price_alerts: boolean;
+  push_new_properties: boolean;
+  push_saved_searches: boolean;
 }
 
 export interface ModelPricing {
