@@ -72,13 +72,17 @@ class TestNeighborhoodQualityIndexTool:
             longitude=21.0122,
         )
 
-        # Overall score should be weighted sum of components
+        # Overall score should be weighted sum of components (8 factors - Task #40)
         expected_overall = (
             result.safety_score * NeighborhoodQualityIndexTool.WEIGHT_SAFETY
             + result.schools_score * NeighborhoodQualityIndexTool.WEIGHT_SCHOOLS
             + result.amenities_score * NeighborhoodQualityIndexTool.WEIGHT_AMENITIES
             + result.walkability_score * NeighborhoodQualityIndexTool.WEIGHT_WALKABILITY
             + result.green_space_score * NeighborhoodQualityIndexTool.WEIGHT_GREEN_SPACE
+            + (result.air_quality_score or 0) * NeighborhoodQualityIndexTool.WEIGHT_AIR_QUALITY
+            + (result.noise_level_score or 0) * NeighborhoodQualityIndexTool.WEIGHT_NOISE_LEVEL
+            + (result.public_transport_score or 0)
+            * NeighborhoodQualityIndexTool.WEIGHT_PUBLIC_TRANSPORT
         )
 
         assert abs(result.overall_score - expected_overall) < 0.1
@@ -91,12 +95,16 @@ class TestNeighborhoodQualityIndexTool:
             longitude=21.0122,
         )
 
+        # Task #40: Added 3 new factors (air_quality, noise_level, public_transport)
         expected_keys = {
             "safety_weighted",
             "schools_weighted",
             "amenities_weighted",
             "walkability_weighted",
             "green_space_weighted",
+            "air_quality_weighted",
+            "noise_level_weighted",
+            "public_transport_weighted",
         }
 
         assert set(result.score_breakdown.keys()) == expected_keys
@@ -157,6 +165,9 @@ class TestNeighborhoodQualityIndexTool:
             + NeighborhoodQualityIndexTool.WEIGHT_AMENITIES
             + NeighborhoodQualityIndexTool.WEIGHT_WALKABILITY
             + NeighborhoodQualityIndexTool.WEIGHT_GREEN_SPACE
+            + NeighborhoodQualityIndexTool.WEIGHT_AIR_QUALITY
+            + NeighborhoodQualityIndexTool.WEIGHT_NOISE_LEVEL
+            + NeighborhoodQualityIndexTool.WEIGHT_PUBLIC_TRANSPORT
         )
 
         assert abs(total_weight - 1.0) < 0.001
@@ -289,6 +300,7 @@ class TestNeighborhoodToolFactory:
         # TASK-021: Added commute_time_analyzer and commute_ranking
         # TASK-023: Added listing_description_generator, listing_headline_generator, social_media_content_generator
         # TASK-039: Added advanced_investment_analyzer
+        # Task #42: Added rent_vs_buy_calculator (14 total tools)
         expected_names = {
             "mortgage_calculator",
             "tco_calculator",
@@ -303,6 +315,7 @@ class TestNeighborhoodToolFactory:
             "listing_headline_generator",  # TASK-023
             "social_media_content_generator",  # TASK-023
             "advanced_investment_analyzer",  # TASK-039
+            "rent_vs_buy_calculator",  # Task #42
         }
 
         assert tool_names == expected_names

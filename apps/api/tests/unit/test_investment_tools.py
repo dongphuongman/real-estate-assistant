@@ -270,8 +270,8 @@ class TestInvestmentToolFactory:
         # TASK-021: Added commute_time_analyzer and commute_ranking
         # TASK-023: Added listing_description_generator, listing_headline_generator, social_media_content_generator
         # TASK-039: Added advanced_investment_analyzer
-        # Task #42: Added rent_vs_buy_calculator (15 total tools)
-        assert len(tools) == 15
+        # Task #42: Added rent_vs_buy_calculator (14 total tools)
+        assert len(tools) == 14
 
     def test_all_expected_tools_present(self):
         """Test that all expected tools including investment are created."""
@@ -281,7 +281,7 @@ class TestInvestmentToolFactory:
         # TASK-021: Added commute_time_analyzer and commute_ranking
         # TASK-023: Added listing_description_generator, listing_headline_generator, social_media_content_generator
         # TASK-039: Added advanced_investment_analyzer
-        # Task #42: Added rent_vs_buy_calculator (15 total tools)
+        # Task #42: Added rent_vs_buy_calculator (14 total tools)
         expected_names = {
             "mortgage_calculator",
             "tco_calculator",

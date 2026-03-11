@@ -4,6 +4,7 @@ import pytest
 from langchain_core.documents import Document
 
 from tools.property_tools import (
+    AdvancedInvestmentTool,
     CommuteRankingTool,
     CommuteTimeAnalysisTool,
     HeadlineGeneratorTool,
@@ -14,6 +15,7 @@ from tools.property_tools import (
     PriceAnalysisTool,
     PropertyComparisonTool,
     PropertyDescriptionGeneratorTool,
+    RentVsBuyCalculatorTool,
     SocialMediaContentGeneratorTool,
     TCOCalculatorTool,
     create_property_tools,
@@ -88,21 +90,25 @@ def test_create_property_tools(mock_vector_store):
     tools = create_property_tools(mock_vector_store)
     # TASK-021: Added commute_time_analyzer and commute_ranking
     # TASK-023: Added AI listing generator tools (3 tools)
-    assert len(tools) == 12
+    # Task #39: Added AdvancedInvestmentTool
+    # Task #42: Added RentVsBuyCalculatorTool
+    assert len(tools) == 14
     assert isinstance(tools[0], MortgageCalculatorTool)
     assert isinstance(tools[1], TCOCalculatorTool)
     assert isinstance(tools[2], InvestmentCalculatorTool)
-    assert isinstance(tools[3], NeighborhoodQualityIndexTool)
-    assert isinstance(tools[4], PropertyComparisonTool)
-    assert isinstance(tools[5], PriceAnalysisTool)
-    assert isinstance(tools[6], LocationAnalysisTool)
+    assert isinstance(tools[3], AdvancedInvestmentTool)  # Task #39
+    assert isinstance(tools[4], RentVsBuyCalculatorTool)  # Task #42
+    assert isinstance(tools[5], NeighborhoodQualityIndexTool)
+    assert isinstance(tools[6], PropertyComparisonTool)
+    assert isinstance(tools[7], PriceAnalysisTool)
+    assert isinstance(tools[8], LocationAnalysisTool)
     # TASK-021: Commute tools
-    assert isinstance(tools[7], CommuteTimeAnalysisTool)
-    assert isinstance(tools[8], CommuteRankingTool)
+    assert isinstance(tools[9], CommuteTimeAnalysisTool)
+    assert isinstance(tools[10], CommuteRankingTool)
     # TASK-023: AI Listing Generator tools
-    assert isinstance(tools[9], PropertyDescriptionGeneratorTool)
-    assert isinstance(tools[10], HeadlineGeneratorTool)
-    assert isinstance(tools[11], SocialMediaContentGeneratorTool)
+    assert isinstance(tools[11], PropertyDescriptionGeneratorTool)
+    assert isinstance(tools[12], HeadlineGeneratorTool)
+    assert isinstance(tools[13], SocialMediaContentGeneratorTool)
 
 
 def test_mortgage_tool():

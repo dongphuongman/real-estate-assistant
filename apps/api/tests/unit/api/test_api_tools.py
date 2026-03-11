@@ -17,6 +17,7 @@ from api.dependencies import (
 )
 from api.main import app
 from api.routers import tools as tools_router
+from tools.property_tools import NeighborhoodQualityResult
 
 client = TestClient(app)
 
@@ -349,21 +350,28 @@ def test_neighborhood_quality_success(valid_headers, monkeypatch):
     """Test neighborhood quality endpoint success."""
 
     def _mock_calculate(**kwargs):
-        return {
-            "property_id": "prop1",
-            "overall_score": 85,
-            "safety_score": 90,
-            "schools_score": 80,
-            "amenities_score": 75,
-            "walkability_score": 85,
-            "green_space_score": 75,
-            "score_breakdown": {},
-            "data_sources": ["mock"],
-            "latitude": 52.2297,
-            "longitude": 21.0122,
-            "city": "Warsaw",
-            "neighborhood": "Mokotow",
-        }
+        return NeighborhoodQualityResult(
+            property_id="prop1",
+            overall_score=85.0,
+            safety_score=90.0,
+            schools_score=80.0,
+            amenities_score=75.0,
+            walkability_score=85.0,
+            green_space_score=75.0,
+            air_quality_score=80.0,
+            noise_level_score=70.0,
+            public_transport_score=75.0,
+            score_breakdown={},
+            factor_details=None,
+            city_comparison=None,
+            nearby_pois=None,
+            data_sources=["mock"],
+            data_freshness=None,
+            latitude=52.2297,
+            longitude=21.0122,
+            city="Warsaw",
+            neighborhood="Mokotow",
+        )
 
     monkeypatch.setattr(
         tools_router.NeighborhoodQualityIndexTool, "calculate", staticmethod(_mock_calculate)
