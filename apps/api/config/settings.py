@@ -60,6 +60,27 @@ class AppSettings(BaseModel):
         ),
         description="Enable Google Routes API for commute time analysis",
     )
+
+    # VAPID keys for Web Push notifications (Task #63)
+    vapid_public_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("VAPID_PUBLIC_KEY"),
+        description="VAPID public key for web push (base64url encoded)",
+    )
+    vapid_private_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("VAPID_PRIVATE_KEY"),
+        description="VAPID private key for web push",
+    )
+    vapid_subject: str = Field(
+        default_factory=lambda: os.getenv("VAPID_SUBJECT", "mailto:noreply@example.com"),
+        description="VAPID subject (contact email or URL)",
+    )
+    push_enabled: bool = Field(
+        default_factory=lambda: (
+            os.getenv("PUSH_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
+        ),
+        description="Enable push notifications",
+    )
+
     # API Access Control
     api_access_key: Optional[str] = Field(default_factory=lambda: os.getenv("API_ACCESS_KEY"))
     api_access_keys: list[str] = Field(

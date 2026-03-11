@@ -1047,3 +1047,51 @@ class AgentGoalUpdate(BaseModel):
 # Resolve forward references
 LeadWithScoreResponse.model_rebuild()
 LeadDetailResponse.model_rebuild()
+
+
+# =============================================================================
+# Push Notification Schemas (Task #63)
+# =============================================================================
+
+
+class PushSubscriptionCreate(BaseModel):
+    """Schema for creating a push subscription."""
+
+    endpoint: str = Field(..., max_length=500, description="Push subscription endpoint URL")
+    keys: dict[str, str] = Field(..., description="VAPID keys with p256dh and auth")
+
+
+class PushSubscriptionResponse(BaseModel):
+    """Schema for push subscription response."""
+
+    id: str
+    endpoint: str
+    is_active: bool
+    device_name: Optional[str] = None
+    created_at: datetime
+    last_used_at: Optional[datetime] = None
+
+    model_config = {"from_attributes": True}
+
+
+class PushSubscriptionListResponse(BaseModel):
+    """Schema for list of push subscriptions."""
+
+    items: list[PushSubscriptionResponse]
+    total: int
+
+
+class VapidPublicKeyResponse(BaseModel):
+    """Schema for VAPID public key response."""
+
+    public_key: str
+    enabled: bool
+
+
+class PushNotificationSend(BaseModel):
+    """Schema for sending a push notification (internal use)."""
+
+    title: str = Field(..., max_length=100)
+    body: str = Field(..., max_length=500)
+    icon: Optional[str] = Field(None, max_length=500)
+    data: Optional[dict[str, Any]] = None

@@ -35,6 +35,7 @@ from api.routers import (
     leads,  # Task #55: Lead Scoring System
     market,  # Task #38: Price History & Trends
     prompt_templates,
+    push,  # Task #63: Push Notifications
     saved_searches,
     search,
     tools,
@@ -354,6 +355,8 @@ if settings.auth_jwt_enabled:
     app.include_router(leads.router, prefix="/api/v1")
     # Task #56: Agent Performance Analytics
     app.include_router(agent_analytics.router, prefix="/api/v1")
+    # Task #63: Push Notifications
+    app.include_router(push.router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["System"])

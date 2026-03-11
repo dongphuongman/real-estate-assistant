@@ -1,11 +1,19 @@
 """Database layer for user authentication."""
 
 from db.database import get_db, init_db
-from db.models import MarketAnomaly, OAuthAccount, PriceSnapshot, RefreshToken, User
+from db.models import (
+    MarketAnomaly,
+    OAuthAccount,
+    PriceSnapshot,
+    PushSubscription,
+    RefreshToken,
+    User,
+)
 from db.repositories import (
     AnomalyRepository,
     OAuthAccountRepository,
     PriceSnapshotRepository,
+    PushSubscriptionRepository,
     RefreshTokenRepository,
     UserRepository,
 )
@@ -27,12 +35,14 @@ __all__ = [
     "OAuthAccount",
     "PriceSnapshot",
     "MarketAnomaly",
+    "PushSubscription",
     # Repositories
     "UserRepository",
     "RefreshTokenRepository",
     "OAuthAccountRepository",
     "PriceSnapshotRepository",
     "AnomalyRepository",
+    "PushSubscriptionRepository",
     # Schemas
     "UserCreate",
     "UserLogin",

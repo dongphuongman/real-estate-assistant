@@ -870,3 +870,55 @@ class AgentGoal(Base):
 
     def __repr__(self) -> str:
         return f"<AgentGoal(id={self.id}, agent_id={self.agent_id[:8]}..., type={self.goal_type}, target={self.target_value})>"
+
+
+# =============================================================================
+# Push Notification System Models (Task #63)
+# =============================================================================
+
+
+class PushSubscription(Base):
+    """Web Push subscription for browser notifications.
+
+    Stores browser push subscription data for sending web push notifications
+    to users about price drops, new properties, and market anomalies.
+    """
+
+    __tablename__ = "push_subscriptions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    user_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    # Push subscription data (from browser PushSubscription JSON)
+    endpoint: Mapped[str] = mapped_column(String(500), nullable=False, unique=True)
+    p256dh: Mapped[str] = mapped_column(String(255), nullable=False)  # VAPID p256dh key
+    auth: Mapped[str] = mapped_column(String(255), nullable=False)  # VAPID auth secret
+
+    # Device metadata
+    user_agent: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    device_name: Mapped[Optional[str]] = mapped_column(
+        String(100), nullable=True
+    )  # "Chrome on Windows", etc.
+
+    # Status
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    last_used_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Relationships
+    user: Mapped["User"] = relationship("User", backref="push_subscriptions")
+
+    # Indexes
+    __table_args__ = (Index("ix_push_user_active", "user_id", "is_active"),)
+
+    def __repr__(self) -> str:
+        return f"<PushSubscription(id={self.id[:8]}..., user_id={self.user_id[:8]}..., active={self.is_active})>"
