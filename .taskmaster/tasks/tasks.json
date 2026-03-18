@@ -303,14 +303,14 @@
         "id": "45",
         "title": "Agent/Broker Integration",
         "description": "Integrate real estate agent/broker functionality to connect users with professionals for property inquiries, viewing appointments, and listing management.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "low",
         "category": "feature",
         "details": "1. Backend - Agent Model:\n   - Create Agent model with name, email, phone, agency, rating, specialties, service_areas\n   - Create AgentListing model for agent's properties\n\n2. Backend - API Endpoints:\n   - GET /agents - List agents (with filters by area, specialty)\n   - GET /agents/{id} - Get agent details\n   - POST /agents/{id}/contact - Send inquiry to agent\n   - POST /agents/{id}/schedule-viewing - Request viewing appointment\n   - GET /agents/{id}/listings - Get agent's listings\n\n3. Backend - Agent Dashboard (optional):\n   - Agent registration/login\n   - Manage listings\n   - View inquiries\n   - Schedule management\n\n4. Frontend - UI:\n   - Agent directory page with search/filters\n   - Agent profile page with ratings/reviews\n   - Contact form on property pages\n   - Viewing appointment scheduler\n   - Commission calculator tool",
         "testStrategy": "1. Unit tests for agent model\n2. Integration tests for all endpoints\n3. Test contact form submission\n4. Test appointment scheduling\n5. Verify agent search/filtering\n6. E2E test for agent contact flow",
         "subtasks": [],
-        "updatedAt": "2026-03-06T19:00:00.000Z"
+        "updatedAt": "2026-03-18T13:46:22.458Z"
       },
       {
         "id": "46",
@@ -591,9 +591,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-11T16:08:40.131Z",
+      "lastModified": "2026-03-18T13:46:22.459Z",
       "taskCount": 39,
-      "completedCount": 28,
+      "completedCount": 29,
       "tags": [
         "master"
       ]
