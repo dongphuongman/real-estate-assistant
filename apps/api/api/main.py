@@ -25,6 +25,7 @@ from api.observability import REQUEST_ID_HEADER, add_observability
 from api.routers import (
     admin,
     agent_analytics,  # Task #56: Agent Performance Analytics
+    agents,  # Task #45: Agent/Broker Integration
     anomalies,  # Task #53: Market Anomaly Detection
     auth,
     auth_jwt,  # JWT authentication endpoints
@@ -357,6 +358,8 @@ if settings.auth_jwt_enabled:
     app.include_router(agent_analytics.router, prefix="/api/v1")
     # Task #63: Push Notifications
     app.include_router(push.router, prefix="/api/v1")
+    # Task #45: Agent/Broker Integration
+    app.include_router(agents.router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["System"])

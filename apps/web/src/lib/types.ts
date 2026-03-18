@@ -1382,3 +1382,185 @@ export interface AgentsNeedingSupportResponse {
   agents: AgentNeedingSupport[];
   threshold_days: number;
 }
+
+// =============================================================================
+// Agent/Broker Types (Task #45)
+// =============================================================================
+
+export type InquiryStatus = 'new' | 'read' | 'responded' | 'closed';
+export type InquiryType = 'general' | 'property' | 'financing' | 'viewing';
+export type AppointmentStatus = 'requested' | 'confirmed' | 'cancelled' | 'completed';
+export type ListingType = 'sale' | 'rent';
+
+// Agent Profile
+export interface AgentProfile {
+  id: string;
+  user_id: string;
+  name?: string;
+  email?: string;
+  agency_name?: string;
+  license_number?: string;
+  license_state?: string;
+  professional_email?: string;
+  professional_phone?: string;
+  office_address?: string;
+  specialties?: string[];
+  service_areas?: string[];
+  property_types?: string[];
+  languages?: string[];
+  average_rating: number;
+  total_reviews: number;
+  total_sales: number;
+  total_rentals: number;
+  is_verified: boolean;
+  is_active: boolean;
+  profile_image_url?: string;
+  bio?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AgentProfileCreate {
+  agency_name?: string;
+  license_number?: string;
+  license_state?: string;
+  professional_email?: string;
+  professional_phone?: string;
+  office_address?: string;
+  specialties?: string[];
+  service_areas?: string[];
+  property_types?: string[];
+  languages?: string[];
+  bio?: string;
+  profile_image_url?: string;
+}
+
+export interface AgentProfileUpdate extends Partial<AgentProfileCreate> {
+  is_active?: boolean;
+}
+
+export interface AgentProfileListResponse {
+  items: AgentProfile[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+// Agent Listing (property-agent relationship)
+export interface AgentListing {
+  id: string;
+  agent_id: string;
+  property_id: string;
+  listing_type: ListingType;
+  is_primary: boolean;
+  is_active: boolean;
+  commission_rate?: number;
+  created_at: string;
+  property?: Property;
+}
+
+export interface AgentListingListResponse {
+  items: AgentListing[];
+  total: number;
+}
+
+// Agent Inquiry (contact form)
+export interface AgentInquiry {
+  id: string;
+  agent_id: string;
+  user_id?: string;
+  visitor_id?: string;
+  name: string;
+  email: string;
+  phone?: string;
+  property_id?: string;
+  inquiry_type: InquiryType;
+  message: string;
+  status: InquiryStatus;
+  created_at: string;
+  read_at?: string;
+  responded_at?: string;
+}
+
+export interface AgentInquiryCreate {
+  name: string;
+  email: string;
+  phone?: string;
+  property_id?: string;
+  inquiry_type: InquiryType;
+  message: string;
+}
+
+export interface AgentInquiryUpdate {
+  status?: InquiryStatus;
+}
+
+export interface AgentInquiryListResponse {
+  items: AgentInquiry[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+// Viewing Appointment
+export interface ViewingAppointment {
+  id: string;
+  agent_id: string;
+  user_id?: string;
+  visitor_id?: string;
+  client_name: string;
+  client_email: string;
+  client_phone?: string;
+  property_id?: string;
+  proposed_datetime: string;
+  confirmed_datetime?: string;
+  duration_minutes: number;
+  status: AppointmentStatus;
+  notes?: string;
+  cancellation_reason?: string;
+  created_at: string;
+  updated_at: string;
+  agent_name?: string;
+}
+
+export interface ViewingAppointmentCreate {
+  property_id?: string;
+  proposed_datetime: string;
+  duration_minutes?: number;
+  client_name: string;
+  client_email: string;
+  client_phone?: string;
+  notes?: string;
+}
+
+export interface ViewingAppointmentUpdate {
+  proposed_datetime?: string;
+  confirmed_datetime?: string;
+  duration_minutes?: number;
+  status?: AppointmentStatus;
+  notes?: string;
+  cancellation_reason?: string;
+}
+
+export interface ViewingAppointmentListResponse {
+  items: ViewingAppointment[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+// Agent Filters for search
+export interface AgentFilters {
+  city?: string;
+  specialty?: string;
+  property_type?: string;
+  min_rating?: number;
+  agency_id?: string;
+  is_verified?: boolean;
+  language?: string;
+  sort_by?: 'rating' | 'listings' | 'reviews' | 'created';
+  sort_order?: 'asc' | 'desc';
+}

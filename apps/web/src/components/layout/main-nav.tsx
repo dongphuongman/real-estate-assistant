@@ -18,6 +18,7 @@ import {
   Settings,
   Sun,
   Globe,
+  Users,
 } from 'lucide-react';
 
 const THEME_STORAGE_KEY = 'theme';
@@ -58,6 +59,11 @@ export function MainNav() {
       href: '/analytics',
       label: t('analytics'),
       icon: BarChart3,
+    },
+    {
+      href: '/agents',
+      label: t('agents'),
+      icon: Users,
     },
     {
       href: '/knowledge',

@@ -100,6 +100,22 @@ import {
   GoalProgressListResponse,
   TopPerformersResponse,
   AgentsNeedingSupportResponse,
+  // Task #45: Agent/Broker Integration
+  AgentProfile,
+  AgentProfileCreate,
+  AgentProfileUpdate,
+  AgentProfileListResponse,
+  AgentListing,
+  AgentListingListResponse,
+  AgentInquiry,
+  AgentInquiryCreate,
+  AgentInquiryUpdate,
+  AgentInquiryListResponse,
+  ViewingAppointment,
+  ViewingAppointmentCreate,
+  ViewingAppointmentUpdate,
+  ViewingAppointmentListResponse,
+  AgentFilters,
 } from './types';
 
 function getApiUrl(): string {
@@ -1793,4 +1809,242 @@ export async function updateDeal(
     }
   );
   return handleResponse<Deal>(response);
+}
+
+// =============================================================================
+// Agent/Broker API (Task #45)
+// =============================================================================
+
+/**
+ * Get list of agents with optional filters (public endpoint).
+ */
+export async function getAgents(
+  params?: AgentFilters & { page?: number; page_size?: number }
+): Promise<AgentProfileListResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.page) searchParams.append('page', String(params.page));
+  if (params?.page_size) searchParams.append('page_size', String(params.page_size));
+  if (params?.city) searchParams.append('city', params.city);
+  if (params?.specialty) searchParams.append('specialty', params.specialty);
+  if (params?.min_rating !== undefined) {
+    searchParams.append('min_rating', String(params.min_rating));
+  }
+  if (params?.agency_id) searchParams.append('agency_id', params.agency_id);
+  if (params?.sort_by) searchParams.append('sort_by', params.sort_by);
+  if (params?.is_verified !== undefined) {
+    searchParams.append('is_verified', String(params.is_verified));
+  }
+  if (params?.is_active !== undefined) {
+    searchParams.append('is_active', String(params.is_active));
+  }
+
+  const queryString = searchParams.toString();
+  const url = queryString ? `${getApiUrl()}/agents?${queryString}` : `${getApiUrl()}/agents`;
+
+  const response = await safeFetch(url, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<AgentProfileListResponse>(response);
+}
+
+/**
+ * Get a specific agent by ID (public endpoint).
+ */
+export async function getAgent(agentId: string): Promise<AgentProfile> {
+  const response = await safeFetch(`${getApiUrl()}/agents/${encodeURIComponent(agentId)}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<AgentProfile>(response);
+}
+
+/**
+ * Get listings for a specific agent (public endpoint).
+ */
+export async function getAgentListings(
+  agentId: string,
+  params?: { listing_type?: 'sale' | 'rent'; page?: number; page_size?: number }
+): Promise<AgentListingListResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.listing_type) searchParams.append('listing_type', params.listing_type);
+  if (params?.page) searchParams.append('page', String(params.page));
+  if (params?.page_size) searchParams.append('page_size', String(params.page_size));
+
+  const queryString = searchParams.toString();
+  const url = queryString
+    ? `${getApiUrl()}/agents/${encodeURIComponent(agentId)}/listings?${queryString}`
+    : `${getApiUrl()}/agents/${encodeURIComponent(agentId)}/listings`;
+
+  const response = await safeFetch(url, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<AgentListingListResponse>(response);
+}
+
+/**
+ * Send an inquiry to an agent (public endpoint).
+ */
+export async function contactAgent(
+  agentId: string,
+  data: AgentInquiryCreate
+): Promise<AgentInquiry> {
+  const response = await safeFetch(`${getApiUrl()}/agents/${encodeURIComponent(agentId)}/contact`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  return handleResponse<AgentInquiry>(response);
+}
+
+/**
+ * Schedule a viewing appointment with an agent (public endpoint).
+ */
+export async function scheduleViewing(
+  agentId: string,
+  data: ViewingAppointmentCreate
+): Promise<ViewingAppointment> {
+  const response = await safeFetch(
+    `${getApiUrl()}/agents/${encodeURIComponent(agentId)}/schedule-viewing`,
+    {
+      method: 'POST',
+      headers: buildHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(data),
+    }
+  );
+  return handleResponse<ViewingAppointment>(response);
+}
+
+/**
+ * Get current agent's own profile (protected - requires agent role).
+ */
+export async function getOwnAgentProfile(): Promise<AgentProfile | null> {
+  const response = await safeFetch(`${getApiUrl()}/agents/profile`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<AgentProfile | null>(response);
+}
+
+/**
+ * Create agent profile (protected - requires agent role).
+ */
+export async function createAgentProfile(data: AgentProfileCreate): Promise<AgentProfile> {
+  const response = await safeFetch(`${getApiUrl()}/agents/profile`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  return handleResponse<AgentProfile>(response);
+}
+
+/**
+ * Update current agent's profile (protected - requires agent role).
+ */
+export async function updateOwnAgentProfile(data: AgentProfileUpdate): Promise<AgentProfile> {
+  const response = await safeFetch(`${getApiUrl()}/agents/profile`, {
+    method: 'PATCH',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  return handleResponse<AgentProfile>(response);
+}
+
+/**
+ * Get inquiries for current agent (protected - requires agent role).
+ */
+export async function getOwnInquiries(params?: {
+  status?: 'new' | 'read' | 'responded' | 'closed';
+  page?: number;
+  page_size?: number;
+}): Promise<AgentInquiryListResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.status) searchParams.append('status', params.status);
+  if (params?.page) searchParams.append('page', String(params.page));
+  if (params?.page_size) searchParams.append('page_size', String(params.page_size));
+
+  const queryString = searchParams.toString();
+  const url = queryString
+    ? `${getApiUrl()}/agents/inquiries?${queryString}`
+    : `${getApiUrl()}/agents/inquiries`;
+
+  const response = await safeFetch(url, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<AgentInquiryListResponse>(response);
+}
+
+/**
+ * Update an inquiry (protected - requires agent role).
+ */
+export async function updateInquiry(
+  inquiryId: string,
+  data: AgentInquiryUpdate
+): Promise<AgentInquiry> {
+  const response = await safeFetch(
+    `${getApiUrl()}/agents/inquiries/${encodeURIComponent(inquiryId)}`,
+    {
+      method: 'PATCH',
+      headers: buildHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(data),
+    }
+  );
+  return handleResponse<AgentInquiry>(response);
+}
+
+/**
+ * Get appointments for current agent (protected - requires agent role).
+ */
+export async function getOwnAppointments(params?: {
+  status?: 'requested' | 'confirmed' | 'cancelled' | 'completed';
+  page?: number;
+  page_size?: number;
+}): Promise<ViewingAppointmentListResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.status) searchParams.append('status', params.status);
+  if (params?.page) searchParams.append('page', String(params.page));
+  if (params?.page_size) searchParams.append('page_size', String(params.page_size));
+
+  const queryString = searchParams.toString();
+  const url = queryString
+    ? `${getApiUrl()}/agents/appointments?${queryString}`
+    : `${getApiUrl()}/agents/appointments`;
+
+  const response = await safeFetch(url, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<ViewingAppointmentListResponse>(response);
+}
+
+/**
+ * Update an appointment (protected - requires agent role).
+ */
+export async function updateAppointment(
+  appointmentId: string,
+  data: ViewingAppointmentUpdate
+): Promise<ViewingAppointment> {
+  const response = await safeFetch(
+    `${getApiUrl()}/agents/appointments/${encodeURIComponent(appointmentId)}`,
+    {
+      method: 'PATCH',
+      headers: buildHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(data),
+    }
+  );
+  return handleResponse<ViewingAppointment>(response);
 }

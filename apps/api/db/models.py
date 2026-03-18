@@ -922,3 +922,270 @@ class PushSubscription(Base):
 
     def __repr__(self) -> str:
         return f"<PushSubscription(id={self.id[:8]}..., user_id={self.user_id[:8]}..., active={self.is_active})>"
+
+
+# =============================================================================
+# Agent/Broker System Models (Task #45)
+# =============================================================================
+
+
+class AgentProfile(Base):
+    """Agent/broker professional profile linked to User.
+
+    Stores professional information for real estate agents including
+    agency details, specializations, ratings, and contact information.
+    """
+
+    __tablename__ = "agent_profiles"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    user_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+
+    # Professional Information
+    agency_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    agency_id: Mapped[Optional[str]] = mapped_column(
+        String(36), nullable=True, index=True
+    )  # For multi-tenancy
+    license_number: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    license_state: Mapped[Optional[str]] = mapped_column(
+        String(50), nullable=True
+    )  # For regional licensing
+
+    # Contact (professional, can differ from User.email)
+    professional_email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    professional_phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    office_address: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+
+    # Specialization
+    specialties: Mapped[Optional[list]] = mapped_column(
+        JSON, nullable=True
+    )  # ["residential", "commercial", "luxury"]
+    service_areas: Mapped[Optional[list]] = mapped_column(
+        JSON, nullable=True
+    )  # ["Berlin", "Munich"]
+    property_types: Mapped[Optional[list]] = mapped_column(
+        JSON, nullable=True
+    )  # ["apartment", "house", "investment"]
+    languages: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)  # ["en", "de", "pl"]
+
+    # Rating & Reviews
+    average_rating: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    total_reviews: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    total_sales: Mapped[int] = mapped_column(Integer, default=0, nullable=False)  # Track record
+    total_rentals: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    # Status
+    is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    verification_date: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+    # Media
+    profile_image_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    bio: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+    # Relationships
+    user: Mapped["User"] = relationship("User", backref="agent_profile")
+    listings: Mapped[list["AgentListing"]] = relationship(
+        "AgentListing", back_populates="agent", cascade="all, delete-orphan"
+    )
+    inquiries: Mapped[list["AgentInquiry"]] = relationship(
+        "AgentInquiry", back_populates="agent", cascade="all, delete-orphan"
+    )
+
+    __table_args__ = (
+        Index("ix_agent_profiles_agency", "agency_id"),
+        Index("ix_agent_profiles_rating", "average_rating"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<AgentProfile(id={self.id[:8]}..., user_id={self.user_id[:8]}..., agency={self.agency_name})>"
+
+
+class AgentListing(Base):
+    """Links agents to properties they represent.
+
+    An agent can have multiple listings, and a property can have
+    multiple agents (co-listing). Supports both sale and rental listings.
+    """
+
+    __tablename__ = "agent_listings"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    agent_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("agent_profiles.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    property_id: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+        index=True,  # ChromaDB property ID
+    )
+    listing_type: Mapped[str] = mapped_column(
+        String(20), default="sale", nullable=False
+    )  # sale, rent, both
+    is_primary: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )  # Primary agent for property
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    commission_rate: Mapped[Optional[float]] = mapped_column(
+        Float, nullable=True
+    )  # Optional override
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+
+    # Relationships
+    agent: Mapped["AgentProfile"] = relationship("AgentProfile", back_populates="listings")
+
+    __table_args__ = (Index("uq_agent_listing", "agent_id", "property_id", unique=True),)
+
+    def __repr__(self) -> str:
+        return f"<AgentListing(agent_id={self.agent_id[:8]}..., property_id={self.property_id[:8]}..., type={self.listing_type})>"
+
+
+class AgentInquiry(Base):
+    """Contact inquiries sent to agents.
+
+    Stores all contact form submissions from users/visitors to agents.
+    Can be linked to a specific property or be general inquiries.
+    """
+
+    __tablename__ = "agent_inquiries"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    agent_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("agent_profiles.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    # Inquirer info (can be anonymous or registered)
+    user_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    visitor_id: Mapped[Optional[str]] = mapped_column(
+        String(36), nullable=True, index=True
+    )  # For anonymous
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    email: Mapped[str] = mapped_column(String(255), nullable=False)
+    phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+
+    # Inquiry details
+    property_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
+    inquiry_type: Mapped[str] = mapped_column(
+        String(50), nullable=False
+    )  # general, property, financing
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+
+    # Status
+    status: Mapped[str] = mapped_column(
+        String(20), default="new", nullable=False
+    )  # new, read, responded, closed
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    read_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    responded_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Relationships
+    agent: Mapped["AgentProfile"] = relationship("AgentProfile", back_populates="inquiries")
+    user: Mapped[Optional["User"]] = relationship("User", backref="agent_inquiries")
+
+    __table_args__ = (
+        Index("ix_inquiries_status", "status"),
+        Index("ix_inquiries_created", "created_at"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<AgentInquiry(id={self.id[:8]}..., agent_id={self.agent_id[:8]}..., type={self.inquiry_type}, status={self.status})>"
+
+
+class ViewingAppointment(Base):
+    """Scheduled property viewings with agents.
+
+    Manages viewing appointment requests, confirmations, and cancellations.
+    Supports both registered users and anonymous visitors.
+    """
+
+    __tablename__ = "viewing_appointments"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    agent_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("agent_profiles.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    # Client info
+    user_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    visitor_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    client_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    client_email: Mapped[str] = mapped_column(String(255), nullable=False)
+    client_phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+
+    # Property
+    property_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+
+    # Scheduling
+    proposed_datetime: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    confirmed_datetime: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    duration_minutes: Mapped[int] = mapped_column(Integer, default=60, nullable=False)
+
+    # Status
+    status: Mapped[str] = mapped_column(
+        String(20), default="requested", nullable=False
+    )  # requested, confirmed, cancelled, completed
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    cancellation_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+    # Relationships
+    agent: Mapped["AgentProfile"] = relationship("AgentProfile", backref="viewing_appointments")
+    user: Mapped[Optional["User"]] = relationship("User", backref="viewing_appointments")
+
+    __table_args__ = (
+        Index("ix_appointments_datetime", "proposed_datetime"),
+        Index("ix_appointments_status", "status"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<ViewingAppointment(id={self.id[:8]}..., agent_id={self.agent_id[:8]}..., status={self.status})>"

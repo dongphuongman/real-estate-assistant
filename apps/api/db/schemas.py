@@ -1095,3 +1095,267 @@ class PushNotificationSend(BaseModel):
     body: str = Field(..., max_length=500)
     icon: Optional[str] = Field(None, max_length=500)
     data: Optional[dict[str, Any]] = None
+
+
+# =============================================================================
+# Agent/Broker System Schemas (Task #45)
+# =============================================================================
+
+# Type literals
+InquiryStatusType = Literal["new", "read", "responded", "closed"]
+InquiryTypeType = Literal["general", "property", "financing", "viewing"]
+AppointmentStatusType = Literal["requested", "confirmed", "cancelled", "completed"]
+ListingTypeType = Literal["sale", "rent", "both"]
+
+
+# Agent Profile Schemas
+class AgentProfileCreate(BaseModel):
+    """Schema for creating an agent profile."""
+
+    agency_name: Optional[str] = Field(None, max_length=255)
+    agency_id: Optional[str] = Field(None, max_length=36)
+    license_number: Optional[str] = Field(None, max_length=100)
+    license_state: Optional[str] = Field(None, max_length=50)
+    professional_email: Optional[EmailStr] = None
+    professional_phone: Optional[str] = Field(None, max_length=50)
+    office_address: Optional[str] = Field(None, max_length=500)
+    specialties: Optional[list[str]] = None
+    service_areas: Optional[list[str]] = None
+    property_types: Optional[list[str]] = None
+    languages: Optional[list[str]] = None
+    bio: Optional[str] = Field(None, max_length=2000)
+    profile_image_url: Optional[str] = Field(None, max_length=500)
+
+
+class AgentProfileUpdate(BaseModel):
+    """Schema for updating an agent profile."""
+
+    agency_name: Optional[str] = Field(None, max_length=255)
+    license_number: Optional[str] = Field(None, max_length=100)
+    license_state: Optional[str] = Field(None, max_length=50)
+    professional_email: Optional[EmailStr] = None
+    professional_phone: Optional[str] = Field(None, max_length=50)
+    office_address: Optional[str] = Field(None, max_length=500)
+    specialties: Optional[list[str]] = None
+    service_areas: Optional[list[str]] = None
+    property_types: Optional[list[str]] = None
+    languages: Optional[list[str]] = None
+    bio: Optional[str] = Field(None, max_length=2000)
+    profile_image_url: Optional[str] = Field(None, max_length=500)
+    is_active: Optional[bool] = None
+
+
+class AgentProfileResponse(BaseModel):
+    """Schema for agent profile response."""
+
+    id: str
+    user_id: str
+    # User info (joined)
+    name: Optional[str] = None
+    email: Optional[str] = None
+    # Professional info
+    agency_name: Optional[str] = None
+    license_number: Optional[str] = None
+    license_state: Optional[str] = None
+    professional_email: Optional[str] = None
+    professional_phone: Optional[str] = None
+    office_address: Optional[str] = None
+    # Specialization
+    specialties: Optional[list[str]] = None
+    service_areas: Optional[list[str]] = None
+    property_types: Optional[list[str]] = None
+    languages: Optional[list[str]] = None
+    # Rating & Stats
+    average_rating: float
+    total_reviews: int
+    total_sales: int
+    total_rentals: int
+    # Status
+    is_verified: bool
+    is_active: bool
+    # Media
+    profile_image_url: Optional[str] = None
+    bio: Optional[str] = None
+    # Timestamps
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class AgentProfileListResponse(BaseModel):
+    """Schema for paginated list of agent profiles."""
+
+    items: list[AgentProfileResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
+class AgentFilters(BaseModel):
+    """Schema for filtering agents."""
+
+    city: Optional[str] = Field(None, max_length=100)
+    specialty: Optional[str] = Field(None, max_length=50)
+    property_type: Optional[str] = Field(None, max_length=50)
+    min_rating: Optional[float] = Field(None, ge=0, le=5)
+    agency_id: Optional[str] = None
+    is_verified: Optional[bool] = None
+    language: Optional[str] = Field(None, max_length=10)
+    sort_by: Literal["rating", "listings", "reviews", "created"] = "rating"
+    sort_order: Literal["asc", "desc"] = "desc"
+
+
+# Agent Listing Schemas
+class AgentListingCreate(BaseModel):
+    """Schema for creating an agent listing."""
+
+    property_id: str = Field(..., max_length=255)
+    listing_type: ListingTypeType = "sale"
+    is_primary: bool = False
+    commission_rate: Optional[float] = Field(None, ge=0, le=1)
+
+
+class AgentListingResponse(BaseModel):
+    """Schema for agent listing response."""
+
+    id: str
+    agent_id: str
+    property_id: str
+    listing_type: str
+    is_primary: bool
+    is_active: bool
+    commission_rate: Optional[float] = None
+    created_at: datetime
+    # Optional property data (from ChromaDB)
+    property: Optional[dict[str, Any]] = None
+
+    model_config = {"from_attributes": True}
+
+
+class AgentListingListResponse(BaseModel):
+    """Schema for list of agent listings."""
+
+    items: list[AgentListingResponse]
+    total: int
+
+
+# Agent Inquiry Schemas
+class AgentInquiryCreate(BaseModel):
+    """Schema for creating an agent inquiry (contact form)."""
+
+    name: str = Field(..., min_length=1, max_length=255)
+    email: EmailStr
+    phone: Optional[str] = Field(None, max_length=50)
+    property_id: Optional[str] = Field(None, max_length=255)
+    inquiry_type: InquiryTypeType = "general"
+    message: str = Field(..., min_length=10, max_length=5000)
+
+
+class AgentInquiryUpdate(BaseModel):
+    """Schema for updating an inquiry (agent only)."""
+
+    status: Optional[InquiryStatusType] = None
+    notes: Optional[str] = Field(None, max_length=2000)
+
+
+class AgentInquiryResponse(BaseModel):
+    """Schema for agent inquiry response."""
+
+    id: str
+    agent_id: str
+    # Inquirer info
+    user_id: Optional[str] = None
+    visitor_id: Optional[str] = None
+    name: str
+    email: str
+    phone: Optional[str] = None
+    # Inquiry details
+    property_id: Optional[str] = None
+    inquiry_type: str
+    message: str
+    # Status
+    status: str
+    # Timestamps
+    created_at: datetime
+    read_at: Optional[datetime] = None
+    responded_at: Optional[datetime] = None
+    # Optional property data
+    property: Optional[dict[str, Any]] = None
+
+    model_config = {"from_attributes": True}
+
+
+class AgentInquiryListResponse(BaseModel):
+    """Schema for paginated list of agent inquiries."""
+
+    items: list[AgentInquiryResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
+# Viewing Appointment Schemas
+class ViewingAppointmentCreate(BaseModel):
+    """Schema for creating a viewing appointment request."""
+
+    property_id: str = Field(..., max_length=255)
+    proposed_datetime: datetime
+    duration_minutes: int = Field(default=60, ge=15, le=480)  # 15 min to 8 hours
+    client_name: str = Field(..., min_length=1, max_length=255)
+    client_email: EmailStr
+    client_phone: Optional[str] = Field(None, max_length=50)
+    notes: Optional[str] = Field(None, max_length=2000)
+
+
+class ViewingAppointmentUpdate(BaseModel):
+    """Schema for updating an appointment (agent only)."""
+
+    status: Optional[AppointmentStatusType] = None
+    confirmed_datetime: Optional[datetime] = None
+    notes: Optional[str] = Field(None, max_length=2000)
+    cancellation_reason: Optional[str] = Field(None, max_length=1000)
+
+
+class ViewingAppointmentResponse(BaseModel):
+    """Schema for viewing appointment response."""
+
+    id: str
+    agent_id: str
+    # Client info
+    user_id: Optional[str] = None
+    visitor_id: Optional[str] = None
+    client_name: str
+    client_email: str
+    client_phone: Optional[str] = None
+    # Property
+    property_id: str
+    # Scheduling
+    proposed_datetime: datetime
+    confirmed_datetime: Optional[datetime] = None
+    duration_minutes: int
+    # Status
+    status: str
+    notes: Optional[str] = None
+    cancellation_reason: Optional[str] = None
+    # Timestamps
+    created_at: datetime
+    updated_at: datetime
+    # Optional property data
+    property: Optional[dict[str, Any]] = None
+    # Optional agent info
+    agent_name: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class ViewingAppointmentListResponse(BaseModel):
+    """Schema for paginated list of viewing appointments."""
+
+    items: list[ViewingAppointmentResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
