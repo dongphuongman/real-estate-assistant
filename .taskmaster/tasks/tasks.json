@@ -275,7 +275,7 @@
         "id": "43",
         "title": "Document Management",
         "description": "Implement a document management system where users can upload, store, and organize property-related documents such as contracts, inspection reports, and photos.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "35"
         ],
@@ -284,7 +284,7 @@
         "details": "1. Backend - Document Model:\n   - Create Document model with user_id, property_id, filename, file_type, category, tags, expiry_date\n   - Support file types: PDF, DOC, DOCX, JPG, PNG\n\n2. Backend - Storage:\n   - Configure file storage (local S3-compatible or cloud storage)\n   - Implement secure file upload/download\n   - Add file size limits (10MB max)\n   - Add virus scanning (optional)\n\n3. Backend - API Endpoints:\n   - POST /documents - Upload document\n   - GET /documents - List documents\n   - GET /documents/{id} - Download document\n   - DELETE /documents/{id} - Delete document\n   - PATCH /documents/{id} - Update metadata\n\n4. Backend - OCR (optional):\n   - Extract text from PDFs/images\n   - Make documents searchable\n\n5. Frontend - UI:\n   - Document upload with drag-drop\n   - Document list with filters\n   - Document preview (PDF viewer)\n   - Expiry reminders",
         "testStrategy": "1. Unit tests for document model\n2. Integration tests for upload/download\n3. Test file type validation\n4. Test file size limits\n5. Test document categorization\n6. Verify secure file access",
         "subtasks": [],
-        "updatedAt": "2026-03-06T19:00:00.000Z"
+        "updatedAt": "2026-03-18T15:14:55.184Z"
       },
       {
         "id": "44",
@@ -591,9 +591,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-18T13:46:22.459Z",
+      "lastModified": "2026-03-18T15:14:55.184Z",
       "taskCount": 39,
-      "completedCount": 29,
+      "completedCount": 30,
       "tags": [
         "master"
       ]
