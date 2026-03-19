@@ -116,7 +116,7 @@ export function NotificationSettings() {
             </div>
           )}
 
-          {pushPermissionStatus === 'prompt' && (
+          {pushPermissionStatus === 'default' && (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
                 Enable push notifications to receive instant alerts about properties.

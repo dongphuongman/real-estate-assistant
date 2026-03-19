@@ -10,6 +10,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import type { TooltipProps } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { TCOProjection } from '@/lib/types';
 
@@ -43,22 +44,14 @@ export function TCOProjectionChart({
   // Find projection points for highlighted years
   const highlightPoints = projections.filter((p) => highlightYears.includes(p.year));
 
-  const renderTooltip = ({
-    active,
-    payload,
-    label,
-  }: {
-    active?: boolean;
-    payload?: Array<{ name: string; value: number; color: string }>;
-    label?: string;
-  }) => {
+  const renderTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-background border rounded-lg p-3 shadow-lg">
           <p className="font-medium mb-2">Year {label}</p>
           {payload.map((entry, index) => (
             <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {entry.name}: {formatCurrency(entry.value)}
+              {entry.name}: {entry.value !== undefined ? formatCurrency(entry.value) : 'N/A'}
             </p>
           ))}
         </div>

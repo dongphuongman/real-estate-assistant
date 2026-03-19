@@ -130,7 +130,8 @@ export async function getServiceWorkerRegistration(): Promise<ServiceWorkerRegis
     return null;
   }
 
-  return navigator.serviceWorker.getRegistration();
+  const registration = await navigator.serviceWorker.getRegistration();
+  return registration ?? null;
 }
 
 /**

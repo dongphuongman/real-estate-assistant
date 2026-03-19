@@ -29,6 +29,8 @@ export default function DistrictBoundaryLayer({
   onDistrictClick,
 }: DistrictBoundaryLayerProps) {
   const clickHandlerRef = useRef<((e: unknown) => void) | null>(null);
+  const mouseEnterHandlerRef = useRef<(() => void) | null>(null);
+  const mouseLeaveHandlerRef = useRef<(() => void) | null>(null);
 
   // Calculate max price for color scaling
   const maxPrice = Math.max(...stats.map((s) => s.avgPrice ?? 0).filter((p) => p > 0), 1);
@@ -163,21 +165,27 @@ export default function DistrictBoundaryLayer({
     map.on('click', FILL_LAYER_ID, clickHandlerRef.current);
 
     // Change cursor on hover
-    map.on('mouseenter', FILL_LAYER_ID, () => {
+    mouseEnterHandlerRef.current = () => {
       map.getCanvas().style.cursor = 'pointer';
-    });
+    };
+    map.on('mouseenter', FILL_LAYER_ID, mouseEnterHandlerRef.current);
 
-    map.on('mouseleave', FILL_LAYER_ID, () => {
+    mouseLeaveHandlerRef.current = () => {
       map.getCanvas().style.cursor = '';
-    });
+    };
+    map.on('mouseleave', FILL_LAYER_ID, mouseLeaveHandlerRef.current);
 
     return () => {
       if (map) {
         if (clickHandlerRef.current) {
           map.off('click', FILL_LAYER_ID, clickHandlerRef.current as (e: unknown) => void);
         }
-        map.off('mouseenter', FILL_LAYER_ID);
-        map.off('mouseleave', FILL_LAYER_ID);
+        if (mouseEnterHandlerRef.current) {
+          map.off('mouseenter', FILL_LAYER_ID, mouseEnterHandlerRef.current);
+        }
+        if (mouseLeaveHandlerRef.current) {
+          map.off('mouseleave', FILL_LAYER_ID, mouseLeaveHandlerRef.current);
+        }
 
         try {
           if (map.getLayer(LABELS_LAYER_ID)) {

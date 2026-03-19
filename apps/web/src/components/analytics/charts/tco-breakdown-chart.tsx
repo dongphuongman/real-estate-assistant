@@ -1,6 +1,7 @@
 'use client';
 
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import type { TooltipProps } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { TCOResult } from '@/lib/types';
 
@@ -64,15 +65,10 @@ export function TCOBreakdownChart({
     return `${name} (${(percent * 100).toFixed(0)}%)`;
   };
 
-  const renderTooltip = ({
-    active,
-    payload,
-  }: {
-    active?: boolean;
-    payload?: Array<{ name: string; value: number; payload: { key: string } }>;
-  }) => {
+  const renderTooltip = ({ active, payload }: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
       const data = payload[0];
+      if (!data || data.value === undefined) return null;
       const percent = (data.value / tcoResult.monthly_tco) * 100;
       return (
         <div className="bg-background border rounded-lg p-3 shadow-lg">
