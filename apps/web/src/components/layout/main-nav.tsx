@@ -11,6 +11,7 @@ import {
   BarChart3,
   BookOpen,
   Building2,
+  FileText,
   Heart,
   MessageSquare,
   Moon,
@@ -44,6 +45,11 @@ export function MainNav() {
       href: '/favorites',
       label: t('favorites'),
       icon: Heart,
+    },
+    {
+      href: '/documents',
+      label: t('documents'),
+      icon: FileText,
     },
     {
       href: '/city-overview',

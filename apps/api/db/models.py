@@ -1189,3 +1189,86 @@ class ViewingAppointment(Base):
 
     def __repr__(self) -> str:
         return f"<ViewingAppointment(id={self.id[:8]}..., agent_id={self.agent_id[:8]}..., status={self.status})>"
+
+
+# =============================================================================
+# Document Management System Models (Task #43)
+# =============================================================================
+
+
+class DocumentDB(Base):
+    """Document model for user property-related documents.
+
+    Stores metadata for uploaded documents including contracts,
+    inspection reports, photos, and other property-related files.
+    Supports OCR text extraction for searchability.
+    """
+
+    __tablename__ = "documents"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+
+    # User reference (required)
+    user_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    # Property reference (optional - document may not be linked to a specific property)
+    property_id: Mapped[Optional[str]] = mapped_column(
+        String(255),  # String to match ChromaDB document IDs
+        nullable=True,
+        index=True,
+    )
+
+    # File information
+    filename: Mapped[str] = mapped_column(String(255), nullable=False)  # Unique stored filename
+    original_filename: Mapped[str] = mapped_column(
+        String(255), nullable=False
+    )  # Original upload name
+    file_type: Mapped[str] = mapped_column(String(50), nullable=False)  # MIME type
+    file_size: Mapped[int] = mapped_column(Integer, nullable=False)  # Size in bytes
+    storage_path: Mapped[str] = mapped_column(String(500), nullable=False)  # Path to stored file
+
+    # Document metadata
+    category: Mapped[Optional[str]] = mapped_column(
+        String(50), nullable=True
+    )  # contract, inspection, photo, financial, other
+    tags: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON array of tags
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # OCR fields
+    extracted_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # OCR extracted text
+    ocr_status: Mapped[str] = mapped_column(
+        String(20), default="pending", nullable=False
+    )  # pending, processing, completed, failed
+
+    # Expiry tracking
+    expiry_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    expiry_notified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+    # Relationships
+    user: Mapped["User"] = relationship("User", backref="documents")
+
+    # Indexes
+    __table_args__ = (
+        Index("ix_documents_category", "category"),
+        Index("ix_documents_ocr_status", "ocr_status"),
+        Index("ix_documents_expiry", "expiry_date"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<DocumentDB(id={self.id[:8]}..., user_id={self.user_id[:8]}..., filename={self.original_filename[:20]}...)>"

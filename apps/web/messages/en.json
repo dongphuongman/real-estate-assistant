@@ -40,6 +40,7 @@
     "home": "Home",
     "search": "Search",
     "favorites": "Favorites",
+    "documents": "Documents",
     "cities": "Cities",
     "assistant": "Assistant",
     "analytics": "Analytics",
@@ -598,6 +599,74 @@
         "cancelled": "Cancelled",
         "completed": "Completed"
       }
+    }
+  },
+  "documents": {
+    "title": "Documents",
+    "description": "Manage your property documents, contracts, and reports",
+    "uploadButton": "Upload Document",
+    "refresh": "Refresh",
+    "emptyState": {
+      "title": "No documents yet",
+      "description": "Upload your first document to start organizing your property-related files.",
+      "uploadFirst": "Upload Your First Document"
+    },
+    "upload": {
+      "title": "Upload Document",
+      "dragDrop": "Drag & drop a file here",
+      "orClick": "or click to browse",
+      "supportedTypes": "Supports: PDF, DOC, DOCX, JPG, PNG (max 10MB)",
+      "category": "Category",
+      "categoryPlaceholder": "Select category (optional)",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional description...",
+      "tags": "Tags",
+      "tagsPlaceholder": "contract, urgent, reviewed (comma-separated)",
+      "expiryDate": "Expiry Date",
+      "uploadButton": "Upload Document",
+      "uploading": "Uploading...",
+      "success": "Upload Successful!",
+      "cancel": "Cancel"
+    },
+    "categories": {
+      "selectCategory": "Select category (optional)",
+      "contract": "Contract",
+      "inspection": "Inspection Report",
+      "photo": "Photo",
+      "financial": "Financial Document",
+      "other": "Other",
+      "allCategories": "All Categories"
+    },
+    "list": {
+      "searchPlaceholder": "Search documents...",
+      "sortByDate": "Sort by Date",
+      "sortByName": "Sort by Name",
+      "sortBySize": "Sort by Size",
+      "ascending": "Ascending",
+      "descending": "Descending",
+      "noResults": "No documents match your filters",
+      "download": "Download",
+      "delete": "Delete",
+      "deleteConfirm": "Delete \"{name}\"? This cannot be undone.",
+      "deleting": "Deleting...",
+      "loadMore": "Load More ({page}/{total})",
+      "loading": "Loading...",
+      "expired": "Expired",
+      "expiringSoon": "Expiring Soon",
+      "expires": "Expires",
+      "added": "Added"
+    },
+    "errors": {
+      "loadFailed": "Failed to Load Documents",
+      "deleteFailed": "Failed to delete document",
+      "invalidType": "Invalid file type",
+      "tooLarge": "File too large. Maximum size: 10MB",
+      "uploadFailed": "Upload failed"
+    },
+    "expiryAlert": {
+      "singular": "{count} document expiring soon",
+      "plural": "{count} documents expiring soon",
+      "description": "The following documents will expire within 30 days:"
     }
   }
 }

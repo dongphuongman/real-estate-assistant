@@ -116,6 +116,13 @@ import {
   ViewingAppointmentUpdate,
   ViewingAppointmentListResponse,
   AgentFilters,
+  // Task #43: Document Management
+  Document,
+  DocumentUploadResponse,
+  DocumentListResponse,
+  DocumentUpdateRequest,
+  DocumentFilters,
+  ExpiringDocumentsResponse,
 } from './types';
 
 function getApiUrl(): string {
@@ -2047,4 +2054,124 @@ export async function updateAppointment(
     }
   );
   return handleResponse<ViewingAppointment>(response);
+}
+
+// =============================================================================
+// Document Management API (Task #43)
+// =============================================================================
+
+/**
+ * Upload a document file.
+ */
+export async function uploadDocument(
+  file: File,
+  metadata?: {
+    property_id?: string;
+    category?: string;
+    tags?: string[];
+    description?: string;
+    expiry_date?: string;
+  }
+): Promise<DocumentUploadResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+  if (metadata?.property_id) formData.append('property_id', metadata.property_id);
+  if (metadata?.category) formData.append('category', metadata.category);
+  if (metadata?.tags) formData.append('tags', JSON.stringify(metadata.tags));
+  if (metadata?.description) formData.append('description', metadata.description);
+  if (metadata?.expiry_date) formData.append('expiry_date', metadata.expiry_date);
+
+  const response = await safeFetch(`${getApiUrl()}/documents`, {
+    method: 'POST',
+    headers: buildMultipartHeaders(),
+    credentials: 'include',
+    body: formData,
+  });
+  return handleResponse<DocumentUploadResponse>(response);
+}
+
+/**
+ * List documents with optional filters.
+ */
+export async function getDocuments(params?: {
+  property_id?: string;
+  category?: string;
+  ocr_status?: string;
+  search_query?: string;
+  sort_by?: string;
+  sort_order?: string;
+  page?: number;
+  page_size?: number;
+}): Promise<DocumentListResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.property_id) searchParams.append('property_id', params.property_id);
+  if (params?.category) searchParams.append('category', params.category);
+  if (params?.ocr_status) searchParams.append('ocr_status', params.ocr_status);
+  if (params?.search_query) searchParams.append('search_query', params.search_query);
+  if (params?.sort_by) searchParams.append('sort_by', params.sort_by);
+  if (params?.sort_order) searchParams.append('sort_order', params.sort_order);
+  if (params?.page) searchParams.append('page', String(params.page));
+  if (params?.page_size) searchParams.append('page_size', String(params.page_size));
+
+  const queryString = searchParams.toString();
+  const url = queryString ? `${getApiUrl()}/documents?${queryString}` : `${getApiUrl()}/documents`;
+
+  const response = await safeFetch(url, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<DocumentListResponse>(response);
+}
+
+/**
+ * Get expiring documents.
+ */
+export async function getExpiringDocuments(
+  daysAhead: number = 30
+): Promise<ExpiringDocumentsResponse> {
+  const response = await safeFetch(`${getApiUrl()}/documents/expiring?days_ahead=${daysAhead}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<ExpiringDocumentsResponse>(response);
+}
+
+/**
+ * Get document download URL.
+ */
+export function getDocumentDownloadUrl(documentId: string): string {
+  return `${getApiUrl()}/documents/${encodeURIComponent(documentId)}`;
+}
+
+/**
+ * Update document metadata.
+ */
+export async function updateDocument(
+  documentId: string,
+  data: DocumentUpdateRequest
+): Promise<Document> {
+  const response = await safeFetch(`${getApiUrl()}/documents/${encodeURIComponent(documentId)}`, {
+    method: 'PATCH',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  return handleResponse<Document>(response);
+}
+
+/**
+ * Delete a document.
+ */
+export async function deleteDocument(documentId: string): Promise<void> {
+  const response = await safeFetch(`${getApiUrl()}/documents/${encodeURIComponent(documentId)}`, {
+    method: 'DELETE',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
+    throw new ApiError(error.detail || 'Failed to delete document', response.status);
+  }
 }

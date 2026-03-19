@@ -31,6 +31,7 @@ from api.routers import (
     auth_jwt,  # JWT authentication endpoints
     chat,
     collections,  # Task #37: Property collections
+    documents,  # Task #43: Document Management
     exports,
     favorites,  # Task #37: Property favorites
     leads,  # Task #55: Lead Scoring System
@@ -360,6 +361,8 @@ if settings.auth_jwt_enabled:
     app.include_router(push.router, prefix="/api/v1")
     # Task #45: Agent/Broker Integration
     app.include_router(agents.router, prefix="/api/v1")
+    # Task #43: Document Management System
+    app.include_router(documents.router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["System"])

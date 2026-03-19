@@ -1560,7 +1560,73 @@ export interface AgentFilters {
   min_rating?: number;
   agency_id?: string;
   is_verified?: boolean;
+  is_active?: boolean;
   language?: string;
   sort_by?: 'rating' | 'listings' | 'reviews' | 'created';
   sort_order?: 'asc' | 'desc';
+}
+
+// =============================================================================
+// Document Management Types (Task #43)
+// =============================================================================
+
+export type DocumentCategory = 'contract' | 'inspection' | 'photo' | 'financial' | 'other';
+
+export type OCRStatus = 'pending' | 'processing' | 'completed' | 'failed';
+
+export interface Document {
+  id: string;
+  user_id: string;
+  property_id?: string;
+  filename: string;
+  original_filename: string;
+  file_type: string;
+  file_size: number;
+  category?: DocumentCategory;
+  tags?: string[];
+  description?: string;
+  expiry_date?: string;
+  ocr_status: OCRStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DocumentUploadResponse {
+  id: string;
+  filename: string;
+  original_filename: string;
+  file_type: string;
+  file_size: number;
+  message: string;
+}
+
+export interface DocumentListResponse {
+  items: Document[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+export interface DocumentUpdateRequest {
+  property_id?: string;
+  category?: DocumentCategory;
+  tags?: string[];
+  description?: string;
+  expiry_date?: string;
+}
+
+export interface DocumentFilters {
+  property_id?: string;
+  category?: DocumentCategory;
+  ocr_status?: OCRStatus;
+  search_query?: string;
+  sort_by?: 'created_at' | 'updated_at' | 'filename' | 'file_size' | 'expiry_date';
+  sort_order?: 'asc' | 'desc';
+}
+
+export interface ExpiringDocumentsResponse {
+  items: Document[];
+  total: number;
+  days_ahead: number;
 }

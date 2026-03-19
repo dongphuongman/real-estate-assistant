@@ -1359,3 +1359,107 @@ class ViewingAppointmentListResponse(BaseModel):
     page: int
     page_size: int
     total_pages: int
+
+
+# =============================================================================
+# Document Management Schemas (Task #43)
+# =============================================================================
+
+# Type literals
+DocumentCategoryType = Literal["contract", "inspection", "photo", "financial", "other"]
+OCRStatusType = Literal["pending", "processing", "completed", "failed"]
+
+
+class DocumentCreate(BaseModel):
+    """Schema for document upload metadata."""
+
+    property_id: Optional[str] = Field(None, max_length=255, description="Associated property ID")
+    category: Optional[DocumentCategoryType] = Field(None, description="Document category")
+    tags: Optional[list[str]] = Field(None, description="Tags for organization")
+    description: Optional[str] = Field(None, max_length=2000, description="Document description")
+    expiry_date: Optional[datetime] = Field(None, description="Document expiry date")
+
+
+class DocumentUpdate(BaseModel):
+    """Schema for updating document metadata."""
+
+    property_id: Optional[str] = Field(None, max_length=255)
+    category: Optional[DocumentCategoryType] = None
+    tags: Optional[list[str]] = None
+    description: Optional[str] = Field(None, max_length=2000)
+    expiry_date: Optional[datetime] = None
+
+
+class DocumentResponse(BaseModel):
+    """Schema for document response."""
+
+    id: str
+    user_id: str
+    property_id: Optional[str] = None
+    filename: str  # Unique stored filename
+    original_filename: str  # Original upload name
+    file_type: str  # MIME type
+    file_size: int  # Size in bytes
+    category: Optional[str] = None
+    tags: Optional[list[str]] = None
+    description: Optional[str] = None
+    expiry_date: Optional[datetime] = None
+    ocr_status: str  # pending, processing, completed, failed
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class DocumentWithTextResponse(DocumentResponse):
+    """Schema for document response with extracted text."""
+
+    extracted_text: Optional[str] = None
+
+
+class DocumentListResponse(BaseModel):
+    """Schema for paginated list of documents."""
+
+    items: list[DocumentResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
+class DocumentUploadResponse(BaseModel):
+    """Schema for document upload response."""
+
+    id: str
+    filename: str
+    original_filename: str
+    file_type: str
+    file_size: int
+    message: str
+
+
+class DocumentFilters(BaseModel):
+    """Schema for filtering documents."""
+
+    property_id: Optional[str] = Field(None, max_length=255)
+    category: Optional[DocumentCategoryType] = None
+    tags: Optional[list[str]] = None
+    ocr_status: Optional[OCRStatusType] = None
+    has_expiry: Optional[bool] = None
+    expiry_before: Optional[datetime] = None
+    expiry_after: Optional[datetime] = None
+    search_query: Optional[str] = Field(
+        None, max_length=255, description="Search in filename/description"
+    )
+    sort_by: Literal["created_at", "updated_at", "filename", "file_size", "expiry_date"] = (
+        "created_at"
+    )
+    sort_order: Literal["asc", "desc"] = "desc"
+
+
+class ExpiringDocumentsResponse(BaseModel):
+    """Schema for documents expiring soon."""
+
+    items: list[DocumentResponse]
+    total: int
+    days_ahead: int

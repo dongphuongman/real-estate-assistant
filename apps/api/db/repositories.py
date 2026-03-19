@@ -14,6 +14,7 @@ from db.models import (
     AgentListing,
     AgentProfile,
     CollectionDB,
+    DocumentDB,
     EmailVerificationToken,
     FavoriteDB,
     Lead,
@@ -2089,3 +2090,235 @@ class ViewingAppointmentRepository:
     async def delete(self, appointment: ViewingAppointment) -> None:
         """Delete an appointment."""
         await self.session.delete(appointment)
+
+
+class DocumentRepository:
+    """Repository for DocumentDB model operations."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def create(
+        self,
+        user_id: str,
+        filename: str,
+        original_filename: str,
+        storage_path: str,
+        file_type: str,
+        file_size: int,
+        property_id: Optional[str] = None,
+        category: Optional[str] = None,
+        tags: Optional[list[str]] = None,
+        description: Optional[str] = None,
+        expiry_date: Optional[datetime] = None,
+    ) -> DocumentDB:
+        """Create a new document record."""
+        import json
+
+        document = DocumentDB(
+            id=str(uuid4()),
+            user_id=user_id,
+            filename=filename,
+            original_filename=original_filename,
+            storage_path=storage_path,
+            file_type=file_type,
+            file_size=file_size,
+            property_id=property_id,
+            category=category,
+            tags=json.dumps(tags) if tags else None,
+            description=description,
+            expiry_date=expiry_date,
+            ocr_status="pending",
+        )
+        self.session.add(document)
+        await self.session.flush()
+        return document
+
+    async def get_by_id(self, document_id: str, user_id: str) -> Optional[DocumentDB]:
+        """Get document by ID (scoped to user)."""
+        result = await self.session.execute(
+            select(DocumentDB).where(DocumentDB.id == document_id, DocumentDB.user_id == user_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def get_by_id_unscoped(self, document_id: str) -> Optional[DocumentDB]:
+        """Get document by ID without user scoping (for admin/internal use)."""
+        result = await self.session.execute(select(DocumentDB).where(DocumentDB.id == document_id))
+        return result.scalar_one_or_none()
+
+    async def get_by_user(
+        self,
+        user_id: str,
+        property_id: Optional[str] = None,
+        category: Optional[str] = None,
+        ocr_status: Optional[str] = None,
+        tags: Optional[list[str]] = None,
+        search_query: Optional[str] = None,
+        limit: int = 50,
+        offset: int = 0,
+        sort_by: str = "created_at",
+        sort_order: str = "desc",
+    ) -> list[DocumentDB]:
+        """Get documents for a user with optional filters."""
+        query = select(DocumentDB).where(DocumentDB.user_id == user_id)
+
+        if property_id:
+            query = query.where(DocumentDB.property_id == property_id)
+        if category:
+            query = query.where(DocumentDB.category == category)
+        if ocr_status:
+            query = query.where(DocumentDB.ocr_status == ocr_status)
+        if search_query:
+            search_pattern = f"%{search_query}%"
+            query = query.where(
+                (DocumentDB.original_filename.ilike(search_pattern))
+                | (DocumentDB.description.ilike(search_pattern))
+            )
+
+        # Sorting
+        sort_column = getattr(DocumentDB, sort_by, DocumentDB.created_at)
+        if sort_order == "desc":
+            query = query.order_by(sort_column.desc())
+        else:
+            query = query.order_by(sort_column.asc())
+
+        query = query.offset(offset).limit(limit)
+        result = await self.session.execute(query)
+        return list(result.scalars().all())
+
+    async def count_by_user(
+        self,
+        user_id: str,
+        property_id: Optional[str] = None,
+        category: Optional[str] = None,
+        ocr_status: Optional[str] = None,
+        search_query: Optional[str] = None,
+    ) -> int:
+        """Count documents for a user with optional filters."""
+        query = select(func.count(DocumentDB.id)).where(DocumentDB.user_id == user_id)
+
+        if property_id:
+            query = query.where(DocumentDB.property_id == property_id)
+        if category:
+            query = query.where(DocumentDB.category == category)
+        if ocr_status:
+            query = query.where(DocumentDB.ocr_status == ocr_status)
+        if search_query:
+            search_pattern = f"%{search_query}%"
+            query = query.where(
+                (DocumentDB.original_filename.ilike(search_pattern))
+                | (DocumentDB.description.ilike(search_pattern))
+            )
+
+        result = await self.session.execute(query)
+        return result.scalar() or 0
+
+    async def count_by_user_simple(self, user_id: str) -> int:
+        """Simple count of all documents for a user."""
+        result = await self.session.execute(
+            select(func.count(DocumentDB.id)).where(DocumentDB.user_id == user_id)
+        )
+        return result.scalar() or 0
+
+    async def get_by_property(
+        self, user_id: str, property_id: str, limit: int = 50
+    ) -> list[DocumentDB]:
+        """Get all documents for a property (scoped to user)."""
+        result = await self.session.execute(
+            select(DocumentDB)
+            .where(DocumentDB.user_id == user_id, DocumentDB.property_id == property_id)
+            .order_by(DocumentDB.created_at.desc())
+            .limit(limit)
+        )
+        return list(result.scalars().all())
+
+    async def get_expiring_soon(
+        self, user_id: str, days_ahead: int = 30, limit: int = 50
+    ) -> list[DocumentDB]:
+        """Get documents expiring within specified days."""
+        now = datetime.now(UTC)
+        expiry_threshold = now + timedelta(days=days_ahead)
+
+        result = await self.session.execute(
+            select(DocumentDB)
+            .where(
+                DocumentDB.user_id == user_id,
+                DocumentDB.expiry_date.is_not(None),
+                DocumentDB.expiry_date >= now,
+                DocumentDB.expiry_date <= expiry_threshold,
+                DocumentDB.expiry_notified == False,  # noqa: E712
+            )
+            .order_by(DocumentDB.expiry_date.asc())
+            .limit(limit)
+        )
+        return list(result.scalars().all())
+
+    async def update(
+        self,
+        document: DocumentDB,
+        property_id: Optional[str] = None,
+        category: Optional[str] = None,
+        tags: Optional[list[str]] = None,
+        description: Optional[str] = None,
+        expiry_date: Optional[datetime] = None,
+        ocr_status: Optional[str] = None,
+        extracted_text: Optional[str] = None,
+    ) -> DocumentDB:
+        """Update document metadata."""
+        import json
+
+        if property_id is not None:
+            document.property_id = property_id
+        if category is not None:
+            document.category = category
+        if tags is not None:
+            document.tags = json.dumps(tags)
+        if description is not None:
+            document.description = description
+        if expiry_date is not None:
+            document.expiry_date = expiry_date
+        if ocr_status is not None:
+            document.ocr_status = ocr_status
+        if extracted_text is not None:
+            document.extracted_text = extracted_text
+
+        await self.session.flush()
+        return document
+
+    async def mark_expiry_notified(self, document: DocumentDB) -> None:
+        """Mark document as expiry notification sent."""
+        document.expiry_notified = True
+        await self.session.flush()
+
+    async def delete(self, document: DocumentDB) -> None:
+        """Delete a document record."""
+        await self.session.delete(document)
+        await self.session.flush()
+
+    async def delete_by_user(self, user_id: str) -> int:
+        """Delete all documents for a user (returns count deleted)."""
+        result = await self.session.execute(select(DocumentDB).where(DocumentDB.user_id == user_id))
+        documents = list(result.scalars().all())
+        count = len(documents)
+        for doc in documents:
+            await self.session.delete(doc)
+        await self.session.flush()
+        return count
+
+    async def get_pending_ocr(self, limit: int = 100) -> list[DocumentDB]:
+        """Get documents pending OCR processing."""
+        result = await self.session.execute(
+            select(DocumentDB)
+            .where(DocumentDB.ocr_status == "pending")
+            .order_by(DocumentDB.created_at.asc())
+            .limit(limit)
+        )
+        return list(result.scalars().all())
+
+    async def bulk_update_ocr_status(self, document_ids: list[str], status: str) -> int:
+        """Bulk update OCR status for multiple documents."""
+        result = await self.session.execute(
+            update(DocumentDB).where(DocumentDB.id.in_(document_ids)).values(ocr_status=status)
+        )
+        await self.session.flush()
+        return result.rowcount
