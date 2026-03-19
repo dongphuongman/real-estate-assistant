@@ -1272,3 +1272,197 @@ class DocumentDB(Base):
 
     def __repr__(self) -> str:
         return f"<DocumentDB(id={self.id[:8]}..., user_id={self.user_id[:8]}..., filename={self.original_filename[:20]}...)>"
+
+
+class DocumentTemplateDB(Base):
+    """Document templates with Jinja2 placeholders for e-signature.
+
+    Stores reusable document templates (rental agreements, purchase offers, etc.)
+    that can be rendered with variable substitution.
+    """
+
+    __tablename__ = "document_templates"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    user_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    # Template info
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    template_type: Mapped[str] = mapped_column(
+        String(50), nullable=False
+    )  # rental_agreement, purchase_offer, lease_renewal, custom
+
+    # Template content (Jinja2 HTML)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+
+    # Variable definitions (JSON schema for validation)
+    variables: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+
+    # Default template flag
+    is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+    # Relationships
+    user: Mapped["User"] = relationship("User", backref="document_templates")
+
+    # Indexes
+    __table_args__ = (
+        Index("ix_document_templates_type", "template_type"),
+        Index("ix_document_templates_user_type", "user_id", "template_type"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<DocumentTemplateDB(id={self.id[:8]}..., name={self.name[:30]}, type={self.template_type})>"
+
+
+class SignatureRequestDB(Base):
+    """E-signature request tracking.
+
+    Tracks signature requests sent via external providers (HelloSign, DocuSign).
+    Stores signer information, status, and provider integration details.
+    """
+
+    __tablename__ = "signature_requests"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    user_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    # Source document/template
+    document_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("documents.id", ondelete="SET NULL"), nullable=True
+    )
+    template_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("document_templates.id", ondelete="SET NULL"), nullable=True
+    )
+
+    # Provider info
+    provider: Mapped[str] = mapped_column(String(50), nullable=False)  # hellosign, docusign
+    provider_envelope_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
+    # Document details
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    subject: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    property_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
+
+    # Rendered document metadata
+    document_content_hash: Mapped[Optional[str]] = mapped_column(
+        String(64), nullable=True
+    )  # SHA-256
+
+    # Signers (JSON array: [{email, name, role, order, status, signed_at}])
+    signers: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+
+    # Template variables used
+    variables: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+
+    # Status tracking
+    status: Mapped[str] = mapped_column(
+        String(50), default="draft", nullable=False
+    )  # draft, sent, viewed, partially_signed, completed, expired, cancelled, declined
+    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    sent_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    viewed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    cancelled_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Reminder tracking
+    reminder_sent_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    reminder_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    # Relationships
+    user: Mapped["User"] = relationship("User", backref="signature_requests")
+    document: Mapped[Optional["DocumentDB"]] = relationship(
+        "DocumentDB", backref="signature_requests"
+    )
+    template: Mapped[Optional["DocumentTemplateDB"]] = relationship(
+        "DocumentTemplateDB", backref="signature_requests"
+    )
+    signed_document: Mapped[Optional["SignedDocumentDB"]] = relationship(
+        "SignedDocumentDB", backref="signature_request", uselist=False
+    )
+
+    # Indexes
+    __table_args__ = (
+        Index("ix_signature_requests_status", "status"),
+        Index("ix_signature_requests_provider", "provider", "provider_envelope_id"),
+        Index("ix_signature_requests_expires", "expires_at"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<SignatureRequestDB(id={self.id[:8]}..., title={self.title[:30]}, status={self.status})>"
+
+
+class SignedDocumentDB(Base):
+    """Final signed documents storage.
+
+    Stores the completed, signed document with verification metadata.
+    """
+
+    __tablename__ = "signed_documents"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    signature_request_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("signature_requests.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    document_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("documents.id", ondelete="SET NULL"), nullable=True
+    )
+
+    # Storage
+    storage_path: Mapped[str] = mapped_column(String(500), nullable=False)
+    file_size: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    # Provider metadata
+    provider_document_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    certificate_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+
+    # Verification
+    signature_hash: Mapped[Optional[str]] = mapped_column(
+        String(64), nullable=True
+    )  # Hash for integrity
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+
+    # Relationships
+    document: Mapped[Optional["DocumentDB"]] = relationship(
+        "DocumentDB", backref="signed_documents"
+    )
+
+    def __repr__(self) -> str:
+        return f"<SignedDocumentDB(id={self.id[:8]}..., request_id={self.signature_request_id[:8]}...)>"

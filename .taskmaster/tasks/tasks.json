@@ -473,7 +473,7 @@
         "id": "57",
         "title": "E-Signature Integration",
         "description": "Integrate document generation and e-signature workflow for rental/purchase agreements.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "43"
         ],
@@ -482,7 +482,7 @@
         "details": "1. Document Templates:\n   - Rental agreement template\n   - Purchase offer template\n   - Lease renewal template\n   - Customizable clauses\n\n2. PDF Generation:\n   - Fill property and party details\n   - Generate professional PDF\n   - Include terms and conditions\n   - Add company branding\n\n3. E-Signature API:\n   - Integrate DocuSign or similar\n   - Signature request workflow\n   - Status tracking\n   - Reminder automation\n\n4. Document Management:\n   - Store signed documents securely\n   - Download/view signed agreements\n   - Audit log of all actions\n   - Expiry tracking for unsigned docs",
         "testStrategy": "1. Generated documents are legally valid\n2. Signature workflow completes successfully\n3. Documents persist and are retrievable\n4. Test e-signature API integration\n5. Verify audit log completeness",
         "subtasks": [],
-        "updatedAt": "2026-03-06T19:00:00.000Z"
+        "updatedAt": "2026-03-19T11:05:44.970Z"
       },
       {
         "id": "58",
@@ -591,9 +591,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-18T15:14:55.184Z",
+      "lastModified": "2026-03-19T11:05:44.970Z",
       "taskCount": 39,
-      "completedCount": 30,
+      "completedCount": 31,
       "tags": [
         "master"
       ]

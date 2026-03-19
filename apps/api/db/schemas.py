@@ -2,6 +2,7 @@
 
 import re
 from datetime import datetime
+from enum import Enum
 from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
@@ -1457,9 +1458,228 @@ class DocumentFilters(BaseModel):
     sort_order: Literal["asc", "desc"] = "desc"
 
 
-class ExpiringDocumentsResponse(BaseModel):
-    """Schema for documents expiring soon."""
+# =============================================================================
+# E-Signature Schemas
+# =============================================================================
 
-    items: list[DocumentResponse]
+# Enums
+TemplateTypeType = Literal["rental_agreement", "purchase_offer", "lease_renewal", "custom"]
+TemplateCategoryType = Literal[
+    "rental",
+    "purchase",
+    "lease",
+    "custom",
+    "default",
+    "user_created",
+    "system",
+    "shared",
+    "builtin",
+]
+ESignatureProviderType = Literal["hellosign", "docusign"]
+SignatureRequestStatusType = Literal[
+    "draft", "sent", "viewed", "partially_signed", "completed", "expired", "cancelled", "declined"
+]
+SignerStatusType = Literal["pending", "viewed", "signed", "declined"]
+SignerRoleType = Literal["landlord", "tenant", "buyer", "seller", "agent", "witness", "other"]
+
+
+class SignerBase(BaseModel):
+    """Base schema for signer information."""
+
+    email: EmailStr = Field(..., description="Signer email address")
+    name: str = Field(..., min_length=1, max_length=255, description="Signer full name")
+    role: SignerRoleType = Field("other", description="Role of the signer")
+    order: int = Field(1, ge=1, description="Signing order (1-indexed)")
+
+
+class SignerCreate(SignerBase):
+    """Schema for creating a signer."""
+
+    pass
+
+
+class SignerResponse(SignerBase):
+    """Schema for signer response with status."""
+
+    status: SignerStatusType = Field("pending", description="Current status")
+    signed_at: Optional[datetime] = Field(None, description="When signed")
+    provider_signer_id: Optional[str] = Field(None, description="Provider signer ID")
+    signature_url: Optional[str] = Field(None, description="URL for signer to sign")
+
+
+class DocumentTemplateResponse(BaseModel):
+    """Schema for document template response."""
+
+    id: str
+    user_id: str
+    name: str
+    description: Optional[str] = None
+    template_type: TemplateTypeType
+    content: str
+    variables: Optional[dict[str, Any]] = None
+    is_default: bool = False
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class DocumentTemplateCreate(BaseModel):
+    """Schema for creating a document template."""
+
+    name: str = Field(..., min_length=1, max_length=255, description="Template name")
+    template_type: TemplateTypeType = Field(..., description="Type of template")
+    description: Optional[str] = Field(None, max_length=500, description="Template description")
+    content: str = Field(..., description="Jinja2 HTML template content")
+    variables: Optional[dict[str, Any]] = Field(None, description="Variable definitions")
+    is_default: bool = False
+    category: Optional[TemplateCategoryType] = None
+    tags: Optional[list[str]] = None
+    expiry_date: Optional[datetime] = None
+
+
+class DocumentTemplateUpdate(BaseModel):
+    """Schema for updating a document template."""
+
+    name: Optional[str] = Field(None, max_length=255, description="Template name")
+    description: Optional[str] = Field(None, max_length=500, description="Template description")
+    content: Optional[str] = Field(None, description="Jinja2 HTML template content")
+    variables: Optional[dict[str, Any]] = Field(None, description="Variable definitions")
+    is_default: Optional[bool] = Field(None, description="Set as default template")
+    category: Optional[TemplateCategoryType] = None
+    tags: Optional[list[str]] = None
+    expiry_date: Optional[datetime] = None
+
+
+class DocumentTemplateListResponse(BaseModel):
+    """Schema for paginated list of document templates."""
+
+    items: list[DocumentTemplateResponse]
     total: int
-    days_ahead: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
+class SignatureRequestCreate(BaseModel):
+    """Schema for creating a signature request."""
+
+    title: str = Field(
+        ..., min_length=1, max_length=255, description="Title of the document to sign"
+    )
+    template_id: Optional[str] = Field(None, description="Template ID to use")
+    document_id: Optional[str] = Field(None, description="Existing document ID to sign")
+    subject: Optional[str] = Field(None, max_length=255, description="Email subject")
+    message: Optional[str] = Field(None, max_length=2000, description="Email message to signers")
+    signers: list[SignerCreate] = Field(
+        ..., min_length=1, max_length=10, description="List of signers"
+    )
+    variables: Optional[dict[str, Any]] = Field(None, description="Template variables to fill")
+    property_id: Optional[str] = Field(None, description="Associated property ID")
+    expires_in_days: Optional[int] = Field(None, ge=1, le=365, description="Days until expiry")
+    provider: Optional[ESignatureProviderType] = Field(
+        "hellosign", description="E-signature provider to use"
+    )
+
+    @field_validator("signers")
+    @classmethod
+    def validate_signers(cls, v: list[SignerCreate]) -> list[SignerCreate]:
+        if len(v) == 0:
+            raise ValueError("At least one signer is required")
+        if len(v) > 10:
+            raise ValueError("Maximum 10 signers allowed")
+        return v
+
+
+class SignatureRequestResponse(BaseModel):
+    """Schema for signature request response."""
+
+    id: str
+    user_id: str
+    title: str
+    subject: Optional[str] = None
+    message: Optional[str] = None
+    document_id: Optional[str] = None
+    template_id: Optional[str] = None
+    property_id: Optional[str] = None
+    provider: ESignatureProviderType
+    provider_envelope_id: Optional[str] = None
+    signers: list[SignerResponse]
+    status: SignatureRequestStatusType
+    created_at: datetime
+    sent_at: Optional[datetime] = None
+    viewed_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
+    cancelled_at: Optional[datetime] = None
+    reminder_count: int = 0
+
+    model_config = {"from_attributes": True}
+
+
+class SignatureRequestListResponse(BaseModel):
+    """Schema for paginated list of signature requests."""
+
+    items: list[SignatureRequestResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
+class SignatureRequestFilters(BaseModel):
+    """Schema for filtering signature requests."""
+
+    status: Optional[SignatureRequestStatusType] = None
+    property_id: Optional[str] = Field(None, description="Filter by property ID")
+    page: int = Field(1, ge=1, description="Page number")
+    page_size: int = Field(20, ge=1, le=100, description="Page size")
+
+    sort_by: Literal["created_at", "updated_at", "title", "status"] = Field(
+        "created_at", description="Sort field"
+    )
+    sort_order: Literal["asc", "desc"] = Field("desc", description="Sort order")
+
+
+# =============================================================================
+# Signed Document Schemas
+# =============================================================================
+
+
+class SignedDocumentResponse(BaseModel):
+    """Schema for signed document response."""
+
+    id: str
+    signature_request_id: str
+    document_id: Optional[str] = None
+    storage_path: str
+    file_size: int
+    provider_document_id: Optional[str] = None
+    certificate_url: Optional[str] = None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+# =============================================================================
+# Webhook Schemas (for HelloSign callbacks)
+# =============================================================================
+
+
+class HelloSignWebhookEvent(str, Enum):
+    """HelloSign webhook event types."""
+
+    signature_request_sent = "signature_request_sent"
+    signature_request_viewed = "signature_request_viewed"
+    signature_request_signed = "signature_request_signed"
+    signature_request_declined = "signature_request_declined"
+    signature_request_canceled = "signature_request_canceled"
+
+
+class HelloSignWebhookPayload(BaseModel):
+    """Schema for HelloSign webhook payload."""
+
+    event: HelloSignWebhookEvent
+    signature_request: dict
+    signature_request_id: Optional[str] = None  # Internal ID if provided in metadata
+    timestamp: Optional[datetime] = None

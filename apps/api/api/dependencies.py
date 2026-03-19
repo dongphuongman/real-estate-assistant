@@ -285,6 +285,36 @@ def get_legal_check_service() -> Optional[LegalCheckService]:
     return BasicLegalCheckService()
 
 
+# =============================================================================
+# E-Signature Dependencies
+# =============================================================================
+
+_esignature_service: Optional[Any] = None
+_template_service: Optional[Any] = None
+
+
+def get_esignature_service() -> Optional[Any]:
+    """
+    Get e-signature service instance.
+
+    Returns None if not configured.
+    """
+    from services.esignature_service import get_esignature_service as _get_esignature_service_impl
+
+    return _get_esignature_service_impl()
+
+
+def get_template_service() -> Optional[Any]:
+    """
+    Get template service instance.
+
+    Returns None if not configured.
+    """
+    from services.template_service import get_template_service as _get_template_service_impl
+
+    return _get_template_service_impl()
+
+
 def get_agent(
     store: Annotated[Optional["ChromaPropertyStore"], Depends(get_vector_store)],
     llm: Annotated[BaseChatModel, Depends(get_llm)],

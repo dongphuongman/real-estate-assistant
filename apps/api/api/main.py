@@ -32,6 +32,7 @@ from api.routers import (
     chat,
     collections,  # Task #37: Property collections
     documents,  # Task #43: Document Management
+    esignatures,  # Task #57: E-Signature Integration
     exports,
     favorites,  # Task #37: Property favorites
     leads,  # Task #55: Lead Scoring System
@@ -41,6 +42,7 @@ from api.routers import (
     saved_searches,
     search,
     tools,
+    webhooks,  # Task #57: E-Signature Webhooks
 )
 from api.routers import (
     rag as rag_router,
@@ -363,6 +365,10 @@ if settings.auth_jwt_enabled:
     app.include_router(agents.router, prefix="/api/v1")
     # Task #43: Document Management System
     app.include_router(documents.router, prefix="/api/v1")
+    # Task #57: E-Signature Integration
+    if settings.auth_jwt_enabled:
+        app.include_router(esignatures.router, prefix="/api/v1")
+        app.include_router(webhooks.esignatures.router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["System"])

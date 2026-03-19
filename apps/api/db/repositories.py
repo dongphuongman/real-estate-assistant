@@ -15,6 +15,7 @@ from db.models import (
     AgentProfile,
     CollectionDB,
     DocumentDB,
+    DocumentTemplateDB,
     EmailVerificationToken,
     FavoriteDB,
     Lead,
@@ -27,6 +28,8 @@ from db.models import (
     PushSubscription,
     RefreshToken,
     SavedSearchDB,
+    SignatureRequestDB,
+    SignedDocumentDB,
     User,
     ViewingAppointment,
 )
@@ -481,7 +484,7 @@ class CollectionRepository:
         result = await self.session.execute(
             select(CollectionDB).where(
                 CollectionDB.user_id == user_id,
-                CollectionDB.is_default == True,  # noqa: E712
+                CollectionDB.is_default.is_(True),
             )
         )
         return result.scalar_one_or_none()
@@ -2322,3 +2325,349 @@ class DocumentRepository:
         )
         await self.session.flush()
         return result.rowcount
+
+
+class DocumentTemplateRepository:
+    """Repository for DocumentTemplateDB operations."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def create(
+        self,
+        user_id: str,
+        name: str,
+        template_type: str,
+        content: str,
+        description: Optional[str] = None,
+        variables: Optional[dict] = None,
+        is_default: bool = False,
+    ) -> DocumentTemplateDB:
+        """Create a new document template."""
+        template = DocumentTemplateDB(
+            id=str(uuid4()),
+            user_id=user_id,
+            name=name,
+            template_type=template_type,
+            content=content,
+            description=description,
+            variables=variables,
+            is_default=is_default,
+        )
+        self.session.add(template)
+        await self.session.flush()
+        return template
+
+    async def get_by_id(
+        self, template_id: str, user_id: Optional[str] = None
+    ) -> Optional[DocumentTemplateDB]:
+        """Get template by ID, optionally scoped to user."""
+        query = select(DocumentTemplateDB).where(DocumentTemplateDB.id == template_id)
+        if user_id:
+            query = query.where(DocumentTemplateDB.user_id == user_id)
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
+
+    async def get_by_user(
+        self,
+        user_id: str,
+        template_type: Optional[str] = None,
+        include_defaults: bool = True,
+        page: int = 1,
+        page_size: int = 20,
+    ) -> list[DocumentTemplateDB]:
+        """Get templates for a user with optional filtering."""
+        query = select(DocumentTemplateDB).where(DocumentTemplateDB.user_id == user_id)
+        if template_type:
+            query = query.where(DocumentTemplateDB.template_type == template_type)
+        query = query.order_by(DocumentTemplateDB.created_at.desc())
+        query = query.offset((page - 1) * page_size).limit(page_size)
+        result = await self.session.execute(query)
+        return list(result.scalars().all())
+
+    async def count_by_user(
+        self,
+        user_id: str,
+        template_type: Optional[str] = None,
+    ) -> int:
+        """Count templates for a user."""
+        query = (
+            select(func.count())
+            .select_from(DocumentTemplateDB)
+            .where(DocumentTemplateDB.user_id == user_id)
+        )
+        if template_type:
+            query = query.where(DocumentTemplateDB.template_type == template_type)
+        result = await self.session.execute(query)
+        return result.scalar_one() or 0
+
+    async def get_default_template(
+        self, template_type: str, user_id: Optional[str] = None
+    ) -> Optional[DocumentTemplateDB]:
+        """Get the default template for a type."""
+        query = select(DocumentTemplateDB).where(
+            DocumentTemplateDB.template_type == template_type,
+            DocumentTemplateDB.is_default.is_(True),
+        )
+        if user_id:
+            query = query.where(DocumentTemplateDB.user_id == user_id)
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
+
+    async def update(
+        self,
+        template: DocumentTemplateDB,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        content: Optional[str] = None,
+        variables: Optional[dict] = None,
+        is_default: Optional[bool] = None,
+    ) -> DocumentTemplateDB:
+        """Update template fields."""
+        if name is not None:
+            template.name = name
+        if description is not None:
+            template.description = description
+        if content is not None:
+            template.content = content
+        if variables is not None:
+            template.variables = variables
+        if is_default is not None:
+            template.is_default = is_default
+        await self.session.flush()
+        return template
+
+    async def delete(self, template: DocumentTemplateDB) -> None:
+        """Delete a template."""
+        await self.session.delete(template)
+        await self.session.flush()
+
+
+class SignatureRequestRepository:
+    """Repository for SignatureRequestDB operations."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def create(
+        self,
+        user_id: str,
+        title: str,
+        provider: str,
+        signers: list[dict],
+        document_id: Optional[str] = None,
+        template_id: Optional[str] = None,
+        subject: Optional[str] = None,
+        message: Optional[str] = None,
+        property_id: Optional[str] = None,
+        variables: Optional[dict] = None,
+        document_content_hash: Optional[str] = None,
+        provider_envelope_id: Optional[str] = None,
+        status: str = "draft",
+        expires_at: Optional[datetime] = None,
+    ) -> SignatureRequestDB:
+        """Create a new signature request."""
+        request = SignatureRequestDB(
+            id=str(uuid4()),
+            user_id=user_id,
+            title=title,
+            subject=subject,
+            message=message,
+            provider=provider,
+            provider_envelope_id=provider_envelope_id,
+            document_id=document_id,
+            template_id=template_id,
+            property_id=property_id,
+            document_content_hash=document_content_hash,
+            signers=signers,
+            variables=variables,
+            status=status,
+            expires_at=expires_at,
+        )
+        self.session.add(request)
+        await self.session.flush()
+        return request
+
+    async def get_by_id(
+        self, request_id: str, user_id: Optional[str] = None
+    ) -> Optional[SignatureRequestDB]:
+        """Get signature request by ID, optionally scoped to user."""
+        query = select(SignatureRequestDB).where(SignatureRequestDB.id == request_id)
+        if user_id:
+            query = query.where(SignatureRequestDB.user_id == user_id)
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
+
+    async def get_by_provider_envelope_id(
+        self, provider: str, envelope_id: str
+    ) -> Optional[SignatureRequestDB]:
+        """Get signature request by provider envelope ID."""
+        result = await self.session.execute(
+            select(SignatureRequestDB).where(
+                SignatureRequestDB.provider == provider,
+                SignatureRequestDB.provider_envelope_id == envelope_id,
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def get_by_user(
+        self,
+        user_id: str,
+        status: Optional[str] = None,
+        property_id: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 20,
+    ) -> list[SignatureRequestDB]:
+        """Get signature requests for a user with filtering."""
+        query = select(SignatureRequestDB).where(SignatureRequestDB.user_id == user_id)
+        if status:
+            query = query.where(SignatureRequestDB.status == status)
+        if property_id:
+            query = query.where(SignatureRequestDB.property_id == property_id)
+        query = query.order_by(SignatureRequestDB.created_at.desc())
+        query = query.offset((page - 1) * page_size).limit(page_size)
+        result = await self.session.execute(query)
+        return list(result.scalars().all())
+
+    async def count_by_user(
+        self,
+        user_id: str,
+        status: Optional[str] = None,
+    ) -> int:
+        """Count signature requests for a user."""
+        query = (
+            select(func.count())
+            .select_from(SignatureRequestDB)
+            .where(SignatureRequestDB.user_id == user_id)
+        )
+        if status:
+            query = query.where(SignatureRequestDB.status == status)
+        result = await self.session.execute(query)
+        return result.scalar_one() or 0
+
+    async def update_status(
+        self,
+        request: SignatureRequestDB,
+        status: str,
+        error_message: Optional[str] = None,
+        sent_at: Optional[datetime] = None,
+        viewed_at: Optional[datetime] = None,
+        completed_at: Optional[datetime] = None,
+        cancelled_at: Optional[datetime] = None,
+    ) -> SignatureRequestDB:
+        """Update signature request status."""
+        request.status = status
+        if error_message is not None:
+            request.error_message = error_message
+        if sent_at is not None:
+            request.sent_at = sent_at
+        if viewed_at is not None:
+            request.viewed_at = viewed_at
+        if completed_at is not None:
+            request.completed_at = completed_at
+        if cancelled_at is not None:
+            request.cancelled_at = cancelled_at
+        await self.session.flush()
+        return request
+
+    async def update_signers(
+        self, request: SignatureRequestDB, signers: list[dict]
+    ) -> SignatureRequestDB:
+        """Update signer information (e.g., status changes from webhook)."""
+        request.signers = signers
+        await self.session.flush()
+        return request
+
+    async def update_provider_envelope_id(
+        self, request: SignatureRequestDB, envelope_id: str
+    ) -> SignatureRequestDB:
+        """Update provider envelope ID after sending."""
+        request.provider_envelope_id = envelope_id
+        await self.session.flush()
+        return request
+
+    async def mark_reminder_sent(self, request: SignatureRequestDB) -> SignatureRequestDB:
+        """Mark that a reminder was sent."""
+        request.reminder_sent_at = datetime.now(UTC)
+        request.reminder_count += 1
+        await self.session.flush()
+        return request
+
+    async def get_expiring_requests(self, within_hours: int = 24) -> list[SignatureRequestDB]:
+        """Get requests expiring within specified hours that haven't been notified."""
+        threshold = datetime.now(UTC) + timedelta(hours=within_hours)
+        result = await self.session.execute(
+            select(SignatureRequestDB).where(
+                SignatureRequestDB.status.in_(["sent", "viewed", "partially_signed"]),
+                SignatureRequestDB.expires_at <= threshold,
+                SignatureRequestDB.expires_at > datetime.now(UTC),
+            )
+        )
+        return list(result.scalars().all())
+
+    async def cancel(self, request: SignatureRequestDB) -> SignatureRequestDB:
+        """Cancel a signature request."""
+        request.status = "cancelled"
+        request.cancelled_at = datetime.now(UTC)
+        await self.session.flush()
+        return request
+
+    async def delete(self, request: SignatureRequestDB) -> None:
+        """Delete a signature request."""
+        await self.session.delete(request)
+        await self.session.flush()
+
+
+class SignedDocumentRepository:
+    """Repository for SignedDocumentDB operations."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def create(
+        self,
+        signature_request_id: str,
+        storage_path: str,
+        file_size: int,
+        document_id: Optional[str] = None,
+        provider_document_id: Optional[str] = None,
+        certificate_url: Optional[str] = None,
+        signature_hash: Optional[str] = None,
+    ) -> SignedDocumentDB:
+        """Create a signed document record."""
+        signed_doc = SignedDocumentDB(
+            id=str(uuid4()),
+            signature_request_id=signature_request_id,
+            document_id=document_id,
+            storage_path=storage_path,
+            file_size=file_size,
+            provider_document_id=provider_document_id,
+            certificate_url=certificate_url,
+            signature_hash=signature_hash,
+        )
+        self.session.add(signed_doc)
+        await self.session.flush()
+        return signed_doc
+
+    async def get_by_id(self, signed_doc_id: str) -> Optional[SignedDocumentDB]:
+        """Get signed document by ID."""
+        result = await self.session.execute(
+            select(SignedDocumentDB).where(SignedDocumentDB.id == signed_doc_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def get_by_signature_request(
+        self, signature_request_id: str
+    ) -> Optional[SignedDocumentDB]:
+        """Get signed document by signature request ID."""
+        result = await self.session.execute(
+            select(SignedDocumentDB).where(
+                SignedDocumentDB.signature_request_id == signature_request_id
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def delete(self, signed_doc: SignedDocumentDB) -> None:
+        """Delete a signed document record."""
+        await self.session.delete(signed_doc)
+        await self.session.flush()

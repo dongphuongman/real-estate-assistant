@@ -407,6 +407,43 @@ class AppSettings(BaseModel):
         default_factory=lambda: _parse_csv_list(os.getenv("DEFAULT_DATASETS"))
     )
 
+    # =============================================================================
+    # E-Signature Integration (Task #57)
+    # =============================================================================
+    hellosign_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("HELLOSIGN_API_KEY"),
+        description="HelloSign (Dropbox Sign) API key",
+    )
+    hellosign_client_id: Optional[str] = Field(
+        default_factory=lambda: os.getenv("HELLOSIGN_CLIENT_ID"),
+        description="HelloSign OAuth client ID (for embedded signing)",
+    )
+    hellosign_webhook_secret: Optional[str] = Field(
+        default_factory=lambda: os.getenv("HELLOSIGN_WEBHOOK_SECRET"),
+        description="Secret for verifying HelloSign webhook signatures",
+    )
+    esignature_provider: str = Field(
+        default_factory=lambda: os.getenv("ESIGNATURE_PROVIDER", "hellosign"),
+        description="E-signature provider (hellosign, docusign)",
+    )
+    esignature_enabled: bool = Field(
+        default_factory=lambda: (
+            os.getenv("ESIGNATURE_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
+        ),
+        description="Enable e-signature functionality",
+    )
+    esignature_default_expiry_days: int = Field(
+        default_factory=lambda: int(os.getenv("ESIGNATURE_DEFAULT_EXPIRY_DAYS", "30")),
+        description="Default days until signature request expires",
+    )
+    esignature_reminder_enabled: bool = Field(
+        default_factory=lambda: (
+            os.getenv("ESIGNATURE_REMINDER_ENABLED", "true").strip().lower()
+            in {"1", "true", "yes", "on"}
+        ),
+        description="Enable automatic reminders for pending signatures",
+    )
+
     class Config:
         """Pydantic config."""
 

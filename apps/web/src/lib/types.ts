@@ -1630,3 +1630,167 @@ export interface ExpiringDocumentsResponse {
   total: number;
   days_ahead: number;
 }
+
+// =============================================================================
+// E-Signature Types (Task #57)
+// =============================================================================
+
+export type TemplateType = 'rental_agreement' | 'purchase_offer' | 'lease_renewal' | 'custom';
+export type TemplateCategory =
+  | 'rental'
+  | 'purchase'
+  | 'lease'
+  | 'custom'
+  | 'default'
+  | 'user_created'
+  | 'system'
+  | 'builtin';
+export type ESignatureProvider = 'hellosign' | 'docusign';
+export type SignatureRequestStatus =
+  | 'draft'
+  | 'sent'
+  | 'viewed'
+  | 'partially_signed'
+  | 'completed'
+  | 'expired'
+  | 'cancelled'
+  | 'declined';
+export type SignerStatus = 'pending' | 'viewed' | 'signed' | 'declined';
+export type SignerRole = 'landlord' | 'tenant' | 'buyer' | 'seller' | 'agent' | 'witness' | 'other';
+
+// Signer
+export interface Signer {
+  email: string;
+  name: string;
+  role: SignerRole;
+  order: number;
+  status: SignerStatus;
+  signed_at?: string;
+  signature_url?: string;
+}
+
+// Signature Request
+export interface SignatureRequest {
+  id: string;
+  user_id: string;
+  title: string;
+  subject?: string;
+  message?: string;
+  document_id?: string;
+  template_id?: string;
+  property_id?: string;
+  provider: ESignatureProvider;
+  provider_envelope_id?: string;
+  signers: Signer[];
+  status: SignatureRequestStatus;
+  variables?: Record<string, unknown>;
+  created_at: string;
+  sent_at?: string;
+  viewed_at?: string;
+  completed_at?: string;
+  expires_at?: string;
+  cancelled_at?: string;
+  reminder_count?: number;
+  error_message?: string;
+}
+
+// Signature Request Create
+export interface SignatureRequestCreate {
+  title: string;
+  template_id?: string;
+  document_id?: string;
+  subject?: string;
+  message?: string;
+  signers: Array<{
+    email: string;
+    name: string;
+    role: SignerRole;
+    order: number;
+  }>;
+  variables?: Record<string, unknown>;
+  property_id?: string;
+  expires_in_days?: number;
+  provider?: ESignatureProvider;
+}
+
+// Signature Request List Response
+export interface SignatureRequestListResponse {
+  items: SignatureRequest[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+// Signature Request Filters
+export interface SignatureRequestFilters {
+  status?: SignatureRequestStatus;
+  property_id?: string;
+  page?: number;
+  page_size?: number;
+  sort_by?: 'created_at' | 'updated_at' | 'title' | 'status';
+  sort_order?: 'asc' | 'desc';
+}
+
+// Document Template
+export interface DocumentTemplate {
+  id: string;
+  user_id: string;
+  name: string;
+  description?: string;
+  template_type: TemplateType;
+  content: string;
+  variables?: Record<string, unknown>;
+  is_default: boolean;
+  category?: TemplateCategory;
+  tags?: string[];
+  expiry_date?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Document Template Create
+export interface DocumentTemplateCreate {
+  name: string;
+  template_type: TemplateType;
+  content: string;
+  description?: string;
+  variables?: Record<string, unknown>;
+  is_default?: boolean;
+  category?: TemplateCategory;
+  tags?: string[];
+  expiry_date?: string;
+}
+
+// Document Template Update
+export interface DocumentTemplateUpdate {
+  name?: string;
+  description?: string;
+  content?: string;
+  variables?: Record<string, unknown>;
+  is_default?: boolean;
+  category?: TemplateCategory;
+  tags?: string[];
+  expiry_date?: string;
+}
+
+// Document Template List Response
+export interface DocumentTemplateListResponse {
+  items: DocumentTemplate[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+// Signed Document
+export interface SignedDocument {
+  id: string;
+  signature_request_id: string;
+  document_id?: string;
+  storage_path: string;
+  file_size: number;
+  provider_document_id?: string;
+  certificate_url?: string;
+  created_at: string;
+}
