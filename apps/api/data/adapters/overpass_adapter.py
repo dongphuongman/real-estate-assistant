@@ -1,8 +1,8 @@
 """
 Overpass API adapter for fetching property data from OpenStreetMap.
 
-This adapter uses the Overpass API to query OpenStreetMap for building/property data.
-It's a demo implementation that shows how to build a portal adapter.
+This adapter uses the Overpass API to query OpenStreetMap for building/property
+data. It's a demo implementation that shows how to build a portal adapter.
 """
 
 import logging
@@ -10,7 +10,12 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
-from data.adapters.base import ExternalSourceAdapter, PortalFetchResult, PortalFilter
+from data.adapters.base import (
+    ExternalSourceAdapter,
+    PortalFetchResult,
+    PortalFilter,
+    with_retry,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -47,11 +52,13 @@ class OverpassAdapter(ExternalSourceAdapter):
         """Return base URL for OpenStreetMap."""
         return "https://www.openstreetmap.org"
 
+    @with_retry(max_tries=3, max_time=60)
     def fetch(self, filters: PortalFilter) -> PortalFetchResult:
         """
         Fetch properties from OpenStreetMap via Overpass API.
 
-        Queries for buildings in the specified city and extracts property information.
+        Queries for buildings in the specified city and extracts property
+        information. Automatically retries on transient failures.
 
         Args:
             filters: Search filters including city, price range, etc.

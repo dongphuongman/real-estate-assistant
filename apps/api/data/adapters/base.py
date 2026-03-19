@@ -1,19 +1,134 @@
 """
 Base adapter interface for external property data sources.
 
-This module defines the abstract interface that all portal adapters must implement,
-ensuring consistent behavior across different data sources.
+This module defines the abstract interface that all portal adapters
+must implement, ensuring consistent behavior across different data sources.
 """
 
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from functools import wraps
+from typing import Any, Callable, Dict, List, Optional, TypeVar
 
+import backoff
 import pandas as pd
 
 logger = logging.getLogger(__name__)
+
+# Type variable for generic function return type
+T = TypeVar("T")
+
+# Retry configuration
+MAX_RETRIES = 3
+RETRY_BASE_WAIT = 1  # seconds
+RETRY_MAX_WAIT = 30  # seconds
+
+# Exceptions that trigger retry
+RETRYABLE_EXCEPTIONS = (
+    ConnectionError,
+    TimeoutError,
+    OSError,  # Includes socket errors
+)
+
+
+def with_retry(
+    max_tries: int = MAX_RETRIES,
+    max_time: int = RETRY_MAX_WAIT,
+    on_retry: Optional[Callable[[int, float, Exception], None]] = None,
+) -> Callable[[Callable[..., T]], Callable[..., T]]:
+    """
+    Decorator for retry with exponential backoff.
+
+    Args:
+        max_tries: Maximum number of retry attempts
+        max_time: Maximum total time to wait in seconds
+        on_retry: Optional callback for retry events (attempt, wait_time, exception)
+
+    Returns:
+        Decorated function with retry logic
+
+    Usage:
+        @with_retry(max_tries=3)
+        def fetch_data():
+            return requests.get("https://api.example.com")
+    """
+
+    def _on_retry_handler(details: Dict[str, Any]) -> None:
+        """Handle retry event logging."""
+        wait_time = details.get("wait", 0)
+        exception = details.get("exception")
+        attempt = details.get("tries", 0)
+
+        logger.warning(
+            f"Retry attempt {attempt}/{max_tries} after {wait_time:.1f}s. "
+            f"Exception: {type(exception).__name__}: {exception}"
+        )
+
+        if on_retry:
+            on_retry(attempt, wait_time, exception)
+
+    def decorator(func: Callable[..., T]) -> Callable[..., T]:
+        @backoff.on_exception(
+            backoff.expo,
+            RETRYABLE_EXCEPTIONS,
+            max_tries=max_tries,
+            max_time=max_time,
+            jitter=backoff.full_jitter,
+            on_backoff=_on_retry_handler,
+        )
+        @wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> T:
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+def with_retry_async(
+    max_tries: int = MAX_RETRIES,
+    max_time: int = RETRY_MAX_WAIT,
+) -> Callable[[Callable[..., T]], Callable[..., T]]:
+    """
+    Async decorator for retry with exponential backoff.
+
+    Args:
+        max_tries: Maximum number of retry attempts
+        max_time: Maximum total time to wait in seconds
+
+    Returns:
+        Decorated async function with retry logic
+    """
+
+    def _on_retry_handler(details: Dict[str, Any]) -> None:
+        """Handle retry event logging."""
+        wait_time = details.get("wait", 0)
+        exception = details.get("exception")
+        attempt = details.get("tries", 0)
+
+        logger.warning(
+            f"Async retry attempt {attempt}/{max_tries} after {wait_time:.1f}s. "
+            f"Exception: {type(exception).__name__}: {exception}"
+        )
+
+    def decorator(func: Callable[..., T]) -> Callable[..., T]:
+        @backoff.on_exception(
+            backoff.expo,
+            RETRYABLE_EXCEPTIONS,
+            max_tries=max_tries,
+            max_time=max_time,
+            jitter=backoff.full_jitter,
+            on_backoff=_on_retry_handler,
+        )
+        @wraps(func)
+        async def wrapper(*args: Any, **kwargs: Any) -> T:
+            return await func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 @dataclass
