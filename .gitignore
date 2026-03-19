@@ -21,9 +21,8 @@ trae_config.yml
 .history/
 .mcp.json
 
-# Task Master (keep tasks/PRD in repo, ignore local state/config)
-.taskmaster/state.json
-.taskmaster/config.json
+# Task Master (local only - not shared with repo)
+.taskmaster/
 
 # Claude Code local configuration (never commit secrets)
 .claude/
