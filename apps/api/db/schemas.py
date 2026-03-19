@@ -1428,6 +1428,14 @@ class DocumentListResponse(BaseModel):
     total_pages: int
 
 
+class ExpiringDocumentsResponse(BaseModel):
+    """Schema for expiring documents response."""
+
+    items: list[DocumentResponse]
+    total: int
+    days_ahead: int
+
+
 class DocumentUploadResponse(BaseModel):
     """Schema for document upload response."""
 

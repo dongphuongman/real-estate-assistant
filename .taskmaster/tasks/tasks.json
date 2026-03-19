@@ -346,14 +346,14 @@
         "id": "48",
         "title": "Excel Data Loader",
         "description": "Extend the existing CSV data loader to support Excel files (.xlsx, .xls, .ods) for property data ingestion.",
-        "status": "review",
+        "status": "done",
         "dependencies": [],
         "priority": "high",
         "category": "feature",
         "details": "1. Excel Loader Implementation:\n   - Create ExcelDataLoader class that extends CSV loader patterns\n   - Support sheet selection and header row configuration\n   - Reuse existing format_df logic for schema normalization\n   - Handle edge cases (empty sheets, merged cells, multiple sheets)\n\n2. Frontend File Upload UI:\n   - Add Excel file type support to upload component\n   - Show sheet selector when Excel file is detected\n   - Display file metadata (source name, row count)\n   - Progress indicator for large files\n\n3. Source Tagging and Persistence:\n   - Track source type (csv/excel) in PropertyCollection.metadata\n   - Implement delete_by_source() for data management\n   - Add source filter in search and analytics\n\n4. Files to create/modify:\n   - apps/api/data/excel_loader.py\n   - apps/web/src/components/data-source/sheet-selector.tsx\n   - Update existing CSV upload components",
         "testStrategy": "1. Upload .xlsx file with 100+ properties successfully\n2. Properties appear in search with correct source tagging\n3. Unit tests for Excel parsing with edge cases (empty sheets, merged cells)\n4. Test sheet selection UI\n5. Verify data normalization matches CSV loader output",
         "subtasks": [],
-        "updatedAt": "2026-03-06T23:12:55.477Z"
+        "updatedAt": "2026-03-19T12:29:45.736Z"
       },
       {
         "id": "49",
@@ -591,9 +591,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-19T11:05:44.970Z",
+      "lastModified": "2026-03-19T12:29:45.736Z",
       "taskCount": 39,
-      "completedCount": 31,
+      "completedCount": 32,
       "tags": [
         "master"
       ]
