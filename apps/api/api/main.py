@@ -37,6 +37,7 @@ from api.routers import (
     favorites,  # Task #37: Property favorites
     leads,  # Task #55: Lead Scoring System
     market,  # Task #38: Price History & Trends
+    metrics,  # Task #62: Production Monitoring
     prompt_templates,
     push,  # Task #63: Push Notifications
     saved_searches,
@@ -343,6 +344,8 @@ app.include_router(prompt_templates.router, prefix="/api/v1", dependencies=[Depe
 app.include_router(admin.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(exports.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(auth.router, prefix="/api/v1")
+# Task #62: Prometheus metrics endpoint (no auth required for monitoring)
+app.include_router(metrics.router)
 
 # JWT Auth Router (conditionally enabled)
 if settings.auth_jwt_enabled:
