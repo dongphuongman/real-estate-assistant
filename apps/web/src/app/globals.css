@@ -86,3 +86,70 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Map marker animations */
+.mapbox-marker-cluster {
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.mapbox-marker-cluster:hover {
+  transform: scale(1.1);
+}
+
+.mapbox-marker-cluster:active {
+  transform: scale(0.95);
+}
+
+.mapbox-marker-point {
+  transition: transform 0.15s ease-out, opacity 0.2s ease;
+}
+
+.mapbox-marker-point:hover {
+  transform: scale(1.2);
+}
+
+/* Marker fade animations */
+@keyframes marker-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes marker-fade-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+
+.mapbox-marker-entering {
+  animation: marker-fade-in 0.3s ease-out forwards;
+}
+
+.mapbox-marker-leaving {
+  animation: marker-fade-out 0.2s ease-in forwards;
+}
+
+/* Cluster expansion animation */
+@keyframes cluster-expand {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.15);
+  }
+}
+
+.mapbox-cluster-expanding {
+  animation: cluster-expand 0.2s ease-out;
+}
+

@@ -2,13 +2,70 @@ import { type PropertyMapPoint } from "./property-map-utils";
 
 export type ClusteredMapItem =
   | { kind: "point"; point: PropertyMapPoint }
-  | { kind: "cluster"; id: string; lat: number; lon: number; count: number; points: PropertyMapPoint[] };
+  | {
+      kind: "cluster";
+      id: string;
+      lat: number;
+      lon: number;
+      count: number;
+      points: PropertyMapPoint[];
+      dominantType: string | null;
+      typeDistribution: Map<string, number>;
+      isMixed: boolean;
+    };
 
 export type ClusterOptions = {
   cellSizePx?: number;
   maxPointsWithoutClustering?: number;
   maxZoomForClustering?: number;
 };
+
+// Property type color mapping
+export const PROPERTY_TYPE_COLORS: Record<string, string> = {
+  apartment: "#2563eb", // blue
+  house: "#16a34a", // green
+  studio: "#9333ea", // purple
+  loft: "#ea580c", // orange
+  townhouse: "#0d9488", // teal
+  other: "#6b7280", // gray
+};
+
+export interface ClusterTypeAnalysis {
+  dominantType: string | null;
+  distribution: Map<string, number>;
+  isMixed: boolean;
+}
+
+export function analyzeClusterTypes(points: PropertyMapPoint[]): ClusterTypeAnalysis {
+  const typeCounts = new Map<string, number>();
+  let totalTyped = 0;
+
+  for (const point of points) {
+    const type = point.property_type || "other";
+    typeCounts.set(type, (typeCounts.get(type) || 0) + 1);
+    totalTyped++;
+  }
+
+  // Calculate distribution percentages
+  const distribution = new Map<string, number>();
+  for (const [type, count] of typeCounts) {
+    distribution.set(type, (count / totalTyped) * 100);
+  }
+
+  // Find dominant type (>50%)
+  let dominantType: string | null = null;
+  let maxPercentage = 0;
+  for (const [type, percentage] of distribution) {
+    if (percentage > 50 && percentage > maxPercentage) {
+      dominantType = type;
+      maxPercentage = percentage;
+    }
+  }
+
+  const isMixed = dominantType === null && typeCounts.size > 1;
+
+  return { dominantType, distribution, isMixed };
+}
 
 const TILE_SIZE_PX = 256;
 
@@ -36,12 +93,19 @@ function latLonToWorldPx(
 }
 
 export function clusterMapPoints(points: PropertyMapPoint[], zoom: number, options: ClusterOptions = {}): ClusteredMapItem[] {
-  const cellSizePx = options.cellSizePx ?? 60;
+  let cellSizePx = options.cellSizePx ?? 60;
   const maxPointsWithoutClustering = options.maxPointsWithoutClustering ?? 75;
   const maxZoomForClustering = options.maxZoomForClustering ?? 15;
 
   if (points.length <= maxPointsWithoutClustering || zoom >= maxZoomForClustering) {
     return points.map((point) => ({ kind: "point", point }));
+  }
+
+  // Dynamic cell size adjustment for very dense areas (1000+ points)
+  if (points.length > 1000) {
+    // Increase cell size by up to 50% for very dense datasets
+    const densityFactor = Math.min(points.length / 1000, 2);
+    cellSizePx = Math.round(cellSizePx * (1 + densityFactor * 0.25));
   }
 
   const groups = new Map<
@@ -87,6 +151,9 @@ export function clusterMapPoints(points: PropertyMapPoint[], zoom: number, optio
       const lat = group.sumLat / count;
       const lon = group.sumLon / count;
 
+      // Analyze property types in cluster
+      const typeAnalysis = analyzeClusterTypes(group.points);
+
       acc.push({
         kind: "cluster",
         id: `cluster-${group.cellX}-${group.cellY}`,
@@ -94,6 +161,9 @@ export function clusterMapPoints(points: PropertyMapPoint[], zoom: number, optio
         lon,
         count,
         points: group.points,
+        dominantType: typeAnalysis.dominantType,
+        typeDistribution: typeAnalysis.distribution,
+        isMixed: typeAnalysis.isMixed,
       });
       return acc;
     }, []);

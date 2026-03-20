@@ -16,7 +16,7 @@ import { extractMapPoints } from '@/components/search/property-map-utils';
 import type { PolygonCoordinates } from '@/components/search/geo-draw-control';
 import { HeartButton, ListingGenerator } from '@/components/property';
 import dynamic from 'next/dynamic';
-import MapControls, { type MapFilterOptions } from '@/components/search/map-controls';
+import MapControls, { type MapFilterOptions, DEFAULT_CLUSTER_OPTIONS } from '@/components/search/map-controls';
 import { SaveSearchButton } from '@/components/search/save-search-button';
 
 const PropertyMap = dynamic(() => import('@/components/search/property-map'), {
@@ -64,6 +64,7 @@ export default function SearchPage() {
     heatmapIntensity: 1,
     heatmapMode: 'density',
     showClusters: true,
+    clusterOptions: DEFAULT_CLUSTER_OPTIONS,
     priceRange: undefined,
     propertyType: undefined,
   });
@@ -783,7 +784,9 @@ export default function SearchPage() {
                                 heatmapIntensity={mapFilterOptions.heatmapIntensity}
                                 heatmapMode={mapFilterOptions.heatmapMode}
                                 showClusters={mapFilterOptions.showClusters}
+                                clusterOptions={mapFilterOptions.clusterOptions}
                                 enableDrawing={enableDrawing}
+                                onMarkerClick={handlePropertyClick}
                                 onPolygonDraw={handlePolygonDraw}
                                 onPolygonClear={handlePolygonClear}
                               />

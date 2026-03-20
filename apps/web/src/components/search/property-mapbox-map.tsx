@@ -11,7 +11,7 @@ import {
   type PropertyMapPoint,
   type HeatmapMode,
 } from './property-map-utils';
-import { clusterMapPoints, type ClusteredMapItem } from './property-map-clustering';
+import { clusterMapPoints, type ClusteredMapItem, type ClusterOptions, PROPERTY_TYPE_COLORS, getClusterColor } from './property-map-clustering';
 import HeatmapLegend from './heatmap-legend';
 import GeoDrawControl, { type PolygonCoordinates } from './geo-draw-control';
 import { generatePopupHTML } from './property-map-popup';
@@ -23,6 +23,7 @@ interface MapboxPropertyMapProps {
   heatmapIntensity?: number;
   heatmapMode?: HeatmapMode;
   showClusters?: boolean;
+  clusterOptions?: ClusterOptions;
   enableDrawing?: boolean;
   onMarkerClick?: (point: PropertyMapPoint) => void;
   onPolygonDraw?: (coordinates: PolygonCoordinates[]) => void;
@@ -164,6 +165,7 @@ export default function PropertyMapboxMap({
   heatmapIntensity = 1,
   heatmapMode = 'density',
   showClusters = true,
+  clusterOptions,
   enableDrawing = false,
   onMarkerClick,
   onPolygonDraw,
@@ -177,6 +179,8 @@ export default function PropertyMapboxMap({
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapInstance, setMapInstance] = useState<MapboxMap | null>(null);
   const [zoom, setZoom] = useState(12);
+  const [debouncedZoom, setDebouncedZoom] = useState(12);
+  const zoomTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const center = useMemo(() => {
     const computed = computeCenter(points);
@@ -220,11 +224,22 @@ export default function PropertyMapboxMap({
     });
 
     mapInstance.on('zoom', () => {
-      setZoom(mapInstance.getZoom());
+      const newZoom = mapInstance.getZoom();
+      setZoom(newZoom);
+
+      // Debounce zoom changes for smoother clustering
+      if (zoomTimeoutRef.current) {
+        clearTimeout(zoomTimeoutRef.current);
+      }
+      zoomTimeoutRef.current = setTimeout(() => {
+        setDebouncedZoom(newZoom);
+      }, 150);
     });
 
     mapInstance.on('moveend', () => {
-      setZoom(mapInstance.getZoom());
+      const newZoom = mapInstance.getZoom();
+      setZoom(newZoom);
+      setDebouncedZoom(newZoom);
     });
 
     return () => {
@@ -298,7 +313,7 @@ export default function PropertyMapboxMap({
 
     // Add markers
     const items = showClusters
-      ? clusterMapPoints(points, zoom)
+      ? clusterMapPoints(points, debouncedZoom, clusterOptions)
       : points.map((point) => ({ kind: 'point', point }));
 
     items.forEach((item) => {
@@ -316,11 +331,31 @@ export default function PropertyMapboxMap({
           )
           .addTo(mapInstance);
       } else {
-        // Cluster
+        // Cluster with property type styling
         const cluster = item as Extract<ClusteredMapItem, { kind: 'cluster' }>;
+        const clusterColor = getClusterColor(cluster.dominantType, cluster.isMixed);
+        const displayCount = cluster.count >= 1000 ? `${Math.floor(cluster.count / 1000)}K+` : cluster.count.toString();
+        const clusterSize = cluster.count >= 100 ? 40 : cluster.count >= 50 ? 35 : 30;
+
         const el = document.createElement('div');
-        el.className = 'cursor-pointer';
-        el.innerHTML = `<div style="min-width:30px;height:30px;padding:0 8px;background:#1d4ed8;color:white;border-radius:9999px;border:2px solid white;box-shadow:0 1px 2px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;line-height:1">${cluster.count}</div>`;
+        el.className = 'cursor-pointer mapbox-marker-cluster';
+        el.innerHTML = `<div style="min-width:${clusterSize}px;height:${clusterSize}px;padding:0 8px;background:${clusterColor};color:white;border-radius:9999px;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;line-height:1;transition:transform 0.2s ease, box-shadow 0.2s ease">${displayCount}</div>`;
+
+        el.addEventListener('mouseenter', () => {
+          const marker = el.querySelector('div');
+          if (marker) {
+            marker.style.transform = 'scale(1.1)';
+            marker.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+          }
+        });
+        el.addEventListener('mouseleave', () => {
+          const marker = el.querySelector('div');
+          if (marker) {
+            marker.style.transform = 'scale(1)';
+            marker.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+          }
+        });
+
         el.addEventListener('click', () => {
           const clusterBounds = computeBounds(cluster.points);
           if (clusterBounds) {
@@ -348,11 +383,30 @@ export default function PropertyMapboxMap({
           return `$${(price / 1000).toFixed(0)}K`;
         };
 
+        // Build type summary
+        const typeSummary = cluster.isMixed && cluster.typeDistribution.size > 1
+          ? Array.from(cluster.typeDistribution.entries())
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 3)
+              .map(([type, percentage]) => {
+                const color = PROPERTY_TYPE_COLORS[type] || PROPERTY_TYPE_COLORS.other;
+                return `<span style="color:${color}">${type}</span>: ${percentage.toFixed(0)}%`;
+              })
+              .join(' • ')
+          : cluster.dominantType
+            ? `<span style="color:${clusterColor}">${cluster.dominantType}</span> dominant`
+            : '';
+
         const clusterPopupHTML = `
           <div style="min-width:180px;font-family:system-ui,-apple-system,sans-serif;">
             <div style="font-weight:600;font-size:14px;margin-bottom:8px;">
               ${cluster.count} properties in this area
             </div>
+            ${typeSummary ? `
+              <div style="font-size:11px;color:#6b7280;margin-bottom:6px;">
+                ${typeSummary}
+              </div>
+            ` : ''}
             ${
               minPrice !== null && maxPrice !== null
                 ? `
@@ -385,12 +439,13 @@ export default function PropertyMapboxMap({
     });
   }, [
     points,
-    zoom,
+    debouncedZoom,
     mapLoaded,
     showHeatmap,
     heatmapIntensity,
     heatmapMode,
     showClusters,
+    clusterOptions,
     onMarkerClick,
   ]);
 

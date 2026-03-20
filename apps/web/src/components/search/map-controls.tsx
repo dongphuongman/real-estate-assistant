@@ -14,11 +14,22 @@ import {
 } from "lucide-react";
 import type { HeatmapMode } from "./property-map-utils";
 
+export interface ClusterOptions {
+  cellSizePx: number;
+  maxZoomForClustering: number;
+}
+
+export const DEFAULT_CLUSTER_OPTIONS: ClusterOptions = {
+  cellSizePx: 60,
+  maxZoomForClustering: 15,
+};
+
 export interface MapFilterOptions {
   showHeatmap: boolean;
   heatmapIntensity: number;
   heatmapMode: HeatmapMode;
   showClusters: boolean;
+  clusterOptions: ClusterOptions;
   priceRange?: [number, number];
   propertyType?: string;
 }
@@ -173,6 +184,63 @@ export default function MapControls({
             />
           </label>
 
+          {/* Cluster settings - shown when clusters enabled */}
+          {options.showClusters && (
+            <div className="space-y-2 pl-6">
+              {/* Cluster size slider */}
+              <div className="space-y-1">
+                <label htmlFor="cluster-size" className="text-xs text-muted-foreground">
+                  Cluster Size: {options.clusterOptions?.cellSizePx ?? DEFAULT_CLUSTER_OPTIONS.cellSizePx}px
+                </label>
+                <input
+                  id="cluster-size"
+                  type="range"
+                  min="20"
+                  max="100"
+                  step="5"
+                  value={options.clusterOptions?.cellSizePx ?? DEFAULT_CLUSTER_OPTIONS.cellSizePx}
+                  onChange={(e) =>
+                    onChange({
+                      ...options,
+                      clusterOptions: {
+                        ...(options.clusterOptions ?? DEFAULT_CLUSTER_OPTIONS),
+                        cellSizePx: parseInt(e.target.value),
+                      },
+                    })
+                  }
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  aria-label="Cluster size"
+                />
+              </div>
+
+              {/* Max zoom for clustering slider */}
+              <div className="space-y-1">
+                <label htmlFor="cluster-max-zoom" className="text-xs text-muted-foreground">
+                  Max Zoom: {options.clusterOptions?.maxZoomForClustering ?? DEFAULT_CLUSTER_OPTIONS.maxZoomForClustering}
+                </label>
+                <input
+                  id="cluster-max-zoom"
+                  type="range"
+                  min="12"
+                  max="18"
+                  step="1"
+                  value={options.clusterOptions?.maxZoomForClustering ?? DEFAULT_CLUSTER_OPTIONS.maxZoomForClustering}
+                  onChange={(e) =>
+                    onChange({
+                      ...options,
+                      clusterOptions: {
+                        ...(options.clusterOptions ?? DEFAULT_CLUSTER_OPTIONS),
+                        maxZoomForClustering: parseInt(e.target.value),
+                      },
+                    })
+                  }
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  aria-label="Max zoom for clustering"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Quick filters */}
           <div className="space-y-2 pt-2 border-t">
             <div className="text-xs font-medium text-muted-foreground">Price Filter</div>
@@ -239,6 +307,7 @@ export default function MapControls({
                 heatmapIntensity: 1,
                 heatmapMode: "density",
                 showClusters: true,
+                clusterOptions: DEFAULT_CLUSTER_OPTIONS,
                 priceRange: undefined,
                 propertyType: undefined,
               })
