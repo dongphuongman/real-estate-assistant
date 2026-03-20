@@ -5,10 +5,18 @@ This module provides intelligent orchestration between:
 - Simple RAG for straightforward queries
 - Tool-based agent for complex tasks
 - Hybrid approach combining both
+
+Enhanced with:
+- Context-aware classification using session history
+- Intent-specific prompts for better responses
+- Classification metrics logging for quality tracking
+- Confidence-based routing decisions
 """
 
 import json
 import logging
+import time
+from datetime import datetime
 from typing import Any, AsyncIterator, Dict, List, Optional, cast
 
 from langchain.agents import AgentExecutor, create_openai_tools_agent
@@ -20,7 +28,20 @@ from langchain_core.documents import Document
 from langchain_core.language_models import BaseChatModel
 from langchain_core.retrievers import BaseRetriever
 
-from agents.query_analyzer import Complexity, QueryAnalysis, QueryAnalyzer, QueryIntent, Tool
+from agents.classification_metrics import (
+    ClassificationMetrics,
+    init_metrics_db,
+    log_classification_metrics,
+)
+from agents.intent_prompts import get_system_prompt_for_intent
+from agents.query_analyzer import (
+    Complexity,
+    QueryAnalysis,
+    QueryAnalyzer,
+    QueryIntent,
+    RoutingThresholds,
+    Tool,
+)
 from agents.web_research_agent import WebResearchAgent, WebResearchConfig
 from tools.property_tools import create_property_tools
 
@@ -83,10 +104,19 @@ class HybridPropertyAgent:
         # Initialize query analyzer
         self.analyzer = QueryAnalyzer()
 
+        # Initialize metrics database for classification tracking
+        try:
+            init_metrics_db()
+        except Exception as e:
+            logger.warning(f"Failed to initialize metrics database: {e}")
+
+        # Cache for intent-specific tool agents
+        self._tool_agent_cache: Dict[QueryIntent, AgentExecutor] = {}
+
         # Initialize RAG chain
         self.rag_chain = self._create_rag_chain()
 
-        # Initialize tool agent
+        # Initialize default tool agent
         self.tool_agent = self._create_tool_agent()
 
     def _create_rag_chain(self) -> ConversationalRetrievalChain:
@@ -99,15 +129,18 @@ class HybridPropertyAgent:
             verbose=self.verbose,
         )
 
-    def _create_tool_agent(self) -> AgentExecutor:
-        """Create tool-based agent for complex queries."""
+    def _create_tool_agent(self, intent: Optional[QueryIntent] = None) -> AgentExecutor:
+        """Create tool-based agent for complex queries.
 
-        # Create prompt template for tool agent
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                (
-                    "system",
-                    """You are a specialized Real Estate Assistant.
+        Args:
+            intent: Optional intent to select intent-specific system prompt.
+                   If None, uses default generic prompt.
+        """
+
+        # Get intent-specific system prompt or use default
+        if intent:
+            intent_prompt = get_system_prompt_for_intent(intent)
+            base_prompt = f"""{intent_prompt}
 
 Scope:
 - Answer questions about properties, real estate markets, mortgages, financing, negotiation, neighborhood/location insights, and related decision support.
@@ -127,8 +160,34 @@ When answering:
 4. Be concise but thorough
 5. Always cite sources when using property data
 
-Context from property database will be provided when relevant.""",
-                ),
+Context from property database will be provided when relevant."""
+        else:
+            base_prompt = """You are a specialized Real Estate Assistant.
+
+Scope:
+- Answer questions about properties, real estate markets, mortgages, financing, negotiation, neighborhood/location insights, and related decision support.
+- If the user asks for something unrelated to real estate (e.g. cooking, medical, legal outside real estate context), refuse briefly and steer back to real estate.
+
+Your capabilities:
+- Search property database for listings
+- Calculate mortgage payments and costs
+- Compare properties side-by-side
+- Analyze prices and market trends
+- Evaluate locations and neighborhoods
+
+When answering:
+1. Use tools when needed for calculations or analysis
+2. Provide specific numbers and facts
+3. Explain your reasoning
+4. Be concise but thorough
+5. Always cite sources when using property data
+
+Context from property database will be provided when relevant."""
+
+        # Create prompt template for tool agent
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", base_prompt),
                 MessagesPlaceholder(variable_name="chat_history", optional=True),
                 ("human", "{input}"),
                 MessagesPlaceholder(variable_name="agent_scratchpad"),
@@ -155,6 +214,21 @@ Context from property database will be provided when relevant.""",
                 verbose=self.verbose,
                 return_intermediate_steps=True,
             )
+
+    def _get_tool_agent_for_intent(self, intent: QueryIntent) -> AgentExecutor:
+        """Get or create a tool agent with intent-specific prompts.
+
+        Uses caching to avoid recreating agents for the same intent.
+
+        Args:
+            intent: The query intent to get agent for
+
+        Returns:
+            AgentExecutor configured with intent-specific prompt
+        """
+        if intent not in self._tool_agent_cache:
+            self._tool_agent_cache[intent] = self._create_tool_agent(intent)
+        return self._tool_agent_cache[intent]
 
     def _domain_guard(self, query: str) -> Optional[Dict[str, Any]]:
         q = (query or "").strip()
@@ -231,24 +305,40 @@ Context from property database will be provided when relevant.""",
 
         return None
 
-    def process_query(self, query: str, return_analysis: bool = False) -> Dict[str, Any]:
+    def process_query(
+        self,
+        query: str,
+        return_analysis: bool = False,
+        session_id: Optional[str] = None,
+        session_history: Optional[List[Any]] = None,
+    ) -> Dict[str, Any]:
         """
         Process a query using the hybrid approach.
 
         Args:
             query: User query
             return_analysis: Whether to include query analysis in response
+            session_id: Optional session ID for metrics tracking
+            session_history: Optional list of recent chat messages for context
 
         Returns:
             Dictionary with answer, sources, and optional analysis
         """
+        start_time = time.time()
+
         guard = self._domain_guard(query)
         if guard:
             if return_analysis:
                 guard["analysis"] = self.analyzer.analyze(query).dict()
             return guard
 
-        analysis = self.analyzer.analyze(query)
+        # Use context-aware classification if session history provided
+        if session_history:
+            analysis = self.analyzer.analyze_with_context(query, session_history=session_history)
+        else:
+            analysis = self.analyzer.analyze(query)
+
+        processing_time_ms = (time.time() - start_time) * 1000
 
         if self.internet_enabled and (
             analysis.requires_external_data or Tool.WEB_SEARCH in analysis.tools_needed
@@ -256,6 +346,13 @@ Context from property database will be provided when relevant.""",
             result = self._process_with_web_search(query, analysis)
             if return_analysis:
                 result["analysis"] = analysis.dict()
+            self._log_metrics(
+                analysis=analysis,
+                session_id=session_id,
+                query=query,
+                processing_time_ms=processing_time_ms,
+                route_taken="web_search",
+            )
             return result
         if (
             analysis.requires_external_data or Tool.WEB_SEARCH in analysis.tools_needed
@@ -271,26 +368,125 @@ Context from property database will be provided when relevant.""",
             }
             if return_analysis:
                 result["analysis"] = analysis.dict()
+            self._log_metrics(
+                analysis=analysis,
+                session_id=session_id,
+                query=query,
+                processing_time_ms=processing_time_ms,
+                route_taken="web_search_disabled",
+            )
             return result
 
         if self.verbose:
             logger.info("Query Analysis: %s", analysis.reasoning)
+            logger.info("Confidence: %.2f", analysis.confidence)
             logger.info("Should use agent: %s", analysis.should_use_agent())
 
-        # Route to appropriate processor
-        if analysis.should_use_rag_only():
+        # Route based on confidence thresholds and complexity
+        route_taken = self._determine_route(analysis)
+
+        if route_taken == "rag":
             result = self._process_with_rag(query, analysis)
-        elif analysis.should_use_agent():
+        elif route_taken == "agent":
             result = self._process_with_agent(query, analysis)
         else:
-            # Medium complexity - try RAG first, agent if needed
+            # Medium complexity or confidence - try RAG first, agent if needed
             result = self._process_hybrid(query, analysis)
 
         # Add analysis to result if requested
         if return_analysis:
             result["analysis"] = analysis.dict()
 
+        # Log classification metrics
+        self._log_metrics(
+            analysis=analysis,
+            session_id=session_id,
+            query=query,
+            processing_time_ms=processing_time_ms,
+            route_taken=route_taken,
+            tools_used=result.get("intermediate_steps", []),
+        )
+
         return result
+
+    def _determine_route(self, analysis: QueryAnalysis) -> str:
+        """Determine routing based on confidence and complexity.
+
+        Args:
+            analysis: Query analysis result
+
+        Returns:
+            Route name: "rag", "agent", or "hybrid"
+        """
+        confidence = analysis.confidence
+
+        # High confidence - use classified route directly
+        if confidence >= RoutingThresholds.HIGH_CONFIDENCE:
+            if analysis.should_use_rag_only():
+                return "rag"
+            elif analysis.should_use_agent():
+                return "agent"
+            else:
+                return "hybrid"
+
+        # Medium confidence - use hybrid approach
+        if confidence >= RoutingThresholds.MEDIUM_CONFIDENCE:
+            return "hybrid"
+
+        # Low confidence - default to hybrid for safety
+        # (could trigger LLM fallback or clarification in future)
+        return "hybrid"
+
+    def _log_metrics(
+        self,
+        analysis: QueryAnalysis,
+        session_id: Optional[str],
+        query: str,
+        processing_time_ms: float,
+        route_taken: str,
+        tools_used: Optional[List[Any]] = None,
+    ) -> None:
+        """Log classification metrics for quality tracking.
+
+        Args:
+            analysis: Query analysis result
+            session_id: Session identifier
+            query: Original query
+            processing_time_ms: Processing time in milliseconds
+            route_taken: Route that was used (rag, agent, hybrid)
+            tools_used: List of tools/interactions used
+        """
+        try:
+            # Extract tool names from intermediate steps if available
+            tool_names: List[str] = []
+            if tools_used:
+                for step in tools_used:
+                    if isinstance(step, tuple) and len(step) > 0:
+                        action = step[0]
+                        if hasattr(action, "tool"):
+                            tool_names.append(action.tool)
+                        elif isinstance(action, dict):
+                            tool_names.append(action.get("tool", "unknown"))
+
+            metrics = ClassificationMetrics(
+                timestamp=datetime.now(),
+                session_id=session_id,
+                query=query[:500] if len(query) > 500 else query,
+                query_length=len(query),
+                primary_intent=analysis.intent,
+                secondary_intents=analysis.secondary_intents,
+                confidence=analysis.confidence,
+                complexity=analysis.complexity,
+                processing_time_ms=processing_time_ms,
+                route_taken=route_taken,
+                tools_used=tool_names,
+                user_feedback=None,
+                language_detected="en",  # Could be enhanced with language detection
+                ambiguity_signals=[],  # Could be extracted from analysis
+            )
+            log_classification_metrics(metrics)
+        except Exception as e:
+            logger.warning(f"Failed to log classification metrics: {e}")
 
     def get_sources_for_query(self, query: str, k: int = 5) -> List[Document]:
         analysis = self.analyzer.analyze(query)
@@ -448,14 +644,20 @@ Context from property database will be provided when relevant.""",
         }
 
     def _process_with_agent(self, query: str, analysis: QueryAnalysis) -> Dict[str, Any]:
-        """Process complex query with tool agent."""
+        """Process complex query with tool agent.
+
+        Uses intent-specific agent prompts for better responses.
+        """
         if self.verbose:
-            logger.info("Processing with tool agent")
+            logger.info("Processing with tool agent (intent: %s)", analysis.intent.value)
 
         try:
             # First, get relevant context from RAG if needed
             context_docs = []
-            if analysis.intent not in [QueryIntent.CALCULATION, QueryIntent.GENERAL_QUESTION]:
+            if analysis.intent not in [
+                QueryIntent.CALCULATION,
+                QueryIntent.GENERAL_QUESTION,
+            ]:
                 # Use hybrid retrieval with filters
                 context_docs = self._retrieve_documents(query, analysis, k=3)
 
@@ -470,8 +672,11 @@ Context from property database will be provided when relevant.""",
                 )
                 enhanced_query = f"{query}\n\nRelevant properties:\n{context_text}"
 
+            # Get intent-specific agent
+            agent = self._get_tool_agent_for_intent(analysis.intent)
+
             # Run agent
-            response = self.tool_agent.invoke({"input": enhanced_query})
+            response = agent.invoke({"input": enhanced_query})
 
             return {
                 "answer": response["output"],
