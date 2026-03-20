@@ -99,9 +99,43 @@ export interface RagQaCitation {
   chunk_index: number;
 }
 
+// ============================================================================
+// TASK-065: Enhanced Citation Types
+// ============================================================================
+
+export type SourceType = 'pdf' | 'docx' | 'web' | 'database' | 'api' | 'unknown';
+
+export type CitationConfidence = 'high' | 'medium' | 'low';
+
+export interface EnhancedCitation {
+  source?: string | null;
+  chunk_index?: number | null;
+  page_number?: number | null;
+  paragraph_number?: number | null;
+  source_type: SourceType;
+  confidence: CitationConfidence;
+  confidence_score: number;
+  content_snippet?: string | null;
+  source_url?: string | null;
+  source_title?: string | null;
+  citation_hash?: string | null;
+  is_duplicate: boolean;
+  validated: boolean;
+}
+
+export interface CitationStats {
+  total: number;
+  unique: number;
+  duplicates: number;
+  by_type: Record<string, number>;
+  avg_confidence: number;
+}
+
 export interface RagQaResponse {
   answer: string;
-  citations: RagQaCitation[];
+  citations: EnhancedCitation[];
+  citation_format?: string;
+  citation_stats?: CitationStats | null;
   llm_used: boolean;
   provider: string | null;
   model: string | null;

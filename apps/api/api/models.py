@@ -108,6 +108,7 @@ class ChatResponse(BaseModel):
     response: str
     sources: List[Dict[str, Any]] = []
     sources_truncated: bool = False
+    citation_stats: Optional["CitationStats"] = Field(None, description="Citation statistics")
     session_id: Optional[str] = None
     intermediate_steps: Optional[List[Dict[str, Any]]] = None
 
@@ -119,16 +120,85 @@ class RagCitation(BaseModel):
     paragraph_number: Optional[int] = None
 
 
+# ============================================================================
+# TASK-065: Enhanced Citation Models
+# ============================================================================
+
+
+class SourceType(str, Enum):
+    """Type of citation source."""
+
+    PDF = "pdf"
+    DOCX = "docx"
+    WEB = "web"
+    DATABASE = "database"
+    API = "api"
+    UNKNOWN = "unknown"
+
+
+class CitationConfidence(str, Enum):
+    """Confidence level for citation relevance."""
+
+    HIGH = "high"  # Direct quote match
+    MEDIUM = "medium"  # Semantic match
+    LOW = "low"  # Partial match
+
+
+class EnhancedCitation(BaseModel):
+    """Enhanced citation with confidence scoring and validation."""
+
+    # Existing fields (backward compatible)
+    source: Optional[str] = None
+    chunk_index: Optional[int] = None
+    page_number: Optional[int] = None
+    paragraph_number: Optional[int] = None
+
+    # New fields for enhanced citations
+    source_type: SourceType = SourceType.UNKNOWN
+    confidence: CitationConfidence = CitationConfidence.MEDIUM
+    confidence_score: float = Field(default=0.0, ge=0.0, le=1.0, description="Confidence score 0.0-1.0")
+    content_snippet: Optional[str] = Field(None, description="Relevant excerpt from source")
+    source_url: Optional[str] = Field(None, description="URL for web sources")
+    source_title: Optional[str] = Field(None, description="Human-readable title")
+    citation_hash: Optional[str] = Field(None, description="Hash for deduplication")
+    is_duplicate: bool = Field(default=False, description="Whether this is a duplicate citation")
+    validated: bool = Field(default=False, description="Whether citation was validated against source")
+
+    def to_legacy_citation(self) -> RagCitation:
+        """Convert to legacy RagCitation for backward compatibility."""
+        return RagCitation(
+            source=self.source,
+            chunk_index=self.chunk_index,
+            page_number=self.page_number,
+            paragraph_number=self.paragraph_number,
+        )
+
+
+class CitationStats(BaseModel):
+    """Statistics about citations in a response."""
+
+    total: int = Field(..., ge=0, description="Total number of citations")
+    unique: int = Field(..., ge=0, description="Number of unique citations")
+    duplicates: int = Field(..., ge=0, description="Number of duplicate citations")
+    by_type: Dict[str, int] = Field(default_factory=dict, description="Count by source type")
+    avg_confidence: float = Field(..., ge=0.0, le=1.0, description="Average confidence score")
+
+
 class RagQaRequest(BaseModel):
     question: str = Field(..., min_length=1)
     top_k: int = Field(5, ge=1, le=50)
     provider: Optional[str] = None
     model: Optional[str] = None
+    citation_format: str = Field(
+        default="inline", description="Citation format style: inline, footnote, or endnote"
+    )
 
 
 class RagQaResponse(BaseModel):
     answer: str
-    citations: List[RagCitation] = Field(default_factory=list)
+    citations: List[EnhancedCitation] = Field(default_factory=list)
+    citation_format: str = Field(default="inline", description="Citation format style used")
+    citation_stats: Optional[CitationStats] = Field(None, description="Citation statistics")
     llm_used: bool = False
     provider: Optional[str] = None
     model: Optional[str] = None

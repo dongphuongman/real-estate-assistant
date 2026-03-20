@@ -4,14 +4,15 @@ import { useState, useRef, useEffect } from "react";
 import { Send, User, Bot, Loader2, Lightbulb, Sparkles, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { streamChatMessage, ApiError } from "@/lib/api";
-import type { ChatResponse } from "@/lib/types";
-import { extractSourceTitle, formatMetadataInline, truncateText } from "@/lib/chatSources";
+import type { ChatResponse, EnhancedCitation, CitationStats } from "@/lib/types";
+import CitationDisplay from "@/components/CitationDisplay";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
   sources?: ChatResponse["sources"];
   sourcesTruncated?: boolean;
+  citationStats?: CitationStats | null;
   intermediateSteps?: ChatResponse["intermediate_steps"];
   isError?: boolean;
   requestId?: string;
@@ -304,28 +305,47 @@ export default function ChatPage() {
 
               {/* Sources display */}
               {message.role === "assistant" && message.sources && message.sources.length > 0 && (
-                <details className="rounded-md border bg-muted/30 px-3 py-2 text-xs">
-                  <summary className="cursor-pointer select-none font-medium">
-                    Sources ({message.sources.length}){message.sourcesTruncated ? " (truncated)" : ""}
-                  </summary>
-                  <ol className="mt-2 list-decimal pl-4 space-y-2">
-                    {message.sources.map((source, i) => {
-                      const metadata = source.metadata || {};
-                      const title = extractSourceTitle(metadata) || `Source ${i + 1}`;
-                      const metaInline = formatMetadataInline(metadata);
-                      const content = truncateText(source.content || "", 400);
-                      return (
-                        <li key={`${i}`} className="space-y-1">
-                          <div className="text-[12px] font-medium break-words">{title}</div>
-                          {metaInline ? (
-                            <div className="font-mono text-[11px] text-muted-foreground break-all">{metaInline}</div>
-                          ) : null}
-                          {content ? <div className="text-[12px] leading-snug break-words">{content}</div> : null}
-                        </li>
-                      );
-                    })}
-                  </ol>
-                </details>
+                <CitationDisplay
+                  citations={message.sources.map((source, i): EnhancedCitation => {
+                    const metadata = source.metadata || {};
+                    // Check if already enhanced citation format
+                    if ("source_type" in metadata && "confidence" in metadata) {
+                      return {
+                        source: metadata.source as string | undefined,
+                        chunk_index: metadata.chunk_index as number | undefined,
+                        page_number: metadata.page_number as number | undefined,
+                        paragraph_number: metadata.paragraph_number as number | undefined,
+                        source_type: (metadata.source_type as EnhancedCitation["source_type"]) || "unknown",
+                        confidence: (metadata.confidence as EnhancedCitation["confidence"]) || "medium",
+                        confidence_score: (metadata.confidence_score as number) || 0.5,
+                        content_snippet: source.content || null,
+                        source_url: metadata.source_url as string | undefined,
+                        source_title: metadata.source_title as string | undefined,
+                        citation_hash: metadata.citation_hash as string | undefined,
+                        is_duplicate: (metadata.is_duplicate as boolean) || false,
+                        validated: (metadata.validated as boolean) || false,
+                      };
+                    }
+                    // Legacy format - convert to enhanced
+                    return {
+                      source: metadata.source as string | undefined,
+                      chunk_index: metadata.chunk_index as number | undefined,
+                      page_number: metadata.page_number as number | undefined,
+                      paragraph_number: metadata.paragraph_number as number | undefined,
+                      source_type: "unknown",
+                      confidence: "medium",
+                      confidence_score: 0.5,
+                      content_snippet: source.content || null,
+                      source_url: undefined,
+                      source_title: metadata.title as string | undefined || metadata.source as string | undefined,
+                      citation_hash: undefined,
+                      is_duplicate: false,
+                      validated: false,
+                    };
+                  })}
+                  stats={message.citationStats}
+                  truncated={message.sourcesTruncated}
+                />
               )}
 
               {/* Intermediate steps (debug mode) */}

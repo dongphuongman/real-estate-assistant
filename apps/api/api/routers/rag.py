@@ -7,6 +7,7 @@ from langchain_core.language_models import BaseChatModel
 from api.dependencies import get_knowledge_store, get_rag_qa_llm_details, parse_rag_qa_request
 from api.models import RagQaRequest, RagQaResponse, RagResetResponse
 from config.settings import get_settings
+from services.citation_service import CitationService
 from utils.document_text_extractor import (
     DocumentTextExtractionError,
     OptionalDependencyMissingError,
@@ -173,25 +174,30 @@ async def rag_qa(
 
     results = store.similarity_search_with_score(rag_request.question, k=rag_request.top_k)
     docs = [d for d, _s in results]
+    scores = [s for _d, s in results]
+
     if not docs:
         return {
             "answer": "",
             "citations": [],
+            "citation_format": rag_request.citation_format,
+            "citation_stats": None,
             "llm_used": False,
             "provider": effective_provider,
             "model": effective_model,
         }
 
     context = "\n\n".join([doc.page_content for doc in docs])
-    citations = [
-        {
-            "source": doc.metadata.get("source"),
-            "chunk_index": doc.metadata.get("chunk_index"),
-            "page_number": doc.metadata.get("page_number"),
-            "paragraph_number": doc.metadata.get("paragraph_number"),
-        }
-        for doc in docs
-    ]
+
+    # Process citations with enhanced extraction
+    citation_service = CitationService()
+    enhanced_citations = citation_service.process_citations(
+        documents=docs,
+        scores=scores,
+        query=rag_request.question,
+        format_style=rag_request.citation_format,
+    )
+    citation_stats = citation_service.calculate_citation_stats(enhanced_citations)
 
     if llm:
         try:
@@ -204,7 +210,9 @@ async def rag_qa(
             content = getattr(msg, "content", str(msg))
             return {
                 "answer": content,
-                "citations": citations,
+                "citations": enhanced_citations,
+                "citation_format": rag_request.citation_format,
+                "citation_stats": citation_stats,
                 "llm_used": True,
                 "provider": effective_provider,
                 "model": effective_model,
@@ -216,7 +224,9 @@ async def rag_qa(
     snippet = context[:500]
     return {
         "answer": snippet,
-        "citations": citations,
+        "citations": enhanced_citations,
+        "citation_format": rag_request.citation_format,
+        "citation_stats": citation_stats,
         "llm_used": False,
         "provider": effective_provider,
         "model": effective_model,
