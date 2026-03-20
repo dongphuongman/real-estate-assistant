@@ -21,6 +21,8 @@ const config: Config = {
     // Handle module aliases (this will be automatically configured for you soon)
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  // Transform ESM modules from node_modules
+  transformIgnorePatterns: ['node_modules/(?!(next-intl|use-intl)/)'],
   collectCoverage: true,
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
