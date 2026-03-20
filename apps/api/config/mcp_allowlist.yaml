@@ -1,0 +1,61 @@
+# MCP Connector Allowlist Configuration
+# Controls which connectors are available in Community Edition
+#
+# This file defines the governance policy for MCP connectors:
+# - Allowlisted connectors are available in all editions
+# - Restricted connectors require Pro or Enterprise edition
+# - Changes require admin API access or direct file modification
+
+edition: community  # community, pro, enterprise
+
+# Allowlisted connectors for Community Edition
+# These connectors are safe for CE use with minimal data exposure
+allowlist:
+  - name: echo_stub
+    display_name: Echo Stub (Testing)
+    description: Testing connector - no external API calls
+    enabled: true
+    edition: community
+
+  - name: google_maps
+    display_name: Google Maps
+    description: Geocoding and mapping services
+    enabled: true
+    edition: community
+
+  - name: openstreetmap
+    display_name: OpenStreetMap
+    description: Open-source mapping (fallback)
+    enabled: true
+    edition: community
+
+# Non-allowlisted connectors (PRO/Enterprise only)
+# These require higher tier for data access
+restricted:
+  - name: salesforce
+    display_name: Salesforce
+    description: CRM integration
+    min_edition: pro
+
+  - name: stripe
+    display_name: Stripe
+    description: Payment processing
+    min_edition: pro
+
+  - name: hubspot
+    display_name: HubSpot
+    description: Marketing and CRM
+    min_edition: pro
+
+  - name: slack
+    display_name: Slack
+    description: Team communication
+    min_edition: enterprise
+
+# Configuration metadata
+metadata:
+  last_updated: "2024-03-20"
+  version: "1.0.0"
+  schema_version: "1.0"
+  maintainers:
+    - admin@nestlab.tech
