@@ -10,10 +10,6 @@ import pytest
 
 from agents.query_analyzer import (
     Complexity,
-    IntentModifiers,
-    ProcessingStrategy,
-    QueryAnalysis,
-    QueryAnalyzer,
     QueryIntent,
     RoutingThresholds,
     Tool,
@@ -303,14 +299,12 @@ class TestConfidenceScoring:
             ("Tell me more", 0.0, 0.5),
         ],
     )
-    def test_confidence_range(
-        self, query_analyzer, query, min_confidence, max_confidence
-    ):
+    def test_confidence_range(self, query_analyzer, query, min_confidence, max_confidence):
         """Test confidence falls within expected ranges."""
         analysis = query_analyzer.analyze(query)
-        assert (
-            min_confidence <= analysis.confidence <= max_confidence
-        ), f"Confidence {analysis.confidence} not in range [{min_confidence}, {max_confidence}]"
+        assert min_confidence <= analysis.confidence <= max_confidence, (
+            f"Confidence {analysis.confidence} not in range [{min_confidence}, {max_confidence}]"
+        )
 
     def test_clear_intent_has_higher_confidence(self, query_analyzer):
         """Clear intent queries should have higher confidence than ambiguous ones."""
@@ -354,8 +348,7 @@ class TestMultiIntentDetection:
         # Secondary intents may be empty or have low weights
         if analysis.secondary_intents:
             total_secondary_weight = sum(
-                analysis.intent_weights.get(i.value, 0)
-                for i in analysis.secondary_intents
+                analysis.intent_weights.get(i.value, 0) for i in analysis.secondary_intents
             )
             primary_weight = analysis.intent_weights.get(analysis.intent.value, 1.0)
             assert primary_weight >= total_secondary_weight
@@ -382,12 +375,12 @@ class TestMultiIntentDetection:
         """Processing strategy should match query complexity."""
         # Simple query
         simple_query = "Show me apartments"
-        simple_analysis = query_analyzer.analyze(simple_query)
+        _ = query_analyzer.analyze(simple_query)
         # Processing strategy may be None for simple queries
 
         # Complex multi-intent query
         complex_query = "Compare mortgage calculations for two properties"
-        complex_analysis = query_analyzer.analyze(complex_query)
+        _ = query_analyzer.analyze(complex_query)
         # Should handle complex queries appropriately
 
 
@@ -419,9 +412,7 @@ class TestContextAwareClassification:
             type("Message", (), {"content": "Property at Main Street, 2 bedrooms"})(),
         ]
 
-        analysis = query_analyzer.analyze_with_context(
-            query, session_history=mock_history
-        )
+        analysis = query_analyzer.analyze_with_context(query, session_history=mock_history)
 
         # With context, should classify as DOCUMENT_QA or similar
         assert analysis.intent is not None
@@ -450,10 +441,7 @@ class TestContextAwareClassification:
         query = "Tell me more"
 
         # Create 10 mock messages
-        mock_history = [
-            type("Message", (), {"content": f"Message {i}"})()
-            for i in range(10)
-        ]
+        mock_history = [type("Message", (), {"content": f"Message {i}"})() for i in range(10)]
 
         # Should not fail even with more messages than max
         analysis = query_analyzer.analyze_with_context(
@@ -475,7 +463,7 @@ class TestIntentSpecificPrompts:
 
     def test_all_intents_have_prompts(self):
         """All query intents should have corresponding prompts."""
-        from agents.intent_prompts import INTENT_SYSTEM_PROMPTS, get_system_prompt_for_intent
+        from agents.intent_prompts import get_system_prompt_for_intent
 
         for intent in QueryIntent:
             prompt = get_system_prompt_for_intent(intent)
@@ -530,8 +518,9 @@ class TestMetricsLogging:
 
     def test_classification_metrics_dataclass(self):
         """ClassificationMetrics should have required fields."""
-        from agents.classification_metrics import ClassificationMetrics
         from datetime import datetime
+
+        from agents.classification_metrics import ClassificationMetrics
 
         metrics = ClassificationMetrics(
             timestamp=datetime.now(),
@@ -556,8 +545,9 @@ class TestMetricsLogging:
 
     def test_metrics_to_dict(self):
         """ClassificationMetrics should serialize to dict."""
-        from agents.classification_metrics import ClassificationMetrics
         from datetime import datetime
+
+        from agents.classification_metrics import ClassificationMetrics
 
         metrics = ClassificationMetrics(
             timestamp=datetime.now(),
@@ -593,13 +583,14 @@ class TestMetricsLogging:
 
     def test_log_and_retrieve_metrics(self, tmp_path):
         """Should log metrics and retrieve summaries."""
+        from datetime import datetime
+
         from agents.classification_metrics import (
             ClassificationMetrics,
             get_metrics_summary,
             init_metrics_db,
             log_classification_metrics,
         )
-        from datetime import datetime
 
         db_path = tmp_path / "test_metrics.db"
         init_metrics_db(db_path)
@@ -634,9 +625,7 @@ class TestRoutingThresholds:
     def test_threshold_values(self):
         """Thresholds should be in valid range."""
         assert 0 < RoutingThresholds.LOW_CONFIDENCE < RoutingThresholds.MEDIUM_CONFIDENCE
-        assert (
-            RoutingThresholds.MEDIUM_CONFIDENCE < RoutingThresholds.HIGH_CONFIDENCE <= 1.0
-        )
+        assert RoutingThresholds.MEDIUM_CONFIDENCE < RoutingThresholds.HIGH_CONFIDENCE <= 1.0
 
     def test_threshold_values_expected(self):
         """Thresholds should match plan values."""
@@ -660,7 +649,9 @@ class TestBackwardCompatibility:
 
         for query, expected_intent in legacy_queries:
             analysis = query_analyzer.analyze(query)
-            assert analysis.intent == expected_intent, f"Query '{query}' classified as {analysis.intent}, expected {expected_intent}"
+            assert analysis.intent == expected_intent, (
+                f"Query '{query}' classified as {analysis.intent}, expected {expected_intent}"
+            )
 
     def test_should_use_agent_method_exists(self, query_analyzer):
         """should_use_agent method should still work."""
@@ -695,4 +686,3 @@ class TestBackwardCompatibility:
         analysis = query_analyzer.analyze(query)
 
         assert isinstance(analysis.tools_needed, list)
-
