@@ -4,7 +4,6 @@ Task #65: Citation Quality Enhancement
 """
 
 import pytest
-
 from langchain_core.documents import Document
 
 from api.models import (

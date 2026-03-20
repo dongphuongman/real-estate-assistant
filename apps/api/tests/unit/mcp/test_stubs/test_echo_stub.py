@@ -1,10 +1,8 @@
 """Tests for EchoStubConnector."""
 
-import asyncio
 import pytest
 
 from mcp.config import MCPEdition
-from mcp.result import MCPConnectorResult
 from mcp.stubs import EchoStubConnector
 
 

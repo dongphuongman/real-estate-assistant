@@ -1,6 +1,5 @@
 """Tests for MCP exceptions."""
 
-import pytest
 
 from mcp.exceptions import (
     MCPAuthenticationError,

@@ -1,6 +1,5 @@
 """Tests for MCPConnectorResult dataclass."""
 
-import pytest
 
 from mcp.result import MCPConnectorResult
 

@@ -2,7 +2,7 @@
 
 import pytest
 
-from mcp.config import MCPEdition, MCPConnectorConfig
+from mcp.config import MCPConnectorConfig, MCPEdition
 from mcp.exceptions import MCPConnectorNotFoundError, MCPNotAllowlistedError
 from mcp.registry import MCPConnectorRegistry, get_mcp_connector, register_mcp_connector
 from mcp.stubs import EchoStubConnector

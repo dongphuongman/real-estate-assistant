@@ -23,6 +23,13 @@ Community Edition Notes:
     - No PII egress without explicit consent
 """
 
+from mcp.allowlist_validator import (
+    AllowlistConfig,
+    AllowlistEntry,
+    AllowlistValidator,
+    get_allowlist_validator,
+    reset_allowlist_validator,
+)
 from mcp.base import MCPConnector
 from mcp.config import (
     ConnectionPoolConfig,
@@ -61,6 +68,12 @@ __all__ = [
     "MCPConnectorRegistry",
     "register_mcp_connector",
     "get_mcp_connector",
+    # Allowlist (Task #68)
+    "AllowlistValidator",
+    "AllowlistConfig",
+    "AllowlistEntry",
+    "get_allowlist_validator",
+    "reset_allowlist_validator",
     # Exceptions
     "MCPError",
     "MCPConnectionError",

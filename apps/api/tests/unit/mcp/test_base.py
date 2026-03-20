@@ -3,7 +3,7 @@
 import pytest
 
 from mcp.base import MCPConnector
-from mcp.config import MCPEdition, MCPConnectorConfig
+from mcp.config import MCPConnectorConfig, MCPEdition
 from mcp.exceptions import MCPNotAllowlistedError
 from mcp.result import MCPConnectorResult
 

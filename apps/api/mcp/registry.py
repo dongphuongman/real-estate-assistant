@@ -3,6 +3,7 @@ MCP connector registry for managing connector discovery and instantiation.
 
 This module provides a central registry for all MCP connectors,
 allowing dynamic registration, lookup, and lifecycle management.
+Enhanced with AllowlistValidator for governance (Task #68).
 """
 
 import asyncio
@@ -15,6 +16,13 @@ from mcp.exceptions import MCPConnectorNotFoundError, MCPNotAllowlistedError
 from mcp.result import MCPConnectorResult
 
 logger = logging.getLogger(__name__)
+
+
+def _get_validator():
+    """Lazy import to avoid circular dependency."""
+    from mcp.allowlist_validator import get_allowlist_validator
+
+    return get_allowlist_validator()
 
 
 class MCPConnectorRegistry:
@@ -41,6 +49,34 @@ class MCPConnectorRegistry:
         """
         cls._current_edition = edition
         logger.info(f"MCP registry edition set to: {edition.value}")
+
+    @classmethod
+    def load_allowlist_from_yaml(
+        cls, config_path: Optional[str] = None
+    ) -> None:
+        """
+        Load allowlist from YAML configuration file.
+
+        Args:
+            config_path: Optional path to YAML file.
+                        Falls back to MCP_ALLOWLIST_PATH env or default.
+        """
+        from pathlib import Path
+
+        from mcp.allowlist_validator import AllowlistValidator
+
+        path = Path(config_path) if config_path else None
+        validator = AllowlistValidator(config_path=path)
+        config = validator.load_config()
+
+        # Sync internal allowlist with YAML config
+        cls._allowlist = set(config.get_allowlist_names())
+        cls._current_edition = config.edition
+
+        logger.info(
+            f"Loaded allowlist from YAML: {len(cls._allowlist)} connectors, "
+            f"edition={config.edition.value}"
+        )
 
     @classmethod
     def get_edition(cls) -> MCPEdition:
@@ -157,24 +193,30 @@ class MCPConnectorRegistry:
         Args:
             name: Connector name
             config: Optional configuration override
-            skip_edition_check: Skip edition/allowlist validation (for admin use)
+            skip_edition_check: Skip edition/allowlist validation (for admin)
 
         Returns:
             Connector instance
 
         Raises:
             MCPConnectorNotFoundError: If connector not found
-            MCPNotAllowlistedError: If connector not accessible in current edition
+            MCPNotAllowlistedError: If connector not accessible in edition
         """
         connector_class = cls._connectors.get(name)
         if not connector_class:
             raise MCPConnectorNotFoundError(name)
 
-        # Edition/allowlist check
+        # Edition/allowlist check using AllowlistValidator
         if not skip_edition_check:
-            if cls._current_edition == MCPEdition.COMMUNITY:
-                if not cls.is_allowlisted(name):
-                    raise MCPNotAllowlistedError(name, "community")
+            validator = _get_validator()
+            if not validator.validate_connector(name, cls._current_edition):
+                # Log violation for audit
+                validator.log_violation(
+                    connector_name=name,
+                    operation="get_connector",
+                    context={"edition": cls._current_edition.value},
+                )
+                raise MCPNotAllowlistedError(name, cls._current_edition.value)
 
         # Return cached instance if available and no config override
         if name in cls._instances and config is None:
@@ -299,6 +341,34 @@ class MCPConnectorRegistry:
         cls._instances.clear()
         cls._configs.clear()
         # Don't clear allowlist - preserve for tests
+
+    @classmethod
+    def get_allowlist_violations(cls) -> List[Dict[str, Any]]:
+        """
+        Get all logged allowlist violations for audit.
+
+        Returns:
+            List of violation records with timestamps and context
+        """
+        validator = _get_validator()
+        return validator.get_violations()
+
+    @classmethod
+    def clear_allowlist_violations(cls) -> None:
+        """Clear all logged allowlist violations."""
+        validator = _get_validator()
+        validator.clear_violations()
+
+    @classmethod
+    def reload_allowlist(cls) -> None:
+        """Reload allowlist configuration from YAML file."""
+        validator = _get_validator()
+        config = validator.reload_config()
+        cls._allowlist = set(config.get_allowlist_names())
+        cls._current_edition = config.edition
+        logger.info(
+            f"Reloaded allowlist: {len(cls._allowlist)} connectors"
+        )
 
 
 def register_mcp_connector(

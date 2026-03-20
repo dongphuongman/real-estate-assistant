@@ -1,9 +1,8 @@
 """Tests for MCP configuration classes."""
 
-import os
 import pytest
 
-from mcp.config import ConnectionPoolConfig, MCPEdition, MCPConnectorConfig
+from mcp.config import ConnectionPoolConfig, MCPConnectorConfig, MCPEdition
 
 
 class TestMCPEdition:

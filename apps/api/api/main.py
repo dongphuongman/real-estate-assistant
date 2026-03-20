@@ -37,6 +37,7 @@ from api.routers import (
     favorites,  # Task #37: Property favorites
     leads,  # Task #55: Lead Scoring System
     market,  # Task #38: Price History & Trends
+    mcp_admin,  # Task #68: MCP Allowlist Governance
     metrics,  # Task #62: Production Monitoring
     prompt_templates,
     push,  # Task #63: Push Notifications
@@ -342,6 +343,9 @@ app.include_router(settings_router.router, prefix="/api/v1", dependencies=[Depen
 app.include_router(tools.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(prompt_templates.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(admin.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
+app.include_router(
+    mcp_admin.router, prefix="/api/v1"
+)  # Task #68: MCP Admin (has its own auth)
 app.include_router(exports.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(auth.router, prefix="/api/v1")
 # Task #62: Prometheus metrics endpoint (no auth required for monitoring)
