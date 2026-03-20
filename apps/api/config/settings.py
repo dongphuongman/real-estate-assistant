@@ -444,6 +444,39 @@ class AppSettings(BaseModel):
         description="Enable automatic reminders for pending signatures",
     )
 
+    # =============================================================================
+    # MCP Connector Settings (Task #64)
+    # =============================================================================
+    mcp_edition: str = Field(
+        default_factory=lambda: os.getenv("MCP_EDITION", "community"),
+        description="MCP edition: community, pro, or enterprise",
+    )
+    mcp_allowlist: list[str] = Field(
+        default_factory=lambda: _parse_csv_list(os.getenv("MCP_ALLOWLIST")),
+        description="Comma-separated list of allowlisted connectors for CE",
+    )
+    mcp_enabled: bool = Field(
+        default_factory=lambda: (
+            os.getenv("MCP_ENABLED", "true").strip().lower() in {"1", "true", "yes", "on"}
+        ),
+        description="Enable MCP connector functionality",
+    )
+    mcp_default_timeout_seconds: float = Field(
+        default_factory=lambda: float(os.getenv("MCP_DEFAULT_TIMEOUT_SECONDS", "30")),
+        description="Default timeout for MCP operations",
+    )
+    mcp_pool_max_connections: int = Field(
+        default_factory=lambda: int(os.getenv("MCP_POOL_MAX_CONNECTIONS", "10")),
+        description="Maximum connections per connector pool",
+    )
+    mcp_data_minimization_enabled: bool = Field(
+        default_factory=lambda: (
+            os.getenv("MCP_DATA_MINIMIZATION_ENABLED", "true").strip().lower()
+            in {"1", "true", "yes", "on"}
+        ),
+        description="Enable PII stripping for MCP requests",
+    )
+
     class Config:
         """Pydantic config."""
 
