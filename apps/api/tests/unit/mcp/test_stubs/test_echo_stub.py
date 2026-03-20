@@ -149,14 +149,19 @@ class TestEchoStubConnectorAsync:
         """Test reset method."""
         connector = EchoStubConnector(latency_ms=100, fail_next=True)
 
-        # Make a call to increment count
-        await connector.execute("test")
+        # First call fails due to fail_next
+        result = await connector.execute("test")
+        assert result.success is False
+
+        # Second call succeeds and increments count
+        result = await connector.execute("test")
+        assert result.success is True
         assert connector._call_count == 1
 
         connector.reset()
 
         assert connector._call_count == 0
-        assert connector._fail_next is False
+        assert connector._fail_next_legacy is False
         assert connector._latency_ms == 0.0
 
     @pytest.mark.asyncio
