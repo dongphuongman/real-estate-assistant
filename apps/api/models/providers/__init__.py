@@ -13,9 +13,13 @@ from .base import (
     PricingInfo,
     RemoteModelProvider,
 )
+from .deepseek import DeepSeekProvider
 from .google import GoogleProvider
+from .grok import GrokProvider
+from .moonshot import MoonshotProvider
 from .ollama import OllamaProvider
 from .openai import OpenAIProvider
+from .zai import ZaiProvider
 
 __all__ = [
     "ModelProvider",
@@ -27,5 +31,9 @@ __all__ = [
     "OpenAIProvider",
     "AnthropicProvider",
     "GoogleProvider",
+    "GrokProvider",
+    "DeepSeekProvider",
+    "ZaiProvider",
+    "MoonshotProvider",
     "OllamaProvider",
 ]

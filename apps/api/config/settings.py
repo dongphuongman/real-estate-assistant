@@ -49,6 +49,14 @@ class AppSettings(BaseModel):
     google_api_key: Optional[str] = Field(default_factory=lambda: os.getenv("GOOGLE_API_KEY"))
     grok_api_key: Optional[str] = Field(default_factory=lambda: os.getenv("XAI_API_KEY"))
     deepseek_api_key: Optional[str] = Field(default_factory=lambda: os.getenv("DEEPSEEK_API_KEY"))
+    zai_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("ZAI_API_KEY"),
+        description="ZAI (Zhipu AI) API key - Chinese LLM provider with free tier",
+    )
+    moonshot_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("MOONSHOT_API_KEY"),
+        description="Moonshot AI (Kimi) API key - Chinese LLM provider with long context",
+    )
     # Google Routes API for commute time analysis (TASK-021)
     google_routes_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("GOOGLE_ROUTES_API_KEY"),
@@ -661,7 +669,7 @@ def update_api_key(provider: str, api_key: str) -> None:
     Update API key for a provider.
 
     Args:
-        provider: Provider name ('openai', 'anthropic', 'google', 'grok', 'deepseek')
+        provider: Provider name ('openai', 'anthropic', 'google', 'grok', 'deepseek', 'zai', 'moonshot')
         api_key: API key value
     """
     global settings
@@ -681,6 +689,12 @@ def update_api_key(provider: str, api_key: str) -> None:
     elif provider == "deepseek":
         settings.deepseek_api_key = api_key
         os.environ["DEEPSEEK_API_KEY"] = api_key
+    elif provider == "zai":
+        settings.zai_api_key = api_key
+        os.environ["ZAI_API_KEY"] = api_key
+    elif provider == "moonshot":
+        settings.moonshot_api_key = api_key
+        os.environ["MOONSHOT_API_KEY"] = api_key
 
     # Clear provider cache to pick up new API key
     from models.provider_factory import ModelProviderFactory

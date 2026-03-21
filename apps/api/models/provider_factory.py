@@ -17,8 +17,10 @@ from .providers.base import ModelInfo, ModelProvider
 from .providers.deepseek import DeepSeekProvider
 from .providers.google import GoogleProvider
 from .providers.grok import GrokProvider
+from .providers.moonshot import MoonshotProvider
 from .providers.ollama import OllamaProvider
 from .providers.openai import OpenAIProvider
+from .providers.zai import ZaiProvider
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +40,8 @@ class ModelProviderFactory:
         "google": GoogleProvider,
         "grok": GrokProvider,
         "deepseek": DeepSeekProvider,
+        "zai": ZaiProvider,
+        "moonshot": MoonshotProvider,
         "ollama": OllamaProvider,
     }
 
@@ -102,6 +106,10 @@ class ModelProviderFactory:
                 config["api_key"] = settings.grok_api_key
             elif provider_name == "deepseek":
                 config["api_key"] = settings.deepseek_api_key
+            elif provider_name == "zai":
+                config["api_key"] = settings.zai_api_key
+            elif provider_name == "moonshot":
+                config["api_key"] = settings.moonshot_api_key
 
         # Create new instance
         provider_class = cls._PROVIDERS[provider_name]
