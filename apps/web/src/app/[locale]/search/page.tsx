@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Search as SearchIcon,
   MapPin,
@@ -14,6 +15,11 @@ import { searchProperties, exportPropertiesBySearch, ApiError } from '@/lib/api'
 import { SearchResultItem } from '@/lib/types';
 import { extractMapPoints, type PropertyMapPoint } from '@/components/search/property-map-utils';
 import type { PolygonCoordinates } from '@/components/search/geo-draw-control';
+import {
+  validatePolygon,
+  serializePolygonToUrl,
+  deserializePolygonFromUrl,
+} from '@/lib/geo-validation';
 import { HeartButton, ListingGenerator } from '@/components/property';
 import dynamic from 'next/dynamic';
 import MapControls, { type MapFilterOptions, DEFAULT_CLUSTER_OPTIONS } from '@/components/search/map-controls';
@@ -40,6 +46,9 @@ const EXAMPLE_QUERIES = [
 ];
 
 export default function SearchPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResultItem[]>([]);
@@ -74,14 +83,54 @@ export default function SearchPage() {
   const [drawnPolygon, setDrawnPolygon] = useState<PolygonCoordinates[] | null>(null);
 
   // Handlers for polygon drawing
-  const handlePolygonDraw = (coordinates: PolygonCoordinates[]) => {
-    setDrawnPolygon(coordinates);
-    setEnableDrawing(false);
-  };
+  const handlePolygonDraw = useCallback(
+    (coordinates: PolygonCoordinates[]) => {
+      // Validate polygon
+      const validation = validatePolygon(coordinates);
+      if (!validation.valid) {
+        console.warn('Invalid polygon:', validation.error);
+        // Still set the polygon but log the issue
+        // In production, you might want to show a toast notification
+      }
 
-  const handlePolygonClear = () => {
+      setDrawnPolygon(coordinates);
+      setEnableDrawing(false);
+
+      // Persist to URL
+      const params = new URLSearchParams(searchParams.toString());
+      if (coordinates[0]) {
+        params.set('polygon', serializePolygonToUrl(coordinates[0]));
+        router.replace(`?${params.toString()}`, { scroll: false });
+      }
+    },
+    [searchParams, router]
+  );
+
+  const handlePolygonClear = useCallback(() => {
     setDrawnPolygon(null);
-  };
+    setEnableDrawing(false);
+
+    // Remove from URL
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('polygon');
+    const newUrl = params.toString() ? `?${params.toString()}` : '';
+    router.replace(newUrl || window.location.pathname, { scroll: false });
+  }, [searchParams, router]);
+
+  // Restore polygon from URL on mount
+  useEffect(() => {
+    const polygonParam = searchParams.get('polygon');
+    if (polygonParam && !drawnPolygon) {
+      const coords = deserializePolygonFromUrl(polygonParam);
+      if (coords) {
+        const validation = validatePolygon(coords);
+        if (validation.valid) {
+          setDrawnPolygon(coords);
+        }
+      }
+    }
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Only run on mount - drawnPolygon intentionally excluded to prevent loops
 
   // Handle property marker click on map
   const handlePropertyClick = (point: PropertyMapPoint) => {
@@ -810,10 +859,7 @@ export default function SearchPage() {
                           {drawnPolygon && (
                             <button
                               type="button"
-                              onClick={() => {
-                                setDrawnPolygon(null);
-                                setEnableDrawing(false);
-                              }}
+                              onClick={handlePolygonClear}
                               className="text-xs text-muted-foreground hover:text-foreground"
                               aria-label="Clear drawn area"
                             >

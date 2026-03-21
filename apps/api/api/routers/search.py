@@ -1,4 +1,5 @@
 import logging
+import math
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -19,6 +20,47 @@ from vector_store.chroma_store import ChromaPropertyStore
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+# Polygon validation constants
+POLYGON_MAX_VERTICES = 100
+POLYGON_MAX_AREA_SQKM = 10000  # ~100km radius max
+
+
+def _validate_polygon(polygon: list[list[float]]) -> Optional[str]:
+    """
+    Validate polygon for search operations.
+    Returns error message if invalid, None if valid.
+    """
+    if not polygon or len(polygon) == 0:
+        return "Polygon coordinates are empty"
+
+    # Get the outer ring (first array)
+    outer_ring = polygon[0] if isinstance(polygon[0], list) else polygon
+    if not outer_ring or len(outer_ring) < 3:
+        return "Polygon must have at least 3 vertices"
+
+    vertex_count = len(outer_ring)
+    if vertex_count > POLYGON_MAX_VERTICES:
+        return f"Polygon has too many vertices ({vertex_count}, max {POLYGON_MAX_VERTICES})"
+
+    # Calculate approximate area using spherical excess formula
+    area = 0.0
+    earth_radius_km = 6371.0
+    n = len(outer_ring)
+
+    for i in range(n):
+        j = (i + 1) % n
+        lat1 = math.radians(outer_ring[i][1])
+        lat2 = math.radians(outer_ring[j][1])
+        lon_diff = math.radians(outer_ring[j][0] - outer_ring[i][0])
+        area += lon_diff * (2 + math.sin(lat1) + math.sin(lat2))
+
+    area = abs(area * earth_radius_km * earth_radius_km / 2)
+
+    if area > POLYGON_MAX_AREA_SQKM:
+        return f"Polygon area too large ({int(area)} km², max {POLYGON_MAX_AREA_SQKM} km²)"
+
+    return None
 
 
 def _convert_explanation_to_response(
@@ -75,6 +117,15 @@ async def search_properties(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         ) from None
+
+    # Validate polygon if provided
+    if request.polygon:
+        polygon_error = _validate_polygon(request.polygon)
+        if polygon_error:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid polygon: {polygon_error}",
+            )
 
     try:
         # Perform hybrid search (Vector + Keyword)
