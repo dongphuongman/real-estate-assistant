@@ -1466,3 +1466,52 @@ class SignedDocumentDB(Base):
 
     def __repr__(self) -> str:
         return f"<SignedDocumentDB(id={self.id[:8]}..., request_id={self.signature_request_id[:8]}...)>"
+
+
+class FilterPresetDB(Base):
+    """Database model for user filter presets (Task #75: Advanced Filter Presets).
+
+    Stores saveable filter combinations for quick access to common search patterns.
+    Unlike SavedSearchDB, presets are lightweight and focused on quick UI access
+    without alert/notification overhead.
+    """
+
+    __tablename__ = "filter_presets"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    user_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Filter configuration (stored as JSON)
+    # Keys: city, min_price, max_price, rooms, property_type, has_parking, etc.
+    filters: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+
+    # Default preset flag (only one per user)
+    is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    # Usage tracking for analytics/sorting
+    last_used_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    use_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+    # Relationships
+    user: Mapped["User"] = relationship("User", backref="filter_presets")
+
+    def __repr__(self) -> str:
+        return f"<FilterPresetDB(id={self.id}, user_id={self.user_id}, name={self.name})>"

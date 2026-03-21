@@ -625,6 +625,39 @@ export interface SavedSearchListResponse {
   total: number;
 }
 
+// Filter Preset types for Task #75
+export interface FilterPreset {
+  id: string;
+  user_id: string;
+  name: string;
+  description?: string;
+  filters: Record<string, unknown>;
+  is_default: boolean;
+  last_used_at?: string;
+  use_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FilterPresetCreate {
+  name: string;
+  description?: string;
+  filters: Record<string, unknown>;
+  is_default?: boolean;
+}
+
+export interface FilterPresetUpdate {
+  name?: string;
+  description?: string;
+  filters?: Record<string, unknown>;
+  is_default?: boolean;
+}
+
+export interface FilterPresetListResponse {
+  items: FilterPreset[];
+  total: number;
+}
+
 // Collection types for Task #37
 export interface Collection {
   id: string;

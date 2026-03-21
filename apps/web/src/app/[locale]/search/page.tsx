@@ -18,6 +18,8 @@ import { HeartButton, ListingGenerator } from '@/components/property';
 import dynamic from 'next/dynamic';
 import MapControls, { type MapFilterOptions, DEFAULT_CLUSTER_OPTIONS } from '@/components/search/map-controls';
 import { SaveSearchButton } from '@/components/search/save-search-button';
+import { PresetSelector } from '@/components/search/preset-selector';
+import type { FilterPreset } from '@/lib/types';
 
 const PropertyMap = dynamic(() => import('@/components/search/property-map'), {
   ssr: false,
@@ -152,6 +154,26 @@ export default function SearchPage() {
     if (propertyType.trim()) filters['property_type'] = propertyType;
 
     return { filters: Object.keys(filters).length ? filters : undefined };
+  };
+
+  const handleApplyPreset = (preset: FilterPreset) => {
+    const filters = preset.filters;
+    if (filters.min_price !== undefined) {
+      setMinPrice(String(filters.min_price));
+    }
+    if (filters.max_price !== undefined) {
+      setMaxPrice(String(filters.max_price));
+    }
+    if (filters.min_rooms !== undefined) {
+      setRooms(String(filters.min_rooms));
+    }
+    if (filters.property_type !== undefined) {
+      setPropertyType(String(filters.property_type));
+    }
+    // Trigger search with new filters
+    setTimeout(() => {
+      handleSearch();
+    }, 0);
   };
 
   const handleSearch = async (e?: React.FormEvent) => {
@@ -719,6 +741,37 @@ export default function SearchPage() {
                             property_type: propertyType.trim() || undefined,
                           }}
                           query={query}
+                        />
+                        <PresetSelector
+                          onPresetSelect={(preset: FilterPreset) => {
+                            // Apply preset filters to state
+                            const filters = preset.filters;
+                            if (filters.min_price !== undefined) {
+                              setMinPrice(String(filters.min_price));
+                            }
+                            if (filters.max_price !== undefined) {
+                              setMaxPrice(String(filters.max_price));
+                            }
+                            if (filters.min_rooms !== undefined) {
+                              setRooms(String(filters.min_rooms));
+                            }
+                            if (filters.property_type !== undefined) {
+                              setPropertyType(String(filters.property_type));
+                            }
+                            // Trigger search with new filters
+                            setTimeout(() => {
+                              const form = document.querySelector('form');
+                              if (form) {
+                                form.requestSubmit();
+                              }
+                            }, 0);
+                          }}
+                          currentFilters={{
+                            min_price: minPrice.trim() ? Number(minPrice) : undefined,
+                            max_price: maxPrice.trim() ? Number(maxPrice) : undefined,
+                            min_rooms: rooms.trim() ? Number(rooms) : undefined,
+                            property_type: propertyType.trim() || undefined,
+                          }}
                         />
                       </div>
                       {viewMode === 'map' && (

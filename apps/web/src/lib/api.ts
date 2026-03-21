@@ -12,6 +12,10 @@ import {
   FavoriteCreate,
   FavoriteListResponse,
   FavoriteUpdate,
+  FilterPreset,
+  FilterPresetCreate,
+  FilterPresetListResponse,
+  FilterPresetUpdate,
   IngestRequest,
   IngestResponse,
   InvestmentAnalysisInput,
@@ -2461,4 +2465,120 @@ export async function deleteDocumentTemplate(id: string): Promise<void> {
     const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
     throw new ApiError(error.detail || 'Failed to delete template', response.status);
   }
+}
+
+// =============================================================================
+// Filter Presets API (Task #75: Advanced Filter Presets)
+// =============================================================================
+
+/**
+ * Get all filter presets for the current user
+ */
+export async function getFilterPresets(
+  limit: number = 50,
+  offset: number = 0
+): Promise<FilterPresetListResponse> {
+  const response = await safeFetch(
+    `${getApiUrl()}/filter-presets?limit=${limit}&offset=${offset}`,
+    {
+      method: 'GET',
+      headers: buildHeaders(),
+      credentials: 'include',
+    }
+  );
+  return handleResponse<FilterPresetListResponse>(response);
+}
+
+/**
+ * Get a single filter preset by ID
+ */
+export async function getFilterPreset(id: string): Promise<FilterPreset> {
+  const response = await safeFetch(`${getApiUrl()}/filter-presets/${id}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<FilterPreset>(response);
+}
+
+/**
+ * Get the user's default filter preset
+ */
+export async function getDefaultFilterPreset(): Promise<FilterPreset> {
+  const response = await safeFetch(`${getApiUrl()}/filter-presets/default`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<FilterPreset>(response);
+}
+
+/**
+ * Create a new filter preset
+ */
+export async function createFilterPreset(
+  data: FilterPresetCreate
+): Promise<FilterPreset> {
+  const response = await safeFetch(`${getApiUrl()}/filter-presets`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  return handleResponse<FilterPreset>(response);
+}
+
+/**
+ * Update an existing filter preset
+ */
+export async function updateFilterPreset(
+  id: string,
+  data: FilterPresetUpdate
+): Promise<FilterPreset> {
+  const response = await safeFetch(`${getApiUrl()}/filter-presets/${id}`, {
+    method: 'PATCH',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  return handleResponse<FilterPreset>(response);
+}
+
+/**
+ * Delete a filter preset
+ */
+export async function deleteFilterPreset(id: string): Promise<void> {
+  const response = await safeFetch(`${getApiUrl()}/filter-presets/${id}`, {
+    method: 'DELETE',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  await handleResponse<void>(response);
+}
+
+/**
+ * Mark a filter preset as used (increment usage count)
+ */
+export async function markFilterPresetUsed(id: string): Promise<FilterPreset> {
+  const response = await safeFetch(`${getApiUrl()}/filter-presets/${id}/use`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<FilterPreset>(response);
+}
+
+/**
+ * Set a filter preset as the default
+ */
+export async function setFilterPresetDefault(id: string): Promise<FilterPreset> {
+  const response = await safeFetch(
+    `${getApiUrl()}/filter-presets/${id}/set-default`,
+    {
+      method: 'POST',
+      headers: buildHeaders(),
+      credentials: 'include',
+    }
+  );
+  return handleResponse<FilterPreset>(response);
 }

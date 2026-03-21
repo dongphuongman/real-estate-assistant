@@ -35,6 +35,7 @@ from api.routers import (
     esignatures,  # Task #57: E-Signature Integration
     exports,
     favorites,  # Task #37: Property favorites
+    filter_presets,  # Task #75: Advanced Filter Presets
     leads,  # Task #55: Lead Scoring System
     market,  # Task #38: Price History & Trends
     mcp_admin,  # Task #68: MCP Allowlist Governance
@@ -359,6 +360,8 @@ if settings.auth_jwt_enabled:
     # Task #37: Favorites and Collections require JWT auth
     app.include_router(collections.router, prefix="/api/v1")
     app.include_router(favorites.router, prefix="/api/v1")
+    # Task #75: Filter Presets
+    app.include_router(filter_presets.router, prefix="/api/v1")
     # Task #38: Market analytics (price history, trends, indicators)
     app.include_router(market.router, prefix="/api/v1")
     app.include_router(anomalies.router, prefix="/api/v1")

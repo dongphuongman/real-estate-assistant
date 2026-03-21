@@ -98,6 +98,13 @@ class AppSettings(BaseModel):
     api_rate_limit_rpm: int = Field(
         default_factory=lambda: int(os.getenv("API_RATE_LIMIT_RPM", "600"))
     )
+
+    # Filter preset limits (Task #75)
+    max_filter_presets_per_user: int = Field(
+        default=20,
+        description="Maximum number of filter presets per user",
+    )
+
     cors_allow_origins: list[str] = Field(
         default_factory=lambda: (
             [o.strip() for o in os.getenv("CORS_ALLOW_ORIGINS", "").split(",") if o.strip()]

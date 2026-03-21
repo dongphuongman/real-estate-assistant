@@ -1691,3 +1691,53 @@ class HelloSignWebhookPayload(BaseModel):
     signature_request: dict
     signature_request_id: Optional[str] = None  # Internal ID if provided in metadata
     timestamp: Optional[datetime] = None
+
+
+# =============================================================================
+# Filter Preset Schemas (Task #75: Advanced Filter Presets)
+# =============================================================================
+
+
+class FilterPresetCreate(BaseModel):
+    """Schema for creating a filter preset."""
+
+    name: str = Field(..., min_length=1, max_length=255, description="Preset name")
+    description: Optional[str] = Field(None, max_length=1000, description="Preset description")
+    filters: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Filter configuration (city, min_price, max_price, rooms, etc.)",
+    )
+    is_default: bool = Field(default=False, description="Set as default preset")
+
+
+class FilterPresetUpdate(BaseModel):
+    """Schema for updating a filter preset."""
+
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+    description: Optional[str] = Field(None, max_length=1000)
+    filters: Optional[dict[str, Any]] = None
+    is_default: Optional[bool] = None
+
+
+class FilterPresetResponse(BaseModel):
+    """Schema for filter preset response."""
+
+    id: str
+    user_id: str
+    name: str
+    description: Optional[str] = None
+    filters: dict[str, Any]
+    is_default: bool
+    last_used_at: Optional[datetime] = None
+    use_count: int = 0
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class FilterPresetListResponse(BaseModel):
+    """Schema for paginated list of filter presets."""
+
+    items: list[FilterPresetResponse]
+    total: int

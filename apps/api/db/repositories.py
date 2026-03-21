@@ -18,6 +18,7 @@ from db.models import (
     DocumentTemplateDB,
     EmailVerificationToken,
     FavoriteDB,
+    FilterPresetDB,
     Lead,
     LeadInteraction,
     LeadScore,
@@ -2670,4 +2671,121 @@ class SignedDocumentRepository:
     async def delete(self, signed_doc: SignedDocumentDB) -> None:
         """Delete a signed document record."""
         await self.session.delete(signed_doc)
+        await self.session.flush()
+
+
+class FilterPresetRepository:
+    """Repository for FilterPresetDB model operations (Task #75)."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def create(
+        self,
+        user_id: str,
+        name: str,
+        filters: dict,
+        description: Optional[str] = None,
+        is_default: bool = False,
+    ) -> FilterPresetDB:
+        """Create a new filter preset."""
+        preset = FilterPresetDB(
+            id=str(uuid4()),
+            user_id=user_id,
+            name=name,
+            description=description,
+            filters=filters,
+            is_default=is_default,
+        )
+        self.session.add(preset)
+        await self.session.flush()
+        return preset
+
+    async def get_by_id(
+        self, preset_id: str, user_id: str
+    ) -> Optional[FilterPresetDB]:
+        """Get filter preset by ID (scoped to user)."""
+        result = await self.session.execute(
+            select(FilterPresetDB).where(
+                FilterPresetDB.id == preset_id,
+                FilterPresetDB.user_id == user_id,
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def get_by_user(
+        self, user_id: str, limit: int = 50, offset: int = 0
+    ) -> list[FilterPresetDB]:
+        """Get all filter presets for a user."""
+        query = (
+            select(FilterPresetDB)
+            .where(FilterPresetDB.user_id == user_id)
+            .order_by(
+                FilterPresetDB.is_default.desc(),
+                FilterPresetDB.use_count.desc(),
+                FilterPresetDB.created_at.desc(),
+            )
+            .limit(limit)
+            .offset(offset)
+        )
+        result = await self.session.execute(query)
+        return list(result.scalars().all())
+
+    async def count_by_user(self, user_id: str) -> int:
+        """Count filter presets for a user."""
+        result = await self.session.execute(
+            select(func.count(FilterPresetDB.id)).where(
+                FilterPresetDB.user_id == user_id
+            )
+        )
+        return result.scalar() or 0
+
+    async def get_default(self, user_id: str) -> Optional[FilterPresetDB]:
+        """Get user's default filter preset."""
+        result = await self.session.execute(
+            select(FilterPresetDB).where(
+                FilterPresetDB.user_id == user_id,
+                FilterPresetDB.is_default == True,  # noqa: E712
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def set_default(
+        self, preset: FilterPresetDB, user_id: str
+    ) -> FilterPresetDB:
+        """Set a preset as default (unsets other defaults first)."""
+        # Unset all other defaults for this user
+        await self.session.execute(
+            update(FilterPresetDB)
+            .where(
+                FilterPresetDB.user_id == user_id,
+                FilterPresetDB.id != preset.id,
+            )
+            .values(is_default=False)
+        )
+        # Set this preset as default
+        preset.is_default = True
+        await self.session.flush()
+        return preset
+
+    async def increment_usage(self, preset: FilterPresetDB) -> FilterPresetDB:
+        """Increment usage count and update last_used_at."""
+        preset.use_count += 1
+        preset.last_used_at = datetime.now(UTC)
+        await self.session.flush()
+        return preset
+
+    async def update(
+        self, preset: FilterPresetDB, **kwargs
+    ) -> FilterPresetDB:
+        """Update filter preset fields."""
+        for key, value in kwargs.items():
+            if hasattr(preset, key):
+                setattr(preset, key, value)
+        await self.session.flush()
+        return preset
+
+    async def delete(self, preset: FilterPresetDB) -> None:
+        """Delete a filter preset."""
+        await self.session.delete(preset)
         await self.session.flush()
