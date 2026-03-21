@@ -18,10 +18,10 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
-from api.auth import validate_api_key
+from api.auth import get_api_key
 from mcp import (
     AllowlistConfig,
     AllowlistEntry,
@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(
     prefix="/mcp",
     tags=["MCP Admin"],
-    dependencies=[validate_api_key],
+    dependencies=[Depends(get_api_key)],
 )
 
 
