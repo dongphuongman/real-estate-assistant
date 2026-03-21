@@ -136,7 +136,10 @@ import {
   SignedDocument,
 } from './types';
 
-function getApiUrl(): string {
+// Task #74: Streaming utilities
+import { HeartbeatMonitor, StreamBuffer } from './streaming';
+
+export function getApiUrl(): string {
   return process.env.NEXT_PUBLIC_API_URL || '/api/v1';
 }
 
@@ -657,8 +660,44 @@ export async function streamChatMessage(
     sourcesTruncated?: boolean;
     sessionId?: string;
     intermediateSteps?: ChatResponse['intermediate_steps'];
-  }) => void
+  }) => void,
+  options?: {
+    /** Enable heartbeat monitoring (default: true) */
+    enableHeartbeat?: boolean;
+    /** Heartbeat timeout in seconds (default: 45) */
+    heartbeatTimeoutSeconds?: number;
+    /** Enable stream buffering for recovery (default: false) */
+    enableBuffer?: boolean;
+    /** Session ID for buffer persistence */
+    bufferSessionId?: string;
+  }
 ): Promise<void> {
+  const enableHeartbeat = options?.enableHeartbeat ?? true;
+  const heartbeatTimeout = (options?.heartbeatTimeoutSeconds ?? 45) * 1000;
+  const enableBuffer = options?.enableBuffer ?? false;
+
+  // Initialize heartbeat monitor (Task #74)
+  let heartbeatMonitor: HeartbeatMonitor | null = null;
+  if (enableHeartbeat) {
+    heartbeatMonitor = new HeartbeatMonitor({
+      timeoutMs: heartbeatTimeout,
+      onTimeout: () => {
+        // Connection stalled - will throw error
+        throw new Error(
+          `Stream stalled: no data received for ${heartbeatTimeout / 1000} seconds`
+        );
+      },
+    });
+  }
+
+  // Initialize stream buffer (Task #74)
+  let streamBuffer: StreamBuffer | null = null;
+  if (enableBuffer && options?.bufferSessionId) {
+    streamBuffer = new StreamBuffer(options.bufferSessionId);
+    // Attempt to restore from previous interrupted stream
+    streamBuffer.restore();
+  }
+
   const response = await safeFetch(`${getApiUrl()}/chat`, {
     method: 'POST',
     headers: {
@@ -692,6 +731,9 @@ export async function streamChatMessage(
     const { done, value } = await reader.read();
     if (done) break;
 
+    // Record activity for heartbeat monitoring
+    heartbeatMonitor?.recordActivity();
+
     buffer += decoder.decode(value);
     while (true) {
       const boundaryIndex = buffer.indexOf('\n\n');
@@ -704,6 +746,11 @@ export async function streamChatMessage(
       for (const rawLine of rawEvent.split('\n')) {
         const line = rawLine.trimEnd();
         if (!line) continue;
+        // Handle SSE heartbeat comments (Task #74)
+        if (line.startsWith(':')) {
+          heartbeatMonitor?.handleHeartbeat();
+          continue;
+        }
         if (line.startsWith('event:')) {
           eventName = line.slice(6).trim() || 'message';
           continue;
@@ -715,7 +762,11 @@ export async function streamChatMessage(
 
       const data = dataLines.join('\n');
       if (!data) continue;
-      if (data === '[DONE]') return;
+      if (data === '[DONE]') {
+        // Clear buffer on successful completion
+        streamBuffer?.clear();
+        return;
+      }
 
       let parsed: unknown = undefined;
       try {
@@ -727,6 +778,10 @@ export async function streamChatMessage(
       if (parsed && typeof parsed === 'object') {
         const maybeError = (parsed as { error?: unknown }).error;
         if (typeof maybeError === 'string' && maybeError.trim()) {
+          // Persist buffer on error for potential recovery
+          if (streamBuffer) {
+            streamBuffer.persist();
+          }
           throw new Error(maybeError);
         }
 
@@ -750,13 +805,27 @@ export async function streamChatMessage(
           continue;
         }
 
+        // Handle metrics event (Task #74)
+        if (eventName === 'metrics') {
+          // Metrics are informational, no action needed
+          continue;
+        }
+
         const content = (parsed as { content?: unknown }).content;
         if (typeof content === 'string') {
+          // Buffer chunk for recovery (Task #74)
+          if (streamBuffer) {
+            streamBuffer.add(content);
+          }
           onChunk(content);
           continue;
         }
       }
 
+      // Buffer raw data as well
+      if (streamBuffer) {
+        streamBuffer.add(data);
+      }
       onChunk(data);
     }
   }

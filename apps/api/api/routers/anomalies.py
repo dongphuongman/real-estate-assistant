@@ -13,11 +13,20 @@ Also provides real-time updates via SSE:
 import asyncio
 import json
 import logging
+import time
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from config.settings import get_settings
+from utils.streaming import (
+    HeartbeatConfig,
+    calculate_backoff,
+    format_sse_heartbeat,
+    format_sse_retry,
+)
 
 from api.deps.auth import get_current_active_user
 from db import AnomalyRepository, PriceSnapshotRepository
@@ -127,11 +136,28 @@ async def stream_anomalies(
 
     async def event_generator():
         """Generate SSE events for new anomalies."""
-        # Send initial connection message
+        settings = get_settings()
+        heartbeat_config = HeartbeatConfig(
+            interval_seconds=settings.stream_heartbeat_interval_seconds,
+            timeout_seconds=settings.stream_timeout_seconds,
+        )
+        last_heartbeat = time.time()
+        consecutive_errors = 0
+        max_consecutive_errors = 3
+
+        # Send initial connection message with retry directive (Task #74)
+        initial_backoff = calculate_backoff(0)
+        yield format_sse_retry(initial_backoff)
         yield f"data: {json.dumps({'type': 'connected'})}\n\n"
 
         while True:
             try:
+                # Send heartbeat if needed (Task #74)
+                current_time = time.time()
+                if current_time - last_heartbeat >= heartbeat_config.interval_seconds:
+                    yield format_sse_heartbeat()
+                    last_heartbeat = current_time
+
                 # Get recent undismissed anomalies (critical only for alerts)
                 anomalies = await anomaly_service.get_recent_anomalies(
                     limit=10,
@@ -140,6 +166,9 @@ async def stream_anomalies(
 
                 for anomaly in anomalies:
                     yield f"data: {json.dumps(anomaly)}\n\n"
+
+                # Reset error counter on success
+                consecutive_errors = 0
 
                 # Wait before next check
                 await asyncio.sleep(5)
@@ -150,10 +179,32 @@ async def stream_anomalies(
                 break
 
             except Exception as e:
+                consecutive_errors += 1
                 logger.error(f"Error in anomaly stream: {e}")
-                yield (f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n")
-                await asyncio.sleep(10)  # Wait longer on error
 
+                # Calculate backoff with exponential increase (Task #74)
+                backoff_ms = calculate_backoff(consecutive_errors)
+                yield format_sse_retry(backoff_ms)
+                error_payload = json.dumps({"type": "error", "message": str(e)})
+                yield f"data: {error_payload}\n\n"
+
+                # Check if we should stop after too many errors
+                if consecutive_errors >= max_consecutive_errors:
+                    logger.error(
+                        f"Anomaly stream stopping after "
+                        f"{consecutive_errors} consecutive errors"
+                    )
+                    fatal_payload = json.dumps({
+                        "type": "fatal_error",
+                        "message": "Too many errors, reconnecting..."
+                    })
+                    yield f"data: {fatal_payload}\n\n"
+                    break
+
+                # Wait with exponential backoff
+                await asyncio.sleep(backoff_ms / 1000.0)
+
+    # Return streaming response with enhanced headers (Task #74)
     return StreamingResponse(
         event_generator(),
         media_type="text/event-stream",
@@ -161,5 +212,7 @@ async def stream_anomalies(
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
             "X-Accel-Buffering": "no",  # Disable nginx buffering
+            "X-Heartbeat-Interval": str(settings.stream_heartbeat_interval_seconds),
+            "X-Stream-Timeout": str(settings.stream_timeout_seconds),
         },
     )

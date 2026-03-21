@@ -515,6 +515,45 @@ class AppSettings(BaseModel):
         description="Weight decay factor for older messages in priority selection",
     )
 
+    # =============================================================================
+    # Streaming Settings (Task #74: Response Streaming Improvements)
+    # =============================================================================
+    stream_heartbeat_interval_seconds: int = Field(
+        default_factory=lambda: int(os.getenv("STREAM_HEARTBEAT_INTERVAL_SECONDS", "15")),
+        description="Interval in seconds between SSE heartbeat comments",
+    )
+    stream_timeout_seconds: int = Field(
+        default_factory=lambda: int(os.getenv("STREAM_TIMEOUT_SECONDS", "300")),
+        description="Maximum duration in seconds for streaming responses",
+    )
+    stream_backoff_initial_ms: int = Field(
+        default_factory=lambda: int(os.getenv("STREAM_BACKOFF_INITIAL_MS", "1000")),
+        description="Initial backoff delay in milliseconds for reconnection",
+    )
+    stream_backoff_max_ms: int = Field(
+        default_factory=lambda: int(os.getenv("STREAM_BACKOFF_MAX_MS", "30000")),
+        description="Maximum backoff delay in milliseconds for reconnection",
+    )
+    stream_backoff_multiplier: float = Field(
+        default_factory=lambda: float(os.getenv("STREAM_BACKOFF_MULTIPLIER", "2.0")),
+        description="Exponential backoff multiplier for reconnection",
+    )
+    stream_max_retries: int = Field(
+        default_factory=lambda: int(os.getenv("STREAM_MAX_RETRIES", "10")),
+        description="Maximum reconnection attempts before giving up",
+    )
+    stream_metrics_enabled: bool = Field(
+        default_factory=lambda: (
+            os.getenv("STREAM_METRICS_ENABLED", "true").strip().lower()
+            in {"1", "true", "yes", "on"}
+        ),
+        description="Enable streaming metrics collection",
+    )
+    stream_degradation_threshold: int = Field(
+        default_factory=lambda: int(os.getenv("STREAM_DEGRADATION_THRESHOLD", "3")),
+        description="Consecutive failures before degrading to non-streaming mode",
+    )
+
     class Config:
         """Pydantic config."""
 

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { MarketAnomaly } from '@/lib/types';
-import { subscribeToAnomalies } from '@/lib/api';
+import { getApiUrl } from '@/lib/api';
+import { ReconnectingEventSource } from '@/lib/streaming';
 
 interface UseAnomalyStreamResult {
   anomalies: MarketAnomaly[];
@@ -10,10 +11,13 @@ interface UseAnomalyStreamResult {
   error: string | null;
   clearAnomalies: () => void;
   removeAnomaly: (anomalyId: string) => void;
+  /** Current reconnection attempt count (Task #74) */
+  reconnectAttempts: number;
 }
 
 /**
  * Hook to subscribe to real-time anomaly notifications via Server-Sent Events.
+ * Uses exponential backoff for reconnection (Task #74).
  *
  * @param enabled - Whether to enable the subscription (default: true)
  * @param maxAnomalies - Maximum number of anomalies to keep in state (default: 50)
@@ -41,6 +45,8 @@ export function useAnomalyStream(
   const [anomalies, setAnomalies] = useState<MarketAnomaly[]>([]);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reconnectAttempts, setReconnectAttempts] = useState(0);
+  const eventSourceRef = useRef<ReconnectingEventSource | null>(null);
 
   const handleNewAnomaly = useCallback(
     (anomaly: MarketAnomaly) => {
@@ -54,71 +60,78 @@ export function useAnomalyStream(
   );
 
   useEffect(() => {
-    let eventSource: EventSource | null = null;
-    let reconnectTimeout: NodeJS.Timeout | null = null;
-
     // Don't connect if disabled
     if (!enabled) {
       return () => {
-        // Cleanup: ensure connection is closed
-        if (eventSource) {
-          eventSource.close();
-        }
-        if (reconnectTimeout) {
-          clearTimeout(reconnectTimeout);
+        if (eventSourceRef.current) {
+          eventSourceRef.current.close();
+          eventSourceRef.current = null;
         }
       };
     }
 
-    const connect = () => {
-      try {
-        eventSource = subscribeToAnomalies();
+    const url = `${getApiUrl()}/anomalies/stream`;
 
-        eventSource.onopen = () => {
-          setConnected(true);
-          setError(null);
-          console.log('[SSE] Connected to anomaly stream');
-        };
+    // Use ReconnectingEventSource with exponential backoff (Task #74)
+    const eventSource = new ReconnectingEventSource(url, {
+      maxRetries: 10,
+      initialDelay: 1000,
+      maxDelay: 30000,
+    });
+    eventSourceRef.current = eventSource
 
-        eventSource.onmessage = (event: MessageEvent) => {
-          try {
-            const anomaly: MarketAnomaly = JSON.parse(event.data);
-            handleNewAnomaly(anomaly);
-          } catch (err) {
-            console.error('[SSE] Failed to parse anomaly:', err);
-          }
-        };
-
-        eventSource.onerror = (err: Event) => {
-          console.error('[SSE] Connection error:', err);
-          setConnected(false);
-          setError('Connection lost. Reconnecting...');
-
-          // Attempt to reconnect after 5 seconds
-          reconnectTimeout = setTimeout(() => {
-            connect();
-          }, 5000);
-        };
-      } catch (err) {
-        console.error('[SSE] Failed to create EventSource:', err);
-        setError('Failed to connect to anomaly stream');
-        setConnected(false);
-      }
+    eventSource.onopen = () => {
+      setConnected(true);
+      setError(null);
+      setReconnectAttempts(0);
+      console.log('[SSE] Connected to anomaly stream');
     };
 
-    connect();
+    eventSource.onmessage = (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        // Handle connection status messages
+        if (data.type === 'connected') {
+          return
+        }
+        if (data.type === 'disconnected') {
+          setConnected(false)
+          return
+        }
+        if (data.type === 'error') {
+          setError(data.message || 'Stream error')
+          return
+        }
+
+        // Handle anomaly data
+        if (data.id && data.property_id) {
+          handleNewAnomaly(data as MarketAnomaly)
+        }
+      } catch (err) {
+        console.error('[SSE] Failed to parse anomaly:', err)
+      }
+    }
+
+    eventSource.onerror = () => {
+      setConnected(false)
+      setError('Connection lost. Reconnecting...')
+    }
+
+    // Listen for reconnecting events from ReconnectingEventSource (Task #74)
+    eventSource.addEventListener('reconnecting', ((event: Event) => {
+      const customEvent = event as CustomEvent<{ attempt: number }>
+      setReconnectAttempts(customEvent.detail?.attempt || 0)
+      console.log(`[SSE] Reconnecting (attempt ${customEvent.detail?.attempt || 0})...`)
+    }) as EventListener)
 
     return () => {
-      if (eventSource) {
-        eventSource.close();
-        eventSource = null;
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close()
+        eventSourceRef.current = null
       }
-      if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout);
-        reconnectTimeout = null;
-      }
-      setConnected(false);
-    };
+      setConnected(false)
+    }
   }, [enabled, handleNewAnomaly]);
 
   /**
@@ -141,6 +154,7 @@ export function useAnomalyStream(
     error,
     clearAnomalies,
     removeAnomaly,
+    reconnectAttempts,
   };
 }
 

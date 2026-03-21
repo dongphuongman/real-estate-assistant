@@ -1,6 +1,7 @@
 import inspect
 import json
 import logging
+import time
 import uuid
 from typing import Annotated, Any, Optional
 
@@ -22,6 +23,13 @@ from api.dependencies import get_llm, get_vector_store
 from api.models import ChatRequest, ChatResponse
 from config.settings import get_settings
 from utils.sanitization import sanitize_chat_message, sanitize_intermediate_steps
+from utils.streaming import (
+    HeartbeatConfig,
+    StreamMetrics,
+    format_sse_event,
+    format_sse_heartbeat,
+    should_send_heartbeat,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -130,6 +138,17 @@ async def chat_endpoint(
                 )
 
             async def event_generator():
+                # Initialize streaming configuration (Task #74)
+                heartbeat_config = HeartbeatConfig(
+                    interval_seconds=settings.stream_heartbeat_interval_seconds,
+                    timeout_seconds=settings.stream_timeout_seconds,
+                )
+                stream_metrics = StreamMetrics(
+                    session_id=session_id,
+                    request_id=request_id,
+                )
+                last_heartbeat = time.time()
+
                 sources_payload: dict[str, object] = {
                     "sources": [],
                     "sources_truncated": False,
@@ -138,8 +157,8 @@ async def chat_endpoint(
                 }
 
                 try:
-                    # Add timeout protection for streaming (5 minutes)
-                    with anyio.fail_after(300):
+                    # Add timeout protection for streaming
+                    with anyio.fail_after(settings.stream_timeout_seconds):
                         if requires_web:
                             result = agent.process_query(sanitized_message)
                             raw_answer = result.get("answer", "")
@@ -147,6 +166,9 @@ async def chat_endpoint(
                                 raw_answer if isinstance(raw_answer, str) else str(raw_answer)
                             )
                             if answer_text:
+                                # Record metrics for web path
+                                chunk_bytes = len(answer_text.encode("utf-8"))
+                                stream_metrics.record_chunk(chunk_bytes)
                                 yield f"data: {json.dumps({'content': answer_text}, ensure_ascii=False, default=str)}\n\n"
 
                             raw_sources = (
@@ -180,7 +202,16 @@ async def chat_endpoint(
                                 sources_payload["intermediate_steps"] = safe_steps
                         else:
                             async for chunk in agent.astream_query(sanitized_message):
+                                # Check if heartbeat needed (Task #74)
+                                if should_send_heartbeat(last_heartbeat, heartbeat_config):
+                                    yield format_sse_heartbeat()
+                                    last_heartbeat = time.time()
+
+                                # Record chunk metrics
+                                chunk_bytes = len(chunk.encode("utf-8")) if isinstance(chunk, str) else len(chunk)
+                                stream_metrics.record_chunk(chunk_bytes)
                                 yield f"data: {chunk}\n\n"
+
                             if hasattr(agent, "get_sources_for_query"):
                                 try:
                                     docs = agent.get_sources_for_query(sanitized_message)
@@ -196,17 +227,28 @@ async def chat_endpoint(
                                     sources_payload["sources"] = []
                                     sources_payload["sources_truncated"] = False
 
+                        # Mark stream as completed and send metrics (Task #74)
+                        stream_metrics.complete()
+
+                        # Send meta event with sources
                         yield "event: meta\n"
                         yield f"data: {json.dumps(sources_payload)}\n\n"
+
+                        # Send metrics event if enabled (Task #74)
+                        if settings.stream_metrics_enabled:
+                            yield format_sse_event("metrics", json.dumps(stream_metrics.to_dict()))
+
                         yield "data: [DONE]\n\n"
                 except TimeoutError:
                     # Send timeout error event
+                    stream_metrics.record_error()
                     error_payload = {"error": "Stream timeout exceeded", "request_id": request_id}
                     yield "event: error\n"
                     yield f"data: {json.dumps(error_payload)}\n\n"
                     yield "data: [DONE]\n\n"
                 except Exception as e:
                     # Log error and send error event for client recovery
+                    stream_metrics.record_error()
                     logger.error(f"Stream error (request_id={request_id}): {e}")
                     error_payload = {"error": str(e), "request_id": request_id}
                     yield "event: error\n"
@@ -216,7 +258,18 @@ async def chat_endpoint(
                     # Always ensure stream terminates
                     pass
 
-            return StreamingResponse(event_generator(), media_type="text/event-stream")
+            # Return streaming response with heartbeat headers (Task #74)
+            return StreamingResponse(
+                event_generator(),
+                media_type="text/event-stream",
+                headers={
+                    "X-Heartbeat-Interval": str(settings.stream_heartbeat_interval_seconds),
+                    "X-Stream-Timeout": str(settings.stream_timeout_seconds),
+                    "Cache-Control": "no-cache",
+                    "Connection": "keep-alive",
+                    "X-Accel-Buffering": "no",  # Disable nginx buffering
+                },
+            )
 
         result = agent.process_query(sanitized_message)
 
