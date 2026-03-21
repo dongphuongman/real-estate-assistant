@@ -21,6 +21,46 @@ class SortField(str, Enum):
     YEAR_BUILT = "year_built"
 
 
+# ============================================================================
+# TASK-076: Ranking Explanation Models
+# ============================================================================
+
+
+class ScoreComponent(BaseModel):
+    """A single component of the final ranking score."""
+
+    name: str = Field(..., description="Component name (e.g., 'semantic_similarity')")
+    value: float = Field(..., description="Raw value before weighting")
+    weight: float = Field(..., description="Applied weight/boost factor")
+    contribution: float = Field(..., description="value * weight")
+    description: str = Field(..., description="Human-readable explanation")
+
+
+class RankingExplanation(BaseModel):
+    """Complete ranking explanation for a single property."""
+
+    property_id: str
+    final_score: float
+    rank: int
+
+    # Core scores
+    semantic_score: float = Field(..., description="Vector similarity score (0-1)")
+    keyword_score: float = Field(..., description="BM25 keyword score (0-1)")
+    hybrid_score: float = Field(..., description="Combined hybrid score")
+
+    # Boost components
+    exact_match_boost: float = Field(0.0, description="Boost for exact keyword matches")
+    metadata_match_boost: float = Field(0.0, description="Boost for matching user criteria")
+    quality_boost: float = Field(0.0, description="Boost for data completeness")
+    personalization_boost: float = Field(0.0, description="Boost from user preferences")
+
+    # Penalty components
+    diversity_penalty: float = Field(1.0, description="Penalty factor (1.0 = no penalty)")
+
+    # All components as list for detailed breakdown
+    components: List[ScoreComponent] = Field(default_factory=list)
+
+
 class HealthCheck(BaseModel):
     """Health check response model."""
 
@@ -78,12 +118,20 @@ class SearchRequest(BaseModel):
     sort_by: Optional[SortField] = SortField.RELEVANCE
     sort_order: Optional[SortOrder] = SortOrder.DESC
 
+    # Ranking explanation (Task #76)
+    include_explanation: bool = Field(
+        default=False, description="Include ranking explanation in response"
+    )
+
 
 class SearchResultItem(BaseModel):
     """Search result item with score."""
 
     property: Property
     score: float
+    explanation: Optional[RankingExplanation] = Field(
+        None, description="Ranking explanation (when include_explanation=True)"
+    )
 
 
 class SearchResponse(BaseModel):
@@ -156,13 +204,17 @@ class EnhancedCitation(BaseModel):
     # New fields for enhanced citations
     source_type: SourceType = SourceType.UNKNOWN
     confidence: CitationConfidence = CitationConfidence.MEDIUM
-    confidence_score: float = Field(default=0.0, ge=0.0, le=1.0, description="Confidence score 0.0-1.0")
+    confidence_score: float = Field(
+        default=0.0, ge=0.0, le=1.0, description="Confidence score 0.0-1.0"
+    )
     content_snippet: Optional[str] = Field(None, description="Relevant excerpt from source")
     source_url: Optional[str] = Field(None, description="URL for web sources")
     source_title: Optional[str] = Field(None, description="Human-readable title")
     citation_hash: Optional[str] = Field(None, description="Hash for deduplication")
     is_duplicate: bool = Field(default=False, description="Whether this is a duplicate citation")
-    validated: bool = Field(default=False, description="Whether citation was validated against source")
+    validated: bool = Field(
+        default=False, description="Whether citation was validated against source"
+    )
 
     def to_legacy_citation(self) -> RagCitation:
         """Convert to legacy RagCitation for backward compatibility."""

@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from typing import Optional
 from uuid import uuid4
 
-from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Index, Integer, LargeBinary, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.database import Base
@@ -1515,3 +1515,336 @@ class FilterPresetDB(Base):
 
     def __repr__(self) -> str:
         return f"<FilterPresetDB(id={self.id}, user_id={self.user_id}, name={self.name})>"
+
+
+# =============================================================================
+# Search Result Ranking System Models (Task #76)
+# =============================================================================
+
+
+class RankingConfig(Base):
+    """Runtime-configurable ranking weights for search results.
+
+    Stores configurable parameters for the hybrid search and reranking pipeline.
+    Supports A/B testing through named configurations and activation flags.
+    """
+
+    __tablename__ = "ranking_configs"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Hybrid search weights (BM25 + semantic fusion)
+    alpha: Mapped[float] = mapped_column(Float, default=0.7, nullable=False)  # vector vs keyword (0.7 = 70% vector)
+
+    # Reranker boost factors
+    boost_exact_match: Mapped[float] = mapped_column(Float, default=1.5, nullable=False)
+    boost_metadata_match: Mapped[float] = mapped_column(Float, default=1.3, nullable=False)
+    boost_quality_signals: Mapped[float] = mapped_column(Float, default=1.2, nullable=False)
+    diversity_penalty: Mapped[float] = mapped_column(Float, default=0.9, nullable=False)
+
+    # Additional ranking signals (new)
+    weight_recency: Mapped[float] = mapped_column(Float, default=0.1, nullable=False)  # listing age
+    weight_price_match: Mapped[float] = mapped_column(Float, default=0.15, nullable=False)  # budget proximity
+    weight_location: Mapped[float] = mapped_column(Float, default=0.1, nullable=False)  # distance to preferred areas
+
+    # Personalization settings
+    personalization_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    personalization_weight: Mapped[float] = mapped_column(Float, default=0.2, nullable=False)  # 0-0.5 range
+
+    # Activation and metadata
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+    # Relationships
+    experiments_as_control: Mapped[list["ABExperiment"]] = relationship(
+        "ABExperiment", foreign_keys="ABExperiment.control_config_id", back_populates="control_config"
+    )
+    experiments_as_treatment: Mapped[list["ABExperiment"]] = relationship(
+        "ABExperiment", foreign_keys="ABExperiment.treatment_config_id", back_populates="treatment_config"
+    )
+
+    __table_args__ = (
+        Index("ix_ranking_configs_active", "is_active"),
+        Index("ix_ranking_configs_default", "is_default"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<RankingConfig(id={self.id[:8]}..., name={self.name}, alpha={self.alpha}, active={self.is_active})>"
+
+
+class ABExperiment(Base):
+    """A/B test experiment definition for ranking experiments.
+
+    Supports controlled experiments to compare ranking algorithms
+    with configurable traffic splits and targeting.
+    """
+
+    __tablename__ = "ab_experiments"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Experiment configuration
+    control_config_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("ranking_configs.id", ondelete="RESTRICT"), nullable=False
+    )
+    treatment_config_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("ranking_configs.id", ondelete="RESTRICT"), nullable=False
+    )
+
+    # Traffic allocation
+    traffic_split: Mapped[float] = mapped_column(Float, default=0.5, nullable=False)  # 0.5 = 50/50
+
+    # Experiment lifecycle
+    status: Mapped[str] = mapped_column(
+        String(20), default="draft", nullable=False
+    )  # draft, running, completed, archived
+    start_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    end_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Targeting rules (JSON with conditions)
+    target_user_segments: Mapped[Optional[dict]] = mapped_column(
+        JSON, nullable=True
+    )  # e.g., {"countries": ["PL"], "user_types": ["registered"]}
+
+    # Metadata
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+    # Relationships
+    control_config: Mapped["RankingConfig"] = relationship(
+        "RankingConfig", foreign_keys=[control_config_id], back_populates="experiments_as_control"
+    )
+    treatment_config: Mapped["RankingConfig"] = relationship(
+        "RankingConfig", foreign_keys=[treatment_config_id], back_populates="experiments_as_treatment"
+    )
+    assignments: Mapped[list["ABExperimentAssignment"]] = relationship(
+        "ABExperimentAssignment", back_populates="experiment", cascade="all, delete-orphan"
+    )
+
+    __table_args__ = (
+        Index("ix_ab_experiments_status", "status"),
+        Index("ix_ab_experiments_dates", "start_date", "end_date"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<ABExperiment(id={self.id[:8]}..., name={self.name}, status={self.status})>"
+
+
+class ABExperimentAssignment(Base):
+    """User assignment to experiment variant.
+
+    Ensures consistent assignment per session/user using deterministic hashing.
+    """
+
+    __tablename__ = "ab_experiment_assignments"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    experiment_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("ab_experiments.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+
+    # User/session identification
+    user_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    session_id: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+
+    # Assignment details
+    variant: Mapped[str] = mapped_column(String(20), nullable=False)  # "control" or "treatment"
+    config_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("ranking_configs.id", ondelete="RESTRICT"), nullable=False
+    )
+
+    assigned_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+
+    # Relationships
+    experiment: Mapped["ABExperiment"] = relationship("ABExperiment", back_populates="assignments")
+    config: Mapped["RankingConfig"] = relationship("RankingConfig")
+
+    # Ensure unique assignment per experiment/session
+    __table_args__ = (
+        Index("uq_ab_assignments_experiment_session", "experiment_id", "session_id", unique=True),
+    )
+
+    def __repr__(self) -> str:
+        return f"<ABExperimentAssignment(experiment_id={self.experiment_id[:8]}..., session={self.session_id[:8]}..., variant={self.variant})>"
+
+
+class SearchEvent(Base):
+    """Search event tracking for quality metrics.
+
+    Records each search with full context for calculating CTR, MRR, NDCG.
+    """
+
+    __tablename__ = "search_events"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+
+    # Context
+    session_id: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    user_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    experiment_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("ab_experiments.id", ondelete="SET NULL"), nullable=True
+    )
+    ranking_config_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("ranking_configs.id", ondelete="RESTRICT"), nullable=False
+    )
+
+    # Query information
+    query: Mapped[str] = mapped_column(Text, nullable=False)
+    filters: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+
+    # Results
+    results_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    results_property_ids: Mapped[list] = mapped_column(JSON, nullable=False, default=list)  # Ordered list
+
+    # Performance
+    processing_time_ms: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    # Timestamp
+    search_timestamp: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False, index=True
+    )
+
+    # Relationships
+    ranking_config: Mapped["RankingConfig"] = relationship("RankingConfig")
+    interactions: Mapped[list["SearchResultInteraction"]] = relationship(
+        "SearchResultInteraction", back_populates="search_event", cascade="all, delete-orphan"
+    )
+
+    __table_args__ = (
+        Index("ix_search_events_session_timestamp", "session_id", "search_timestamp"),
+        Index("ix_search_events_config_timestamp", "ranking_config_id", "search_timestamp"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<SearchEvent(id={self.id[:8]}..., query={self.query[:30]}..., results={self.results_count})>"
+
+
+class SearchResultInteraction(Base):
+    """User interactions with search results.
+
+    Tracks views, clicks, favorites for calculating quality metrics.
+    """
+
+    __tablename__ = "search_result_interactions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    search_event_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("search_events.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+
+    # Property and position
+    property_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    position: Mapped[int] = mapped_column(Integer, nullable=False)  # 0-indexed position in results
+
+    # Interaction types
+    viewed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    view_duration_ms: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    clicked: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    favorited: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    contacted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)  # Via lead form
+
+    interaction_timestamp: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+
+    # Relationships
+    search_event: Mapped["SearchEvent"] = relationship("SearchEvent", back_populates="interactions")
+
+    __table_args__ = (
+        Index("ix_search_interactions_property", "property_id"),
+        Index("ix_search_interactions_search_property", "search_event_id", "property_id", unique=True),
+    )
+
+    def __repr__(self) -> str:
+        return f"<SearchResultInteraction(search_event={self.search_event_id[:8]}..., property={self.property_id[:8]}..., pos={self.position})>"
+
+
+class UserPreferenceProfile(Base):
+    """Aggregated user preferences for personalized ranking.
+
+    Built from user behavior (views, favorites, searches) and updated periodically.
+    """
+
+    __tablename__ = "user_preference_profiles"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False, index=True
+    )
+
+    # Location preferences (weighted list)
+    preferred_cities: Mapped[Optional[list]] = mapped_column(
+        JSON, nullable=True
+    )  # [{"city": "Warsaw", "weight": 0.8}, ...]
+
+    # Budget preferences
+    preferred_price_min: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    preferred_price_max: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+
+    # Property characteristics
+    preferred_rooms: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)  # [2, 3]
+    preferred_property_types: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)  # ["apartment", "house"]
+
+    # Amenity preferences (weights for each amenity)
+    amenity_weights: Mapped[Optional[dict]] = mapped_column(
+        JSON, nullable=True
+    )  # {"has_parking": 0.8, "has_garden": 0.6}
+
+    # Search patterns
+    common_query_patterns: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
+
+    # Embedding for similarity-based personalization (stored as bytes)
+    preference_embedding: Mapped[Optional[bytes]] = mapped_column(
+        LargeBinary, nullable=True
+    )
+    embedding_updated_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+    # Statistics
+    view_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    favorite_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    search_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+    # Relationships
+    user: Mapped["User"] = relationship("User", backref="preference_profile")
+
+    def __repr__(self) -> str:
+        return f"<UserPreferenceProfile(user_id={self.user_id[:8]}..., views={self.view_count}, favorites={self.favorite_count})>"

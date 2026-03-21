@@ -7,11 +7,14 @@ just vector similarity.
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union
 
 from langchain_core.documents import Document
 
 from data.schemas import Property
+
+if TYPE_CHECKING:
+    from services.ranking_config_service import RankingWeights
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +37,7 @@ class PropertyReranker:
         boost_metadata_match: float = 1.3,
         boost_quality_signals: float = 1.2,
         diversity_penalty: float = 0.9,
+        ranking_weights: Optional["RankingWeights"] = None,
     ):
         """
         Initialize reranker.
@@ -43,11 +47,36 @@ class PropertyReranker:
             boost_metadata_match: Boost factor for metadata criteria matches
             boost_quality_signals: Boost factor for quality signals
             diversity_penalty: Penalty for very similar results
+            ranking_weights: Optional RankingWeights object for runtime configuration.
+                            When provided, it overrides individual boost parameters.
         """
-        self.boost_exact_matches = boost_exact_matches
-        self.boost_metadata_match = boost_metadata_match
-        self.boost_quality_signals = boost_quality_signals
-        self.diversity_penalty = diversity_penalty
+        # If RankingWeights provided, use those values
+        if ranking_weights is not None:
+            self.boost_exact_matches = ranking_weights.boost_exact_match
+            self.boost_metadata_match = ranking_weights.boost_metadata_match
+            self.boost_quality_signals = ranking_weights.boost_quality_signals
+            self.diversity_penalty = ranking_weights.diversity_penalty
+            self._ranking_weights = ranking_weights
+        else:
+            # Fall back to individual parameters (backward compatible)
+            self.boost_exact_matches = boost_exact_matches
+            self.boost_metadata_match = boost_metadata_match
+            self.boost_quality_signals = boost_quality_signals
+            self.diversity_penalty = diversity_penalty
+            self._ranking_weights = None
+
+    @classmethod
+    def from_config(cls, ranking_weights: "RankingWeights") -> "PropertyReranker":
+        """
+        Create a PropertyReranker from a RankingWeights configuration.
+
+        Args:
+            ranking_weights: RankingWeights object with configuration values.
+
+        Returns:
+            Configured PropertyReranker instance.
+        """
+        return cls(ranking_weights=ranking_weights)
 
     def rerank(
         self,
@@ -261,10 +290,27 @@ class StrategicReranker(PropertyReranker):
     def __init__(
         self,
         valuation_model: Any = None,
+        ranking_weights: Optional["RankingWeights"] = None,
         **kwargs: Any,
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__(ranking_weights=ranking_weights, **kwargs)
         self.valuation_model = valuation_model
+
+    @classmethod
+    def from_config(
+        cls, ranking_weights: "RankingWeights", valuation_model: Any = None
+    ) -> "StrategicReranker":
+        """
+        Create a StrategicReranker from a RankingWeights configuration.
+
+        Args:
+            ranking_weights: RankingWeights object with configuration values.
+            valuation_model: Optional valuation model for investor strategy.
+
+        Returns:
+            Configured StrategicReranker instance.
+        """
+        return cls(ranking_weights=ranking_weights, valuation_model=valuation_model)
 
     def rerank_with_strategy(
         self,
@@ -422,7 +468,9 @@ class SimpleReranker:
 
 
 def create_reranker(
-    valuation_model: Any = None, advanced: bool = True
+    valuation_model: Any = None,
+    advanced: bool = True,
+    ranking_weights: Optional["RankingWeights"] = None,
 ) -> Union[StrategicReranker, SimpleReranker]:
     """
     Factory function to create a StrategicReranker.
@@ -430,11 +478,14 @@ def create_reranker(
     Args:
         valuation_model: Optional valuation model for investor strategy
         advanced: Whether to use advanced StrategicReranker or SimpleReranker
+        ranking_weights: Optional RankingWeights for runtime configuration
 
     Returns:
         Configured Reranker
     """
     if advanced:
-        return StrategicReranker(valuation_model=valuation_model)
+        return StrategicReranker(
+            valuation_model=valuation_model, ranking_weights=ranking_weights
+        )
     else:
         return SimpleReranker()

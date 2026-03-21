@@ -50,6 +50,7 @@ from api.routers import (
 from api.routers import (
     rag as rag_router,
 )
+from api.routers import ranking_config  # Task #76: Ranking Configuration
 from api.routers import (
     settings as settings_router,
 )
@@ -379,6 +380,9 @@ if settings.auth_jwt_enabled:
     if settings.auth_jwt_enabled:
         app.include_router(esignatures.router, prefix="/api/v1")
         app.include_router(webhooks.esignatures.router, prefix="/api/v1")
+
+# Task #76: Ranking Configuration
+app.include_router(ranking_config.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 
 
 @app.get("/health", tags=["System"])

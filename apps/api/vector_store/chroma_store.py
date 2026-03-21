@@ -802,6 +802,7 @@ class ChromaPropertyStore:
         polygon: Optional[List[List[float]]] = None,
         sort_by: Optional[str] = None,
         sort_order: Optional[str] = "desc",
+        ranking_weights: Optional[Any] = None,
     ) -> List[tuple[Document, float]]:
         """
         Perform hybrid search (Vector + Keyword Rescoring) with filters, geo, and sorting.
@@ -810,17 +811,24 @@ class ChromaPropertyStore:
             query: Search query
             filters: Metadata filters
             k: Number of results
-            alpha: Weight for vector score
+            alpha: Weight for vector score (overridden by ranking_weights if provided)
             lat: Latitude for geo-search
             lon: Longitude for geo-search
             radius_km: Radius in km
             polygon: GeoJSON polygon coordinates for polygon-based filtering
             sort_by: Field to sort by (e.g. 'price', 'price_per_sqm')
             sort_order: 'asc' or 'desc'
+            ranking_weights: Optional RankingWeights object for runtime configuration.
+                            When provided, its alpha value overrides the alpha parameter.
 
         Returns:
             List of (Document, combined_score) tuples
         """
+        # Use alpha from ranking_weights if provided
+        if ranking_weights is not None:
+            effective_alpha = ranking_weights.alpha
+        else:
+            effective_alpha = alpha
         # 0. Prepare Filters
         final_filter = filters
         # Convert simple dict to Chroma filter if needed
@@ -930,7 +938,9 @@ class ChromaPropertyStore:
             for i, (doc, vec_score) in enumerate(vector_results):
                 sim_score = 1.0 / (1.0 + vec_score)
                 keyword_score = bm25_scores[i] if i < len(bm25_scores) else 0.0
-                final_score = (alpha * sim_score) + ((1 - alpha) * keyword_score)
+                final_score = (effective_alpha * sim_score) + (
+                    (1 - effective_alpha) * keyword_score
+                )
                 combined_results.append((doc, final_score))
 
         # 4. Sort and return top K
