@@ -11,7 +11,12 @@ from langchain.memory import ConversationBufferMemory
 from langchain_core.language_models import BaseChatModel
 
 from agents.hybrid_agent import create_hybrid_agent
-from ai.memory import get_session_history
+from ai.memory import (
+    get_context_manager,
+    get_optimized_memory,
+    get_session_history,
+    init_context_manager,
+)
 from api.chat_sources import serialize_chat_sources, serialize_web_sources
 from api.dependencies import get_llm, get_vector_store
 from api.models import ChatRequest, ChatResponse
@@ -60,14 +65,32 @@ async def chat_endpoint(
         if not session_id:
             session_id = str(uuid.uuid4())
 
-        # Initialize Memory with Persistence
-        chat_history = get_session_history(session_id)
-        memory = ConversationBufferMemory(
-            chat_memory=chat_history,
-            memory_key="chat_history",
-            return_messages=True,
-            output_key="answer",
+        # Initialize Context Manager if not already done (Task #73)
+        if not get_context_manager():
+            init_context_manager(settings)
+
+        # Get model ID for context optimization
+        model_id = getattr(llm, "model_name", getattr(llm, "model", "gpt-4o-mini"))
+
+        # Get optimized memory with context window management (Task #73)
+        memory, context_metrics = get_optimized_memory(
+            session_id=session_id,
+            model_id=model_id,
+            llm=llm,
+            max_utilization=settings.context_max_utilization_percent / 100.0,
         )
+
+        # Log context optimization metrics if available
+        if context_metrics and settings.context_metrics_enabled:
+            logger.info(
+                "Context optimization: session=%s tokens=%d/%d "
+                "utilization=%.1f%% cost=$%.4f",
+                session_id,
+                context_metrics.input_tokens,
+                context_metrics.context_window_limit,
+                context_metrics.utilization_percent,
+                context_metrics.estimated_cost_usd,
+            )
 
         # Create Agent
         agent_kwargs = {

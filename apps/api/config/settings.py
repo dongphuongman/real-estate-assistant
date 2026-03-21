@@ -477,6 +477,44 @@ class AppSettings(BaseModel):
         description="Enable PII stripping for MCP requests",
     )
 
+    # =============================================================================
+    # Context Window Management (Task #73)
+    # =============================================================================
+    context_max_utilization_percent: int = Field(
+        default_factory=lambda: int(os.getenv("CONTEXT_MAX_UTILIZATION_PERCENT", "75")),
+        description="Max context window utilization before optimization (default 75%)",
+    )
+    context_sliding_window_messages: int = Field(
+        default_factory=lambda: int(os.getenv("CONTEXT_SLIDING_WINDOW_MESSAGES", "50")),
+        description="Number of recent messages to keep in sliding window",
+    )
+    context_summarization_threshold_percent: int = Field(
+        default_factory=lambda: int(os.getenv("CONTEXT_SUMMARIZATION_THRESHOLD_PERCENT", "80")),
+        description="Trigger summarization when context exceeds this percentage",
+    )
+    context_compression_enabled: bool = Field(
+        default_factory=lambda: (
+            os.getenv("CONTEXT_COMPRESSION_ENABLED", "true").strip().lower()
+            in {"1", "true", "yes", "on"}
+        ),
+        description="Enable compression of repeated content in context",
+    )
+    context_metrics_enabled: bool = Field(
+        default_factory=lambda: (
+            os.getenv("CONTEXT_METRICS_ENABLED", "true").strip().lower()
+            in {"1", "true", "yes", "on"}
+        ),
+        description="Enable context usage metrics logging",
+    )
+    context_priority_system_weight: float = Field(
+        default_factory=lambda: float(os.getenv("CONTEXT_PRIORITY_SYSTEM_WEIGHT", "1.0")),
+        description="Weight for system messages in priority selection (0.0-1.0)",
+    )
+    context_priority_recent_weight: float = Field(
+        default_factory=lambda: float(os.getenv("CONTEXT_PRIORITY_RECENT_WEIGHT", "0.8")),
+        description="Weight decay factor for older messages in priority selection",
+    )
+
     class Config:
         """Pydantic config."""
 
