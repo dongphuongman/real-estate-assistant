@@ -30,6 +30,24 @@ export const PROPERTY_TYPE_COLORS: Record<string, string> = {
   other: "#6b7280", // gray
 };
 
+/**
+ * Get cluster color based on dominant property type.
+ * @param dominantType - The dominant property type in the cluster
+ * @param isMixed - Whether the cluster contains multiple property types
+ * @returns CSS color string
+ */
+export function getClusterColor(
+  dominantType: string | null,
+  isMixed: boolean
+): string {
+  // Mixed clusters get a neutral color
+  if (isMixed) {
+    return "#6b7280"; // gray
+  }
+  // Use the color for the dominant type, fallback to gray
+  return PROPERTY_TYPE_COLORS[dominantType ?? "other"] ?? PROPERTY_TYPE_COLORS.other;
+}
+
 export interface ClusterTypeAnalysis {
   dominantType: string | null;
   distribution: Map<string, number>;

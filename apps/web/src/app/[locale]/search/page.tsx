@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { searchProperties, exportPropertiesBySearch, ApiError } from '@/lib/api';
 import { SearchResultItem } from '@/lib/types';
-import { extractMapPoints } from '@/components/search/property-map-utils';
+import { extractMapPoints, type PropertyMapPoint } from '@/components/search/property-map-utils';
 import type { PolygonCoordinates } from '@/components/search/geo-draw-control';
 import { HeartButton, ListingGenerator } from '@/components/property';
 import dynamic from 'next/dynamic';
@@ -79,6 +79,12 @@ export default function SearchPage() {
 
   const handlePolygonClear = () => {
     setDrawnPolygon(null);
+  };
+
+  // Handle property marker click on map
+  const handlePropertyClick = (point: PropertyMapPoint) => {
+    // For now, just log the click. Future enhancement: scroll to property in list
+    console.log('Property clicked:', point);
   };
 
   const mapPoints = useMemo(() => extractMapPoints(results), [results]);
