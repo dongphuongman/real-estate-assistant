@@ -31,6 +31,7 @@ from api.routers import (
     auth_jwt,  # JWT authentication endpoints
     chat,
     collections,  # Task #37: Property collections
+    data_sources,  # Task #79: Data Sources Dashboard
     documents,  # Task #43: Document Management
     esignatures,  # Task #57: E-Signature Integration
     exports,
@@ -42,6 +43,7 @@ from api.routers import (
     metrics,  # Task #62: Production Monitoring
     prompt_templates,
     push,  # Task #63: Push Notifications
+    ranking_config,  # Task #76: Ranking Configuration
     saved_searches,
     search,
     tools,
@@ -50,7 +52,6 @@ from api.routers import (
 from api.routers import (
     rag as rag_router,
 )
-from api.routers import ranking_config  # Task #76: Ranking Configuration
 from api.routers import (
     settings as settings_router,
 )
@@ -345,9 +346,9 @@ app.include_router(settings_router.router, prefix="/api/v1", dependencies=[Depen
 app.include_router(tools.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(prompt_templates.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(admin.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
-app.include_router(
-    mcp_admin.router, prefix="/api/v1"
-)  # Task #68: MCP Admin (has its own auth)
+# Task #79: Data Sources Dashboard
+app.include_router(data_sources.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
+app.include_router(mcp_admin.router, prefix="/api/v1")  # Task #68: MCP Admin (has its own auth)
 app.include_router(exports.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(auth.router, prefix="/api/v1")
 # Task #62: Prometheus metrics endpoint (no auth required for monitoring)

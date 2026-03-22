@@ -875,3 +875,160 @@ class CommuteRankingResponse(BaseModel):
     count: int = Field(..., description="Number of properties ranked")
     fastest_duration_seconds: Optional[int] = None
     slowest_duration_seconds: Optional[int] = None
+
+
+# ============================================================================
+# TASK-079: Data Sources Management Models
+# ============================================================================
+
+
+class DataSourceType(str, Enum):
+    """Type of data source."""
+
+    FILE_UPLOAD = "file_upload"
+    URL = "url"
+    PORTAL_API = "portal_api"
+    JSON = "json"
+
+
+class DataSourceStatus(str, Enum):
+    """Status of a data source."""
+
+    PENDING = "pending"
+    ACTIVE = "active"
+    SYNCING = "syncing"
+    ERROR = "error"
+    DISABLED = "disabled"
+
+
+class SyncStatus(str, Enum):
+    """Status of a sync operation."""
+
+    RUNNING = "running"
+    SUCCESS = "success"
+    FAILED = "failed"
+    PARTIAL = "partial"
+
+
+class DataSourceCreate(BaseModel):
+    """Request model for creating a data source."""
+
+    name: str = Field(..., min_length=1, max_length=255, description="Display name")
+    description: Optional[str] = Field(None, description="Optional description")
+    source_type: DataSourceType = Field(..., description="Type of data source")
+    config: Dict[str, Any] = Field(
+        ...,
+        description=(
+            "Source configuration. For file_upload: {filename, size_bytes}. "
+            "For url: {url, sheet_name?, header_row?}. "
+            "For portal_api: {portal, city, filters?}"
+        ),
+    )
+    auto_sync_enabled: bool = Field(default=False, description="Enable automatic sync")
+    sync_schedule: Optional[str] = Field(
+        None, description="Cron expression for scheduling (e.g., '0 0 * * *' for daily)"
+    )
+
+
+class DataSourceUpdate(BaseModel):
+    """Request model for updating a data source."""
+
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+    description: Optional[str] = None
+    config: Optional[Dict[str, Any]] = None
+    auto_sync_enabled: Optional[bool] = None
+    sync_schedule: Optional[str] = None
+    status: Optional[DataSourceStatus] = None
+
+
+class DataSourceResponse(BaseModel):
+    """Response model for a single data source."""
+
+    id: str
+    name: str
+    description: Optional[str] = None
+    source_type: str
+    config: Dict[str, Any]
+    status: str
+    last_sync_at: Optional[datetime] = None
+    last_sync_status: Optional[str] = None
+    last_sync_duration_ms: Optional[int] = None
+    last_error: Optional[str] = None
+    total_records: int
+    last_records_synced: Optional[int] = None
+    health_score: float
+    consecutive_failures: int
+    auto_sync_enabled: bool
+    sync_schedule: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class DataSourceListResponse(BaseModel):
+    """Response model for listing data sources."""
+
+    sources: List[DataSourceResponse]
+    total: int
+    page: int
+    page_size: int
+
+
+class DataSourceSyncRequest(BaseModel):
+    """Request model for triggering a sync."""
+
+    source_id: str = Field(..., description="ID of the data source to sync")
+
+
+class DataSourceSyncResponse(BaseModel):
+    """Response model for sync operation."""
+
+    source_id: str
+    status: str
+    message: str
+    records_processed: int = 0
+    started_at: datetime
+
+
+class DataSourceTestRequest(BaseModel):
+    """Request model for testing connection."""
+
+    source_type: DataSourceType
+    config: Dict[str, Any] = Field(
+        ...,
+        description=(
+            "Configuration to test. For url: {url, sheet_name?}. "
+            "For portal_api: {portal, city, filters?}"
+        ),
+    )
+
+
+class DataSourceTestResponse(BaseModel):
+    """Response model for connection test."""
+
+    success: bool
+    message: str
+    details: Optional[Dict[str, Any]] = Field(
+        None, description="Additional details (e.g., sheet names, row count)"
+    )
+
+
+class SyncHistoryItem(BaseModel):
+    """Single sync history item."""
+
+    id: str
+    started_at: datetime
+    completed_at: Optional[datetime] = None
+    status: str
+    records_processed: int
+    records_added: int
+    records_updated: int
+    records_skipped: int
+    error_message: Optional[str] = None
+
+
+class SyncHistoryResponse(BaseModel):
+    """Response model for sync history."""
+
+    source_id: str
+    history: List[SyncHistoryItem]
+    total: int

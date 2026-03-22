@@ -4,7 +4,18 @@ from datetime import UTC, datetime
 from typing import Optional
 from uuid import uuid4
 
-from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Index, Integer, LargeBinary, String, Text
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    LargeBinary,
+    String,
+    Text,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.database import Base
@@ -1536,7 +1547,9 @@ class RankingConfig(Base):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Hybrid search weights (BM25 + semantic fusion)
-    alpha: Mapped[float] = mapped_column(Float, default=0.7, nullable=False)  # vector vs keyword (0.7 = 70% vector)
+    alpha: Mapped[float] = mapped_column(
+        Float, default=0.7, nullable=False
+    )  # vector vs keyword (0.7 = 70% vector)
 
     # Reranker boost factors
     boost_exact_match: Mapped[float] = mapped_column(Float, default=1.5, nullable=False)
@@ -1546,12 +1559,18 @@ class RankingConfig(Base):
 
     # Additional ranking signals (new)
     weight_recency: Mapped[float] = mapped_column(Float, default=0.1, nullable=False)  # listing age
-    weight_price_match: Mapped[float] = mapped_column(Float, default=0.15, nullable=False)  # budget proximity
-    weight_location: Mapped[float] = mapped_column(Float, default=0.1, nullable=False)  # distance to preferred areas
+    weight_price_match: Mapped[float] = mapped_column(
+        Float, default=0.15, nullable=False
+    )  # budget proximity
+    weight_location: Mapped[float] = mapped_column(
+        Float, default=0.1, nullable=False
+    )  # distance to preferred areas
 
     # Personalization settings
     personalization_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    personalization_weight: Mapped[float] = mapped_column(Float, default=0.2, nullable=False)  # 0-0.5 range
+    personalization_weight: Mapped[float] = mapped_column(
+        Float, default=0.2, nullable=False
+    )  # 0-0.5 range
 
     # Activation and metadata
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
@@ -1568,10 +1587,14 @@ class RankingConfig(Base):
 
     # Relationships
     experiments_as_control: Mapped[list["ABExperiment"]] = relationship(
-        "ABExperiment", foreign_keys="ABExperiment.control_config_id", back_populates="control_config"
+        "ABExperiment",
+        foreign_keys="ABExperiment.control_config_id",
+        back_populates="control_config",
     )
     experiments_as_treatment: Mapped[list["ABExperiment"]] = relationship(
-        "ABExperiment", foreign_keys="ABExperiment.treatment_config_id", back_populates="treatment_config"
+        "ABExperiment",
+        foreign_keys="ABExperiment.treatment_config_id",
+        back_populates="treatment_config",
     )
 
     __table_args__ = (
@@ -1635,7 +1658,9 @@ class ABExperiment(Base):
         "RankingConfig", foreign_keys=[control_config_id], back_populates="experiments_as_control"
     )
     treatment_config: Mapped["RankingConfig"] = relationship(
-        "RankingConfig", foreign_keys=[treatment_config_id], back_populates="experiments_as_treatment"
+        "RankingConfig",
+        foreign_keys=[treatment_config_id],
+        back_populates="experiments_as_treatment",
     )
     assignments: Mapped[list["ABExperimentAssignment"]] = relationship(
         "ABExperimentAssignment", back_populates="experiment", cascade="all, delete-orphan"
@@ -1720,7 +1745,9 @@ class SearchEvent(Base):
 
     # Results
     results_count: Mapped[int] = mapped_column(Integer, nullable=False)
-    results_property_ids: Mapped[list] = mapped_column(JSON, nullable=False, default=list)  # Ordered list
+    results_property_ids: Mapped[list] = mapped_column(
+        JSON, nullable=False, default=list
+    )  # Ordered list
 
     # Performance
     processing_time_ms: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -1778,7 +1805,9 @@ class SearchResultInteraction(Base):
 
     __table_args__ = (
         Index("ix_search_interactions_property", "property_id"),
-        Index("ix_search_interactions_search_property", "search_event_id", "property_id", unique=True),
+        Index(
+            "ix_search_interactions_search_property", "search_event_id", "property_id", unique=True
+        ),
     )
 
     def __repr__(self) -> str:
@@ -1795,7 +1824,11 @@ class UserPreferenceProfile(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
     user_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False, index=True
+        String(36),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False,
+        index=True,
     )
 
     # Location preferences (weighted list)
@@ -1809,7 +1842,9 @@ class UserPreferenceProfile(Base):
 
     # Property characteristics
     preferred_rooms: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)  # [2, 3]
-    preferred_property_types: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)  # ["apartment", "house"]
+    preferred_property_types: Mapped[Optional[list]] = mapped_column(
+        JSON, nullable=True
+    )  # ["apartment", "house"]
 
     # Amenity preferences (weights for each amenity)
     amenity_weights: Mapped[Optional[dict]] = mapped_column(
@@ -1820,9 +1855,7 @@ class UserPreferenceProfile(Base):
     common_query_patterns: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
 
     # Embedding for similarity-based personalization (stored as bytes)
-    preference_embedding: Mapped[Optional[bytes]] = mapped_column(
-        LargeBinary, nullable=True
-    )
+    preference_embedding: Mapped[Optional[bytes]] = mapped_column(LargeBinary, nullable=True)
     embedding_updated_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
@@ -1848,3 +1881,131 @@ class UserPreferenceProfile(Base):
 
     def __repr__(self) -> str:
         return f"<UserPreferenceProfile(user_id={self.user_id[:8]}..., views={self.view_count}, favorites={self.favorite_count})>"
+
+
+# =============================================================================
+# Data Source Management Models (Task #79)
+# =============================================================================
+
+
+class DataSourceDB(Base):
+    """Database model for tracking configured data sources.
+
+    Stores configuration and status for all property data ingestion sources:
+    - File uploads (CSV, Excel, JSON)
+    - URL-based imports
+    - Portal API connections
+    """
+
+    __tablename__ = "data_sources"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+
+    # Source identification
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Source type: 'file_upload', 'url', 'portal_api', 'json'
+    source_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+
+    # Source configuration (JSON)
+    # For file_upload: {"filename": "...", "size_bytes": ..., "sheet_name": "..."}
+    # For url: {"url": "...", "sheet_name": "...", "header_row": 0}
+    # For portal_api: {"portal": "otodom", "city": "Warsaw", "filters": {...}}
+    config: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+
+    # Status tracking
+    status: Mapped[str] = mapped_column(
+        String(20), default="pending", nullable=False, index=True
+    )  # pending, active, syncing, error, disabled
+
+    # Sync tracking
+    last_sync_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_sync_status: Mapped[Optional[str]] = mapped_column(
+        String(20), nullable=True
+    )  # success, failed, partial
+    last_sync_duration_ms: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    last_error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Statistics
+    total_records: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    last_records_synced: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
+    # Health indicators
+    health_score: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)  # 0-100
+    consecutive_failures: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    # Scheduling (for future cron integration)
+    sync_schedule: Mapped[Optional[str]] = mapped_column(
+        String(50), nullable=True
+    )  # cron expression
+    auto_sync_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+    # Relationships
+    sync_history: Mapped[list["DataSourceSyncHistory"]] = relationship(
+        "DataSourceSyncHistory", back_populates="data_source", cascade="all, delete-orphan"
+    )
+
+    # Indexes
+    __table_args__ = (
+        Index("ix_data_sources_status", "status"),
+        Index("ix_data_sources_type", "source_type"),
+        Index("ix_data_sources_created", "created_at"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<DataSourceDB(id={self.id[:8]}..., name={self.name[:30]}, type={self.source_type}, status={self.status})>"
+
+
+class DataSourceSyncHistory(Base):
+    """Track sync history for each data source.
+
+    Records each sync operation with timing, results, and error details.
+    Used for health score calculation and debugging.
+    """
+
+    __tablename__ = "data_source_sync_history"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    data_source_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("data_sources.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+
+    # Sync details
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False
+    )  # running, success, failed, partial
+
+    # Results
+    records_processed: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    records_added: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    records_updated: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    records_skipped: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    # Error tracking
+    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    error_details: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+
+    # Relationships
+    data_source: Mapped["DataSourceDB"] = relationship(
+        "DataSourceDB", back_populates="sync_history"
+    )
+
+    # Indexes
+    __table_args__ = (Index("ix_sync_history_source_started", "data_source_id", "started_at"),)
+
+    def __repr__(self) -> str:
+        return f"<DataSourceSyncHistory(id={self.id[:8]}..., source_id={self.data_source_id[:8]}..., status={self.status})>"

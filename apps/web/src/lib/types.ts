@@ -1861,3 +1861,91 @@ export interface SignedDocument {
   certificate_url?: string;
   created_at: string;
 }
+
+// =============================================================================
+// Data Sources Types (Task #79)
+// =============================================================================
+
+export type DataSourceType = 'file_upload' | 'url' | 'portal_api' | 'json';
+export type DataSourceStatus = 'pending' | 'active' | 'syncing' | 'error' | 'disabled';
+export type SyncStatus = 'pending' | 'running' | 'success' | 'failed' | 'partial';
+
+export interface DataSource {
+  id: string;
+  name: string;
+  source_type: DataSourceType;
+  config: Record<string, unknown>;
+  status: DataSourceStatus;
+  last_sync_at?: string;
+  last_sync_status?: SyncStatus;
+  last_error?: string;
+  total_records: number;
+  health_score: number;
+  consecutive_failures: number;
+  auto_sync_enabled: boolean;
+  sync_schedule?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DataSourceCreate {
+  name: string;
+  source_type: DataSourceType;
+  config: Record<string, unknown>;
+  auto_sync_enabled?: boolean;
+  sync_schedule?: string;
+}
+
+export interface DataSourceUpdate {
+  name?: string;
+  config?: Record<string, unknown>;
+  auto_sync_enabled?: boolean;
+  sync_schedule?: string;
+  status?: DataSourceStatus;
+}
+
+export interface DataSourceListResponse {
+  sources: DataSource[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface DataSourceSyncResponse {
+  source_id: string;
+  status: string;
+  message: string;
+  records_processed: number;
+  started_at: string;
+}
+
+export interface DataSourceTestRequest {
+  source_type: DataSourceType;
+  config: Record<string, unknown>;
+}
+
+export interface DataSourceTestResponse {
+  success: boolean;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
+export interface SyncHistoryItem {
+  id: string;
+  started_at: string;
+  completed_at?: string;
+  status: SyncStatus;
+  records_processed: number;
+  records_added: number;
+  records_updated: number;
+  records_failed: number;
+  error_message?: string;
+}
+
+export interface SyncHistoryResponse {
+  source_id: string;
+  history: SyncHistoryItem[];
+  total: number;
+  page: number;
+  page_size: number;
+}

@@ -138,6 +138,16 @@ import {
   DocumentTemplateUpdate,
   DocumentTemplateListResponse,
   SignedDocument,
+  // Task #79: Data Sources Dashboard
+  DataSource,
+  DataSourceCreate,
+  DataSourceUpdate,
+  DataSourceListResponse,
+  DataSourceSyncResponse,
+  DataSourceTestRequest,
+  DataSourceTestResponse,
+  SyncHistoryItem,
+  SyncHistoryResponse,
 } from './types';
 
 // Task #74: Streaming utilities
@@ -2581,4 +2591,144 @@ export async function setFilterPresetDefault(id: string): Promise<FilterPreset> 
     }
   );
   return handleResponse<FilterPreset>(response);
+}
+
+// =============================================================================
+// Data Sources API (Task #79)
+// =============================================================================
+
+/**
+ * List all data sources with pagination and filtering
+ */
+export async function listDataSources(params?: {
+  page?: number;
+  page_size?: number;
+  status?: string;
+  source_type?: string;
+}): Promise<DataSourceListResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.page) searchParams.set('page', params.page.toString());
+  if (params?.page_size) searchParams.set('page_size', params.page_size.toString());
+  if (params?.status) searchParams.set('status', params.status);
+  if (params?.source_type) searchParams.set('source_type', params.source_type);
+
+  const query = searchParams.toString();
+  const response = await safeFetch(
+    `${getApiUrl()}/data-sources${query ? `?${query}` : ''}`,
+    {
+      method: 'GET',
+      headers: buildHeaders(),
+      credentials: 'include',
+    }
+  );
+  return handleResponse<DataSourceListResponse>(response);
+}
+
+/**
+ * Create a new data source
+ */
+export async function createDataSource(data: DataSourceCreate): Promise<DataSource> {
+  const response = await safeFetch(`${getApiUrl()}/data-sources`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  return handleResponse<DataSource>(response);
+}
+
+/**
+ * Get a specific data source by ID
+ */
+export async function getDataSource(id: string): Promise<DataSource> {
+  const response = await safeFetch(`${getApiUrl()}/data-sources/${id}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<DataSource>(response);
+}
+
+/**
+ * Update a data source
+ */
+export async function updateDataSource(
+  id: string,
+  data: DataSourceUpdate
+): Promise<DataSource> {
+  const response = await safeFetch(`${getApiUrl()}/data-sources/${id}`, {
+    method: 'PATCH',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  return handleResponse<DataSource>(response);
+}
+
+/**
+ * Delete a data source (requires confirmation)
+ */
+export async function deleteDataSource(id: string, confirm = true): Promise<void> {
+  const response = await safeFetch(
+    `${getApiUrl()}/data-sources/${id}?confirm=${confirm}`,
+    {
+      method: 'DELETE',
+      headers: buildHeaders(),
+      credentials: 'include',
+    }
+  );
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Delete failed' }));
+    throw new Error(error.detail || 'Delete failed');
+  }
+}
+
+/**
+ * Trigger a manual sync for a data source
+ */
+export async function syncDataSource(id: string): Promise<DataSourceSyncResponse> {
+  const response = await safeFetch(`${getApiUrl()}/data-sources/${id}/sync`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<DataSourceSyncResponse>(response);
+}
+
+/**
+ * Test a data source connection without saving
+ */
+export async function testDataSource(
+  data: DataSourceTestRequest
+): Promise<DataSourceTestResponse> {
+  const response = await safeFetch(`${getApiUrl()}/data-sources/test`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  return handleResponse<DataSourceTestResponse>(response);
+}
+
+/**
+ * Get sync history for a data source
+ */
+export async function getDataSourceSyncHistory(
+  id: string,
+  params?: { page?: number; page_size?: number }
+): Promise<SyncHistoryResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.page) searchParams.set('page', params.page.toString());
+  if (params?.page_size) searchParams.set('page_size', params.page_size.toString());
+
+  const query = searchParams.toString();
+  const response = await safeFetch(
+    `${getApiUrl()}/data-sources/${id}/history${query ? `?${query}` : ''}`,
+    {
+      method: 'GET',
+      headers: buildHeaders(),
+      credentials: 'include',
+    }
+  );
+  return handleResponse<SyncHistoryResponse>(response);
 }
