@@ -1949,3 +1949,58 @@ export interface SyncHistoryResponse {
   page: number;
   page_size: number;
 }
+
+// =============================================================================
+// Bulk Jobs Types (Task #80: Import/Export Data API)
+// =============================================================================
+
+export type BulkJobType = 'import' | 'export';
+export type BulkJobSourceType = 'url' | 'file_upload' | 'portal_api' | 'search';
+export type BulkJobStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
+
+export interface BulkImportRequest {
+  source_type: BulkJobSourceType;
+  config: Record<string, unknown>;
+  source_name?: string;
+}
+
+export interface BulkExportRequest {
+  format: string;
+  source_type?: BulkJobSourceType;
+  config: Record<string, unknown>;
+  columns?: string[];
+  include_header?: boolean;
+}
+
+export interface BulkJobResponse {
+  id: string;
+  job_type: BulkJobType;
+  source_type: BulkJobSourceType;
+  status: BulkJobStatus;
+  records_total: number;
+  records_processed: number;
+  records_failed: number;
+  progress_percent: number;
+  result_url?: string;
+  result_data?: Record<string, unknown>;
+  error_message?: string;
+  created_at: string;
+  started_at?: string;
+  completed_at?: string;
+  expires_at?: string;
+}
+
+export interface BulkJobListResponse {
+  jobs: BulkJobResponse[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface BulkJobCreateResponse {
+  id: string;
+  job_type: BulkJobType;
+  status: BulkJobStatus;
+  message: string;
+  created_at: string;
+}

@@ -148,6 +148,12 @@ import {
   DataSourceTestResponse,
   SyncHistoryItem,
   SyncHistoryResponse,
+  // Task #80: Bulk Jobs
+  BulkImportRequest,
+  BulkExportRequest,
+  BulkJobResponse,
+  BulkJobListResponse,
+  BulkJobCreateResponse,
 } from './types';
 
 // Task #74: Streaming utilities
@@ -2731,4 +2737,112 @@ export async function getDataSourceSyncHistory(
     }
   );
   return handleResponse<SyncHistoryResponse>(response);
+}
+
+// =============================================================================
+// Bulk Jobs API (Task #80: Import/Export Data API)
+// =============================================================================
+
+/**
+ * Create a new bulk import job
+ */
+export async function createBulkImportJob(
+  request: BulkImportRequest
+): Promise<BulkJobCreateResponse> {
+  const response = await safeFetch(`${getApiUrl()}/bulk-jobs/import`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(request),
+  });
+  return handleResponse<BulkJobCreateResponse>(response);
+}
+
+/**
+ * Create a new bulk export job
+ */
+export async function createBulkExportJob(
+  request: BulkExportRequest
+): Promise<BulkJobCreateResponse> {
+  const response = await safeFetch(`${getApiUrl()}/bulk-jobs/export`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(request),
+  });
+  return handleResponse<BulkJobCreateResponse>(response);
+}
+
+/**
+ * List bulk jobs with optional filters
+ */
+export async function listBulkJobs(params?: {
+  job_type?: string;
+  status?: string;
+  source_type?: string;
+  page?: number;
+  page_size?: number;
+}): Promise<BulkJobListResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.job_type) searchParams.set('job_type', params.job_type);
+  if (params?.status) searchParams.set('status', params.status);
+  if (params?.source_type) searchParams.set('source_type', params.source_type);
+  if (params?.page) searchParams.set('page', params.page.toString());
+  if (params?.page_size) searchParams.set('page_size', params.page_size.toString());
+
+  const query = searchParams.toString();
+  const response = await safeFetch(
+    `${getApiUrl()}/bulk-jobs${query ? `?${query}` : ''}`,
+    {
+      method: 'GET',
+      headers: buildHeaders(),
+      credentials: 'include',
+    }
+  );
+  return handleResponse<BulkJobListResponse>(response);
+}
+
+/**
+ * Get a specific bulk job by ID
+ */
+export async function getBulkJob(jobId: string): Promise<BulkJobResponse> {
+  const response = await safeFetch(`${getApiUrl()}/bulk-jobs/${encodeURIComponent(jobId)}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<BulkJobResponse>(response);
+}
+
+/**
+ * Cancel a running bulk job
+ */
+export async function cancelBulkJob(jobId: string): Promise<BulkJobResponse> {
+  const response = await safeFetch(
+    `${getApiUrl()}/bulk-jobs/${encodeURIComponent(jobId)}/cancel`,
+    {
+      method: 'POST',
+      headers: buildHeaders(),
+      credentials: 'include',
+    }
+  );
+  return handleResponse<BulkJobResponse>(response);
+}
+
+/**
+ * Delete a bulk job
+ */
+export async function deleteBulkJob(jobId: string): Promise<void> {
+  const response = await safeFetch(
+    `${getApiUrl()}/bulk-jobs/${encodeURIComponent(jobId)}`,
+    {
+      method: 'DELETE',
+      headers: buildHeaders(),
+      credentials: 'include',
+    }
+  );
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Delete failed' }));
+    throw new Error(error.detail || 'Delete failed');
+  }
 }
