@@ -28,7 +28,11 @@ from agents.query_analyzer import QueryAnalyzer
 from core.jwt import create_access_token
 from data.schemas import Property, PropertyCollection, PropertyType
 from db.database import Base
-from db.models import MarketAnomaly  # noqa: F401 - Import to register model with Base
+from db.models import (
+    DataSourceDB,  # noqa: F401 - Import to register model with Base (Task #79)
+    DataSourceSyncHistory,  # noqa: F401 - Import to register model with Base (Task #79)
+    MarketAnomaly,  # noqa: F401 - Import to register model with Base
+)
 from vector_store.reranker import PropertyReranker
 
 

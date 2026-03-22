@@ -1957,12 +1957,8 @@ class DataSourceDB(Base):
         "DataSourceSyncHistory", back_populates="data_source", cascade="all, delete-orphan"
     )
 
-    # Indexes
-    __table_args__ = (
-        Index("ix_data_sources_status", "status"),
-        Index("ix_data_sources_type", "source_type"),
-        Index("ix_data_sources_created", "created_at"),
-    )
+    # Indexes (status and source_type have inline index=True)
+    __table_args__ = (Index("ix_data_sources_created", "created_at"),)
 
     def __repr__(self) -> str:
         return f"<DataSourceDB(id={self.id[:8]}..., name={self.name[:30]}, type={self.source_type}, status={self.status})>"

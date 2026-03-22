@@ -351,7 +351,7 @@ async def get_sync_history(
             records_processed=h.records_processed,
             records_added=h.records_added,
             records_updated=h.records_updated,
-            records_failed=h.records_failed,
+            records_skipped=h.records_skipped,
             error_message=h.error_message,
         )
         for h in history
