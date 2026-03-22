@@ -225,6 +225,46 @@ async def check_llm_provider() -> DependencyHealth:
     )
 
 
+async def check_database() -> Optional[DependencyHealth]:
+    """
+    Check database connectivity (SQLite or PostgreSQL).
+
+    Returns:
+        DependencyHealth with database status, or None if not configured
+    """
+    start = asyncio.get_event_loop().time()
+    settings = get_settings()
+
+    db_url = settings.database_url or os.getenv("DATABASE_URL")
+    if not db_url:
+        return None  # Database not configured
+
+    try:
+        from sqlalchemy import text
+
+        from db.database import get_engine
+
+        engine = get_engine()
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+
+        latency_ms = (asyncio.get_event_loop().time() - start) * 1000
+        return DependencyHealth(
+            name="database",
+            status=HealthStatus.HEALTHY,
+            message="OK",
+            latency_ms=latency_ms,
+        )
+    except Exception as e:
+        latency_ms = (asyncio.get_event_loop().time() - start) * 1000
+        return DependencyHealth(
+            name="database",
+            status=HealthStatus.UNHEALTHY,
+            message=f"Error: {str(e)[:100]}",
+            latency_ms=latency_ms,
+        )
+
+
 def get_git_info() -> dict[str, str]:
     """
     Get git commit information.
@@ -291,6 +331,7 @@ async def get_health_status(include_dependencies: bool = True) -> HealthCheckRes
         results = await asyncio.gather(
             check_vector_store(),
             check_redis(),
+            check_database(),
             check_llm_provider(),
             return_exceptions=True,
         )
@@ -360,7 +401,8 @@ async def require_healthy(dependencies: Optional[list[str]] = None) -> None:
             unhealthy_deps = [d for d in unhealthy_deps if d in dependencies]
 
         if unhealthy_deps:
+            deps_list = ", ".join(unhealthy_deps)
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=f"Service unavailable due to unhealthy dependencies: {', '.join(unhealthy_deps)}",
+                detail=f"Service unavailable due to unhealthy dependencies: {deps_list}",
             )

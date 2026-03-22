@@ -3,6 +3,7 @@ import platform
 import sys
 import tempfile
 from pathlib import Path
+from time import time
 from typing import Annotated, Optional
 
 import pandas as pd
@@ -490,11 +491,31 @@ async def admin_health_check(
 @router.get("/admin/metrics", response_model=dict)
 async def admin_metrics(request: Request):
     """
-    Return simple API metrics.
+    Return comprehensive API metrics for monitoring dashboard.
     """
     try:
+        # Basic request metrics
         metrics = getattr(request.app.state, "metrics", {})
-        return dict(metrics)
+
+        # Cache stats
+        response_cache = getattr(request.app.state, "response_cache", None)
+        cache_stats = response_cache.get_stats() if response_cache else {}
+
+        # Vector store stats
+        vector_store = getattr(request.app.state, "vector_store", None)
+        vs_stats = vector_store.get_stats() if vector_store else {}
+
+        # Uptime
+        start_time = getattr(request.app.state, "start_time", None)
+        uptime = (time() - start_time) if start_time else 0
+
+        return {
+            "requests": dict(metrics),
+            "cache": cache_stats,
+            "vector_store": vs_stats,
+            "uptime_seconds": uptime,
+            "version": settings.version,
+        }
     except Exception as e:
         logger.error(f"Metrics retrieval failed: {e}")
         raise HTTPException(status_code=500, detail=str(e)) from e

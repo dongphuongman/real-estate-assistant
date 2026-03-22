@@ -3,6 +3,7 @@ import logging
 import os
 import signal
 import warnings
+from datetime import UTC, datetime
 from typing import Any
 
 warnings.filterwarnings(
@@ -13,10 +14,11 @@ warnings.filterwarnings(
 
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from api.auth import get_api_key
 from api.dependencies import get_vector_store
-from api.health import get_git_info, get_health_status
+from api.health import HealthStatus, get_git_info, get_health_status
 from api.middleware.csrf import add_csrf_middleware
 from api.middleware.error_handler import add_error_handlers
 from api.middleware.request_size import add_request_size_limits
@@ -395,7 +397,8 @@ async def health_check(include_dependencies: bool = True):
     Health check endpoint to verify API status.
 
     Args:
-        include_dependencies: Whether to check dependency health (vector store, Redis, LLM providers)
+        include_dependencies: Whether to check dependency health
+            (vector store, Redis, LLM providers)
 
     Returns:
         Comprehensive health status including dependencies
@@ -437,6 +440,34 @@ async def health_check(include_dependencies: bool = True):
     from fastapi.responses import JSONResponse
 
     return JSONResponse(content=response, status_code=status_code)
+
+
+@app.get("/health/ready", tags=["System"])
+async def readiness_check():
+    """
+    K8s readiness probe - checks if app can serve traffic.
+    Returns 200 if all critical dependencies are available.
+    """
+    health = await get_health_status(include_dependencies=True)
+
+    # Only vector_store is critical for serving traffic
+    vs_health = health.dependencies.get("vector_store")
+    if vs_health and vs_health.status == HealthStatus.UNHEALTHY:
+        return JSONResponse(
+            content={"status": "not_ready", "reason": "vector_store_unhealthy"},
+            status_code=503
+        )
+
+    return {"status": "ready"}
+
+
+@app.get("/health/live", tags=["System"])
+async def liveness_check():
+    """
+    K8s liveness probe - checks if app is alive.
+    Simple ping endpoint (no dependency checks).
+    """
+    return {"status": "alive", "timestamp": datetime.now(tz=UTC).isoformat()}
 
 
 @app.get("/api/v1/verify-auth", dependencies=[Depends(get_api_key)], tags=["Auth"])
