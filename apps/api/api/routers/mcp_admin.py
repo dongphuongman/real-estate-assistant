@@ -208,8 +208,7 @@ async def add_to_allowlist(request: MCPAllowlistAddRequest):
     except ValueError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid edition: {request.edition}. "
-            f"Valid: community, pro, enterprise",
+            detail=f"Invalid edition: {request.edition}. Valid: community, pro, enterprise",
         ) from None
 
     entry = validator.add_connector(
@@ -220,9 +219,7 @@ async def add_to_allowlist(request: MCPAllowlistAddRequest):
         added_by=request.added_by,
     )
 
-    logger.info(
-        f"Added connector '{request.name}' to allowlist via API by {request.added_by}"
-    )
+    logger.info(f"Added connector '{request.name}' to allowlist via API by {request.added_by}")
 
     return _entry_to_response(entry)
 
@@ -262,9 +259,7 @@ async def get_violations():
     violations = validator.get_violations()
 
     return MCPViolationsListResponse(
-        violations=[
-            MCPViolationResponse(**v) for v in violations
-        ],
+        violations=[MCPViolationResponse(**v) for v in violations],
         total=len(violations),
     )
 
@@ -325,9 +320,7 @@ async def list_connectors():
     # Add registry status
     result = []
     for name, info in all_connectors_info.items():
-        registered = name in MCPConnectorRegistry.list_connectors(
-            include_non_accessible=True
-        )
+        registered = name in MCPConnectorRegistry.list_connectors(include_non_accessible=True)
         has_instance = name in MCPConnectorRegistry._instances
 
         result.append(
@@ -389,8 +382,7 @@ async def health_check():
         edition=config.edition.value,
         connectors_checked=total,
         results={
-            name: {"success": r.success, "errors": r.errors}
-            for name, r in health_results.items()
+            name: {"success": r.success, "errors": r.errors} for name, r in health_results.items()
         },
         timestamp=datetime.utcnow().isoformat(),
     )

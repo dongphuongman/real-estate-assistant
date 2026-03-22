@@ -169,9 +169,7 @@ def calculate_backoff(attempt: int, config: Optional[ReconnectionConfig] = None)
     return int(final_delay)
 
 
-def should_send_heartbeat(
-    last_heartbeat: float, config: Optional[HeartbeatConfig] = None
-) -> bool:
+def should_send_heartbeat(last_heartbeat: float, config: Optional[HeartbeatConfig] = None) -> bool:
     """
     Determine if a heartbeat should be sent based on elapsed time.
 
@@ -189,9 +187,7 @@ def should_send_heartbeat(
     return elapsed >= config.interval_seconds
 
 
-def is_connection_stale(
-    last_activity: float, config: Optional[HeartbeatConfig] = None
-) -> bool:
+def is_connection_stale(last_activity: float, config: Optional[HeartbeatConfig] = None) -> bool:
     """
     Check if connection is stale based on last activity time.
 

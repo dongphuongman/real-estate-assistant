@@ -1279,18 +1279,14 @@ class QueryAnalyzer:
             return analysis
 
         # Extract context signals from recent messages
-        context = self._extract_context_signals(
-            session_history[-max_history_messages:]
-        )
+        context = self._extract_context_signals(session_history[-max_history_messages:])
 
         # Apply context enhancements
         analysis = self._apply_context(analysis, context, query.lower())
 
         return analysis
 
-    def _extract_context_signals(
-        self, messages: List[Any]
-    ) -> Dict[str, Any]:
+    def _extract_context_signals(self, messages: List[Any]) -> Dict[str, Any]:
         """Extract context signals from recent messages."""
         signals: Dict[str, Any] = {
             "mentioned_properties": [],
@@ -1311,10 +1307,7 @@ class QueryAnalyzer:
                 continue
 
             # Check for property references
-            if any(
-                kw in content
-                for kw in ["property", "apartment", "house", "listing"]
-            ):
+            if any(kw in content for kw in ["property", "apartment", "house", "listing"]):
                 signals["has_property_context"] = True
 
             # Check for city references
@@ -1330,10 +1323,7 @@ class QueryAnalyzer:
             prices = self.PRICE_PATTERN.findall(content)
             if prices:
                 try:
-                    price_vals = [
-                        float(p.replace("$", "").replace(",", ""))
-                        for p in prices
-                    ]
+                    price_vals = [float(p.replace("$", "").replace(",", "")) for p in prices]
                     if price_vals:
                         signals["last_price_range"] = (
                             min(price_vals),
@@ -1360,9 +1350,7 @@ class QueryAnalyzer:
             r"\bthe one\b",
             r"\bthe property\b",
         ]
-        has_pronoun = any(
-            re.search(p, query_lower) for p in pronoun_patterns
-        )
+        has_pronoun = any(re.search(p, query_lower) for p in pronoun_patterns)
 
         # If query has pronouns and context has properties, boost DOCUMENT_QA
         if has_pronoun and context.get("has_property_context"):

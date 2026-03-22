@@ -168,9 +168,7 @@ class AllowlistValidator:
             MCPConfigError: If YAML parsing fails
         """
         if not self.config_path.exists():
-            logger.warning(
-                f"Allowlist config not found: {self.config_path}, using defaults"
-            )
+            logger.warning(f"Allowlist config not found: {self.config_path}, using defaults")
             return self._get_default_config()
 
         try:
@@ -247,9 +245,7 @@ class AllowlistValidator:
 
         return entries
 
-    def _parse_restricted(
-        self, entries_data: List[Dict[str, Any]]
-    ) -> List[AllowlistEntry]:
+    def _parse_restricted(self, entries_data: List[Dict[str, Any]]) -> List[AllowlistEntry]:
         """Parse restricted entries from YAML data."""
         entries = []
         for entry_data in entries_data:
@@ -446,9 +442,7 @@ class AllowlistValidator:
             return False
 
         original_count = len(self._config.allowlist)
-        self._config.allowlist = [
-            e for e in self._config.allowlist if e.name != name
-        ]
+        self._config.allowlist = [e for e in self._config.allowlist if e.name != name]
         removed = len(self._config.allowlist) < original_count
 
         if removed:

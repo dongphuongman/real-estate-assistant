@@ -7,15 +7,15 @@ import logging
 import os
 from typing import TYPE_CHECKING, Optional, Tuple
 
+from langchain.memory import ConversationBufferMemory
 from langchain_community.chat_message_histories import SQLChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
-from langchain.memory import ConversationBufferMemory
 
 if TYPE_CHECKING:
-    from config.settings import AppSettings
     from langchain_core.language_models import BaseChatModel
 
     from ai.context_manager import ContextManager, ContextMetrics
+    from config.settings import AppSettings
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,5 @@
 """Tests for MCP exceptions."""
 
-
 from mcp.exceptions import (
     MCPAuthenticationError,
     MCPConfigError,

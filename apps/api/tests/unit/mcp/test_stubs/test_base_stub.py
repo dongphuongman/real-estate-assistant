@@ -83,9 +83,7 @@ class TestMCPStubResponseQueue:
 
     def test_initial_responses(self) -> None:
         """Test initializing with responses."""
-        stub = ConcreteStub(
-            responses=[{"data": 1}, {"data": 2}]
-        )
+        stub = ConcreteStub(responses=[{"data": 1}, {"data": 2}])
 
         assert len(stub._response_queue) == 2
 

@@ -23,16 +23,19 @@ class MCPError(Exception):
 
 class MCPConnectionError(MCPError):
     """Raised when connection to MCP service fails."""
+
     pass
 
 
 class MCPTimeoutError(MCPError):
     """Raised when an MCP operation times out."""
+
     pass
 
 
 class MCPAuthenticationError(MCPError):
     """Raised when authentication with MCP service fails."""
+
     pass
 
 
@@ -66,14 +69,17 @@ class MCPConnectorNotFoundError(MCPError):
 
 class MCPConfigError(MCPError):
     """Raised when connector configuration is invalid."""
+
     pass
 
 
 class MCPOperationError(MCPError):
     """Raised when an MCP operation fails during execution."""
+
     pass
 
 
 class MCPConnectionPoolExhaustedError(MCPError):
     """Raised when connection pool has no available connections."""
+
     pass

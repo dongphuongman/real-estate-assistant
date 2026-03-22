@@ -2701,9 +2701,7 @@ class FilterPresetRepository:
         await self.session.flush()
         return preset
 
-    async def get_by_id(
-        self, preset_id: str, user_id: str
-    ) -> Optional[FilterPresetDB]:
+    async def get_by_id(self, preset_id: str, user_id: str) -> Optional[FilterPresetDB]:
         """Get filter preset by ID (scoped to user)."""
         result = await self.session.execute(
             select(FilterPresetDB).where(
@@ -2734,9 +2732,7 @@ class FilterPresetRepository:
     async def count_by_user(self, user_id: str) -> int:
         """Count filter presets for a user."""
         result = await self.session.execute(
-            select(func.count(FilterPresetDB.id)).where(
-                FilterPresetDB.user_id == user_id
-            )
+            select(func.count(FilterPresetDB.id)).where(FilterPresetDB.user_id == user_id)
         )
         return result.scalar() or 0
 
@@ -2750,9 +2746,7 @@ class FilterPresetRepository:
         )
         return result.scalar_one_or_none()
 
-    async def set_default(
-        self, preset: FilterPresetDB, user_id: str
-    ) -> FilterPresetDB:
+    async def set_default(self, preset: FilterPresetDB, user_id: str) -> FilterPresetDB:
         """Set a preset as default (unsets other defaults first)."""
         # Unset all other defaults for this user
         await self.session.execute(
@@ -2775,9 +2769,7 @@ class FilterPresetRepository:
         await self.session.flush()
         return preset
 
-    async def update(
-        self, preset: FilterPresetDB, **kwargs
-    ) -> FilterPresetDB:
+    async def update(self, preset: FilterPresetDB, **kwargs) -> FilterPresetDB:
         """Update filter preset fields."""
         for key, value in kwargs.items():
             if hasattr(preset, key):

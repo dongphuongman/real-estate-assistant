@@ -93,9 +93,7 @@ class ABTestingService:
         )
 
         config_id = (
-            experiment.control_config_id
-            if variant == "control"
-            else experiment.treatment_config_id
+            experiment.control_config_id if variant == "control" else experiment.treatment_config_id
         )
 
         assignment = ABExperimentAssignment(
@@ -135,14 +133,10 @@ class ABTestingService:
         Returns:
             RankingConfig or None.
         """
-        assignment = await self.get_experiment_for_session(
-            session_id=session_id, user_id=user_id
-        )
+        assignment = await self.get_experiment_for_session(session_id=session_id, user_id=user_id)
 
         if assignment:
-            return await self._config_service.get_config_by_id(
-                str(assignment.config_id)
-            )
+            return await self._config_service.get_config_by_id(str(assignment.config_id))
 
         # No experiment, return active config
         return await self._config_service.get_active_config()
@@ -166,9 +160,7 @@ class ABTestingService:
         """
         # Create deterministic hash
         hash_input = f"{session_id}:{experiment_id}"
-        hash_value = int(
-            hashlib.sha256(hash_input.encode()).hexdigest(), 16
-        )
+        hash_value = int(hashlib.sha256(hash_input.encode()).hexdigest(), 16)
         bucket = (hash_value % 100) / 100.0
 
         return "treatment" if bucket < traffic_split else "control"
@@ -192,8 +184,7 @@ class ABTestingService:
 
         if experiment.status != "draft":
             raise ValueError(
-                f"Can only start experiments in 'draft' status, "
-                f"current status: {experiment.status}"
+                f"Can only start experiments in 'draft' status, current status: {experiment.status}"
             )
 
         experiment.status = "running"

@@ -218,9 +218,7 @@ class MCPConnector(ABC, Generic[T]):
             NotImplementedError: If connector doesn't support streaming
         """
         if not self.supports_streaming:
-            raise NotImplementedError(
-                f"Connector '{self.name}' does not support streaming"
-            )
+            raise NotImplementedError(f"Connector '{self.name}' does not support streaming")
         # Subclasses should override this method if streaming is supported
         if False:  # pragma: no cover
             yield  # type: ignore

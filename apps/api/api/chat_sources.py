@@ -71,7 +71,9 @@ def serialize_enhanced_citations(
             "unique": unique_count,
             "duplicates": len(citations[:max_items]) - unique_count,
             "by_type": by_type,
-            "avg_confidence": round(total_confidence / len(citations[:max_items]), 4) if citations else 0.0,
+            "avg_confidence": round(total_confidence / len(citations[:max_items]), 4)
+            if citations
+            else 0.0,
         }
 
     return sources, stats

@@ -8,14 +8,12 @@ from typing import Annotated, Any, Optional
 import anyio
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
-from langchain.memory import ConversationBufferMemory
 from langchain_core.language_models import BaseChatModel
 
 from agents.hybrid_agent import create_hybrid_agent
 from ai.memory import (
     get_context_manager,
     get_optimized_memory,
-    get_session_history,
     init_context_manager,
 )
 from api.chat_sources import serialize_chat_sources, serialize_web_sources
@@ -91,8 +89,7 @@ async def chat_endpoint(
         # Log context optimization metrics if available
         if context_metrics and settings.context_metrics_enabled:
             logger.info(
-                "Context optimization: session=%s tokens=%d/%d "
-                "utilization=%.1f%% cost=$%.4f",
+                "Context optimization: session=%s tokens=%d/%d utilization=%.1f%% cost=$%.4f",
                 session_id,
                 context_metrics.input_tokens,
                 context_metrics.context_window_limit,
@@ -208,7 +205,11 @@ async def chat_endpoint(
                                     last_heartbeat = time.time()
 
                                 # Record chunk metrics
-                                chunk_bytes = len(chunk.encode("utf-8")) if isinstance(chunk, str) else len(chunk)
+                                chunk_bytes = (
+                                    len(chunk.encode("utf-8"))
+                                    if isinstance(chunk, str)
+                                    else len(chunk)
+                                )
                                 stream_metrics.record_chunk(chunk_bytes)
                                 yield f"data: {chunk}\n\n"
 

@@ -193,8 +193,7 @@ class ZaiProvider(RemoteModelProvider):
         api_key = self.get_api_key()
         if not api_key:
             raise RuntimeError(
-                "ZAI API key required. "
-                "Set ZAI_API_KEY environment variable or provide in config."
+                "ZAI API key required. Set ZAI_API_KEY environment variable or provide in config."
             )
 
         # Get timeout from config or use default from settings

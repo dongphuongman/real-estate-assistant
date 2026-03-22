@@ -8,7 +8,7 @@ and optimization for managing conversation context windows across providers.
 import logging
 import re
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
@@ -26,8 +26,9 @@ from ai.context_metrics import (
 )
 
 if TYPE_CHECKING:
-    from config.settings import AppSettings
     from langchain_core.language_models import BaseChatModel
+
+    from config.settings import AppSettings
 
 logger = logging.getLogger(__name__)
 
@@ -86,9 +87,7 @@ class TokenCounter:
                 encoding_name = "cl100k_base"
 
             if encoding_name not in self._encoding_cache:
-                self._encoding_cache[encoding_name] = tiktoken.get_encoding(
-                    encoding_name
-                )
+                self._encoding_cache[encoding_name] = tiktoken.get_encoding(encoding_name)
 
             return self._encoding_cache[encoding_name]
         except ImportError:
@@ -121,9 +120,7 @@ class TokenCounter:
         # Use character-based estimate for other providers
         return len(text) // CHARS_PER_TOKEN_ESTIMATE
 
-    def count_messages_tokens(
-        self, messages: List[BaseMessage], model_id: str
-    ) -> int:
+    def count_messages_tokens(self, messages: List[BaseMessage], model_id: str) -> int:
         """
         Count total tokens in a list of messages.
 
@@ -194,9 +191,7 @@ class TokenCounter:
 class ContextCompressor:
     """Content compression utility for reducing context size."""
 
-    def compress_repeated_content(
-        self, messages: List[BaseMessage]
-    ) -> List[BaseMessage]:
+    def compress_repeated_content(self, messages: List[BaseMessage]) -> List[BaseMessage]:
         """
         Compress messages by removing repeated content.
 
@@ -221,9 +216,7 @@ class ContextCompressor:
                     continue
 
             # Compress property listing patterns
-            content = self._compress_property_patterns(
-                getattr(msg, "content", "") or ""
-            )
+            content = self._compress_property_patterns(getattr(msg, "content", "") or "")
 
             # Create new message with compressed content
             compressed_msg = self._create_message_with_content(msg, content)
@@ -242,9 +235,7 @@ class ContextCompressor:
 
         return re.sub(pattern, replace_repeated, content, flags=re.DOTALL)
 
-    def _create_message_with_content(
-        self, original: BaseMessage, new_content: str
-    ) -> BaseMessage:
+    def _create_message_with_content(self, original: BaseMessage, new_content: str) -> BaseMessage:
         """Create a new message with modified content."""
         if isinstance(original, HumanMessage):
             return HumanMessage(content=new_content)
@@ -255,9 +246,7 @@ class ContextCompressor:
         else:
             return HumanMessage(content=new_content)
 
-    def deduplicate_consecutive(
-        self, messages: List[BaseMessage]
-    ) -> List[BaseMessage]:
+    def deduplicate_consecutive(self, messages: List[BaseMessage]) -> List[BaseMessage]:
         """Remove consecutive duplicate messages."""
         if not messages:
             return messages
@@ -297,9 +286,7 @@ Provide a brief summary (2-3 sentences) that captures the essential context:"""
         """
         self.max_summary_tokens = max_summary_tokens
 
-    def summarize_history(
-        self, messages: List[BaseMessage], llm: "BaseChatModel"
-    ) -> str:
+    def summarize_history(self, messages: List[BaseMessage], llm: "BaseChatModel") -> str:
         """
         Summarize conversation history using LLM.
 
@@ -429,9 +416,7 @@ class ContextManager:
 
         # Get context window for model
         context_window = self.token_counter.get_context_window_limit(model_id)
-        max_util = max_utilization or (
-            self.settings.context_max_utilization_percent / 100.0
-        )
+        max_util = max_utilization or (self.settings.context_max_utilization_percent / 100.0)
         max_tokens = int(context_window * max_util)
 
         # Count initial tokens
@@ -462,9 +447,7 @@ class ContextManager:
             compression_applied = True
 
         # Check if compression was enough
-        current_tokens = self.token_counter.count_messages_tokens(
-            optimized, model_id
-        )
+        current_tokens = self.token_counter.count_messages_tokens(optimized, model_id)
 
         # Step 2: Apply sliding window if still over limit
         if current_tokens > max_tokens:
@@ -474,9 +457,7 @@ class ContextManager:
             )
 
         # Check again
-        current_tokens = self.token_counter.count_messages_tokens(
-            optimized, model_id
-        )
+        current_tokens = self.token_counter.count_messages_tokens(optimized, model_id)
 
         # Step 3: Apply priority selection if still over limit
         if current_tokens > max_tokens:
@@ -489,9 +470,7 @@ class ContextManager:
             )
 
         # Check again
-        current_tokens = self.token_counter.count_messages_tokens(
-            optimized, model_id
-        )
+        current_tokens = self.token_counter.count_messages_tokens(optimized, model_id)
 
         # Step 4: Apply summarization if still over limit and LLM available
         if current_tokens > max_tokens and llm:
@@ -502,9 +481,7 @@ class ContextManager:
 
             # Replace old messages with summary
             recent_messages = optimized[-self.settings.context_sliding_window_messages :]
-            summary_msg = SystemMessage(
-                content=f"[Previous conversation summary: {summary}]"
-            )
+            summary_msg = SystemMessage(content=f"[Previous conversation summary: {summary}]")
             optimized = [summary_msg] + recent_messages
             summarization_applied = True
 
@@ -644,9 +621,7 @@ class ContextManager:
 
         return [msg for _, msg in selected]
 
-    def _estimate_cost(
-        self, model_id: str, input_tokens: int, output_tokens: int
-    ) -> float:
+    def _estimate_cost(self, model_id: str, input_tokens: int, output_tokens: int) -> float:
         """Estimate cost for token usage."""
         try:
             from models.provider_factory import ModelProviderFactory

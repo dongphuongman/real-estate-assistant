@@ -6,13 +6,11 @@ Task #74: Response Streaming Improvements
 
 import time
 
-import pytest
-
 from utils.streaming import (
     HeartbeatConfig,
     ReconnectionConfig,
-    StreamMetrics,
     StreamingHealthTracker,
+    StreamMetrics,
     calculate_backoff,
     format_sse_event,
     format_sse_heartbeat,

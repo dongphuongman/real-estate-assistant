@@ -3,10 +3,8 @@
 from datetime import UTC, datetime
 
 import pytest
-from sqlalchemy import select
 
-from db.database import get_db
-from db.models import FilterPresetDB, User
+from db.models import User
 from db.repositories import FilterPresetRepository
 from db.schemas import FilterPresetCreate, FilterPresetUpdate
 

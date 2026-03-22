@@ -1,6 +1,5 @@
 """Tests for MCPConnectorResult dataclass."""
 
-
 from mcp.result import MCPConnectorResult
 
 

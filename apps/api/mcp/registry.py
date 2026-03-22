@@ -51,9 +51,7 @@ class MCPConnectorRegistry:
         logger.info(f"MCP registry edition set to: {edition.value}")
 
     @classmethod
-    def load_allowlist_from_yaml(
-        cls, config_path: Optional[str] = None
-    ) -> None:
+    def load_allowlist_from_yaml(cls, config_path: Optional[str] = None) -> None:
         """
         Load allowlist from YAML configuration file.
 
@@ -139,9 +137,7 @@ class MCPConnectorRegistry:
             raise ValueError("Connector must have a 'name' attribute")
 
         if connector_class.name in cls._connectors:
-            logger.warning(
-                f"Connector '{connector_class.name}' already registered, overwriting"
-            )
+            logger.warning(f"Connector '{connector_class.name}' already registered, overwriting")
 
         cls._connectors[connector_class.name] = connector_class
 
@@ -282,9 +278,7 @@ class MCPConnectorRegistry:
             "requires_api_key": connector_class.requires_api_key,
             "allowlisted": cls.is_allowlisted(name),
             "accessible": (
-                cls.is_allowlisted(name)
-                if cls._current_edition == MCPEdition.COMMUNITY
-                else True
+                cls.is_allowlisted(name) if cls._current_edition == MCPEdition.COMMUNITY else True
             ),
             "min_edition": connector_class.min_edition.value,
             "supports_streaming": connector_class.supports_streaming,
@@ -366,9 +360,7 @@ class MCPConnectorRegistry:
         config = validator.reload_config()
         cls._allowlist = set(config.get_allowlist_names())
         cls._current_edition = config.edition
-        logger.info(
-            f"Reloaded allowlist: {len(cls._allowlist)} connectors"
-        )
+        logger.info(f"Reloaded allowlist: {len(cls._allowlist)} connectors")
 
 
 def register_mcp_connector(

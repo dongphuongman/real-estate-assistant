@@ -48,12 +48,16 @@ class RankingConfigBase(BaseModel):
     # Reranker boost factors
     boost_exact_match: float = Field(default=1.5, ge=0.0, description="Boost for exact matches")
     boost_metadata_match: float = Field(default=1.3, ge=0.0, description="Boost for metadata match")
-    boost_quality_signals: float = Field(default=1.2, ge=0.0, description="Boost for quality signals")
+    boost_quality_signals: float = Field(
+        default=1.2, ge=0.0, description="Boost for quality signals"
+    )
     diversity_penalty: float = Field(default=0.9, ge=0.0, le=1.0, description="Diversity penalty")
 
     # Additional ranking signals
     weight_recency: float = Field(default=0.1, ge=0.0, le=1.0, description="Recency weight")
-    weight_price_match: float = Field(default=0.15, ge=0.0, le=1.0, description="Price match weight")
+    weight_price_match: float = Field(
+        default=0.15, ge=0.0, le=1.0, description="Price match weight"
+    )
     weight_location: float = Field(default=0.1, ge=0.0, le=1.0, description="Location weight")
 
     # Personalization

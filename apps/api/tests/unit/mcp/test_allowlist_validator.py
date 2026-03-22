@@ -208,9 +208,7 @@ restricted:
 metadata:
   version: "1.0.0"
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".yaml", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(yaml_content)
             f.flush()
             temp_path = Path(f.name)
@@ -230,9 +228,7 @@ metadata:
 
     def test_load_config_invalid_yaml(self) -> None:
         """Test loading config with invalid YAML."""
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".yaml", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write("invalid: yaml: content: [")
             f.flush()
             temp_path = Path(f.name)
@@ -422,9 +418,7 @@ allowlist:
   - name: reloaded_conn
     display_name: Reloaded Connector
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".yaml", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(yaml_content)
             f.flush()
             temp_path = Path(f.name)

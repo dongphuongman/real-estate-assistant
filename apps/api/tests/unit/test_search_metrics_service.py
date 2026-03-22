@@ -255,12 +255,8 @@ async def test_calculate_ctr_with_clicks(
 ):
     """Test CTR calculation with clicks."""
     # Record some clicks
-    await search_metrics_service.record_click(
-        str(search_event.id), "prop1", 0
-    )
-    await search_metrics_service.record_click(
-        str(search_event.id), "prop2", 1
-    )
+    await search_metrics_service.record_click(str(search_event.id), "prop1", 0)
+    await search_metrics_service.record_click(str(search_event.id), "prop2", 1)
 
     ctr = await search_metrics_service.calculate_ctr()
 
@@ -308,9 +304,7 @@ async def test_calculate_ctr_filters_by_config(
     await search_metrics_service.record_click(str(event2.id), "f", 0)
 
     # Filter by first config only
-    ctr = await search_metrics_service.calculate_ctr(
-        ranking_config_id=str(ranking_config.id)
-    )
+    ctr = await search_metrics_service.calculate_ctr(ranking_config_id=str(ranking_config.id))
 
     # 1 click / 5 results = 0.2
     assert ctr == 0.2
@@ -335,9 +329,7 @@ async def test_calculate_mrr_first_position(
     search_event: SearchEvent,
 ):
     """Test MRR when first click is at position 0."""
-    await search_metrics_service.record_click(
-        str(search_event.id), "prop1", 0
-    )
+    await search_metrics_service.record_click(str(search_event.id), "prop1", 0)
 
     mrr = await search_metrics_service.calculate_mrr()
 
@@ -351,9 +343,7 @@ async def test_calculate_mrr_second_position(
     search_event: SearchEvent,
 ):
     """Test MRR when first click is at position 1."""
-    await search_metrics_service.record_click(
-        str(search_event.id), "prop2", 1
-    )
+    await search_metrics_service.record_click(str(search_event.id), "prop2", 1)
 
     mrr = await search_metrics_service.calculate_mrr()
 
@@ -416,9 +406,7 @@ async def test_calculate_ndcg_single_click(
     search_event: SearchEvent,
 ):
     """Test NDCG with a single click at position 0."""
-    await search_metrics_service.record_click(
-        str(search_event.id), "prop1", 0
-    )
+    await search_metrics_service.record_click(str(search_event.id), "prop1", 0)
 
     ndcg = await search_metrics_service.calculate_ndcg(k=10)
 
@@ -433,9 +421,7 @@ async def test_calculate_ndcg_with_favorites(
 ):
     """Test NDCG with favorites (higher gain)."""
     # Click at position 0 (gain=1)
-    await search_metrics_service.record_click(
-        str(search_event.id), "prop1", 0
-    )
+    await search_metrics_service.record_click(str(search_event.id), "prop1", 0)
 
     # Click + favorite at position 1 (gain=2)
     data = InteractionData(

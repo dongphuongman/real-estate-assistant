@@ -172,9 +172,7 @@ class TestMCPConnectorRegistryAllowlist:
         MCPConnectorRegistry.register(NonAllowlistedConnector)
 
         # Should work with skip_edition_check
-        connector = MCPConnectorRegistry.get_connector(
-            "non_allowlisted", skip_edition_check=True
-        )
+        connector = MCPConnectorRegistry.get_connector("non_allowlisted", skip_edition_check=True)
         assert connector is not None
 
     def test_list_connectors_filters_by_edition(self) -> None:

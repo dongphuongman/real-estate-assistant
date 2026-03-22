@@ -20,15 +20,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from config.settings import get_settings
-from utils.streaming import (
-    HeartbeatConfig,
-    calculate_backoff,
-    format_sse_heartbeat,
-    format_sse_retry,
-)
-
 from api.deps.auth import get_current_active_user
+from config.settings import get_settings
 from db import AnomalyRepository, PriceSnapshotRepository
 from db.database import get_db
 from db.schemas import (
@@ -39,6 +32,12 @@ from db.schemas import (
     UserResponse,
 )
 from services.anomaly_service import AnomalyService
+from utils.streaming import (
+    HeartbeatConfig,
+    calculate_backoff,
+    format_sse_heartbeat,
+    format_sse_retry,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -191,13 +190,11 @@ async def stream_anomalies(
                 # Check if we should stop after too many errors
                 if consecutive_errors >= max_consecutive_errors:
                     logger.error(
-                        f"Anomaly stream stopping after "
-                        f"{consecutive_errors} consecutive errors"
+                        f"Anomaly stream stopping after {consecutive_errors} consecutive errors"
                     )
-                    fatal_payload = json.dumps({
-                        "type": "fatal_error",
-                        "message": "Too many errors, reconnecting..."
-                    })
+                    fatal_payload = json.dumps(
+                        {"type": "fatal_error", "message": "Too many errors, reconnecting..."}
+                    )
                     yield f"data: {fatal_payload}\n\n"
                     break
 

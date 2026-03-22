@@ -229,8 +229,7 @@ def test_assign_variant_deterministic(ab_testing_service: ABTestingService):
 
     # Call multiple times - should always return same result
     results = [
-        ab_testing_service._assign_variant(session_id, experiment_id, 0.5)
-        for _ in range(10)
+        ab_testing_service._assign_variant(session_id, experiment_id, 0.5) for _ in range(10)
     ]
 
     assert len(set(results)) == 1  # All results should be identical
@@ -242,8 +241,7 @@ def test_assign_variant_different_sessions(ab_testing_service: ABTestingService)
 
     # Collect variants for many sessions
     variants = [
-        ab_testing_service._assign_variant(f"session-{i}", experiment_id, 0.5)
-        for i in range(100)
+        ab_testing_service._assign_variant(f"session-{i}", experiment_id, 0.5) for i in range(100)
     ]
 
     # With 50/50 split and 100 sessions, we should get both variants
@@ -302,9 +300,7 @@ async def test_get_ranking_config_for_session_returns_active_when_no_experiment(
     # First deactivate all existing configs to avoid conflicts
     from sqlalchemy import update
 
-    await db_session.execute(
-        update(RankingConfig).values(is_active=False)
-    )
+    await db_session.execute(update(RankingConfig).values(is_active=False))
     await db_session.commit()
 
     # Create a new config specifically for this test and activate it
@@ -386,9 +382,7 @@ async def test_stop_experiment_with_reason(
 ):
     """Test stopping an experiment with a reason."""
     reason = "Statistical significance reached"
-    result = await ab_testing_service.stop_experiment(
-        str(running_experiment.id), reason=reason
-    )
+    result = await ab_testing_service.stop_experiment(str(running_experiment.id), reason=reason)
 
     assert result is not None
     assert result.status == "completed"

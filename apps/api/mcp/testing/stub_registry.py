@@ -120,8 +120,7 @@ class StubRegistry:
             # Stubs should never make network calls by design
             if hasattr(stub, "_network_call_detected"):
                 raise RuntimeError(
-                    f"Stub '{name}' made a network call. "
-                    "Stubs should never access the network."
+                    f"Stub '{name}' made a network call. Stubs should never access the network."
                 )
         return True
 

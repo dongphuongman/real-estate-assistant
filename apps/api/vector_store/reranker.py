@@ -484,8 +484,6 @@ def create_reranker(
         Configured Reranker
     """
     if advanced:
-        return StrategicReranker(
-            valuation_model=valuation_model, ranking_weights=ranking_weights
-        )
+        return StrategicReranker(valuation_model=valuation_model, ranking_weights=ranking_weights)
     else:
         return SimpleReranker()

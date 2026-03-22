@@ -8,28 +8,28 @@ Tests cover:
 - ContextManager: Main orchestrator
 """
 
-import pytest
-from datetime import datetime
-from unittest.mock import MagicMock
-from pathlib import Path
 import tempfile
+from datetime import datetime
+from pathlib import Path
+from unittest.mock import MagicMock
 
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+import pytest
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 from ai.context_manager import (
-    TokenCounter,
+    CHARS_PER_TOKEN_ESTIMATE,
+    DEFAULT_CONTEXT_WINDOWS,
     ContextCompressor,
-    ContextSummarizer,
     ContextManager,
     ContextMetrics,
-    DEFAULT_CONTEXT_WINDOWS,
-    CHARS_PER_TOKEN_ESTIMATE,
+    ContextSummarizer,
+    TokenCounter,
 )
 from ai.context_metrics import (
     ContextUsageMetrics,
+    get_usage_by_session,
     init_context_metrics_db,
     log_context_metrics,
-    get_usage_by_session,
 )
 
 
@@ -84,9 +84,7 @@ class TestTokenCounter:
         assert total > 0
 
         # Should be sum of individual counts plus overhead
-        individual_sum = sum(
-            counter.count_tokens(m.content, "gpt-4o") for m in messages
-        )
+        individual_sum = sum(counter.count_tokens(m.content, "gpt-4o") for m in messages)
         overhead = len(messages) * 4  # 4 tokens overhead per message
         assert total == individual_sum + overhead
 
@@ -486,15 +484,13 @@ class TestIntegration:
         for i in range(100):
             messages.append(
                 HumanMessage(
-                    content=f"I'm looking for a property in Berlin. "
-                    f"Budget around {i * 10000} EUR."
+                    content=f"I'm looking for a property in Berlin. Budget around {i * 10000} EUR."
                 )
             )
             messages.append(
                 AIMessage(
                     content=f"Here are some options for your budget of "
-                    f"{i * 10000} EUR in Berlin..."
-                    * 50  # Make it long
+                    f"{i * 10000} EUR in Berlin..." * 50  # Make it long
                 )
             )
 

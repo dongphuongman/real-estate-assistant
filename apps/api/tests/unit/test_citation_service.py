@@ -260,7 +260,9 @@ class TestContentSnippet:
     def test_extract_content_snippet_basic(self, citation_service):
         """Test basic snippet extraction."""
         content = "Berlin apartment under 500k is great for families and has good schools."
-        result = citation_service.extract_content_snippet(content, "Berlin apartment", max_length=100)
+        result = citation_service.extract_content_snippet(
+            content, "Berlin apartment", max_length=100
+        )
         assert len(result) <= 103  # max_length + "..."
         assert "Berlin" in result.lower() or "apartment" in result.lower()
 

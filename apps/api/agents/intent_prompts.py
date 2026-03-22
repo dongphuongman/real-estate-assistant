@@ -87,6 +87,4 @@ def get_system_prompt_for_intent(intent: QueryIntent) -> str:
     Returns:
         System prompt string optimized for that intent
     """
-    return INTENT_SYSTEM_PROMPTS.get(
-        intent, INTENT_SYSTEM_PROMPTS[QueryIntent.GENERAL]
-    )
+    return INTENT_SYSTEM_PROMPTS.get(intent, INTENT_SYSTEM_PROMPTS[QueryIntent.GENERAL])

@@ -9,7 +9,7 @@ import sqlite3
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 # Default path for context metrics database
 CONTEXT_METRICS_DB_PATH = Path("data/context_metrics.db")

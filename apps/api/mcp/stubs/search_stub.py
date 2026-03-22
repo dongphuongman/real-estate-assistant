@@ -82,9 +82,7 @@ class PropertySearchStub(MCPStub[SearchResult]):
         if search_results:
             self.add_responses(search_results)
 
-    def set_search_handler(
-        self, handler: Callable[[str], SearchResult]
-    ) -> None:
+    def set_search_handler(self, handler: Callable[[str], SearchResult]) -> None:
         """
         Set a custom search handler.
 
@@ -155,9 +153,7 @@ class PropertySearchStub(MCPStub[SearchResult]):
             self._record_call(operation, params, kwargs, error=str(e))
             return result
 
-    async def _handle_operation(
-        self, operation: str, params: Dict[str, Any]
-    ) -> SearchResult:
+    async def _handle_operation(self, operation: str, params: Dict[str, Any]) -> SearchResult:
         """Handle the operation."""
         if operation == "search":
             return await self._op_search(params)
