@@ -13,8 +13,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.auth import require_api_key
-from db.database import get_db_session
+from api.auth import get_api_key
+from db.database import get_db
 from db.models import RankingConfig
 from services.ranking_config_service import (
     RankingConfigService,
@@ -125,8 +125,8 @@ class RankingWeightsResponse(BaseModel):
 
 @router.get("/configs", response_model=List[RankingConfigResponse])
 async def list_configs(
-    _: None = Depends(require_api_key),
-    session: AsyncSession = Depends(get_db_session),
+    _: None = Depends(get_api_key),
+    session: AsyncSession = Depends(get_db),
 ) -> List[RankingConfigResponse]:
     """
     List all ranking configurations.
@@ -162,7 +162,7 @@ async def list_configs(
 
 @router.get("/configs/active", response_model=RankingConfigResponse)
 async def get_active_config(
-    _: None = Depends(require_api_key),
+    _: None = Depends(get_api_key),
     service: RankingConfigService = Depends(get_ranking_config_service),
 ) -> RankingConfigResponse:
     """
@@ -217,7 +217,7 @@ async def get_active_weights(
 @router.get("/configs/{config_id}", response_model=RankingConfigResponse)
 async def get_config(
     config_id: str,
-    _: None = Depends(require_api_key),
+    _: None = Depends(get_api_key),
     service: RankingConfigService = Depends(get_ranking_config_service),
 ) -> RankingConfigResponse:
     """
@@ -255,7 +255,7 @@ async def get_config(
 @router.post("/configs", response_model=RankingConfigResponse, status_code=status.HTTP_201_CREATED)
 async def create_config(
     request: RankingConfigCreate,
-    _: None = Depends(require_api_key),
+    _: None = Depends(get_api_key),
     service: RankingConfigService = Depends(get_ranking_config_service),
 ) -> RankingConfigResponse:
     """
@@ -312,7 +312,7 @@ async def create_config(
 async def update_config(
     config_id: str,
     request: RankingConfigUpdate,
-    _: None = Depends(require_api_key),
+    _: None = Depends(get_api_key),
     service: RankingConfigService = Depends(get_ranking_config_service),
 ) -> RankingConfigResponse:
     """
@@ -370,7 +370,7 @@ async def update_config(
 @router.post("/configs/{config_id}/activate", response_model=RankingConfigResponse)
 async def activate_config(
     config_id: str,
-    _: None = Depends(require_api_key),
+    _: None = Depends(get_api_key),
     service: RankingConfigService = Depends(get_ranking_config_service),
 ) -> RankingConfigResponse:
     """
@@ -413,7 +413,7 @@ async def activate_config(
 @router.delete("/configs/{config_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_config(
     config_id: str,
-    _: None = Depends(require_api_key),
+    _: None = Depends(get_api_key),
     service: RankingConfigService = Depends(get_ranking_config_service),
 ) -> None:
     """

@@ -10,10 +10,12 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any, Optional
 
+from fastapi import Depends
 from pydantic import BaseModel, Field
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from db.database import get_db
 from db.models import RankingConfig
 
 logger = logging.getLogger(__name__)
@@ -439,7 +441,7 @@ class RankingConfigService:
 
 # Dependency injection helper
 def get_ranking_config_service(
-    session: AsyncSession,
+    session: AsyncSession = Depends(get_db),
 ) -> RankingConfigService:
     """Get a RankingConfigService instance."""
     return RankingConfigService(session)
