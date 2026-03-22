@@ -31,6 +31,7 @@ class ExportFormat(str, Enum):
     JSON = "json"
     MARKDOWN = "md"
     PDF = "pdf"
+    PARQUET = "parquet"
 
 
 class PropertyExporter:
@@ -558,6 +559,30 @@ class PropertyExporter:
         output.seek(0)
         return output
 
+    def export_to_parquet(
+        self,
+        columns: Optional[List[str]] = None,
+        compression: str = "snappy",
+    ) -> BytesIO:
+        """
+        Export properties to Apache Parquet format.
+
+        Parquet is a columnar storage format optimized for big data processing.
+        It provides efficient compression and encoding schemes.
+
+        Args:
+            columns: Optional list of columns to include
+            compression: Compression algorithm ('snappy', 'gzip', 'brotli', None)
+
+        Returns:
+            BytesIO object containing Parquet file
+        """
+        df = self._filtered_df(columns)
+        output = BytesIO()
+        df.to_parquet(output, engine="pyarrow", compression=compression, index=False)
+        output.seek(0)
+        return output
+
     def export(self, format: ExportFormat, **kwargs: Any) -> str | BytesIO:
         """
         Export properties to specified format.
@@ -579,6 +604,8 @@ class PropertyExporter:
             return self.export_to_markdown(**kwargs)
         elif format == ExportFormat.PDF:
             return self.export_to_pdf()
+        elif format == ExportFormat.PARQUET:
+            return self.export_to_parquet(**kwargs)
         else:
             raise ValueError(f"Unsupported export format: {format}")
 

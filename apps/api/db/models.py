@@ -2005,3 +2005,77 @@ class DataSourceSyncHistory(Base):
 
     def __repr__(self) -> str:
         return f"<DataSourceSyncHistory(id={self.id[:8]}..., source_id={self.data_source_id[:8]}..., status={self.status})>"
+
+
+# =============================================================================
+# Bulk Import/Export Job Models (Task #80)
+# =============================================================================
+
+
+class BulkJob(Base):
+    """Database model for tracking async bulk import/export jobs.
+
+    Stores job status, progress, and results for long-running operations
+    that are executed in the background using FastAPI BackgroundTasks.
+    """
+
+    __tablename__ = "bulk_jobs"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+
+    # Job identification
+    job_type: Mapped[str] = mapped_column(
+        String(20), nullable=False, index=True
+    )  # import, export
+    source_type: Mapped[str] = mapped_column(
+        String(50), nullable=False, index=True
+    )  # url, file_upload, portal_api, search
+
+    # User who initiated the job
+    user_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+
+    # Job configuration
+    config: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+
+    # Status tracking
+    status: Mapped[str] = mapped_column(
+        String(20), default="pending", nullable=False, index=True
+    )  # pending, running, completed, failed, cancelled
+
+    # Progress tracking
+    records_total: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    records_processed: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    records_failed: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    progress_percent: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+
+    # Results
+    result_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)  # Download URL
+    result_data: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)  # Summary stats
+
+    # Error tracking
+    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    error_details: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    started_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    expires_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )  # For result cleanup
+
+    # Relationships
+    user: Mapped[Optional["User"]] = relationship("User", backref="bulk_jobs")
+
+    # Indexes
+    __table_args__ = (
+        Index("ix_bulk_jobs_type_status", "job_type", "status"),
+        Index("ix_bulk_jobs_created", "created_at"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<BulkJob(id={self.id[:8]}..., type={self.job_type}, status={self.status}, progress={self.progress_percent}%)>"

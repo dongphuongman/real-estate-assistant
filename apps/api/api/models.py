@@ -1032,3 +1032,114 @@ class SyncHistoryResponse(BaseModel):
     source_id: str
     history: List[SyncHistoryItem]
     total: int
+
+
+# ============================================================================
+# TASK-080: Bulk Import/Export Job Models
+# ============================================================================
+
+
+class BulkJobType(str, Enum):
+    """Type of bulk job."""
+
+    IMPORT = "import"
+    EXPORT = "export"
+
+
+class BulkJobSourceType(str, Enum):
+    """Source type for bulk jobs."""
+
+    URL = "url"
+    FILE_UPLOAD = "file_upload"
+    PORTAL_API = "portal_api"
+    SEARCH = "search"
+
+
+class BulkJobStatus(str, Enum):
+    """Status of a bulk job."""
+
+    PENDING = "pending"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
+class BulkImportRequest(BaseModel):
+    """Request model for starting a bulk import job."""
+
+    source_type: BulkJobSourceType = Field(
+        ..., description="Type of import source"
+    )
+    config: Dict[str, Any] = Field(
+        ...,
+        description=(
+            "Import configuration. For url: {file_urls, sheet_name?, "
+            "header_row?}. For file_upload: {temp_file_path, filename}. "
+            "For portal_api: {portal, city, filters?}"
+        ),
+    )
+    source_name: Optional[str] = Field(
+        None, description="Optional name for tracking the import"
+    )
+
+
+class BulkExportRequest(BaseModel):
+    """Request model for starting a bulk export job."""
+
+    format: str = Field(
+        ..., description="Export format: csv, json, excel, parquet, markdown, pdf"
+    )
+    source_type: BulkJobSourceType = Field(
+        default=BulkJobSourceType.SEARCH, description="Source type for export"
+    )
+    config: Dict[str, Any] = Field(
+        ...,
+        description=(
+            "Export configuration. For search: {query, filters?, limit?}. "
+            "For property_ids: {property_ids}"
+        ),
+    )
+    columns: Optional[List[str]] = Field(
+        None, description="Columns to include in export"
+    )
+    include_header: bool = Field(default=True, description="Include header row")
+
+
+class BulkJobResponse(BaseModel):
+    """Response model for a single bulk job."""
+
+    id: str
+    job_type: str
+    source_type: str
+    status: str
+    records_total: int
+    records_processed: int
+    records_failed: int
+    progress_percent: float
+    result_url: Optional[str] = None
+    result_data: Optional[Dict[str, Any]] = None
+    error_message: Optional[str] = None
+    created_at: datetime
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
+
+
+class BulkJobListResponse(BaseModel):
+    """Response model for listing bulk jobs."""
+
+    jobs: List[BulkJobResponse]
+    total: int
+    page: int
+    page_size: int
+
+
+class BulkJobCreateResponse(BaseModel):
+    """Response model after creating a bulk job."""
+
+    id: str
+    job_type: str
+    status: str
+    message: str
+    created_at: datetime

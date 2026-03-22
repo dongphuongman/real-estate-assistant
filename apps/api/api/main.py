@@ -29,6 +29,7 @@ from api.routers import (
     anomalies,  # Task #53: Market Anomaly Detection
     auth,
     auth_jwt,  # JWT authentication endpoints
+    bulk_jobs,  # Task #80: Import/Export Data API
     chat,
     collections,  # Task #37: Property collections
     data_sources,  # Task #79: Data Sources Dashboard
@@ -348,6 +349,8 @@ app.include_router(prompt_templates.router, prefix="/api/v1", dependencies=[Depe
 app.include_router(admin.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 # Task #79: Data Sources Dashboard
 app.include_router(data_sources.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
+# Task #80: Import/Export Data API
+app.include_router(bulk_jobs.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(mcp_admin.router, prefix="/api/v1")  # Task #68: MCP Admin (has its own auth)
 app.include_router(exports.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(auth.router, prefix="/api/v1")
