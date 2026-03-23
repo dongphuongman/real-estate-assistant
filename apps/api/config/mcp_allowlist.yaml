@@ -29,6 +29,12 @@ allowlist:
     enabled: true
     edition: community
 
+  - name: web_scraper
+    display_name: Web Scraper
+    description: Configurable web scraping connector for content extraction
+    enabled: true
+    edition: community
+
 # Non-allowlisted connectors (PRO/Enterprise only)
 # These require higher tier for data access
 restricted:

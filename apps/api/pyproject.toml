@@ -34,6 +34,9 @@ dependencies = [
     "reportlab>=4.0.0",
     # Push notifications (Task #63)
     "pywebpush>=2.0.0",
+    # Web scraping (Task #72)
+    "beautifulsoup4>=4.12.0",
+    "lxml>=4.9.0",
 ]
 
 [project.optional-dependencies]

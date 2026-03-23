@@ -1,1 +1,1 @@
-"""MCP stubs test package."""
+"""Tests for MCP stub connectors."""
