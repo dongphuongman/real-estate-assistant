@@ -83,7 +83,7 @@ async def get_activity_summary(
 async def get_activity_trends(
     interval: str = Query(
         "day",
-        regex="^(day|week|month)$",
+        pattern="^(day|week|month)$",
         description="Time interval for grouping",
     ),
     period_start: datetime | None = Query(
@@ -220,7 +220,7 @@ async def get_global_activity_summary(
 async def get_global_activity_trends(
     interval: str = Query(
         "day",
-        regex="^(day|week|month)$",
+        pattern="^(day|week|month)$",
         description="Time interval for grouping",
     ),
     period_start: datetime | None = Query(
