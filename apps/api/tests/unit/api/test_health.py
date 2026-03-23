@@ -8,6 +8,7 @@ from api.health import (
     DependencyHealth,
     HealthCheckResponse,
     HealthStatus,
+    check_database,
     check_llm_provider,
     check_redis,
     get_health_status,
@@ -193,3 +194,71 @@ async def test_require_healthy_raises_on_unhealthy_dependencies(monkeypatch):
     with pytest.raises(HTTPException) as exc_info:
         await require_healthy()
     assert "vector_store" in str(exc_info.value.detail)
+
+
+# Tests for check_database
+@pytest.mark.asyncio
+async def test_check_database_returns_none_when_not_configured(monkeypatch):
+    """Database check returns None when DATABASE_URL is not set."""
+    settings = SimpleNamespace(database_url=None)
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.setattr("api.health.get_settings", lambda: settings)
+    result = await check_database()
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_check_database_healthy_when_connection_succeeds(monkeypatch):
+    """Database check returns healthy when connection succeeds."""
+    settings = SimpleNamespace(database_url="sqlite+aiosqlite:///test.db")
+
+    # Create fake engine and connection
+    class FakeConnection:
+        async def execute(self, text):
+            return None
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            return None
+
+    class FakeEngine:
+        def connect(self):
+            return FakeConnection()
+
+    fake_sqlalchemy = SimpleNamespace(text=lambda s: s)
+    fake_database = SimpleNamespace(get_engine=lambda: FakeEngine())
+
+    monkeypatch.setenv("DATABASE_URL", "sqlite+aiosqlite:///test.db")
+    monkeypatch.setattr("api.health.get_settings", lambda: settings)
+    monkeypatch.setitem(sys.modules, "sqlalchemy", fake_sqlalchemy)
+    monkeypatch.setitem(sys.modules, "db.database", fake_database)
+
+    result = await check_database()
+    assert result is not None
+    assert result.status == HealthStatus.HEALTHY
+    assert result.message == "OK"
+
+
+@pytest.mark.asyncio
+async def test_check_database_unhealthy_on_error(monkeypatch):
+    """Database check returns unhealthy when connection fails."""
+    settings = SimpleNamespace(database_url="postgresql://invalid:5432/db")
+
+    class FakeEngine:
+        def connect(self):
+            raise RuntimeError("Connection refused")
+
+    fake_sqlalchemy = SimpleNamespace(text=lambda s: s)
+    fake_database = SimpleNamespace(get_engine=lambda: FakeEngine())
+
+    monkeypatch.setenv("DATABASE_URL", "postgresql://invalid:5432/db")
+    monkeypatch.setattr("api.health.get_settings", lambda: settings)
+    monkeypatch.setitem(sys.modules, "sqlalchemy", fake_sqlalchemy)
+    monkeypatch.setitem(sys.modules, "db.database", fake_database)
+
+    result = await check_database()
+    assert result is not None
+    assert result.status == HealthStatus.UNHEALTHY
+    assert result.message.startswith("Error:")
