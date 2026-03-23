@@ -279,6 +279,51 @@ def get_data_enrichment_service() -> Optional[DataEnrichmentService]:
     return BasicDataEnrichmentService()
 
 
+# =============================================================================
+# Property Enrichment Dependencies (Task #78)
+# =============================================================================
+
+_enrichment_pipeline: Optional[Any] = None
+
+
+def get_enrichment_pipeline() -> Optional[Any]:
+    """
+    Get enrichment pipeline instance.
+
+    Returns None if enrichment is disabled.
+    """
+    from data.enrichment.pipeline import PipelineConfig, get_enrichment_pipeline as _get_impl
+
+    if not settings.enrichment_enabled:
+        return None
+
+    config = PipelineConfig(
+        enabled=settings.enrichment_enabled,
+        parallel_execution=settings.enrichment_parallel_execution,
+        max_concurrent=settings.enrichment_max_concurrent,
+        default_timeout=settings.enrichment_timeout_seconds,
+        cache_enabled=settings.enrichment_cache_enabled,
+        fallback_on_error=settings.enrichment_fallback_on_error,
+        sources=settings.enrichment_sources if settings.enrichment_sources else None,
+    )
+    return _get_impl(config)
+
+
+def get_enrichment_status(property_id: str) -> dict[str, Any]:
+    """
+    Get enrichment status for a property.
+
+    Args:
+        property_id: Property identifier
+
+    Returns:
+        Status dictionary
+    """
+    from data.enrichment.status import get_status_tracker
+
+    return get_status_tracker().get_status(property_id)
+
+
 def get_legal_check_service() -> Optional[LegalCheckService]:
     if settings.legal_check_mode != "basic":
         return None

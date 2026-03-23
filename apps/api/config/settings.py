@@ -493,6 +493,54 @@ class AppSettings(BaseModel):
     )
 
     # =============================================================================
+    # =============================================================================
+    # Property Enrichment Settings (Task #78)
+    # =============================================================================
+    enrichment_enabled: bool = Field(
+        default_factory=lambda: (
+            os.getenv("ENRICHMENT_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
+        ),
+        description="Enable property data enrichment from external sources",
+    )
+    enrichment_default_ttl: int = Field(
+        default_factory=lambda: int(os.getenv("ENRICHMENT_DEFAULT_TTL", "3600")),
+        description="Default TTL for enrichment cache in seconds",
+    )
+    enrichment_parallel_execution: bool = Field(
+        default_factory=lambda: (
+            os.getenv("ENRICHMENT_PARALLEL_EXECUTION", "true").strip().lower()
+            in {"1", "true", "yes", "on"}
+        ),
+        description="Run enrichers in parallel",
+    )
+    enrichment_max_concurrent: int = Field(
+        default_factory=lambda: int(os.getenv("ENRICHMENT_MAX_CONCURRENT", "5")),
+        description="Maximum concurrent enrichers",
+    )
+    enrichment_timeout_seconds: float = Field(
+        default_factory=lambda: float(os.getenv("ENRICHMENT_TIMEOUT_SECONDS", "30")),
+        description="Default timeout for enrichment operations",
+    )
+    enrichment_sources: list[str] = Field(
+        default_factory=lambda: _parse_csv_list(os.getenv("ENRICHMENT_SOURCES")),
+        description="Comma-separated list of enabled enrichment sources (empty = all)",
+    )
+    enrichment_cache_enabled: bool = Field(
+        default_factory=lambda: (
+            os.getenv("ENRICHMENT_CACHE_ENABLED", "true").strip().lower()
+            in {"1", "true", "yes", "on"}
+        ),
+        description="Enable caching for enrichment results",
+    )
+    enrichment_fallback_on_error: bool = Field(
+        default_factory=lambda: (
+            os.getenv("ENRICHMENT_FALLBACK_ON_ERROR", "true").strip().lower()
+            in {"1", "true", "yes", "on"}
+        ),
+        description="Use fallback values when enrichment fails",
+    )
+
+    # =============================================================================
     # Context Window Management (Task #73)
     # =============================================================================
     context_max_utilization_percent: int = Field(
