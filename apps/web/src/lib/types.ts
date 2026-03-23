@@ -268,15 +268,78 @@ export interface AvailableLocationsResponse {
 }
 
 export interface NotificationSettings {
-  email_digest: boolean;
-  frequency: 'daily' | 'weekly';
+  // Notification type toggles
+  price_alerts_enabled: boolean;
+  new_listings_enabled: boolean;
+  saved_search_enabled: boolean;
+  market_updates_enabled: boolean;
+
+  // Frequency settings
+  alert_frequency: 'instant' | 'daily' | 'weekly';
+
+  // Channel selection
+  email_enabled: boolean;
+  push_enabled: boolean;
+  in_app_enabled: boolean;
+
+  // Advanced settings
+  quiet_hours_start: string | null; // HH:MM format
+  quiet_hours_end: string | null; // HH:MM format
+  price_drop_threshold: number; // percentage
+
+  // Digest settings
+  daily_digest_time: string; // HH:MM format
+  weekly_digest_day: string; // day name
+
+  // Expert/Marketing preferences
   expert_mode: boolean;
   marketing_emails: boolean;
-  // Push notification settings (PWA)
-  push_enabled: boolean;
-  push_price_alerts: boolean;
-  push_new_properties: boolean;
-  push_saved_searches: boolean;
+
+  // Unsubscribe info (read-only)
+  unsubscribe_token: string | null;
+  unsubscribed_at: string | null;
+  unsubscribed_types: string[] | null;
+}
+
+export interface NotificationSettingsUpdate {
+  // Notification type toggles (all optional for partial updates)
+  price_alerts_enabled?: boolean;
+  new_listings_enabled?: boolean;
+  saved_search_enabled?: boolean;
+  market_updates_enabled?: boolean;
+
+  // Frequency settings
+  alert_frequency?: 'instant' | 'daily' | 'weekly';
+
+  // Channel selection
+  email_enabled?: boolean;
+  push_enabled?: boolean;
+  in_app_enabled?: boolean;
+
+  // Advanced settings
+  quiet_hours_start?: string | null;
+  quiet_hours_end?: string | null;
+  price_drop_threshold?: number;
+
+  // Digest settings
+  daily_digest_time?: string;
+  weekly_digest_day?: string;
+
+  // Expert/Marketing preferences
+  expert_mode?: boolean;
+  marketing_emails?: boolean;
+}
+
+export interface NotificationPreviewRequest {
+  channel: 'email' | 'push' | 'in_app';
+  notification_type: 'price_alert' | 'new_listing' | 'saved_search' | 'market_update';
+}
+
+export interface NotificationPreviewResponse {
+  success: boolean;
+  message: string;
+  channel: string;
+  notification_type: string;
 }
 
 export interface ModelPricing {

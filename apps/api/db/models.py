@@ -936,6 +936,94 @@ class PushSubscription(Base):
 
 
 # =============================================================================
+# Notification Preferences System Models (Task #86)
+# =============================================================================
+
+
+class NotificationPreferenceDB(Base):
+    """Database model for user notification preferences.
+
+    Stores granular notification settings including type toggles,
+    frequency settings, channel selection, and unsubscribe management.
+    """
+
+    __tablename__ = "notification_preferences"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    user_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+
+    # Notification type toggles
+    price_alerts_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    new_listings_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    saved_search_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    market_updates_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    # Frequency settings
+    alert_frequency: Mapped[str] = mapped_column(
+        String(20), default="daily", nullable=False
+    )  # instant, daily, weekly
+
+    # Channel selection
+    email_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    push_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    in_app_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+    # Advanced settings
+    quiet_hours_start: Mapped[Optional[str]] = mapped_column(String(5), nullable=True)  # HH:MM
+    quiet_hours_end: Mapped[Optional[str]] = mapped_column(String(5), nullable=True)  # HH:MM
+    price_drop_threshold: Mapped[float] = mapped_column(Float, default=5.0, nullable=False)  # Percent
+
+    # Digest settings
+    daily_digest_time: Mapped[str] = mapped_column(String(5), default="09:00", nullable=False)  # HH:MM
+    weekly_digest_day: Mapped[str] = mapped_column(String(10), default="monday", nullable=False)
+
+    # Expert/Marketing preferences
+    expert_mode: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    marketing_emails: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    # Unsubscribe management
+    unsubscribe_token: Mapped[str] = mapped_column(
+        String(64), unique=True, nullable=False, index=True, default=lambda: str(uuid4()).replace("-", "") + str(uuid4()).replace("-", "")
+    )
+    unsubscribed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    unsubscribed_types: Mapped[Optional[list]] = mapped_column(
+        JSON, nullable=True, default=list
+    )  # ["marketing", "price_alerts", ...]
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+    # Relationships
+    user: Mapped["User"] = relationship("User", backref="notification_preferences")
+
+    __table_args__ = (
+        Index("ix_notification_prefs_unsubscribe_token", "unsubscribe_token"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<NotificationPreferenceDB(id={self.id[:8]}..., user_id={self.user_id[:8]}..., frequency={self.alert_frequency})>"
+
+    @property
+    def is_fully_unsubscribed(self) -> bool:
+        """Check if user has fully unsubscribed from all notifications."""
+        return self.unsubscribed_at is not None
+
+
+# =============================================================================
 # Agent/Broker System Models (Task #45)
 # =============================================================================
 

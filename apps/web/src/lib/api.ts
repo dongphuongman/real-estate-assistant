@@ -35,6 +35,9 @@ import {
   NeighborhoodQualityInput,
   NeighborhoodQualityResult,
   NotificationSettings,
+  NotificationSettingsUpdate,
+  NotificationPreviewRequest,
+  NotificationPreviewResponse,
   PortalFiltersRequest,
   PortalIngestResponse,
   PortalAdaptersResponse,
@@ -356,7 +359,7 @@ export async function getNotificationSettings(): Promise<NotificationSettings> {
 }
 
 export async function updateNotificationSettings(
-  settings: NotificationSettings
+  settings: NotificationSettingsUpdate
 ): Promise<NotificationSettings> {
   const response = await fetch(`${getApiUrl()}/settings/notifications`, {
     method: 'PUT',
@@ -366,6 +369,35 @@ export async function updateNotificationSettings(
     body: JSON.stringify(settings),
   });
   return handleResponse<NotificationSettings>(response);
+}
+
+export async function sendNotificationPreview(
+  request: NotificationPreviewRequest
+): Promise<NotificationPreviewResponse> {
+  const response = await fetch(`${getApiUrl()}/settings/notifications/preview`, {
+    method: 'POST',
+    headers: {
+      ...buildHeaders(),
+    },
+    body: JSON.stringify(request),
+  });
+  return handleResponse<NotificationPreviewResponse>(response);
+}
+
+export async function unsubscribeByToken(
+  token: string,
+  notificationType?: string
+): Promise<{ success: boolean; message: string }> {
+  const url = notificationType
+    ? `${getApiUrl()}/settings/notifications/unsubscribe/${token}?notification_type=${encodeURIComponent(notificationType)}`
+    : `${getApiUrl()}/settings/notifications/unsubscribe/${token}`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      ...buildHeaders(),
+    },
+  });
+  return handleResponse<{ success: boolean; message: string }>(response);
 }
 
 export async function getModelsCatalog(): Promise<ModelProviderCatalog[]> {

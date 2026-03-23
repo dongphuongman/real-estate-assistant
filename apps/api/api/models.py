@@ -318,12 +318,86 @@ class ReindexResponse(BaseModel):
 
 
 class NotificationSettings(BaseModel):
-    """User notification settings."""
+    """User notification settings (Task #86)."""
 
-    email_digest: bool = True
-    frequency: str = "weekly"
+    # Notification type toggles
+    price_alerts_enabled: bool = True
+    new_listings_enabled: bool = True
+    saved_search_enabled: bool = True
+    market_updates_enabled: bool = False
+
+    # Frequency settings
+    alert_frequency: str = "daily"  # instant, daily, weekly
+
+    # Channel selection
+    email_enabled: bool = True
+    push_enabled: bool = False
+    in_app_enabled: bool = True
+
+    # Advanced settings
+    quiet_hours_start: Optional[str] = None  # HH:MM format
+    quiet_hours_end: Optional[str] = None  # HH:MM format
+    price_drop_threshold: float = 5.0  # percentage
+
+    # Digest settings
+    daily_digest_time: str = "09:00"
+    weekly_digest_day: str = "monday"
+
+    # Expert/Marketing preferences
     expert_mode: bool = False
     marketing_emails: bool = False
+
+    # Unsubscribe info (read-only)
+    unsubscribe_token: Optional[str] = None
+    unsubscribed_at: Optional[datetime] = None
+    unsubscribed_types: Optional[List[str]] = None
+
+
+class NotificationSettingsUpdate(BaseModel):
+    """Update payload for notification settings (partial updates allowed)."""
+
+    # Notification type toggles
+    price_alerts_enabled: Optional[bool] = None
+    new_listings_enabled: Optional[bool] = None
+    saved_search_enabled: Optional[bool] = None
+    market_updates_enabled: Optional[bool] = None
+
+    # Frequency settings
+    alert_frequency: Optional[str] = None
+
+    # Channel selection
+    email_enabled: Optional[bool] = None
+    push_enabled: Optional[bool] = None
+    in_app_enabled: Optional[bool] = None
+
+    # Advanced settings
+    quiet_hours_start: Optional[str] = None
+    quiet_hours_end: Optional[str] = None
+    price_drop_threshold: Optional[float] = None
+
+    # Digest settings
+    daily_digest_time: Optional[str] = None
+    weekly_digest_day: Optional[str] = None
+
+    # Expert/Marketing preferences
+    expert_mode: Optional[bool] = None
+    marketing_emails: Optional[bool] = None
+
+
+class NotificationPreviewRequest(BaseModel):
+    """Request to send a test notification."""
+
+    channel: str = "email"  # email, push, in_app
+    notification_type: str = "price_alert"  # price_alert, new_listing, etc.
+
+
+class NotificationPreviewResponse(BaseModel):
+    """Response after sending a test notification."""
+
+    success: bool
+    message: str
+    channel: str
+    notification_type: str
 
 
 class ModelPricing(BaseModel):

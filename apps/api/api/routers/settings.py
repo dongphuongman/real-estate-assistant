@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from fastapi import APIRouter, Header, HTTPException, Query
 
@@ -10,20 +11,18 @@ from api.models import (
     ModelPricing,
     ModelProviderCatalog,
     ModelRuntimeTestResponse,
+    NotificationPreviewRequest,
+    NotificationPreviewResponse,
     NotificationSettings,
+    NotificationSettingsUpdate,
 )
+from db.database import get_db_context
+from db.repositories import NotificationPreferenceRepository, UserRepository
 from models.provider_factory import ModelProviderFactory
-from notifications.notification_preferences import (
-    AlertFrequency,
-    AlertType,
-    NotificationPreferencesManager,
-)
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Settings"])
-
-PREFS_MANAGER = NotificationPreferencesManager()
 
 
 def _resolve_user_email(user_email: str | None, x_user_email: str | None) -> str:
@@ -38,27 +37,39 @@ async def get_notification_settings(
     user_email: str | None = Query(default=None),
     x_user_email: str | None = Header(default=None, alias="X-User-Email"),
 ):
-    """Get notification settings for the current user."""
+    """Get notification settings for the current user (Task #86)."""
     try:
         resolved_user_email = _resolve_user_email(user_email, x_user_email)
-        prefs = PREFS_MANAGER.get_preferences(resolved_user_email)
 
-        # Map backend preferences to frontend model
-        # Logic: if DIGEST is in enabled_alerts, email_digest is True
-        email_digest = prefs.is_alert_enabled(AlertType.DIGEST)
+        async with get_db_context() as session:
+            user_repo = UserRepository(session)
+            user = await user_repo.get_by_email(resolved_user_email)
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found")
 
-        frequency = "weekly"
-        if prefs.alert_frequency == AlertFrequency.DAILY:
-            frequency = "daily"
-        elif prefs.alert_frequency == AlertFrequency.WEEKLY:
-            frequency = "weekly"
+            prefs_repo = NotificationPreferenceRepository(session)
+            prefs = await prefs_repo.get_or_create(user.id)
 
-        return NotificationSettings(
-            email_digest=email_digest,
-            frequency=frequency,
-            expert_mode=getattr(prefs, "expert_mode", False),
-            marketing_emails=getattr(prefs, "marketing_emails", False),
-        )
+            return NotificationSettings(
+                price_alerts_enabled=prefs.price_alerts_enabled,
+                new_listings_enabled=prefs.new_listings_enabled,
+                saved_search_enabled=prefs.saved_search_enabled,
+                market_updates_enabled=prefs.market_updates_enabled,
+                alert_frequency=prefs.alert_frequency,
+                email_enabled=prefs.email_enabled,
+                push_enabled=prefs.push_enabled,
+                in_app_enabled=prefs.in_app_enabled,
+                quiet_hours_start=prefs.quiet_hours_start,
+                quiet_hours_end=prefs.quiet_hours_end,
+                price_drop_threshold=prefs.price_drop_threshold,
+                daily_digest_time=prefs.daily_digest_time,
+                weekly_digest_day=prefs.weekly_digest_day,
+                expert_mode=prefs.expert_mode,
+                marketing_emails=prefs.marketing_emails,
+                unsubscribe_token=prefs.unsubscribe_token,
+                unsubscribed_at=prefs.unsubscribed_at,
+                unsubscribed_types=prefs.unsubscribed_types,
+            )
     except HTTPException:
         raise
     except Exception as e:
@@ -68,37 +79,144 @@ async def get_notification_settings(
 
 @router.put("/settings/notifications", response_model=NotificationSettings)
 async def update_notification_settings(
-    settings: NotificationSettings,
+    settings: NotificationSettingsUpdate,
     user_email: str | None = Query(default=None),
     x_user_email: str | None = Header(default=None, alias="X-User-Email"),
 ):
-    """Update notification settings for the current user."""
+    """Update notification settings for the current user (Task #86)."""
     try:
         resolved_user_email = _resolve_user_email(user_email, x_user_email)
-        prefs = PREFS_MANAGER.get_preferences(resolved_user_email)
 
-        # Update fields
-        if settings.email_digest:
-            prefs.enabled_alerts.add(AlertType.DIGEST)
-        else:
-            prefs.enabled_alerts.discard(AlertType.DIGEST)
+        async with get_db_context() as session:
+            user_repo = UserRepository(session)
+            user = await user_repo.get_by_email(resolved_user_email)
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found")
 
-        # Map frequency
-        if settings.frequency == "daily":
-            prefs.alert_frequency = AlertFrequency.DAILY
-        else:
-            prefs.alert_frequency = AlertFrequency.WEEKLY
+            prefs_repo = NotificationPreferenceRepository(session)
+            prefs = await prefs_repo.get_or_create(user.id)
 
-        prefs.expert_mode = settings.expert_mode
-        prefs.marketing_emails = settings.marketing_emails
+            # Build update dict from non-None values
+            update_data = settings.model_dump(exclude_unset=True)
+            if update_data:
+                await prefs_repo.update(prefs, **update_data)
 
-        PREFS_MANAGER.save_preferences(prefs)
-
-        return settings
+            return NotificationSettings(
+                price_alerts_enabled=prefs.price_alerts_enabled,
+                new_listings_enabled=prefs.new_listings_enabled,
+                saved_search_enabled=prefs.saved_search_enabled,
+                market_updates_enabled=prefs.market_updates_enabled,
+                alert_frequency=prefs.alert_frequency,
+                email_enabled=prefs.email_enabled,
+                push_enabled=prefs.push_enabled,
+                in_app_enabled=prefs.in_app_enabled,
+                quiet_hours_start=prefs.quiet_hours_start,
+                quiet_hours_end=prefs.quiet_hours_end,
+                price_drop_threshold=prefs.price_drop_threshold,
+                daily_digest_time=prefs.daily_digest_time,
+                weekly_digest_day=prefs.weekly_digest_day,
+                expert_mode=prefs.expert_mode,
+                marketing_emails=prefs.marketing_emails,
+                unsubscribe_token=prefs.unsubscribe_token,
+                unsubscribed_at=prefs.unsubscribed_at,
+                unsubscribed_types=prefs.unsubscribed_types,
+            )
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error updating settings: {e}")
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.post("/settings/notifications/preview", response_model=NotificationPreviewResponse)
+async def send_notification_preview(
+    request: NotificationPreviewRequest,
+    user_email: str | None = Query(default=None),
+    x_user_email: str | None = Header(default=None, alias="X-User-Email"),
+):
+    """Send a test notification to verify settings (Task #86)."""
+    try:
+        resolved_user_email = _resolve_user_email(user_email, x_user_email)
+
+        async with get_db_context() as session:
+            user_repo = UserRepository(session)
+            user = await user_repo.get_by_email(resolved_user_email)
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            prefs_repo = NotificationPreferenceRepository(session)
+            prefs = await prefs_repo.get_or_create(user.id)
+
+            # Check if the requested channel is enabled
+            channel_enabled = {
+                "email": prefs.email_enabled,
+                "push": prefs.push_enabled,
+                "in_app": prefs.in_app_enabled,
+            }
+
+            if not channel_enabled.get(request.channel, False):
+                return NotificationPreviewResponse(
+                    success=False,
+                    message=f"{request.channel.title()} notifications are disabled in your settings",
+                    channel=request.channel,
+                    notification_type=request.notification_type,
+                )
+
+            # Simulate sending notification (in real implementation, would trigger actual notification)
+            # For now, just log and return success
+            logger.info(
+                f"Preview notification: channel={request.channel}, type={request.notification_type}, user={user.email}"
+            )
+
+            return NotificationPreviewResponse(
+                success=True,
+                message=f"Test {request.notification_type} sent via {request.channel}",
+                channel=request.channel,
+                notification_type=request.notification_type,
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error sending preview notification: {e}")
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.post("/settings/notifications/unsubscribe/{token}")
+async def unsubscribe_by_token(
+    token: str,
+    notification_type: Optional[str] = Query(
+        default=None, description="Specific type to unsubscribe from, or all if omitted"
+    ),
+):
+    """One-click unsubscribe from notifications via token (Task #86)."""
+    try:
+        async with get_db_context() as session:
+            prefs_repo = NotificationPreferenceRepository(session)
+            prefs = await prefs_repo.get_by_unsubscribe_token(token)
+
+            if not prefs:
+                raise HTTPException(status_code=404, detail="Invalid unsubscribe token")
+
+            if notification_type:
+                # Unsubscribe from specific type
+                await prefs_repo.unsubscribe_type(prefs, notification_type)
+                return {
+                    "success": True,
+                    "message": f"You have been unsubscribed from {notification_type} notifications",
+                    "unsubscribed_type": notification_type,
+                }
+            else:
+                # Unsubscribe from all
+                await prefs_repo.unsubscribe_all(prefs)
+                return {
+                    "success": True,
+                    "message": "You have been unsubscribed from all notifications",
+                    "unsubscribed_all": True,
+                }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error processing unsubscribe: {e}")
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 

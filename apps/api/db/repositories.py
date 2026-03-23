@@ -23,6 +23,7 @@ from db.models import (
     LeadInteraction,
     LeadScore,
     MarketAnomaly,
+    NotificationPreferenceDB,
     OAuthAccount,
     PasswordResetToken,
     PriceSnapshot,
@@ -2780,4 +2781,125 @@ class FilterPresetRepository:
     async def delete(self, preset: FilterPresetDB) -> None:
         """Delete a filter preset."""
         await self.session.delete(preset)
+        await self.session.flush()
+
+
+class NotificationPreferenceRepository:
+    """Repository for NotificationPreferenceDB model operations (Task #86)."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def get_by_user_id(self, user_id: str) -> Optional[NotificationPreferenceDB]:
+        """Get notification preferences for a user."""
+        result = await self.session.execute(
+            select(NotificationPreferenceDB).where(NotificationPreferenceDB.user_id == user_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def get_by_unsubscribe_token(self, token: str) -> Optional[NotificationPreferenceDB]:
+        """Get notification preferences by unsubscribe token."""
+        result = await self.session.execute(
+            select(NotificationPreferenceDB).where(NotificationPreferenceDB.unsubscribe_token == token)
+        )
+        return result.scalar_one_or_none()
+
+    async def create(
+        self,
+        user_id: str,
+        price_alerts_enabled: bool = True,
+        new_listings_enabled: bool = True,
+        saved_search_enabled: bool = True,
+        market_updates_enabled: bool = False,
+        alert_frequency: str = "daily",
+        email_enabled: bool = True,
+        push_enabled: bool = False,
+        in_app_enabled: bool = True,
+        quiet_hours_start: Optional[str] = None,
+        quiet_hours_end: Optional[str] = None,
+        price_drop_threshold: float = 5.0,
+        daily_digest_time: str = "09:00",
+        weekly_digest_day: str = "monday",
+        expert_mode: bool = False,
+        marketing_emails: bool = False,
+    ) -> NotificationPreferenceDB:
+        """Create notification preferences for a user with defaults."""
+        prefs = NotificationPreferenceDB(
+            id=str(uuid4()),
+            user_id=user_id,
+            price_alerts_enabled=price_alerts_enabled,
+            new_listings_enabled=new_listings_enabled,
+            saved_search_enabled=saved_search_enabled,
+            market_updates_enabled=market_updates_enabled,
+            alert_frequency=alert_frequency,
+            email_enabled=email_enabled,
+            push_enabled=push_enabled,
+            in_app_enabled=in_app_enabled,
+            quiet_hours_start=quiet_hours_start,
+            quiet_hours_end=quiet_hours_end,
+            price_drop_threshold=price_drop_threshold,
+            daily_digest_time=daily_digest_time,
+            weekly_digest_day=weekly_digest_day,
+            expert_mode=expert_mode,
+            marketing_emails=marketing_emails,
+        )
+        self.session.add(prefs)
+        await self.session.flush()
+        return prefs
+
+    async def get_or_create(self, user_id: str) -> NotificationPreferenceDB:
+        """Get existing preferences or create with defaults."""
+        prefs = await self.get_by_user_id(user_id)
+        if prefs is None:
+            prefs = await self.create(user_id=user_id)
+        return prefs
+
+    async def update(self, prefs: NotificationPreferenceDB, **kwargs) -> NotificationPreferenceDB:
+        """Update notification preference fields."""
+        for key, value in kwargs.items():
+            if hasattr(prefs, key):
+                setattr(prefs, key, value)
+        prefs.updated_at = datetime.now(UTC)
+        await self.session.flush()
+        return prefs
+
+    async def unsubscribe_all(self, prefs: NotificationPreferenceDB) -> NotificationPreferenceDB:
+        """Mark user as fully unsubscribed from all notifications."""
+        prefs.unsubscribed_at = datetime.now(UTC)
+        prefs.price_alerts_enabled = False
+        prefs.new_listings_enabled = False
+        prefs.saved_search_enabled = False
+        prefs.market_updates_enabled = False
+        prefs.marketing_emails = False
+        prefs.email_enabled = False
+        prefs.push_enabled = False
+        await self.session.flush()
+        return prefs
+
+    async def unsubscribe_type(
+        self, prefs: NotificationPreferenceDB, notification_type: str
+    ) -> NotificationPreferenceDB:
+        """Unsubscribe user from a specific notification type."""
+        type_field_map = {
+            "price_alerts": "price_alerts_enabled",
+            "new_listings": "new_listings_enabled",
+            "saved_search": "saved_search_enabled",
+            "market_updates": "market_updates_enabled",
+            "marketing": "marketing_emails",
+        }
+        field_name = type_field_map.get(notification_type)
+        if field_name and hasattr(prefs, field_name):
+            setattr(prefs, field_name, False)
+            # Track unsubscribed types
+            if prefs.unsubscribed_types is None:
+                prefs.unsubscribed_types = []
+            if notification_type not in prefs.unsubscribed_types:
+                prefs.unsubscribed_types.append(notification_type)
+        prefs.updated_at = datetime.now(UTC)
+        await self.session.flush()
+        return prefs
+
+    async def delete(self, prefs: NotificationPreferenceDB) -> None:
+        """Delete notification preferences (typically on user deletion)."""
+        await self.session.delete(prefs)
         await self.session.flush()
