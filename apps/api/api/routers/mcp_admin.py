@@ -1,20 +1,24 @@
 """
-MCP Allowlist Admin API Router.
+MCP Connector Registry Admin API Router.
 
-Provides endpoints for managing and monitoring MCP connector allowlist.
-This is part of Task #68: MCP Allowlist Governance.
+Provides endpoints for managing and monitoring MCP connectors.
+This is part of Task #68: MCP Allowlist Governance and Task #71: MCP Registry API.
 
 Endpoints:
 - GET /api/v1/mcp/allowlist - List current allowlist
 - POST /api/v1/mcp/allowlist - Add connector to allowlist
 - DELETE /api/v1/mcp/allowlist/{name} - Remove from allowlist
 - GET /api/v1/mcp/allowlist/violations - List violations for audit
+- DELETE /api/v1/mcp/allowlist/violations - Clear all violations
 - POST /api/v1/mcp/allowlist/reload - Reload from YAML
-- GET /api/v1/mcp/connectors - List all connectors with allowlist status
+- GET /api/v1/mcp/connectors - List all connectors with status
+- GET /api/v1/mcp/connectors/{name} - Get single connector details
+- GET /api/v1/mcp/connectors/{name}/health - Health check single connector
 - GET /api/v1/mcp/health - Health check all connectors
 """
 
 import logging
+import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -95,18 +99,80 @@ class MCPViolationsListResponse(BaseModel):
     total: int
 
 
+class ConnectorStatus:
+    """Connector status enum."""
+
+    ACTIVE = "active"  # Connected and healthy
+    DISABLED = "disabled"  # Configured but not enabled
+    ERROR = "error"  # Has connection/health issues
+    NOT_INSTANTIATED = "not_instantiated"  # Registered but no instance
+    UNKNOWN = "unknown"
+
+
 class MCPConnectorInfoResponse(BaseModel):
-    """Response model for connector info."""
+    """
+    Response model for connector info.
+
+    Status values:
+    - active: Connector is connected and healthy
+    - disabled: Connector is configured but not enabled
+    - error: Connector has connection/health issues
+    - not_instantiated: Connector registered but no instance
+    """
 
     name: str
     display_name: str
     description: str = ""
     enabled: bool = True
     edition: str
-    status: str  # "allowlisted" or "restricted"
+    status: str  # ConnectorStatus values
     accessible_in_ce: bool
     registered: bool = False
     has_instance: bool = False
+    requires_api_key: bool = False
+    supports_streaming: bool = False
+    min_edition: str = "community"
+    last_health_check: Optional[str] = None
+    error_message: Optional[str] = None
+
+
+class MCPConnectorDetailResponse(BaseModel):
+    """
+    Detailed response model for single connector.
+
+    Includes all info fields plus rate limit and health details.
+    """
+
+    name: str
+    display_name: str
+    description: str = ""
+    enabled: bool = True
+    edition: str
+    status: str
+    accessible_in_ce: bool
+    registered: bool = False
+    has_instance: bool = False
+    requires_api_key: bool = False
+    supports_streaming: bool = False
+    min_edition: str = "community"
+    last_health_check: Optional[str] = None
+    error_message: Optional[str] = None
+    rate_limit: Optional[Dict[str, Any]] = None
+    config: Optional[Dict[str, Any]] = None
+    instance_status: Optional[Dict[str, Any]] = None
+
+
+class MCPConnectorHealthResponse(BaseModel):
+    """Response model for single connector health check."""
+
+    name: str
+    status: str  # "healthy", "unhealthy", "error"
+    success: bool
+    errors: List[str] = Field(default_factory=list)
+    warnings: List[str] = Field(default_factory=list)
+    response_time_ms: Optional[float] = None
+    timestamp: str
+    details: Optional[Dict[str, Any]] = None
 
 
 class MCPConnectorsListResponse(BaseModel):
@@ -302,10 +368,70 @@ async def reload_allowlist():
     )
 
 
+def _calculate_connector_status(
+    name: str,
+    enabled: bool,
+    has_instance: bool,
+    connector_class: Optional[Any] = None,
+) -> tuple[str, Optional[str]]:
+    """
+    Calculate connector status based on configuration and instance state.
+
+    Args:
+        name: Connector name
+        enabled: Whether connector is enabled
+        has_instance: Whether connector has an instance
+        connector_class: Optional connector class for additional info
+
+    Returns:
+        Tuple of (status, error_message)
+    """
+    if not enabled:
+        return ConnectorStatus.DISABLED, None
+
+    if not has_instance:
+        return ConnectorStatus.NOT_INSTANTIATED, None
+
+    # Check instance status if available
+    if name in MCPConnectorRegistry._instances:
+        instance = MCPConnectorRegistry._instances[name]
+        try:
+            instance_status = instance.get_status()
+            if instance_status.get("error"):
+                return ConnectorStatus.ERROR, instance_status.get("error_message")
+            if instance_status.get("connected", False):
+                return ConnectorStatus.ACTIVE, None
+        except Exception as e:
+            return ConnectorStatus.ERROR, str(e)
+
+    return ConnectorStatus.NOT_INSTANTIATED, None
+
+
+def _get_connector_class_info(name: str) -> Dict[str, Any]:
+    """Get connector class information if registered."""
+    connector_class = MCPConnectorRegistry._connectors.get(name)
+    if not connector_class:
+        return {}
+
+    return {
+        "requires_api_key": getattr(connector_class, "requires_api_key", False),
+        "supports_streaming": getattr(connector_class, "supports_streaming", False),
+        "min_edition": getattr(connector_class, "min_edition", MCPEdition.COMMUNITY).value,
+        "display_name": getattr(connector_class, "display_name", name),
+        "description": getattr(connector_class, "description", ""),
+    }
+
+
 @router.get("/connectors", response_model=MCPConnectorsListResponse)
 async def list_connectors():
     """
-    List all connectors with allowlist status.
+    List all connectors with status.
+
+    Returns all registered connectors with their current status:
+    - **active**: Connector is connected and healthy
+    - **disabled**: Connector is configured but not enabled
+    - **error**: Connector has connection/health issues
+    - **not_instantiated**: Connector registered but no instance
 
     Combines information from:
     - Allowlist config (YAML)
@@ -322,18 +448,29 @@ async def list_connectors():
     for name, info in all_connectors_info.items():
         registered = name in MCPConnectorRegistry.list_connectors(include_non_accessible=True)
         has_instance = name in MCPConnectorRegistry._instances
+        enabled = info.get("enabled", True)
+
+        # Get class info
+        class_info = _get_connector_class_info(name)
+
+        # Calculate status
+        status, error_message = _calculate_connector_status(name, enabled, has_instance)
 
         result.append(
             MCPConnectorInfoResponse(
                 name=name,
-                display_name=info.get("display_name", name),
-                description=info.get("description", ""),
-                enabled=info.get("enabled", True),
+                display_name=info.get("display_name", class_info.get("display_name", name)),
+                description=info.get("description", class_info.get("description", "")),
+                enabled=enabled,
                 edition=info.get("edition", "community"),
-                status=info.get("status", "unknown"),
+                status=status,
                 accessible_in_ce=info.get("accessible_in_ce", False),
                 registered=registered,
                 has_instance=has_instance,
+                requires_api_key=class_info.get("requires_api_key", False),
+                supports_streaming=class_info.get("supports_streaming", False),
+                min_edition=class_info.get("min_edition", "community"),
+                error_message=error_message,
             )
         )
 
@@ -342,6 +479,164 @@ async def list_connectors():
         edition=config.edition.value,
         total=len(result),
     )
+
+
+@router.get(
+    "/connectors/{name}",
+    response_model=MCPConnectorDetailResponse,
+    responses={
+        200: {"description": "Connector details"},
+        404: {"description": "Connector not found"},
+    },
+)
+async def get_connector_details(name: str):
+    """
+    Get detailed information about a specific connector.
+
+    Returns comprehensive connector information including:
+    - Basic info (name, description, status)
+    - Configuration details (sanitized)
+    - Rate limit settings
+    - Instance status if available
+    """
+    validator = get_allowlist_validator()
+
+    # Check if connector exists in registry or allowlist
+    all_connectors_info = validator.get_all_connectors_info()
+
+    if name not in all_connectors_info and name not in MCPConnectorRegistry._connectors:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Connector '{name}' not found",
+        )
+
+    # Get info from allowlist config
+    info = all_connectors_info.get(name, {})
+    registered = name in MCPConnectorRegistry.list_connectors(include_non_accessible=True)
+    has_instance = name in MCPConnectorRegistry._instances
+    enabled = info.get("enabled", True)
+
+    # Get class info
+    class_info = _get_connector_class_info(name)
+
+    # Calculate status
+    connector_status, error_message = _calculate_connector_status(name, enabled, has_instance)
+
+    # Get instance status if available
+    instance_status = None
+    if has_instance:
+        try:
+            instance_status = MCPConnectorRegistry._instances[name].get_status()
+        except Exception as e:
+            instance_status = {"error": True, "error_message": str(e)}
+
+    # Get config (sanitized)
+    config_info = None
+    if name in MCPConnectorRegistry._configs:
+        config_info = MCPConnectorRegistry._configs[name].to_dict()
+
+    # Get rate limit info
+    rate_limit_info = None
+    try:
+        from mcp.rate_limiter import get_connector_rate_limiter
+
+        limiter = get_connector_rate_limiter()
+        rate_limit_info = limiter.get_status(name)
+    except ImportError:
+        pass  # Rate limiter not available
+
+    return MCPConnectorDetailResponse(
+        name=name,
+        display_name=info.get("display_name", class_info.get("display_name", name)),
+        description=info.get("description", class_info.get("description", "")),
+        enabled=enabled,
+        edition=info.get("edition", "community"),
+        status=connector_status,
+        accessible_in_ce=info.get("accessible_in_ce", False),
+        registered=registered,
+        has_instance=has_instance,
+        requires_api_key=class_info.get("requires_api_key", False),
+        supports_streaming=class_info.get("supports_streaming", False),
+        min_edition=class_info.get("min_edition", "community"),
+        error_message=error_message,
+        rate_limit=rate_limit_info,
+        config=config_info,
+        instance_status=instance_status,
+    )
+
+
+@router.get(
+    "/connectors/{name}/health",
+    response_model=MCPConnectorHealthResponse,
+    responses={
+        200: {"description": "Health check completed"},
+        404: {"description": "Connector not found"},
+        503: {"description": "Connector unhealthy"},
+    },
+)
+async def health_check_connector(name: str):
+    """
+    Perform health check on a specific connector.
+
+    Returns health status including:
+    - Success/failure status
+    - Response time in milliseconds
+    - Any errors or warnings
+    - Detailed health information
+    """
+    import time
+
+    validator = get_allowlist_validator()
+
+    # Check if connector exists
+    if name not in MCPConnectorRegistry._connectors:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Connector '{name}' not found",
+        )
+
+    # Check if connector has an instance
+    if name not in MCPConnectorRegistry._instances:
+        return MCPConnectorHealthResponse(
+            name=name,
+            status="unhealthy",
+            success=False,
+            errors=["Connector not instantiated"],
+            timestamp=datetime.utcnow().isoformat(),
+        )
+
+    # Perform health check
+    instance = MCPConnectorRegistry._instances[name]
+    start_time = time.time()
+
+    try:
+        result = await instance.health_check()
+        response_time_ms = (time.time() - start_time) * 1000
+
+        health_check_status = "healthy" if result.success else "unhealthy"
+
+        return MCPConnectorHealthResponse(
+            name=name,
+            status=health_check_status,
+            success=result.success,
+            errors=result.errors,
+            warnings=result.warnings if hasattr(result, "warnings") else [],
+            response_time_ms=round(response_time_ms, 2),
+            timestamp=datetime.utcnow().isoformat(),
+            details=result.data if result.success else None,
+        )
+    except Exception as e:
+        response_time_ms = (time.time() - start_time) * 1000
+        logger.error(f"Health check failed for connector '{name}': {e}")
+
+        return MCPConnectorHealthResponse(
+            name=name,
+            status="error",
+            success=False,
+            errors=[str(e)],
+            response_time_ms=round(response_time_ms, 2),
+            timestamp=datetime.utcnow().isoformat(),
+        )
 
 
 @router.get("/health", response_model=MCPHealthResponse)

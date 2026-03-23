@@ -14,7 +14,7 @@ from typing import Any, Optional
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 
-from api.auth import require_api_key
+from api.auth import get_api_key as require_api_key
 from mcp.audit import MCPAuditLogger, get_mcp_audit_logger
 from mcp.retention import MCPAuditRetention, get_retention_manager
 

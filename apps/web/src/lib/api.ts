@@ -160,6 +160,12 @@ import {
   BulkJobResponse,
   BulkJobListResponse,
   BulkJobCreateResponse,
+  // Task #71: MCP Connector Registry
+  MCPConnectorInfo,
+  MCPConnectorsListResponse,
+  MCPConnectorDetailResponse,
+  MCPConnectorHealthResponse,
+  MCPHealthResponse,
 } from './types';
 
 // Task #74: Streaming utilities
@@ -2801,6 +2807,63 @@ export async function getDataSourceSyncHistory(
     }
   );
   return handleResponse<SyncHistoryResponse>(response);
+}
+
+// =============================================================================
+// MCP Connector API (Task #71: MCP Registry API)
+// =============================================================================
+
+/**
+ * List all MCP connectors with status
+ */
+export async function listMCPConnectors(): Promise<MCPConnectorsListResponse> {
+  const response = await safeFetch(`${getApiUrl()}/mcp/connectors`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<MCPConnectorsListResponse>(response);
+}
+
+/**
+ * Get detailed information about a specific connector
+ */
+export async function getMCPConnector(name: string): Promise<MCPConnectorDetailResponse> {
+  const response = await safeFetch(`${getApiUrl()}/mcp/connectors/${encodeURIComponent(name)}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<MCPConnectorDetailResponse>(response);
+}
+
+/**
+ * Perform health check on a specific connector
+ */
+export async function healthCheckMCPConnector(
+  name: string
+): Promise<MCPConnectorHealthResponse> {
+  const response = await safeFetch(
+    `${getApiUrl()}/mcp/connectors/${encodeURIComponent(name)}/health`,
+    {
+      method: 'GET',
+      headers: buildHeaders(),
+      credentials: 'include',
+    }
+  );
+  return handleResponse<MCPConnectorHealthResponse>(response);
+}
+
+/**
+ * Health check for all MCP connectors
+ */
+export async function healthCheckAllMCPConnectors(): Promise<MCPHealthResponse> {
+  const response = await safeFetch(`${getApiUrl()}/mcp/health`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<MCPHealthResponse>(response);
 }
 
 // =============================================================================

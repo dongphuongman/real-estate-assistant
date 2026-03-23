@@ -54,6 +54,12 @@ from mcp.registry import (
 )
 from mcp.result import MCPConnectorResult
 from mcp.stubs import EchoStubConnector
+from mcp.rate_limiter import (
+    MCPConnectorRateLimiter,
+    RateLimitConfig,
+    get_connector_rate_limiter,
+    reset_rate_limiter,
+)
 
 __all__ = [
     # Base classes

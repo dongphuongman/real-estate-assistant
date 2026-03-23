@@ -2015,6 +2015,66 @@ export interface DataSourceTestResponse {
   details?: Record<string, unknown>;
 }
 
+// =============================================================================
+// Task #71: MCP Connector Registry Types
+// ============================================================================
+
+export interface MCPConnectorInfo {
+  name: string;
+  display_name: string;
+  description: string;
+  enabled: boolean;
+  edition: string;
+  status: 'active' | 'disabled' | 'error' | 'not_instantiated' | 'unknown';
+  accessible_in_ce: boolean;
+  registered: boolean;
+  has_instance: boolean;
+  requires_api_key: boolean;
+  supports_streaming: boolean;
+  min_edition: string;
+  last_health_check?: string;
+  error_message?: string;
+}
+
+export interface MCPConnectorsListResponse {
+  connectors: MCPConnectorInfo[];
+  edition: string;
+  total: number;
+}
+
+export interface MCPConnectorDetailResponse extends MCPConnectorInfo {
+  rate_limit?: {
+    connector_name: string;
+    requests_per_minute: number;
+    burst_size: number;
+    enabled: boolean;
+    current_requests: number;
+    remaining: number;
+    reset_at: number;
+  };
+  config?: Record<string, unknown>;
+  instance_status?: Record<string, unknown>;
+}
+
+export interface MCPConnectorHealthResponse {
+  name: string;
+  status: 'healthy' | 'unhealthy' | 'error';
+  success: boolean;
+  errors: string[];
+  warnings: string[];
+  response_time_ms?: number;
+  timestamp: string;
+  details?: Record<string, unknown>;
+}
+
+export interface MCPHealthResponse {
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  edition: string;
+  connectors_checked: number;
+  results: Record<string, { success: boolean; errors: string[] }>;
+  timestamp: string;
+}
+
 export interface SyncHistoryItem {
   id: string;
   started_at: string;
