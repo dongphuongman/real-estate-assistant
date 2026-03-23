@@ -40,6 +40,7 @@ from api.routers import (
     exports,
     favorites,  # Task #37: Property favorites
     filter_presets,  # Task #75: Advanced Filter Presets
+    investment,  # Task #83: Investment Report Generator
     leads,  # Task #55: Lead Scoring System
     market,  # Task #38: Price History & Trends
     mcp_admin,  # Task #68: MCP Allowlist Governance
@@ -389,6 +390,8 @@ if settings.auth_jwt_enabled:
 
 # Task #76: Ranking Configuration
 app.include_router(ranking_config.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
+# Task #83: Investment Report Generator
+app.include_router(investment.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 
 
 @app.get("/health", tags=["System"])

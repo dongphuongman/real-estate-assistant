@@ -16,10 +16,12 @@ import {
   ChevronDown,
   ChevronUp,
   Calculator,
+  Download,
 } from 'lucide-react';
 import { CashFlowChart } from './charts/cash-flow-chart';
 import { ScenarioChart } from './charts/scenario-chart';
 import { RiskGauge } from './charts/risk-gauge';
+import { exportInvestmentToPDF } from '@/lib/investment-pdf-export';
 
 interface ErrorState {
   message: string;
@@ -48,6 +50,7 @@ export function AdvancedInvestmentAnalyzer() {
   const [result, setResult] = useState<AdvancedInvestmentResult | null>(null);
   const [lastFormData, setLastFormData] = useState<typeof formData | null>(null);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const [formData, setFormData] = useState<{
     property_price: number;
@@ -151,6 +154,21 @@ export function AdvancedInvestmentAnalyzer() {
       setErrorState(extractErrorState(err));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    if (!result) return;
+
+    setExporting(true);
+    try {
+      await exportInvestmentToPDF(result, {
+        filename: `investment-analysis-${new Date().toISOString().split('T')[0]}`,
+      });
+    } catch (error) {
+      console.error('Export failed:', error);
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -482,8 +500,24 @@ export function AdvancedInvestmentAnalyzer() {
           <div className="space-y-6">
             {/* Quick Stats */}
             <Card>
-              <CardHeader>
-                <CardTitle>Investment Summary</CardTitle>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div>
+                  <CardTitle>Investment Summary</CardTitle>
+                </div>
+                <Button
+                  onClick={handleExportPDF}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                  disabled={exporting || !result}
+                >
+                  {exporting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  Export Report
+                </Button>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
