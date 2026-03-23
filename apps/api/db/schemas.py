@@ -1,7 +1,7 @@
 """Pydantic schemas for authentication API."""
 
 import re
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any, Literal, Optional
 
@@ -365,6 +365,31 @@ class MarketIndicatorsResponse(BaseModel):
     price_drops_7d: int
     hottest_districts: list[dict[str, Any]]  # Top 5 districts by activity
     coldest_districts: list[dict[str, Any]]  # Bottom 5 districts
+
+
+class AreaInsightsResponse(BaseModel):
+    """Schema for insights about a single area/city."""
+
+    city: str
+    property_count: int
+    avg_price: float
+    median_price: float
+    avg_price_per_sqm: Optional[float] = None
+    most_common_room_count: Optional[float] = None
+    amenity_availability: dict[str, float] = Field(default_factory=dict)
+    price_comparison: Optional[str] = None  # "above_average", "below_average", "average"
+
+
+class AreaComparisonResponse(BaseModel):
+    """Schema for comparing two areas side by side."""
+
+    area1: AreaInsightsResponse
+    area2: AreaInsightsResponse
+    price_difference: float
+    price_difference_percent: float
+    cheaper_area: str
+    more_properties_area: str
+    comparison_timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 # = Anomaly-related schemas =

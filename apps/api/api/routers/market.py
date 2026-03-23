@@ -14,6 +14,8 @@ from db.database import get_db
 from db.models import User
 from db.repositories import PriceSnapshotRepository
 from db.schemas import (
+    AreaComparisonResponse,
+    AreaInsightsResponse,
     IntervalType,
     MarketIndicatorsResponse,
     MarketTrendPoint,
@@ -22,6 +24,7 @@ from db.schemas import (
     PriceSnapshotResponse,
 )
 from utils.property_cache import load_collection
+from utils.response_cache import cached_response
 
 router = APIRouter(prefix="/market", tags=["Market Analytics"])
 
@@ -90,6 +93,7 @@ async def get_price_history(
     summary="Get market trend data",
     description="Get average prices by city/district over time.",
 )
+@cached_response(ttl_seconds=3600)  # Cache for 1 hour
 async def get_market_trends(
     request: Request,
     city: Optional[str] = Query(default=None, description="Filter by city"),
@@ -165,6 +169,7 @@ async def get_market_trends(
     summary="Get market indicators",
     description="Get current market health indicators (rising/falling/stable).",
 )
+@cached_response(ttl_seconds=1800)  # Cache for 30 minutes
 async def get_market_indicators(
     request: Request,
     city: Optional[str] = Query(default=None, description="Filter by city"),
@@ -257,3 +262,188 @@ async def get_market_indicators(
         hottest_districts=hottest_districts,
         coldest_districts=coldest_districts,
     )
+
+
+@router.get(
+    "/compare",
+    response_model=AreaComparisonResponse,
+    summary="Compare two areas",
+    description="Compare market metrics between two cities/areas side by side.",
+)
+@cached_response(ttl_seconds=3600)  # Cache for 1 hour
+async def compare_areas(
+    request: Request,
+    city1: str = Query(..., description="First city to compare"),
+    city2: str = Query(..., description="Second city to compare"),
+    user: User = Depends(get_current_active_user),
+) -> AreaComparisonResponse:
+    """Compare market metrics between two areas."""
+    from datetime import UTC, datetime
+
+    from db.schemas import AreaComparisonResponse, AreaInsightsResponse
+
+    # Load properties from cache
+    properties = load_collection()
+
+    if not properties or not properties.properties:
+        # Return empty comparison if no data
+        return AreaComparisonResponse(
+            area1=AreaInsightsResponse(
+                city=city1,
+                property_count=0,
+                avg_price=0,
+                median_price=0,
+            ),
+            area2=AreaInsightsResponse(
+                city=city2,
+                property_count=0,
+                avg_price=0,
+                median_price=0,
+            ),
+            price_difference=0,
+            price_difference_percent=0,
+            cheaper_area=city1,
+            more_properties_area=city1,
+        )
+
+    # Use MarketInsights for comparison
+    insights = MarketInsights(properties)
+
+    try:
+        comparison = insights.compare_locations(city1, city2)
+
+        if "error" in comparison:
+            # One or both cities not found
+            area1_data = comparison.get("city1", city1)
+            area2_data = comparison.get("city2", city2)
+
+            return AreaComparisonResponse(
+                area1=AreaInsightsResponse(
+                    city=city1,
+                    property_count=0,
+                    avg_price=0,
+                    median_price=0,
+                ),
+                area2=AreaInsightsResponse(
+                    city=city2,
+                    property_count=0,
+                    avg_price=0,
+                    median_price=0,
+                ),
+                price_difference=0,
+                price_difference_percent=0,
+                cheaper_area=city1,
+                more_properties_area=city1,
+            )
+
+        # Build response from comparison data
+        area1_insights = comparison.get("city1", {})
+        area2_insights = comparison.get("city2", {})
+
+        return AreaComparisonResponse(
+            area1=AreaInsightsResponse(
+                city=area1_insights.get("city", city1),
+                property_count=area1_insights.get("property_count", 0),
+                avg_price=area1_insights.get("avg_price", 0),
+                median_price=area1_insights.get("median_price", 0),
+                avg_price_per_sqm=area1_insights.get("avg_price_per_sqm"),
+                most_common_room_count=area1_insights.get("most_common_room_count"),
+                amenity_availability=area1_insights.get("amenity_availability", {}),
+                price_comparison=area1_insights.get("price_comparison"),
+            ),
+            area2=AreaInsightsResponse(
+                city=area2_insights.get("city", city2),
+                property_count=area2_insights.get("property_count", 0),
+                avg_price=area2_insights.get("avg_price", 0),
+                median_price=area2_insights.get("median_price", 0),
+                avg_price_per_sqm=area2_insights.get("avg_price_per_sqm"),
+                most_common_room_count=area2_insights.get("most_common_room_count"),
+                amenity_availability=area2_insights.get("amenity_availability", {}),
+                price_comparison=area2_insights.get("price_comparison"),
+            ),
+            price_difference=comparison.get("price_difference", 0),
+            price_difference_percent=comparison.get("price_difference_percent", 0),
+            cheaper_area=comparison.get("cheaper_area", city1),
+            more_properties_area=comparison.get("more_properties", city1),
+        )
+
+    except Exception as e:
+        # Fallback response on error
+        return AreaComparisonResponse(
+            area1=AreaInsightsResponse(
+                city=city1,
+                property_count=0,
+                avg_price=0,
+                median_price=0,
+            ),
+            area2=AreaInsightsResponse(
+                city=city2,
+                property_count=0,
+                avg_price=0,
+                median_price=0,
+            ),
+            price_difference=0,
+            price_difference_percent=0,
+            cheaper_area=city1,
+            more_properties_area=city1,
+        )
+
+
+@router.get(
+    "/area/{city}",
+    response_model=AreaInsightsResponse,
+    summary="Get insights for a single area",
+    description="Get detailed market insights for a specific city/area.",
+)
+@cached_response(ttl_seconds=3600)  # Cache for 1 hour
+async def get_area_insights(
+    city: str,
+    request: Request,
+    user: User = Depends(get_current_active_user),
+) -> AreaInsightsResponse:
+    """Get detailed market insights for a specific area."""
+    from db.schemas import AreaInsightsResponse
+
+    # Load properties from cache
+    properties = load_collection()
+
+    if not properties or not properties.properties:
+        return AreaInsightsResponse(
+            city=city,
+            property_count=0,
+            avg_price=0,
+            median_price=0,
+        )
+
+    # Use MarketInsights for area data
+    insights = MarketInsights(properties)
+
+    try:
+        location_insights = insights.get_location_insights(city)
+
+        if location_insights is None:
+            return AreaInsightsResponse(
+                city=city,
+                property_count=0,
+                avg_price=0,
+                median_price=0,
+            )
+
+        return AreaInsightsResponse(
+            city=location_insights.city,
+            property_count=location_insights.property_count,
+            avg_price=location_insights.avg_price,
+            median_price=location_insights.median_price,
+            avg_price_per_sqm=location_insights.avg_price_per_sqm,
+            most_common_room_count=location_insights.most_common_room_count,
+            amenity_availability=location_insights.amenity_availability,
+            price_comparison=location_insights.price_comparison,
+        )
+
+    except Exception:
+        return AreaInsightsResponse(
+            city=city,
+            property_count=0,
+            avg_price=0,
+            median_price=0,
+        )

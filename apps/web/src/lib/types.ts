@@ -781,6 +781,28 @@ export interface MarketIndicators {
   coldest_districts: Array<{ name: string; avg_price: number; count: number }>;
 }
 
+// Area Comparison types for Task #84
+export interface AreaInsights {
+  city: string;
+  property_count: number;
+  avg_price: number;
+  median_price: number;
+  avg_price_per_sqm?: number;
+  most_common_room_count?: number;
+  amenity_availability: Record<string, number>;
+  price_comparison?: 'above_average' | 'below_average' | 'average';
+}
+
+export interface AreaComparison {
+  area1: AreaInsights;
+  area2: AreaInsights;
+  price_difference: number;
+  price_difference_percent: number;
+  cheaper_area: string;
+  more_properties_area: string;
+  comparison_timestamp: string;
+}
+
 // Advanced Investment Analytics types for Task #39
 export interface YearlyCashFlow {
   year: number;

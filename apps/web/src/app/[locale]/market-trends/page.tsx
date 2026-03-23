@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { getMarketTrends, getMarketIndicators, ApiError } from '@/lib/api';
 import { MarketTrends, MarketIndicators, MarketTrendPoint } from '@/lib/types';
+import { AreaComparisonComponent } from '@/components/analytics/area-comparison';
 
 export default function MarketTrendsPage() {
   const [loading, setLoading] = useState(false);
@@ -372,6 +373,9 @@ export default function MarketTrendsPage() {
               )}
             </div>
           )}
+
+        {/* Area Comparison Section - Task #84 */}
+        <AreaComparisonComponent />
       </div>
     </div>
   );

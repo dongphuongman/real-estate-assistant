@@ -22,6 +22,9 @@ import {
   InvestmentAnalysisResult,
   MarketIndicators,
   MarketTrends,
+  // Task #84: Area Comparison
+  AreaComparison,
+  AreaInsights,
   ModelProviderCatalog,
   ModelPreferences,
   ModelRuntimeTestResponse,
@@ -1256,6 +1259,35 @@ export async function getMarketIndicators(city?: string): Promise<MarketIndicato
     credentials: 'include',
   });
   return handleResponse<MarketIndicators>(response);
+}
+
+/**
+ * Task #84: Compare two areas/cities side by side.
+ * Returns comparison metrics including price differences and property counts.
+ */
+export async function compareAreas(city1: string, city2: string): Promise<AreaComparison> {
+  const url = `${getApiUrl()}/market/compare?city1=${encodeURIComponent(city1)}&city2=${encodeURIComponent(city2)}`;
+
+  const response = await safeFetch(url, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<AreaComparison>(response);
+}
+
+/**
+ * Task #84: Get detailed market insights for a single area.
+ */
+export async function getAreaInsights(city: string): Promise<AreaInsights> {
+  const url = `${getApiUrl()}/market/area/${encodeURIComponent(city)}`;
+
+  const response = await safeFetch(url, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<AreaInsights>(response);
 }
 
 // ============================================================================
