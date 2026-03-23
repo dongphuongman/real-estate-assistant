@@ -46,6 +46,7 @@ from api.routers import (
     mcp_admin,  # Task #68: MCP Allowlist Governance
     mcp_audit,  # Task #69: MCP Audit Logging
     metrics,  # Task #62: Production Monitoring
+    model_preferences,  # Task #87: Model Preferences Per-Task
     prompt_templates,
     push,  # Task #63: Push Notifications
     ranking_config,  # Task #76: Ranking Configuration
@@ -392,6 +393,8 @@ if settings.auth_jwt_enabled:
         app.include_router(webhooks.esignatures.router, prefix="/api/v1")
     # Task #82: User Activity Analytics
     app.include_router(user_activity.router, prefix="/api/v1")
+    # Task #87: Model Preferences Per-Task
+    app.include_router(model_preferences.router, prefix="/api/v1")
 
 # Task #76: Ranking Configuration
 app.include_router(ranking_config.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])

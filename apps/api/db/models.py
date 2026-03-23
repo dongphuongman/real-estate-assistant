@@ -2213,3 +2213,58 @@ class UserActivityEvent(Base):
     def __repr__(self) -> str:
         return f"<UserActivityEvent(id={self.id[:8]}..., type={self.event_type}, session={self.session_id[:8]}...)>"
 
+
+# =============================================================================
+# Model Preferences Per Task (Task #87)
+# =============================================================================
+
+# Task type enumeration for model preferences
+TASK_TYPES = ("chat", "search", "tools", "analysis", "embedding")
+
+
+class TaskModelPreference(Base):
+    """Model preference per task type (Task #87).
+
+    Allows users to configure different LLM models for different
+    task types (chat, search, tools, analysis).
+    """
+
+    __tablename__ = "task_model_preferences"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+
+    # User association
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+
+    # Task configuration
+    task_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    provider: Mapped[str] = mapped_column(String(50), nullable=False)
+    model_name: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    # Fallback chain (ordered list of {provider, model_name} dicts)
+    fallback_chain: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
+
+    # Status
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+    __table_args__ = (
+        # Unique constraint: one preference per task type per user
+        Index("ix_task_model_pref_user_task", "user_id", "task_type", unique=True),
+    )
+
+    def __repr__(self) -> str:
+        return f"<TaskModelPreference(user={self.user_id[:8]}..., task={self.task_type}, model={self.provider}/{self.model_name})>"
+

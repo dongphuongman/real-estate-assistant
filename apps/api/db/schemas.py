@@ -1816,3 +1816,127 @@ class UserActivityTrendsResponse(BaseModel):
     """Activity trends over time."""
     trends: list[UserActivityTrendPoint] = Field(default_factory=list)
     interval: str = "day"  # day, week, month
+
+
+# =============================================================================
+# Model Preferences Per Task (Task #87)
+# =============================================================================
+
+# Task type for model preferences
+TaskTypeType = Literal["chat", "search", "tools", "analysis", "embedding"]
+
+
+class FallbackModelConfig(BaseModel):
+    """Configuration for a fallback model in the chain."""
+
+    provider: str = Field(..., min_length=1, max_length=50, description="Provider name (e.g., 'openai', 'anthropic')")
+    model_name: str = Field(..., min_length=1, max_length=100, description="Model identifier")
+
+
+class TaskModelPreferenceCreate(BaseModel):
+    """Schema for creating a task model preference."""
+
+    task_type: TaskTypeType = Field(..., description="Task type (chat, search, tools, analysis, embedding)")
+    provider: str = Field(..., min_length=1, max_length=50, description="Primary provider name")
+    model_name: str = Field(..., min_length=1, max_length=100, description="Primary model identifier")
+    fallback_chain: Optional[list[FallbackModelConfig]] = Field(
+        None,
+        max_length=5,
+        description="Ordered list of fallback models (max 5)",
+    )
+    is_active: bool = Field(default=True, description="Whether this preference is active")
+
+    @field_validator("fallback_chain")
+    @classmethod
+    def validate_fallback_chain(cls, v: Optional[list[FallbackModelConfig]]) -> Optional[list[FallbackModelConfig]]:
+        """Validate fallback chain doesn't contain duplicates."""
+        if v is None:
+            return v
+
+        # Check for duplicates in fallback chain
+        seen = set()
+        for item in v:
+            key = (item.provider, item.model_name)
+            if key in seen:
+                raise ValueError(f"Duplicate fallback model: {item.provider}/{item.model_name}")
+            seen.add(key)
+
+        return v
+
+
+class TaskModelPreferenceUpdate(BaseModel):
+    """Schema for updating a task model preference."""
+
+    provider: Optional[str] = Field(None, min_length=1, max_length=50)
+    model_name: Optional[str] = Field(None, min_length=1, max_length=100)
+    fallback_chain: Optional[list[FallbackModelConfig]] = Field(None, max_length=5)
+    is_active: Optional[bool] = None
+
+    @field_validator("fallback_chain")
+    @classmethod
+    def validate_fallback_chain(cls, v: Optional[list[FallbackModelConfig]]) -> Optional[list[FallbackModelConfig]]:
+        """Validate fallback chain doesn't contain duplicates."""
+        if v is None:
+            return v
+
+        seen = set()
+        for item in v:
+            key = (item.provider, item.model_name)
+            if key in seen:
+                raise ValueError(f"Duplicate fallback model: {item.provider}/{item.model_name}")
+            seen.add(key)
+
+        return v
+
+
+class TaskModelPreferenceResponse(BaseModel):
+    """Schema for task model preference response."""
+
+    id: str
+    user_id: str
+    task_type: str
+    provider: str
+    model_name: str
+    fallback_chain: Optional[list[dict[str, str]]] = None
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class TaskModelPreferenceListResponse(BaseModel):
+    """Schema for list of task model preferences."""
+
+    items: list[TaskModelPreferenceResponse]
+    total: int
+
+
+class SystemDefaultModelPreference(BaseModel):
+    """Schema for system default model preference."""
+
+    task_type: str
+    provider: str
+    model_name: str
+    description: Optional[str] = None
+    cost_per_1m_input_tokens: Optional[float] = None
+    cost_per_1m_output_tokens: Optional[float] = None
+
+
+class SystemDefaultsResponse(BaseModel):
+    """Schema for system default model preferences."""
+
+    defaults: list[SystemDefaultModelPreference]
+    available_providers: list[str]
+    available_models: dict[str, list[str]]  # provider -> list of model names
+
+
+class ModelCostEstimate(BaseModel):
+    """Schema for estimated cost of using a model."""
+
+    provider: str
+    model_name: str
+    input_cost_per_1m: Optional[float] = None
+    output_cost_per_1m: Optional[float] = None
+    estimated_tokens_per_request: int = 1000
+    estimated_cost_per_request: Optional[float] = None
