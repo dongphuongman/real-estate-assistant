@@ -2149,3 +2149,36 @@ export interface BulkJobCreateResponse {
   message: string;
   created_at: string;
 }
+
+// =============================================================================
+// User Activity Analytics Types (Task #82)
+// =============================================================================
+
+export interface UserActivitySummary {
+  period_start: string;
+  period_end: string;
+  total_searches: number;
+  total_property_views: number;
+  total_property_clicks: number;
+  total_tool_uses: number;
+  total_exports: number;
+  total_favorites: number;
+  unique_sessions: number;
+  avg_processing_time_ms?: number;
+  top_tools: Array<{ tool_name: string; count: number }>;
+  top_search_cities: Array<{ city: string; count: number }>;
+  event_counts_by_day: Array<{ date: string; count: number }>;
+}
+
+export interface UserActivityTrendPoint {
+  date: string;
+  searches: number;
+  property_views: number;
+  tool_uses: number;
+  exports: number;
+}
+
+export interface UserActivityTrendsResponse {
+  trends: UserActivityTrendPoint[];
+  interval: string;
+}

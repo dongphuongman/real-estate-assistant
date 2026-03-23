@@ -279,3 +279,18 @@ async def unauth_client() -> AsyncGenerator[AsyncClient, None]:
     transport = ASGITransport(app=test_app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
+
+
+# =============================================================================
+# Fixtures for User Activity Analytics (Task #82)
+# =============================================================================
+
+
+@pytest.fixture
+def user_activity_service(db_session):
+    """Create a UserActivityService instance for testing.
+
+    Task #82: User Activity Analytics
+    """
+    from services.user_activity_service import UserActivityService
+    return UserActivityService(db_session, retention_days=30)

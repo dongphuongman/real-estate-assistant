@@ -1766,3 +1766,53 @@ class FilterPresetListResponse(BaseModel):
 
     items: list[FilterPresetResponse]
     total: int
+
+
+# =============================================================================
+# User Activity Analytics Schemas (Task #82)
+# =============================================================================
+
+
+class UserActivityEventType(str, Enum):
+    """Types of user activity events."""
+    SEARCH_QUERY = "search_query"
+    PROPERTY_VIEW = "property_view"
+    PROPERTY_CLICK = "property_click"
+    TOOL_USE = "tool_use"
+    EXPORT = "export"
+    FAVORITE_ADD = "favorite_add"
+    FAVORITE_REMOVE = "favorite_remove"
+    MODEL_CHANGE = "model_change"
+    ERROR = "error"
+
+
+class UserActivitySummary(BaseModel):
+    """Aggregated user activity summary."""
+    period_start: datetime
+    period_end: datetime
+    total_searches: int = 0
+    total_property_views: int = 0
+    total_property_clicks: int = 0
+    total_tool_uses: int = 0
+    total_exports: int = 0
+    total_favorites: int = 0
+    unique_sessions: int = 0
+    avg_processing_time_ms: Optional[float] = None
+    top_tools: list[dict[str, Any]] = Field(default_factory=list)
+    top_search_cities: list[dict[str, Any]] = Field(default_factory=list)
+    event_counts_by_day: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class UserActivityTrendPoint(BaseModel):
+    """Single point in activity trends."""
+    date: str
+    searches: int = 0
+    property_views: int = 0
+    tool_uses: int = 0
+    exports: int = 0
+
+
+class UserActivityTrendsResponse(BaseModel):
+    """Activity trends over time."""
+    trends: list[UserActivityTrendPoint] = Field(default_factory=list)
+    interval: str = "day"  # day, week, month

@@ -52,6 +52,7 @@ from api.routers import (
     saved_searches,
     search,
     tools,
+    user_activity,  # Task #82: User Activity Analytics
     webhooks,  # Task #57: E-Signature Webhooks
 )
 from api.routers import (
@@ -389,6 +390,8 @@ if settings.auth_jwt_enabled:
     if settings.auth_jwt_enabled:
         app.include_router(esignatures.router, prefix="/api/v1")
         app.include_router(webhooks.esignatures.router, prefix="/api/v1")
+    # Task #82: User Activity Analytics
+    app.include_router(user_activity.router, prefix="/api/v1")
 
 # Task #76: Ranking Configuration
 app.include_router(ranking_config.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])

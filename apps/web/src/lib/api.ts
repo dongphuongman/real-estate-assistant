@@ -166,6 +166,10 @@ import {
   MCPConnectorDetailResponse,
   MCPConnectorHealthResponse,
   MCPHealthResponse,
+  // Task #82: User Activity Analytics
+  UserActivitySummary,
+  UserActivityTrendPoint,
+  UserActivityTrendsResponse,
 } from './types';
 
 // Task #74: Streaming utilities
@@ -2972,4 +2976,83 @@ export async function deleteBulkJob(jobId: string): Promise<void> {
     const error = await response.json().catch(() => ({ detail: 'Delete failed' }));
     throw new Error(error.detail || 'Delete failed');
   }
+}
+
+// =============================================================================
+// User Activity Analytics API (Task #82)
+// =============================================================================
+
+/**
+ * Get user activity summary with optional date range filter
+ */
+export async function getUserActivitySummary(params?: {
+  period_start?: string;
+  period_end?: string;
+}): Promise<UserActivitySummary> {
+  const searchParams = new URLSearchParams();
+  if (params?.period_start) searchParams.append('period_start', params.period_start);
+  if (params?.period_end) searchParams.append('period_end', params.period_end);
+
+  const queryString = searchParams.toString();
+  const url = queryString
+    ? `${getApiUrl()}/user-activity/summary?${queryString}`
+    : `${getApiUrl()}/user-activity/summary`;
+
+  const response = await safeFetch(url, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<UserActivitySummary>(response);
+}
+
+/**
+ * Get user activity trends over time
+ */
+export async function getUserActivityTrends(params?: {
+  interval?: 'day' | 'week' | 'month';
+  periods?: number;
+}): Promise<UserActivityTrendsResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.interval) searchParams.append('interval', params.interval);
+  if (params?.periods) searchParams.append('periods', String(params.periods));
+
+  const response = await safeFetch(
+    `${getApiUrl()}/user-activity/trends?${searchParams.toString()}`,
+    {
+      method: 'GET',
+      headers: buildHeaders(),
+      credentials: 'include',
+    }
+  );
+  return handleResponse<UserActivityTrendsResponse>(response);
+}
+
+/**
+ * Export user activity data as CSV
+ */
+export async function exportUserActivityCSV(params?: {
+  period_start?: string;
+  period_end?: string;
+}): Promise<Blob> {
+  const searchParams = new URLSearchParams();
+  if (params?.period_start) searchParams.append('period_start', params.period_start);
+  if (params?.period_end) searchParams.append('period_end', params.period_end);
+
+  const url = searchParams.toString()
+    ? `${getApiUrl()}/user-activity/export?${searchParams.toString()}`
+    : `${getApiUrl()}/user-activity/export`;
+
+  const response = await safeFetch(url, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Export failed' }));
+    throw new ApiError(error.detail || 'Export failed', response.status);
+  }
+
+  return response.blob();
 }

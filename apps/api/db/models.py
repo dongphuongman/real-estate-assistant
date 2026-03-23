@@ -2167,3 +2167,49 @@ class BulkJob(Base):
 
     def __repr__(self) -> str:
         return f"<BulkJob(id={self.id[:8]}..., type={self.job_type}, status={self.status}, progress={self.progress_percent}%)>"
+
+
+# =============================================================================
+# User Activity Analytics Models (Task #82)
+# =============================================================================
+
+
+class UserActivityEvent(Base):
+    """User activity events for analytics (Task #82).
+
+    Tracks feature usage, tool invocations, and custom events
+    that are not covered by SearchEvent.
+    """
+
+    __tablename__ = "user_activity_events"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+
+    # User context (hashed for privacy)
+    user_id_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True, index=True)
+    session_id: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+
+    # Event details
+    event_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    event_category: Mapped[str] = mapped_column(String(50), nullable=False)
+    event_data: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+
+    # Performance tracking
+    duration_ms: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
+    # Timestamp
+    event_timestamp: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        nullable=False,
+        index=True
+    )
+
+    __table_args__ = (
+        Index("ix_user_activity_session_timestamp", "session_id", "event_timestamp"),
+        Index("ix_user_activity_type_timestamp", "event_type", "event_timestamp"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<UserActivityEvent(id={self.id[:8]}..., type={self.event_type}, session={self.session_id[:8]}...)>"
+
