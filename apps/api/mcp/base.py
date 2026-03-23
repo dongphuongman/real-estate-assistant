@@ -3,6 +3,7 @@ MCP connector abstract base class.
 
 This module defines the abstract interface that all MCP connectors
 must implement, ensuring consistent behavior across different services.
+Enhanced with audit logging for connector calls (Task #69).
 """
 
 import logging
@@ -15,6 +16,24 @@ from mcp.exceptions import MCPNotAllowlistedError
 from mcp.result import MCPConnectorResult
 
 logger = logging.getLogger(__name__)
+
+
+def _get_audit_logger():
+    """Lazy import to avoid circular dependency."""
+    from mcp.audit import get_mcp_audit_logger
+
+    return get_mcp_audit_logger()
+
+
+def _get_redaction():
+    """Lazy import for redaction utilities."""
+    from mcp.redaction import (
+        redact_params,
+        redact_result,
+        sanitize_error_message,
+    )
+
+    return redact_params, redact_result, sanitize_error_message
 
 T = TypeVar("T")
 
@@ -171,7 +190,7 @@ class MCPConnector(ABC, Generic[T]):
         **kwargs: Any,
     ) -> MCPConnectorResult[T]:
         """
-        Execute operation with automatic timing measurement.
+        Execute operation with automatic timing measurement and audit logging.
 
         Args:
             operation: Operation name to execute
@@ -182,11 +201,19 @@ class MCPConnector(ABC, Generic[T]):
             MCPConnectorResult with timing metadata
         """
         start_time = time.perf_counter()
+        status = "success"
+        error_message = None
+        result = None
+
         try:
             result = await self.execute(operation, params, **kwargs)
+            if result and hasattr(result, "success") and not result.success:
+                status = "failure"
         except Exception as e:
+            status = "error"
+            error_message = str(e)
             execution_time_ms = (time.perf_counter() - start_time) * 1000
-            return MCPConnectorResult.error_result(
+            result = MCPConnectorResult.error_result(
                 errors=[str(e)],
                 connector_name=self.name,
                 operation=operation,
@@ -194,7 +221,31 @@ class MCPConnector(ABC, Generic[T]):
             )
 
         execution_time_ms = (time.perf_counter() - start_time) * 1000
-        result.execution_time_ms = execution_time_ms
+
+        # Update result timing
+        if result:
+            result.execution_time_ms = execution_time_ms
+
+        # Log audit event (non-blocking, catches own errors)
+        try:
+            audit_logger = _get_audit_logger()
+            redact_params, redact_result, sanitize_error = _get_redaction()
+
+            audit_logger.log_connector_call(
+                connector_name=self.name,
+                operation=operation,
+                params_meta=redact_params(params),
+                result_meta=redact_result(result),
+                duration_ms=int(execution_time_ms),
+                status=status,
+                error_message=sanitize_error(error_message)
+                if error_message
+                else None,
+            )
+        except Exception as audit_error:
+            # Don't fail the request if audit logging fails
+            logger.warning(f"Audit logging failed: {audit_error}")
+
         return result
 
     async def stream(
