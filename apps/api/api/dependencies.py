@@ -4,6 +4,8 @@ from typing import Annotated, Any, Optional
 
 from fastapi import Body, Depends, Header, HTTPException, Query, status
 from langchain_core.language_models import BaseChatModel
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import models.user_model_preferences as user_model_preferences
 from agents.hybrid_agent import create_hybrid_agent
@@ -13,7 +15,10 @@ from agents.services.legal_check import BasicLegalCheckService, LegalCheckServic
 from agents.services.valuation import SimpleValuationProvider, ValuationProvider
 from api.models import RagQaRequest
 from config.settings import settings
+from db.database import get_db
+from db.models import User
 from models.provider_factory import ModelProviderFactory
+from services.model_preference_service import SYSTEM_DEFAULTS, ModelPreferenceService
 
 logger = logging.getLogger(__name__)
 
@@ -128,6 +133,134 @@ def get_optional_llm(
         return get_llm(x_user_email=x_user_email)
     except Exception as e:
         logger.warning("LLM unavailable: %s", e)
+        return None
+
+
+# =============================================================================
+# Task-Specific Model Preferences (Task #87)
+# =============================================================================
+
+
+async def get_llm_for_task(
+    task_type: str,
+    x_user_email: str | None = None,
+    session: AsyncSession | None = None,
+) -> BaseChatModel:
+    """
+    Get Language Model instance configured for a specific task type.
+
+    Priority order:
+    1. User's task-specific preference (from DB via ModelPreferenceService)
+    2. User's global preference (from legacy UserModelPreferencesManager)
+    3. System default for task type
+    4. Settings default
+    5. Fallback to Ollama
+
+    Args:
+        task_type: Task type (chat, search, tools, analysis, embedding)
+        x_user_email: User email for preference lookup
+        session: Database session for preference queries
+
+    Returns:
+        Configured LLM instance
+    """
+    primary_provider: Optional[str] = None
+    primary_model: Optional[str] = None
+
+    # 1. Try task-specific preference from database
+    if x_user_email and x_user_email.strip() and session:
+        try:
+            user_query = select(User.id).where(User.email == x_user_email.strip())
+            user_result = await session.execute(user_query)
+            user_id = user_result.scalar_one_or_none()
+
+            if user_id:
+                service = ModelPreferenceService(session)
+                preference = await service.get_preference_by_task(user_id, task_type)
+                if preference and preference.is_active:
+                    primary_provider = preference.provider
+                    primary_model = preference.model_name
+                    logger.debug(
+                        "Using task-specific preference for %s: %s/%s",
+                        task_type,
+                        primary_provider,
+                        primary_model,
+                    )
+        except Exception as e:
+            logger.warning("Failed to load task-specific model preferences: %s", e)
+
+    # 2. Fall back to legacy global preferences
+    if not primary_provider and x_user_email and x_user_email.strip():
+        try:
+            prefs = user_model_preferences.MODEL_PREFS_MANAGER.get_preferences(
+                x_user_email.strip()
+            )
+            if prefs.preferred_provider:
+                primary_provider = prefs.preferred_provider
+                primary_model = prefs.preferred_model
+                logger.debug(
+                    "Using global preference for %s: %s/%s",
+                    task_type,
+                    primary_provider,
+                    primary_model,
+                )
+        except Exception as e:
+            logger.warning("Failed to load legacy model preferences: %s", e)
+
+    # 3. Fall back to system default for task type
+    if not primary_provider:
+        task_default = SYSTEM_DEFAULTS.get(task_type)
+        if task_default:
+            primary_provider = task_default["provider"]
+            primary_model = task_default["model_name"]
+            logger.debug(
+                "Using system default for %s: %s/%s",
+                task_type,
+                primary_provider,
+                primary_model,
+            )
+
+    # 4. Final fallback to settings default
+    if not primary_provider:
+        primary_provider = settings.default_provider
+        primary_model = settings.default_model
+
+    try:
+        return _create_llm(primary_provider, primary_model)
+    except Exception as e:
+        # Try settings default if we had a preference
+        if primary_provider != settings.default_provider:
+            try:
+                return _create_llm(settings.default_provider, settings.default_model)
+            except Exception:
+                pass
+
+        # 5. Fallback to Ollama if configured
+        if primary_provider != "ollama":
+            try:
+                ollama_provider = ModelProviderFactory.get_provider("ollama")
+                runtime_ok, _runtime_error = ollama_provider.validate_connection()
+                if runtime_ok:
+                    logger.info("Falling back to Ollama for task %s", task_type)
+                    return _create_llm("ollama", settings.ollama_default_model)
+            except Exception:
+                pass
+
+        raise RuntimeError(
+            f"Could not initialize LLM for task '{task_type}' with provider '{primary_provider}': {e}"
+        ) from e
+
+
+async def get_optional_llm_for_task(
+    task_type: str,
+    x_user_email: str | None = None,
+    session: AsyncSession | None = None,
+) -> Optional[BaseChatModel]:
+    """Get LLM for task, returning None if unavailable."""
+    try:
+        return await get_llm_for_task(task_type, x_user_email, session)
+    except Exception as e:
+        logger.warning("LLM unavailable for task %s: %s", task_type, e)
         return None
 
 

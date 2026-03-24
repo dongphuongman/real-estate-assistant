@@ -2182,3 +2182,70 @@ export interface UserActivityTrendsResponse {
   trends: UserActivityTrendPoint[];
   interval: string;
 }
+
+// =============================================================================
+// Task #87: Per-Task Model Preferences Types
+// =============================================================================
+
+export type TaskType = 'chat' | 'search' | 'tools' | 'analysis' | 'embedding';
+
+export interface FallbackChainItem {
+  provider: string;
+  model_name: string;
+}
+
+export interface TaskModelPreference {
+  id: string;
+  user_id: string;
+  task_type: TaskType;
+  provider: string;
+  model_name: string;
+  fallback_chain: FallbackChainItem[] | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TaskModelPreferenceCreate {
+  task_type: TaskType;
+  provider: string;
+  model_name: string;
+  fallback_chain?: FallbackChainItem[];
+  is_active?: boolean;
+}
+
+export interface TaskModelPreferenceUpdate {
+  provider?: string;
+  model_name?: string;
+  fallback_chain?: FallbackChainItem[];
+  is_active?: boolean;
+}
+
+export interface TaskModelPreferenceListResponse {
+  items: TaskModelPreference[];
+  total: number;
+}
+
+export interface SystemDefaultModelPreference {
+  task_type: TaskType;
+  provider: string;
+  model_name: string;
+  description?: string;
+  cost_per_1m_input_tokens?: number;
+  cost_per_1m_output_tokens?: number;
+}
+
+export interface SystemDefaultsResponse {
+  defaults: SystemDefaultModelPreference[];
+  available_providers: string[];
+  available_models: Record<string, string[]>;
+}
+
+export interface ModelCostEstimate {
+  provider: string;
+  model_name: string;
+  input_cost_per_1m: number | null;
+  output_cost_per_1m: number | null;
+  estimated_tokens_per_request: number;
+  estimated_cost_per_request: number | null;
+}

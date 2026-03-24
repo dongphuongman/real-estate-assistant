@@ -170,6 +170,14 @@ import {
   UserActivitySummary,
   UserActivityTrendPoint,
   UserActivityTrendsResponse,
+  // Task #87: Per-Task Model Preferences
+  TaskType,
+  TaskModelPreference,
+  TaskModelPreferenceCreate,
+  TaskModelPreferenceUpdate,
+  TaskModelPreferenceListResponse,
+  SystemDefaultsResponse,
+  ModelCostEstimate,
 } from './types';
 
 // Task #74: Streaming utilities
@@ -454,6 +462,104 @@ export async function updateModelPreferences(
     body: JSON.stringify(payload),
   });
   return handleResponse<ModelPreferences>(response);
+}
+
+// =============================================================================
+// Task #87: Per-Task Model Preferences API
+// =============================================================================
+
+export async function getTaskModelPreferences(): Promise<TaskModelPreferenceListResponse> {
+  const response = await fetch(`${getApiUrl()}/model-preferences`, {
+    method: 'GET',
+    headers: buildHeaders(),
+  });
+  return handleResponse<TaskModelPreferenceListResponse>(response);
+}
+
+export async function getTaskModelPreference(
+  taskType: TaskType
+): Promise<TaskModelPreference> {
+  const response = await fetch(
+    `${getApiUrl()}/model-preferences/${encodeURIComponent(taskType)}`,
+    {
+      method: 'GET',
+      headers: buildHeaders(),
+    }
+  );
+  return handleResponse<TaskModelPreference>(response);
+}
+
+export async function createTaskModelPreference(
+  data: TaskModelPreferenceCreate
+): Promise<TaskModelPreference> {
+  const response = await fetch(`${getApiUrl()}/model-preferences`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    body: JSON.stringify(data),
+  });
+  return handleResponse<TaskModelPreference>(response);
+}
+
+export async function updateTaskModelPreference(
+  preferenceId: string,
+  data: TaskModelPreferenceUpdate
+): Promise<TaskModelPreference> {
+  const response = await fetch(
+    `${getApiUrl()}/model-preferences/${encodeURIComponent(preferenceId)}`,
+    {
+      method: 'PUT',
+      headers: buildHeaders(),
+      body: JSON.stringify(data),
+    }
+  );
+  return handleResponse<TaskModelPreference>(response);
+}
+
+export async function deleteTaskModelPreference(
+  preferenceId: string
+): Promise<void> {
+  const response = await fetch(
+    `${getApiUrl()}/model-preferences/${encodeURIComponent(preferenceId)}`,
+    {
+      method: 'DELETE',
+      headers: buildHeaders(),
+    }
+  );
+  // 204 No Content - no body to parse
+  if (!response.ok) {
+    await handleResponse<void>(response);
+  }
+}
+
+export async function getSystemModelDefaults(): Promise<SystemDefaultsResponse> {
+  const response = await fetch(
+    `${getApiUrl()}/model-preferences/system/defaults`,
+    {
+      method: 'GET',
+      headers: buildHeaders(),
+    }
+  );
+  return handleResponse<SystemDefaultsResponse>(response);
+}
+
+export async function getModelCostEstimate(
+  provider: string,
+  modelName: string,
+  estimatedTokens: number = 1000
+): Promise<ModelCostEstimate> {
+  const params = new URLSearchParams({
+    provider,
+    model_name: modelName,
+    estimated_tokens: estimatedTokens.toString(),
+  });
+  const response = await fetch(
+    `${getApiUrl()}/model-preferences/system/cost-estimate?${params.toString()}`,
+    {
+      method: 'GET',
+      headers: buildHeaders(),
+    }
+  );
+  return handleResponse<ModelCostEstimate>(response);
 }
 
 export async function calculateMortgage(input: MortgageInput): Promise<MortgageResult> {

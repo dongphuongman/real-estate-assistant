@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { RefreshCw, AlertCircle, Loader2, Database, Sparkles } from "lucide-react";
 import { IdentitySettings } from "@/components/settings/identity-settings";
 import { ModelSettings } from "@/components/settings/model-settings";
+import { TaskModelSettings } from "@/components/settings/task-model-settings";
 import { NotificationSettings } from "@/components/settings/notification-settings";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -336,6 +337,9 @@ export default function SettingsPage() {
           <div className="grid gap-6">
             {/* Always show model settings component */}
             <ModelSettings catalog={catalogLoading ? null : catalog} userEmail={userEmail} />
+
+            {/* Task #87: Per-Task Model Preferences */}
+            <TaskModelSettings userEmail={userEmail} />
 
             {/* STATE 1: Empty state (no catalog loaded yet) */}
             {!catalogLoading && !catalog && !catalogError && (
