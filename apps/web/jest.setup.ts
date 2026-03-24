@@ -1,4 +1,13 @@
-import "@testing-library/jest-dom";
+import '@testing-library/jest-dom';
+import { TextEncoder, TextDecoder } from 'util';
+
+// Polyfill TextEncoder/TextDecoder for jspdf and other libraries
+if (typeof globalThis.TextEncoder === 'undefined') {
+  globalThis.TextEncoder = TextEncoder as typeof globalThis.TextEncoder;
+}
+if (typeof globalThis.TextDecoder === 'undefined') {
+  globalThis.TextDecoder = TextDecoder as typeof globalThis.TextDecoder;
+}
 
 type ResponseInitLike = {
   status?: number;
@@ -16,13 +25,13 @@ class PolyfilledResponse {
   constructor(body?: unknown, init?: ResponseInitLike) {
     this.body = body;
     this.status = init?.status ?? 200;
-    this.statusText = init?.statusText ?? "";
+    this.statusText = init?.statusText ?? '';
     this.headers = new Headers(init?.headers);
     this.ok = this.status >= 200 && this.status < 300;
   }
 
   async text(): Promise<string> {
-    return typeof this.body === "string" ? this.body : "";
+    return typeof this.body === 'string' ? this.body : '';
   }
 
   async json(): Promise<unknown> {
