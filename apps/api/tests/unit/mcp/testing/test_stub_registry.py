@@ -28,7 +28,7 @@ class TestStubRegistry:
     def test_register_with_name_override(self) -> None:
         """Test registering with custom name."""
         registry = StubRegistry()
-        stub = registry.register(EchoStubConnector, name="custom_echo")
+        registry.register(EchoStubConnector, name="custom_echo")
 
         assert "custom_echo" in registry
         assert "echo_stub" not in registry

@@ -15,7 +15,6 @@ from agents.services.legal_check import BasicLegalCheckService, LegalCheckServic
 from agents.services.valuation import SimpleValuationProvider, ValuationProvider
 from api.models import RagQaRequest
 from config.settings import settings
-from db.database import get_db
 from db.models import User
 from models.provider_factory import ModelProviderFactory
 from services.model_preference_service import SYSTEM_DEFAULTS, ModelPreferenceService
@@ -425,7 +424,8 @@ def get_enrichment_pipeline() -> Optional[Any]:
 
     Returns None if enrichment is disabled.
     """
-    from data.enrichment.pipeline import PipelineConfig, get_enrichment_pipeline as _get_impl
+    from data.enrichment.pipeline import PipelineConfig
+    from data.enrichment.pipeline import get_enrichment_pipeline as _get_impl
 
     if not settings.enrichment_enabled:
         return None

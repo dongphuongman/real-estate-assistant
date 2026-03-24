@@ -6,11 +6,8 @@ import pytest
 
 from data.enrichment.cache import EnrichmentCache
 from data.enrichment.hooks import (
-    EnrichmentConfig,
-    EnrichmentContext,
     EnrichmentPriority,
     EnrichmentResult,
-    EnrichmentStatus,
     PropertyEnrichmentHook,
 )
 from data.enrichment.pipeline import EnrichmentPipeline, PipelineConfig, PipelineResult

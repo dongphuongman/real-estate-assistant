@@ -24,10 +24,10 @@ from mcp.audit import (
     log_mcp_audit,
 )
 from mcp.context import (
+    MCPRequestContext,
+    generate_request_id,
     get_request_id,
     set_request_id,
-    generate_request_id,
-    MCPRequestContext,
 )
 from mcp.redaction import (
     redact_for_audit,

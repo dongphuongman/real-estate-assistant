@@ -11,7 +11,6 @@ Features:
 - Thread-safe operations
 """
 
-import hashlib
 import json
 import logging
 import os

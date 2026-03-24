@@ -14,7 +14,6 @@ class TestUserActivityAPI:
     async def test_client(self, db_session):
         """Create a test client with auth override."""
         from fastapi import FastAPI
-        from sqlalchemy.ext.asyncio import AsyncSession
 
         from api.deps.auth import get_current_active_user
         from api.routers import user_activity

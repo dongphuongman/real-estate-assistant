@@ -52,7 +52,7 @@ class TestNetworkGuardBlocking:
         with NetworkGuard.enabled():
             with pytest.raises(NetworkIsolationError):
                 # This will fail at socket creation
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def test_allows_after_context(self) -> None:
         """Test that network is allowed after context."""

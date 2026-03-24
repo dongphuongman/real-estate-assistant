@@ -4,8 +4,6 @@ Unit tests for Enrichment Cache (Task #78).
 
 import time
 
-import pytest
-
 from data.enrichment.cache import (
     CacheEntry,
     EnrichmentCache,

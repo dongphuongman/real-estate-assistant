@@ -8,23 +8,20 @@ import logging
 from datetime import datetime
 from enum import Enum
 from io import BytesIO
-from typing import Annotated, Literal, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Response, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from analytics.investment_analytics import (
-    CashFlowProjection,
     InvestmentAnalyticsCalculator,
 )
 from tools.property_tools import (
     AdvancedInvestmentInput,
     AdvancedInvestmentResult,
     AdvancedInvestmentTool,
-    InvestmentCalculatorTool,
-    InvestmentAnalysisInput,
     InvestmentAnalysisResult,
+    InvestmentCalculatorTool,
 )
 from utils.investment_report_generator import InvestmentReportGenerator
 

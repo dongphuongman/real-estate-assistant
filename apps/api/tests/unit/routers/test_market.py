@@ -5,7 +5,6 @@ Task #84: Market Trends Dashboard
 """
 
 from collections.abc import AsyncGenerator
-from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -15,8 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.deps.auth import get_current_active_user
 from api.routers import market
-from db.database import get_db
 from data.schemas import Property, PropertyCollection, PropertyType
+from db.database import get_db
 
 
 @pytest.fixture

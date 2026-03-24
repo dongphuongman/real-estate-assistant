@@ -21,7 +21,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.deps.auth import get_current_active_user
-from config.settings import get_settings
+from config.settings import get_settings, settings
 from db import AnomalyRepository, PriceSnapshotRepository
 from db.database import get_db
 from db.schemas import (

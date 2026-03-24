@@ -11,15 +11,15 @@ from typing import Optional
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.platypus import (
+    PageBreak,
     Paragraph,
     SimpleDocTemplate,
     Spacer,
     Table,
     TableStyle,
-    PageBreak,
 )
 
 from analytics.investment_analytics import CashFlowProjection
@@ -268,7 +268,7 @@ class InvestmentReportGenerator:
         ]
 
         formatted = []
-        for label, value, is_positive in metrics:
+        for label, value, _is_positive in metrics:
             formatted_value = self._format_metric(value, label)
             is_positive_value = value >= 0 if isinstance(value, (int, float)) else True
             formatted.append((label, formatted_value, is_positive_value))

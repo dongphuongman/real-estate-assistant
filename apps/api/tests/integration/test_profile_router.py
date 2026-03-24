@@ -4,7 +4,6 @@ Task #88: User Profile Management
 """
 
 import io
-from datetime import UTC, datetime
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -21,7 +20,6 @@ async def profile_client(db_session: AsyncSession):
     from fastapi import FastAPI
 
     from api.deps.auth import get_current_active_user
-    from db.database import get_db_context
 
     test_app = FastAPI()
     # Router already has /profile prefix, so just add /api/v1

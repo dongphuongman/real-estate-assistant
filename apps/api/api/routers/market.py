@@ -278,7 +278,6 @@ async def compare_areas(
     user: User = Depends(get_current_active_user),
 ) -> AreaComparisonResponse:
     """Compare market metrics between two areas."""
-    from datetime import UTC, datetime
 
     from db.schemas import AreaComparisonResponse, AreaInsightsResponse
 
@@ -314,8 +313,8 @@ async def compare_areas(
 
         if "error" in comparison:
             # One or both cities not found
-            area1_data = comparison.get("city1", city1)
-            area2_data = comparison.get("city2", city2)
+            comparison.get("city1", city1)
+            comparison.get("city2", city2)
 
             return AreaComparisonResponse(
                 area1=AreaInsightsResponse(
@@ -367,7 +366,7 @@ async def compare_areas(
             more_properties_area=comparison.get("more_properties", city1),
         )
 
-    except Exception as e:
+    except Exception:
         # Fallback response on error
         return AreaComparisonResponse(
             area1=AreaInsightsResponse(

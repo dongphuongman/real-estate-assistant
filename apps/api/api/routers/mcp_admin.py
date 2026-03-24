@@ -584,9 +584,8 @@ async def health_check_connector(name: str):
     - Any errors or warnings
     - Detailed health information
     """
-    import time
 
-    validator = get_allowlist_validator()
+    get_allowlist_validator()
 
     # Check if connector exists
     if name not in MCPConnectorRegistry._connectors:

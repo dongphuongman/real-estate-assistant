@@ -607,7 +607,7 @@ class ContextManager:
         selected: List[Tuple[int, BaseMessage]] = []
         total_tokens = 0
 
-        for score, orig_idx, msg in scored:
+        for _score, orig_idx, msg in scored:
             msg_tokens = self.token_counter.count_tokens(
                 getattr(msg, "content", "") or "", model_id
             )

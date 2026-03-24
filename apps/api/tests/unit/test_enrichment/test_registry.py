@@ -2,11 +2,9 @@
 Unit tests for Enrichment Registry (Task #78).
 """
 
-import pytest
 
 from data.enrichment.hooks import (
     EnrichmentConfig,
-    EnrichmentContext,
     EnrichmentPriority,
     EnrichmentResult,
     PropertyEnrichmentHook,

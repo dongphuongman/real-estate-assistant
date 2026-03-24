@@ -1,12 +1,13 @@
 """Unit tests for notification preferences functionality (Task #86)."""
 
-import pytest
-from datetime import datetime, UTC
-from unittest.mock import AsyncMock, MagicMock, patch
+from datetime import UTC, datetime
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
-from db.repositories import NotificationPreferenceRepository
+import pytest
+
 from db.models import NotificationPreferenceDB, User
+from db.repositories import NotificationPreferenceRepository
 
 
 @pytest.fixture

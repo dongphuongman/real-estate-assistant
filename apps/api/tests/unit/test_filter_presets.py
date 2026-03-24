@@ -165,7 +165,7 @@ class TestFilterPresetRepository:
         assert default is None
 
         # Create a default preset
-        preset = await repo.create(
+        await repo.create(
             user_id=user.id,
             name="My Default",
             filters={"city": "Krakow"},

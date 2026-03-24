@@ -305,7 +305,7 @@ async def create_config(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
-        )
+        ) from e
 
 
 @router.patch("/configs/{config_id}", response_model=RankingConfigResponse)
@@ -364,7 +364,7 @@ async def update_config(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
-        )
+        ) from e
 
 
 @router.post("/configs/{config_id}/activate", response_model=RankingConfigResponse)
@@ -436,4 +436,4 @@ async def delete_config(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
-        )
+        ) from e

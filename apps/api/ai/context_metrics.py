@@ -59,7 +59,7 @@ def init_context_metrics_db(db_path: Path = CONTEXT_METRICS_DB_PATH) -> None:
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
     conn = sqlite3.connect(db_path)
-    cursor = conn.execute("""
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS context_metrics (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp TEXT NOT NULL,
@@ -90,7 +90,7 @@ def log_context_metrics(
     init_context_metrics_db(db_path)
 
     conn = sqlite3.connect(db_path)
-    cursor = conn.execute(
+    conn.execute(
         """
         INSERT INTO context_metrics (
             timestamp, session_id, model_id, provider,

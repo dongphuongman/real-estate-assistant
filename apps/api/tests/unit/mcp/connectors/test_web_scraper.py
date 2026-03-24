@@ -7,9 +7,7 @@ Uses httpx mock transport for HTTP request simulation.
 Task #72: MCP Web Scraper Connector
 """
 
-import asyncio
-import time
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import httpx
 import pytest
@@ -20,9 +18,7 @@ from mcp.connectors.web_scraper import (
     WebScraperConfig,
     WebScraperConnector,
 )
-from mcp.exceptions import MCPOperationError, MCPTimeoutError
-from mcp.result import MCPConnectorResult
-
+from mcp.exceptions import MCPOperationError
 
 # Sample HTML for testing
 SAMPLE_HTML = """
@@ -582,7 +578,7 @@ class TestWebScraperConnectorRateLimiting:
         connector._client.get = AsyncMock(return_value=mock_response)
 
         # Configure rate limiter with very low limit
-        from mcp.rate_limiter import get_connector_rate_limiter, RateLimitConfig
+        from mcp.rate_limiter import RateLimitConfig, get_connector_rate_limiter
 
         limiter = get_connector_rate_limiter()
         # Set config directly to avoid the0 or default` issue

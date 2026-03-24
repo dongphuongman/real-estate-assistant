@@ -15,18 +15,16 @@ Features:
 import asyncio
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
 from data.enrichment.cache import EnrichmentCache, get_enrichment_cache
 from data.enrichment.hooks import (
-    EnrichmentConfig,
     EnrichmentContext,
-    EnrichmentPriority,
     EnrichmentResult,
     PropertyEnrichmentHook,
 )
 from data.enrichment.registry import EnrichmentRegistry
-from data.enrichment.status import FallbackHandler, get_fallback_handler, get_status_tracker
+from data.enrichment.status import get_fallback_handler, get_status_tracker
 
 logger = logging.getLogger(__name__)
 
