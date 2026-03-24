@@ -10,9 +10,9 @@ import { ReconnectingEventSource, createReconnectingEventSource } from '../Recon
 class MockEventSource {
   url: string;
   readyState: number = EventSource.CONNECTING;
-  onopen: ((this: EventSource, ev: Event) => any) | null = null;
-  onmessage: ((this: EventSource, ev: MessageEvent) => any) | null = null;
-  onerror: ((this: EventSource, ev: Event) => any) | null = null;
+  onopen: ((this: EventSource, ev: Event) => void) | null = null;
+  onmessage: ((this: EventSource, ev: MessageEvent) => void) | null = null;
+  onerror: ((this: EventSource, ev: Event) => void) | null = null;
 
   constructor(url: string) {
     this.url = url;

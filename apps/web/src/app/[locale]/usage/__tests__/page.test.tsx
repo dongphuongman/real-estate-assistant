@@ -192,8 +192,9 @@ describe("UsagePage", () => {
 
       render(<UsagePage />);
 
-      // Should show skeleton placeholders
-      expect(screen.getAllByTestId(/skeleton/i).length).toBeGreaterThan(0);
+      // Should show skeleton placeholders (using class selector since Skeleton doesn't have data-testid)
+      const skeletons = document.querySelectorAll('[class*="animate-pulse"]');
+      expect(skeletons.length).toBeGreaterThan(0);
     });
 
     it("shows loading spinner on refresh button", async () => {
@@ -284,8 +285,9 @@ describe("UsagePage", () => {
     it("renders activity trends tab", async () => {
       render(<UsagePage />);
 
+      // Wait for data to load (metric cards appear)
       await waitFor(() => {
-        expect(screen.getByText("Activity Trends")).toBeInTheDocument();
+        expect(screen.getByText("Total Searches")).toBeInTheDocument();
       });
 
       // Switch to trends tab
@@ -299,8 +301,9 @@ describe("UsagePage", () => {
     it("renders top tools tab", async () => {
       render(<UsagePage />);
 
+      // Wait for data to load (metric cards appear)
       await waitFor(() => {
-        expect(screen.getByText("Top Tools")).toBeInTheDocument();
+        expect(screen.getByText("Total Searches")).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByText("Top Tools"));
@@ -314,8 +317,9 @@ describe("UsagePage", () => {
     it("renders top cities tab", async () => {
       render(<UsagePage />);
 
+      // Wait for data to load (metric cards appear)
       await waitFor(() => {
-        expect(screen.getByText("Top Cities")).toBeInTheDocument();
+        expect(screen.getByText("Total Searches")).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByText("Top Cities"));
@@ -330,8 +334,9 @@ describe("UsagePage", () => {
     it("renders daily activity tab", async () => {
       render(<UsagePage />);
 
+      // Wait for data to load (metric cards appear)
       await waitFor(() => {
-        expect(screen.getByText("Daily Activity")).toBeInTheDocument();
+        expect(screen.getByText("Total Searches")).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByText("Daily Activity"));

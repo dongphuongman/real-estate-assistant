@@ -24,7 +24,7 @@ anthropic==0.83.0
 google-generativeai==0.8.6
 
 # Tokenization / compression
-tiktoken>=1.8.0
+tiktoken>=0.5.0
 zstandard==1.23.0
 grpcio==1.66.2
 protobuf>=5.29.3
@@ -46,6 +46,7 @@ cryptography>=43.0.0
 
 # Utilities
 requests==2.32.5
+types-requests>=2.32.0  # Type stubs for mypy
 regex==2025.11.3
 rpds-py==1.20.0
 onnxruntime>=1.19.0
