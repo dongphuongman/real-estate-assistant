@@ -337,7 +337,14 @@ def test_admin_metrics_returns_app_state_metrics(mock_get_settings):
     try:
         resp = client.get("/api/v1/admin/metrics", headers=HEADERS)
         assert resp.status_code == 200
-        assert resp.json() == {"GET /api/v1/verify-auth": 2}
+        # API returns comprehensive metrics structure
+        data = resp.json()
+        assert "requests" in data
+        assert data["requests"] == {"GET /api/v1/verify-auth": 2}
+        assert "cache" in data
+        assert "vector_store" in data
+        assert "uptime_seconds" in data
+        assert "version" in data
     finally:
         app.state.metrics = old_metrics if old_metrics is not None else {}
 
