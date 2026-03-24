@@ -178,6 +178,14 @@ import {
   TaskModelPreferenceListResponse,
   SystemDefaultsResponse,
   ModelCostEstimate,
+  // Task #88: User Profile Management
+  ProfileUpdate,
+  ProfileResponse,
+  PrivacySettings,
+  AvatarUploadResponse,
+  DataExportRequest,
+  DataExportResponse,
+  DataExportStatusResponse,
 } from './types';
 
 // Task #74: Streaming utilities
@@ -3161,4 +3169,108 @@ export async function exportUserActivityCSV(params?: {
   }
 
   return response.blob();
+}
+
+// ============================================================
+// Task #88: User Profile Management
+// ============================================================
+
+/**
+ * Get current user's profile
+ */
+export async function getProfile(): Promise<ProfileResponse> {
+  const response = await safeFetch(`${getApiUrl()}/profile`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<ProfileResponse>(response);
+}
+
+/**
+ * Update current user's profile (partial update)
+ */
+export async function updateProfile(data: Partial<ProfileUpdate>): Promise<ProfileResponse> {
+  const response = await safeFetch(`${getApiUrl()}/profile`, {
+    method: 'PUT',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  return handleResponse<ProfileResponse>(response);
+}
+
+/**
+ * Upload avatar image
+ */
+export async function uploadAvatar(file: File): Promise<AvatarUploadResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await safeFetch(`${getApiUrl()}/profile/avatar`, {
+    method: 'POST',
+    headers: buildMultipartHeaders(),
+    credentials: 'include',
+    body: formData,
+  });
+  return handleResponse<AvatarUploadResponse>(response);
+}
+
+/**
+ * Delete user's avatar
+ */
+export async function deleteAvatar(): Promise<void> {
+  const response = await safeFetch(`${getApiUrl()}/profile/avatar`, {
+    method: 'DELETE',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to delete avatar' }));
+    throw new ApiError(error.detail || 'Failed to delete avatar', response.status);
+  }
+}
+
+/**
+ * Update privacy settings
+ */
+export async function updatePrivacySettings(
+  settings: PrivacySettings
+): Promise<ProfileResponse> {
+  const response = await safeFetch(`${getApiUrl()}/profile/privacy`, {
+    method: 'PUT',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(settings),
+  });
+  return handleResponse<ProfileResponse>(response);
+}
+
+/**
+ * Request GDPR data export
+ */
+export async function requestDataExport(
+  request: DataExportRequest
+): Promise<DataExportResponse> {
+  const response = await safeFetch(`${getApiUrl()}/profile/export`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(request),
+  });
+  return handleResponse<DataExportResponse>(response);
+}
+
+/**
+ * Get data export job status
+ */
+export async function getExportStatus(
+  exportId: string
+): Promise<DataExportStatusResponse> {
+  const response = await safeFetch(`${getApiUrl()}/profile/export/${exportId}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<DataExportStatusResponse>(response);
 }

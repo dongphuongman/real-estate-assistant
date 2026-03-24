@@ -2249,3 +2249,72 @@ export interface ModelCostEstimate {
   estimated_tokens_per_request: number;
   estimated_cost_per_request: number | null;
 }
+
+// =============================================================================
+// Task #88: User Profile Management Types
+// =============================================================================
+
+export interface ProfileUpdate {
+  full_name?: string;
+  phone?: string;
+  bio?: string;
+  timezone?: string;
+  language?: string;
+}
+
+export interface ProfileResponse {
+  id: string;
+  email: string;
+  full_name: string | null;
+  phone: string | null;
+  avatar_url: string | null;
+  timezone: string;
+  language: string;
+  bio: string | null;
+  privacy_settings: PrivacySettings;
+  is_active: boolean;
+  is_verified: boolean;
+  role: string;
+  created_at: string;
+  last_login_at: string | null;
+  gdpr_consent_at: string | null;
+}
+
+export interface PrivacySettings {
+  profile_visible: boolean;
+  activity_visible: boolean;
+  show_email: boolean;
+  show_phone: boolean;
+  allow_contact: boolean;
+}
+
+export interface AvatarUploadResponse {
+  avatar_url: string;
+  message: string;
+}
+
+export interface DataExportRequest {
+  format: 'json' | 'csv';
+  include_favorites: boolean;
+  include_search_history: boolean;
+  include_documents: boolean;
+}
+
+export interface DataExportResponse {
+  export_id: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  format: string;
+  includes: string[];
+  created_at: string;
+}
+
+export interface DataExportStatusResponse {
+  export_id: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  progress_percent: number;
+  download_url: string | null;
+  expires_at: string | null;
+  error_message: string | null;
+  created_at: string;
+  completed_at: string | null;
+}

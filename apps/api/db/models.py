@@ -50,6 +50,26 @@ class User(Base):
     failed_login_attempts: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     locked_until: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
+    # Profile fields (Task #88: User Profile Management)
+    phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    avatar_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    timezone: Mapped[str] = mapped_column(String(50), default="UTC", nullable=False)
+    language: Mapped[str] = mapped_column(String(10), default="en", nullable=False)
+    bio: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Privacy settings (JSON for flexibility)
+    privacy_settings: Mapped[dict] = mapped_column(
+        JSON,
+        default=lambda: {"profile_visible": True, "activity_visible": False},
+        nullable=False,
+    )
+
+    # GDPR fields
+    gdpr_consent_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    data_export_requested_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
     # Relationships
     refresh_tokens: Mapped[list["RefreshToken"]] = relationship(
         "RefreshToken", back_populates="user", cascade="all, delete-orphan"

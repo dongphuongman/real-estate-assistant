@@ -6,6 +6,8 @@ import { IdentitySettings } from "@/components/settings/identity-settings";
 import { ModelSettings } from "@/components/settings/model-settings";
 import { TaskModelSettings } from "@/components/settings/task-model-settings";
 import { NotificationSettings } from "@/components/settings/notification-settings";
+import { ProfileSettings } from "@/components/settings/profile-settings";
+import { PrivacySettings } from "@/components/settings/privacy-settings";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getModelsCatalog, testModelRuntime, ApiError } from "@/lib/api";
@@ -300,6 +302,18 @@ export default function SettingsPage() {
           <IdentitySettings onChange={(email) => setUserEmail(email)} />
         </section>
 
+        {/* Profile Section - Task #88 */}
+        <section>
+          <h2 className="text-lg font-semibold mb-4">Profile</h2>
+          <ProfileSettings />
+        </section>
+
+        {/* Privacy & Data Section - Task #88 */}
+        <section>
+          <h2 className="text-lg font-semibold mb-4">Privacy & Data</h2>
+          <PrivacySettings />
+        </section>
+
         {/* Notifications Section - Always populated */}
         <section>
           <h2 className="text-lg font-semibold mb-4">Notifications</h2>
@@ -339,7 +353,7 @@ export default function SettingsPage() {
             <ModelSettings catalog={catalogLoading ? null : catalog} userEmail={userEmail} />
 
             {/* Task #87: Per-Task Model Preferences */}
-            <TaskModelSettings userEmail={userEmail} />
+            <TaskModelSettings catalog={catalog} userEmail={userEmail} />
 
             {/* STATE 1: Empty state (no catalog loaded yet) */}
             {!catalogLoading && !catalog && !catalogError && (

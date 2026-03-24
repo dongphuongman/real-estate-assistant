@@ -59,6 +59,159 @@ class UserResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+# =============================================================================
+# Profile Management Schemas (Task #88)
+# =============================================================================
+
+class ProfileUpdate(BaseModel):
+    """Schema for profile update (partial)."""
+
+    full_name: Optional[str] = Field(None, max_length=255, description="User full name")
+    phone: Optional[str] = Field(None, max_length=50, description="Phone number")
+    bio: Optional[str] = Field(None, max_length=1000, description="User biography")
+    timezone: Optional[str] = Field(None, max_length=50, description="User timezone (e.g., 'Europe/Warsaw')")
+    language: Optional[str] = Field(None, max_length=10, description="Preferred language code (e.g., 'en', 'pl')")
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, v: Optional[str]) -> Optional[str]:
+        """Validate phone number format (optional)."""
+        if v is None:
+            return v
+        # Basic phone validation: allow digits, spaces, dashes, parentheses, plus
+        import re
+        cleaned = re.sub(r"[^\d\s\-\(\)\+]", "", v)
+        if len(re.sub(r"\D", "", cleaned)) < 7:
+            raise ValueError("Phone number must contain at least 7 digits")
+        return v.strip() if v else None
+
+    @field_validator("timezone")
+    @classmethod
+    def validate_timezone(cls, v: Optional[str]) -> Optional[str]:
+        """Validate timezone is a valid IANA timezone."""
+        if v is None:
+            return v
+        # List of common timezones (not exhaustive, but covers most cases)
+        valid_timezones = {
+            "UTC", "GMT",
+            # Europe
+            "Europe/Warsaw", "Europe/London", "Europe/Paris", "Europe/Berlin", "Europe/Moscow",
+            "Europe/Kiev", "Europe/Prague", "Europe/Vienna", "Europe/Rome", "Europe/Madrid",
+            "Europe/Amsterdam", "Europe/Brussels", "Europe/Stockholm", "Europe/Oslo",
+            "Europe/Copenhagen", "Europe/Helsinki", "Europe/Zurich", "Europe/Athens", "Europe/Istanbul",
+            # Americas
+            "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
+            "America/San_Francisco", "America/Seattle", "America/Toronto", "America/Vancouver",
+            "America/Mexico_City", "America/Sao_Paulo", "America/Buenos_Aires", "America/Bogota",
+            # Asia
+            "Asia/Tokyo", "Asia/Shanghai", "Asia/Beijing", "Asia/Hong_Kong", "Asia/Singapore",
+            "Asia/Seoul", "Asia/Taipei", "Asia/Bangkok", "Asia/Jakarta", "Asia/Dubai",
+            # Africa
+            "Africa/Cairo", "Africa/Lagos", "Africa/Johannesburg",
+            # Australia
+            "Australia/Sydney", "Australia/Melbourne", "Australia/Brisbane", "Australia/Perth",
+        }
+        if v not in valid_timezones:
+            # Allow any IANA timezone format, but warn if uncommon
+            import re
+            if not re.match(r"^[A-Za-z_]+/[A-Za-z_]+$", v) and v not in ("UTC", "GMT"):
+                raise ValueError(f"Invalid timezone format: {v}")
+        return v
+
+    @field_validator("language")
+    @classmethod
+    def validate_language(cls, v: Optional[str]) -> Optional[str]:
+        """Validate language code."""
+        if v is None:
+            return v
+        # Common ISO 639-1 language codes
+        valid_codes = {
+            "en", "pl", "de", "fr", "es", "it", "pt", "nl", "ru", "uk",
+            "cs", "sv", "da", "no", "fi", "el", "tr", "ar", "he", "zh",
+            "ja", "ko", "hi", "bn", "id", "ms", "th", "vi", "ro", "hu",
+        }
+        normalized = v.lower().strip()
+        if normalized not in valid_codes:
+            raise ValueError(f"Unsupported language code: {v}")
+        return normalized
+
+
+class PrivacySettingsUpdate(BaseModel):
+    """Schema for privacy settings update."""
+
+    profile_visible: bool = Field(default=True, description="Whether profile is visible to other users")
+    activity_visible: bool = Field(default=False, description="Whether activity is visible to other users")
+    show_email: bool = Field(default=False, description="Whether email is shown on profile")
+    show_phone: bool = Field(default=False, description="Whether phone is shown on profile")
+    allow_contact: bool = Field(default=True, description="Whether other users can send messages")
+
+
+class PrivacySettings(BaseModel):
+    """Schema for privacy settings response."""
+
+    profile_visible: bool = True
+    activity_visible: bool = False
+    show_email: bool = False
+    show_phone: bool = False
+    allow_contact: bool = True
+
+
+class ProfileResponse(UserResponse):
+    """Extended profile response with all profile fields."""
+
+    phone: Optional[str] = None
+    avatar_url: Optional[str] = None
+    timezone: str = "UTC"
+    language: str = "en"
+    bio: Optional[str] = None
+    privacy_settings: dict = Field(default_factory=lambda: {"profile_visible": True, "activity_visible": False})
+    gdpr_consent_at: Optional[datetime] = None
+
+    model_config = {"from_attributes": True}
+
+
+class AvatarUploadResponse(BaseModel):
+    """Schema for avatar upload response."""
+
+    avatar_url: str
+    message: str = "Avatar uploaded successfully"
+
+
+class DataExportRequest(BaseModel):
+    """Schema for requesting GDPR data export."""
+
+    format: Literal["json", "csv"] = Field(default="json", description="Export format")
+    include_documents: bool = Field(default=True, description="Include uploaded documents metadata")
+    include_search_history: bool = Field(default=True, description="Include search history")
+    include_favorites: bool = Field(default=True, description="Include favorites")
+
+
+class DataExportResponse(BaseModel):
+    """GDPR data export response."""
+
+    export_id: str
+    status: Literal["pending", "processing", "completed", "failed"] = "pending"
+    download_url: Optional[str] = None
+    expires_at: Optional[datetime] = None
+    format: str
+    includes: list[str]
+    estimated_size_kb: Optional[int] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+
+class DataExportStatusResponse(BaseModel):
+    """Schema for checking export job status."""
+
+    export_id: str
+    status: Literal["pending", "processing", "completed", "failed"]
+    progress_percent: int = 0
+    download_url: Optional[str] = None
+    expires_at: Optional[datetime] = None
+    error_message: Optional[str] = None
+    created_at: datetime
+    completed_at: Optional[datetime] = None
+
+
 class TokenResponse(BaseModel):
     """Schema for token response."""
 
