@@ -63,14 +63,19 @@ class UserResponse(BaseModel):
 # Profile Management Schemas (Task #88)
 # =============================================================================
 
+
 class ProfileUpdate(BaseModel):
     """Schema for profile update (partial)."""
 
     full_name: Optional[str] = Field(None, max_length=255, description="User full name")
     phone: Optional[str] = Field(None, max_length=50, description="Phone number")
     bio: Optional[str] = Field(None, max_length=1000, description="User biography")
-    timezone: Optional[str] = Field(None, max_length=50, description="User timezone (e.g., 'Europe/Warsaw')")
-    language: Optional[str] = Field(None, max_length=10, description="Preferred language code (e.g., 'en', 'pl')")
+    timezone: Optional[str] = Field(
+        None, max_length=50, description="User timezone (e.g., 'Europe/Warsaw')"
+    )
+    language: Optional[str] = Field(
+        None, max_length=10, description="Preferred language code (e.g., 'en', 'pl')"
+    )
 
     @field_validator("phone")
     @classmethod
@@ -80,6 +85,7 @@ class ProfileUpdate(BaseModel):
             return v
         # Basic phone validation: allow digits, spaces, dashes, parentheses, plus
         import re
+
         cleaned = re.sub(r"[^\d\s\-\(\)\+]", "", v)
         if len(re.sub(r"\D", "", cleaned)) < 7:
             raise ValueError("Phone number must contain at least 7 digits")
@@ -93,27 +99,66 @@ class ProfileUpdate(BaseModel):
             return v
         # List of common timezones (not exhaustive, but covers most cases)
         valid_timezones = {
-            "UTC", "GMT",
+            "UTC",
+            "GMT",
             # Europe
-            "Europe/Warsaw", "Europe/London", "Europe/Paris", "Europe/Berlin", "Europe/Moscow",
-            "Europe/Kiev", "Europe/Prague", "Europe/Vienna", "Europe/Rome", "Europe/Madrid",
-            "Europe/Amsterdam", "Europe/Brussels", "Europe/Stockholm", "Europe/Oslo",
-            "Europe/Copenhagen", "Europe/Helsinki", "Europe/Zurich", "Europe/Athens", "Europe/Istanbul",
+            "Europe/Warsaw",
+            "Europe/London",
+            "Europe/Paris",
+            "Europe/Berlin",
+            "Europe/Moscow",
+            "Europe/Kiev",
+            "Europe/Prague",
+            "Europe/Vienna",
+            "Europe/Rome",
+            "Europe/Madrid",
+            "Europe/Amsterdam",
+            "Europe/Brussels",
+            "Europe/Stockholm",
+            "Europe/Oslo",
+            "Europe/Copenhagen",
+            "Europe/Helsinki",
+            "Europe/Zurich",
+            "Europe/Athens",
+            "Europe/Istanbul",
             # Americas
-            "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
-            "America/San_Francisco", "America/Seattle", "America/Toronto", "America/Vancouver",
-            "America/Mexico_City", "America/Sao_Paulo", "America/Buenos_Aires", "America/Bogota",
+            "America/New_York",
+            "America/Chicago",
+            "America/Denver",
+            "America/Los_Angeles",
+            "America/San_Francisco",
+            "America/Seattle",
+            "America/Toronto",
+            "America/Vancouver",
+            "America/Mexico_City",
+            "America/Sao_Paulo",
+            "America/Buenos_Aires",
+            "America/Bogota",
             # Asia
-            "Asia/Tokyo", "Asia/Shanghai", "Asia/Beijing", "Asia/Hong_Kong", "Asia/Singapore",
-            "Asia/Seoul", "Asia/Taipei", "Asia/Bangkok", "Asia/Jakarta", "Asia/Dubai",
+            "Asia/Tokyo",
+            "Asia/Shanghai",
+            "Asia/Beijing",
+            "Asia/Hong_Kong",
+            "Asia/Singapore",
+            "Asia/Seoul",
+            "Asia/Taipei",
+            "Asia/Bangkok",
+            "Asia/Jakarta",
+            "Asia/Dubai",
             # Africa
-            "Africa/Cairo", "Africa/Lagos", "Africa/Johannesburg",
+            "Africa/Cairo",
+            "Africa/Lagos",
+            "Africa/Johannesburg",
             # Australia
-            "Australia/Sydney", "Australia/Melbourne", "Australia/Brisbane", "Australia/Perth",
+            "Australia/Sydney",
+            "Australia/Melbourne",
+            "Australia/Brisbane",
+            "Australia/Perth",
         }
         if v not in valid_timezones:
             # Allow any IANA timezone format, but warn if uncommon
             import re
+
             if not re.match(r"^[A-Za-z_]+/[A-Za-z_]+$", v) and v not in ("UTC", "GMT"):
                 raise ValueError(f"Invalid timezone format: {v}")
         return v
@@ -126,9 +171,36 @@ class ProfileUpdate(BaseModel):
             return v
         # Common ISO 639-1 language codes
         valid_codes = {
-            "en", "pl", "de", "fr", "es", "it", "pt", "nl", "ru", "uk",
-            "cs", "sv", "da", "no", "fi", "el", "tr", "ar", "he", "zh",
-            "ja", "ko", "hi", "bn", "id", "ms", "th", "vi", "ro", "hu",
+            "en",
+            "pl",
+            "de",
+            "fr",
+            "es",
+            "it",
+            "pt",
+            "nl",
+            "ru",
+            "uk",
+            "cs",
+            "sv",
+            "da",
+            "no",
+            "fi",
+            "el",
+            "tr",
+            "ar",
+            "he",
+            "zh",
+            "ja",
+            "ko",
+            "hi",
+            "bn",
+            "id",
+            "ms",
+            "th",
+            "vi",
+            "ro",
+            "hu",
         }
         normalized = v.lower().strip()
         if normalized not in valid_codes:
@@ -139,8 +211,12 @@ class ProfileUpdate(BaseModel):
 class PrivacySettingsUpdate(BaseModel):
     """Schema for privacy settings update."""
 
-    profile_visible: bool = Field(default=True, description="Whether profile is visible to other users")
-    activity_visible: bool = Field(default=False, description="Whether activity is visible to other users")
+    profile_visible: bool = Field(
+        default=True, description="Whether profile is visible to other users"
+    )
+    activity_visible: bool = Field(
+        default=False, description="Whether activity is visible to other users"
+    )
     show_email: bool = Field(default=False, description="Whether email is shown on profile")
     show_phone: bool = Field(default=False, description="Whether phone is shown on profile")
     allow_contact: bool = Field(default=True, description="Whether other users can send messages")
@@ -164,7 +240,9 @@ class ProfileResponse(UserResponse):
     timezone: str = "UTC"
     language: str = "en"
     bio: Optional[str] = None
-    privacy_settings: dict = Field(default_factory=lambda: {"profile_visible": True, "activity_visible": False})
+    privacy_settings: dict = Field(
+        default_factory=lambda: {"profile_visible": True, "activity_visible": False}
+    )
     gdpr_consent_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
@@ -1928,6 +2006,7 @@ class FilterPresetListResponse(BaseModel):
 
 class UserActivityEventType(str, Enum):
     """Types of user activity events."""
+
     SEARCH_QUERY = "search_query"
     PROPERTY_VIEW = "property_view"
     PROPERTY_CLICK = "property_click"
@@ -1941,6 +2020,7 @@ class UserActivityEventType(str, Enum):
 
 class UserActivitySummary(BaseModel):
     """Aggregated user activity summary."""
+
     period_start: datetime
     period_end: datetime
     total_searches: int = 0
@@ -1958,6 +2038,7 @@ class UserActivitySummary(BaseModel):
 
 class UserActivityTrendPoint(BaseModel):
     """Single point in activity trends."""
+
     date: str
     searches: int = 0
     property_views: int = 0
@@ -1967,6 +2048,7 @@ class UserActivityTrendPoint(BaseModel):
 
 class UserActivityTrendsResponse(BaseModel):
     """Activity trends over time."""
+
     trends: list[UserActivityTrendPoint] = Field(default_factory=list)
     interval: str = "day"  # day, week, month
 
@@ -1982,16 +2064,22 @@ TaskTypeType = Literal["chat", "search", "tools", "analysis", "embedding"]
 class FallbackModelConfig(BaseModel):
     """Configuration for a fallback model in the chain."""
 
-    provider: str = Field(..., min_length=1, max_length=50, description="Provider name (e.g., 'openai', 'anthropic')")
+    provider: str = Field(
+        ..., min_length=1, max_length=50, description="Provider name (e.g., 'openai', 'anthropic')"
+    )
     model_name: str = Field(..., min_length=1, max_length=100, description="Model identifier")
 
 
 class TaskModelPreferenceCreate(BaseModel):
     """Schema for creating a task model preference."""
 
-    task_type: TaskTypeType = Field(..., description="Task type (chat, search, tools, analysis, embedding)")
+    task_type: TaskTypeType = Field(
+        ..., description="Task type (chat, search, tools, analysis, embedding)"
+    )
     provider: str = Field(..., min_length=1, max_length=50, description="Primary provider name")
-    model_name: str = Field(..., min_length=1, max_length=100, description="Primary model identifier")
+    model_name: str = Field(
+        ..., min_length=1, max_length=100, description="Primary model identifier"
+    )
     fallback_chain: Optional[list[FallbackModelConfig]] = Field(
         None,
         max_length=5,
@@ -2001,7 +2089,9 @@ class TaskModelPreferenceCreate(BaseModel):
 
     @field_validator("fallback_chain")
     @classmethod
-    def validate_fallback_chain(cls, v: Optional[list[FallbackModelConfig]]) -> Optional[list[FallbackModelConfig]]:
+    def validate_fallback_chain(
+        cls, v: Optional[list[FallbackModelConfig]]
+    ) -> Optional[list[FallbackModelConfig]]:
         """Validate fallback chain doesn't contain duplicates."""
         if v is None:
             return v
@@ -2027,7 +2117,9 @@ class TaskModelPreferenceUpdate(BaseModel):
 
     @field_validator("fallback_chain")
     @classmethod
-    def validate_fallback_chain(cls, v: Optional[list[FallbackModelConfig]]) -> Optional[list[FallbackModelConfig]]:
+    def validate_fallback_chain(
+        cls, v: Optional[list[FallbackModelConfig]]
+    ) -> Optional[list[FallbackModelConfig]]:
         """Validate fallback chain doesn't contain duplicates."""
         if v is None:
             return v
@@ -2093,3 +2185,179 @@ class ModelCostEstimate(BaseModel):
     output_cost_per_1m: Optional[float] = None
     estimated_tokens_per_request: int = 1000
     estimated_cost_per_request: Optional[float] = None
+
+
+# =============================================================================
+# CMA (Comparative Market Analysis) Schemas (Task #85)
+# =============================================================================
+
+# Type literals
+CMAStatusType = Literal["draft", "completed", "expired"]
+CMAAdjustmentCategoryType = Literal[
+    "location", "size", "age", "condition", "amenities", "floor", "market"
+]
+
+
+class CMAAdjustmentModel(BaseModel):
+    """Schema for a single CMA adjustment."""
+
+    category: str = Field(..., description="Adjustment category")
+    description: str = Field(..., description="Human-readable description")
+    subject_value: Optional[str] = Field(None, description="Subject property value")
+    comp_value: Optional[str] = Field(None, description="Comparable property value")
+    adjustment_percent: float = Field(..., description="Adjustment percentage")
+    adjustment_amount: float = Field(..., description="Adjustment in currency")
+    confidence: float = Field(1.0, ge=0, le=1, description="Confidence level 0-1")
+
+    model_config = {"from_attributes": True}
+
+
+class CMAComparableResponse(BaseModel):
+    """Schema for a comparable property in CMA."""
+
+    property_id: str
+    address: Optional[str] = None
+    city: str
+    district: Optional[str] = None
+    price: float
+    price_per_sqm: float
+    area_sqm: Optional[float] = None
+    rooms: Optional[float] = None
+    year_built: Optional[int] = None
+    property_type: str
+    listing_date: Optional[datetime] = None
+    listing_url: Optional[str] = None
+    image_url: Optional[str] = None
+
+    # Scoring
+    similarity_score: float = Field(..., ge=0, le=100, description="Overall similarity score 0-100")
+    score_breakdown: dict[str, float] = Field(
+        default_factory=dict, description="Score breakdown by category"
+    )
+    distance_km: float = Field(0.0, description="Distance from subject in km")
+
+    # Adjustments
+    adjustments: list[CMAAdjustmentModel] = Field(default_factory=list)
+    total_adjustment_percent: float = Field(0.0, description="Total adjustment percentage")
+    total_adjustment_amount: float = Field(0.0, description="Total adjustment amount")
+    adjusted_price: float = Field(..., description="Final adjusted price")
+
+    model_config = {"from_attributes": True}
+
+
+class CMAValuationResponse(BaseModel):
+    """Schema for CMA valuation summary."""
+
+    estimated_value: float = Field(..., description="Final estimated market value")
+    value_range_low: float = Field(..., description="Conservative estimate (low)")
+    value_range_high: float = Field(..., description="Optimistic estimate (high)")
+    confidence_score: float = Field(..., ge=0, le=100, description="Confidence 0-100")
+    price_per_sqm: float = Field(..., description="Estimated price per sqm")
+
+    # Methodology
+    method: str = Field(
+        default="adjusted_comparable_sales",
+        description="Valuation method used",
+    )
+    comparables_count: int = Field(..., ge=0, description="Number of comparables used")
+    avg_adjusted_price: float = Field(0.0, description="Average of adjusted prices")
+    median_adjusted_price: float = Field(0.0, description="Median of adjusted prices")
+    std_deviation: float = Field(0.0, description="Standard deviation")
+
+    model_config = {"from_attributes": True}
+
+
+class CMAReportCreate(BaseModel):
+    """Schema for creating a CMA report."""
+
+    subject_property_id: str = Field(..., description="Subject property ID")
+    comparable_ids: Optional[list[str]] = Field(
+        None,
+        max_length=10,
+        description="Pre-selected comparable IDs. Auto-select if empty.",
+    )
+    max_distance_km: float = Field(
+        default=5.0, ge=0.5, le=50, description="Max search radius in km"
+    )
+    min_comparables: int = Field(default=3, ge=3, le=10, description="Minimum comparables required")
+    max_comparables: int = Field(
+        default=6, ge=3, le=10, description="Maximum comparables to include"
+    )
+    include_pending: bool = Field(
+        default=False,
+        description="Include pending/under-offer listings",
+    )
+    custom_adjustments: Optional[dict[str, float]] = Field(
+        None,
+        description="Override default adjustment factors",
+    )
+    notes: Optional[str] = Field(None, max_length=2000, description="Additional notes")
+
+
+class CMAReportResponse(BaseModel):
+    """Schema for complete CMA report response."""
+
+    id: str
+    user_id: str
+    status: CMAStatusType
+
+    # Subject property
+    subject_property_id: str
+    subject_address: Optional[str] = None
+    subject_city: str
+    subject_district: Optional[str] = None
+    subject_price: Optional[float] = None  # Current asking price
+    subject_area_sqm: Optional[float] = None
+    subject_rooms: Optional[float] = None
+    subject_year_built: Optional[int] = None
+    subject_property_type: str
+    subject_energy_rating: Optional[str] = None
+    subject_amenities: dict[str, bool] = Field(default_factory=dict)
+
+    # Comparables
+    comparables: list[CMAComparableResponse] = Field(default_factory=list)
+
+    # Valuation
+    valuation: CMAValuationResponse
+
+    # Market context
+    market_trend: Optional[str] = None  # rising, falling, stable
+    market_avg_price_per_sqm: Optional[float] = None
+    market_inventory_days: Optional[int] = None
+
+    # Metadata
+    notes: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+    expires_at: Optional[datetime] = None
+
+    model_config = {"from_attributes": True}
+
+
+class CMAReportListResponse(BaseModel):
+    """Schema for paginated list of CMA reports."""
+
+    items: list[CMAReportResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
+class ComparableSearchRequest(BaseModel):
+    """Schema for searching comparable properties."""
+
+    property_id: str = Field(..., description="Subject property ID")
+    max_distance_km: float = Field(default=5.0, ge=0.5, le=50)
+    min_score: float = Field(default=50.0, ge=0, le=100)
+    max_results: int = Field(default=10, ge=1, le=20)
+    require_same_listing_type: bool = Field(default=True)
+
+
+class ComparableSearchResponse(BaseModel):
+    """Schema for comparable search results."""
+
+    subject_property_id: str
+    comparables: list[CMAComparableResponse]
+    total_found: int
+    search_params: dict[str, Any]

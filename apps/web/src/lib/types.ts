@@ -2318,3 +2318,61 @@ export interface DataExportStatusResponse {
   created_at: string;
   completed_at: string | null;
 }
+
+// ============================================================================
+// CMA (Comparative Market Analysis) Types - Task #85
+// ============================================================================
+
+export type CMAStatus = 'draft' | 'completed' | 'expired';
+
+export interface CMAAdjustment {
+  category: string;
+  description: string;
+  subject_value: string | null;
+  comp_value: string | null;
+  adjustment_percent: number;
+  adjustment_amount: number;
+  confidence: number;
+}
+
+export interface CMAComparable {
+  property_id: string;
+  similarity_score: number;
+  adjustments: CMAAdjustment[];
+  adjusted_price: number;
+}
+
+export interface CMAValuation {
+  estimated_value: number;
+  value_range_low: number;
+  value_range_high: number;
+  confidence_score: number;
+  price_per_sqm: number;
+}
+
+export interface CMAReportCreate {
+  subject_property_id: string;
+  comparable_ids?: string[];
+  max_distance_km?: number;
+  min_comparables?: number;
+  max_comparables?: number;
+}
+
+export interface CMAReport {
+  id: string;
+  user_id: string;
+  status: CMAStatus;
+  subject_property: Record<string, unknown>;
+  comparables: CMAComparable[];
+  valuation: CMAValuation;
+  market_context?: Record<string, unknown> | null;
+  created_at: string;
+  expires_at: string | null;
+}
+
+export interface CMAReportListResponse {
+  reports: CMAReport[];
+  total: number;
+  page: number;
+  page_size: number;
+}

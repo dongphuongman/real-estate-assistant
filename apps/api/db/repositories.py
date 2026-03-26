@@ -5,7 +5,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, Optional
 from uuid import uuid4
 
-from sqlalchemy import func, select, update
+from sqlalchemy import func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models import (
@@ -13,6 +13,7 @@ from db.models import (
     AgentInquiry,
     AgentListing,
     AgentProfile,
+    CMAReportDB,
     CollectionDB,
     DocumentDB,
     DocumentTemplateDB,
@@ -2800,7 +2801,9 @@ class NotificationPreferenceRepository:
     async def get_by_unsubscribe_token(self, token: str) -> Optional[NotificationPreferenceDB]:
         """Get notification preferences by unsubscribe token."""
         result = await self.session.execute(
-            select(NotificationPreferenceDB).where(NotificationPreferenceDB.unsubscribe_token == token)
+            select(NotificationPreferenceDB).where(
+                NotificationPreferenceDB.unsubscribe_token == token
+            )
         )
         return result.scalar_one_or_none()
 
@@ -2903,3 +2906,145 @@ class NotificationPreferenceRepository:
         """Delete notification preferences (typically on user deletion)."""
         await self.session.delete(prefs)
         await self.session.flush()
+
+
+class CMAReportRepository:
+    """Repository for CMAReportDB model operations."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def create(
+        self,
+        user_id: str,
+        subject_property_id: str,
+        subject_data: dict,
+        comparables: list,
+        valuation: dict,
+        market_context: Optional[dict] = None,
+        status: str = "draft",
+        expires_in_days: Optional[int] = 90,
+    ) -> CMAReportDB:
+        """Create a new CMA report."""
+        expires_at = None
+        if expires_in_days:
+            expires_at = datetime.now(UTC) + timedelta(days=expires_in_days)
+
+        report = CMAReportDB(
+            id=str(uuid4()),
+            user_id=user_id,
+            status=status,
+            subject_property_id=subject_property_id,
+            subject_data=subject_data,
+            comparables=comparables,
+            valuation=valuation,
+            market_context=market_context,
+            expires_at=expires_at,
+        )
+        self.session.add(report)
+        await self.session.flush()
+        return report
+
+    async def get_by_id(self, report_id: str, user_id: str) -> Optional[CMAReportDB]:
+        """Get CMA report by ID (scoped to user)."""
+        result = await self.session.execute(
+            select(CMAReportDB).where(CMAReportDB.id == report_id, CMAReportDB.user_id == user_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def get_by_id_unscoped(self, report_id: str) -> Optional[CMAReportDB]:
+        """Get CMA report by ID without user scoping (for sharing)."""
+        result = await self.session.execute(select(CMAReportDB).where(CMAReportDB.id == report_id))
+        return result.scalar_one_or_none()
+
+    async def get_by_user(
+        self,
+        user_id: str,
+        status: Optional[str] = None,
+        include_expired: bool = False,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[CMAReportDB]:
+        """Get all CMA reports for a user."""
+        query = select(CMAReportDB).where(CMAReportDB.user_id == user_id)
+
+        if status:
+            query = query.where(CMAReportDB.status == status)
+
+        if not include_expired:
+            query = query.where(
+                or_(
+                    CMAReportDB.expires_at.is_(None),
+                    CMAReportDB.expires_at > datetime.now(UTC),
+                )
+            )
+
+        query = query.order_by(CMAReportDB.created_at.desc()).limit(limit).offset(offset)
+        result = await self.session.execute(query)
+        return list(result.scalars().all())
+
+    async def count_by_user(
+        self,
+        user_id: str,
+        status: Optional[str] = None,
+        include_expired: bool = False,
+    ) -> int:
+        """Count CMA reports for a user."""
+        query = select(func.count(CMAReportDB.id)).where(CMAReportDB.user_id == user_id)
+
+        if status:
+            query = query.where(CMAReportDB.status == status)
+
+        if not include_expired:
+            query = query.where(
+                or_(
+                    CMAReportDB.expires_at.is_(None),
+                    CMAReportDB.expires_at > datetime.now(UTC),
+                )
+            )
+
+        result = await self.session.execute(query)
+        return result.scalar() or 0
+
+    async def update(self, report: CMAReportDB, **kwargs) -> CMAReportDB:
+        """Update CMA report fields."""
+        for key, value in kwargs.items():
+            if hasattr(report, key):
+                setattr(report, key, value)
+        report.updated_at = datetime.now(UTC)
+        await self.session.flush()
+        return report
+
+    async def mark_completed(self, report: CMAReportDB) -> CMAReportDB:
+        """Mark report as completed."""
+        report.status = "completed"
+        report.updated_at = datetime.now(UTC)
+        await self.session.flush()
+        return report
+
+    async def mark_expired(self, report: CMAReportDB) -> CMAReportDB:
+        """Mark report as expired."""
+        report.status = "expired"
+        report.updated_at = datetime.now(UTC)
+        await self.session.flush()
+        return report
+
+    async def delete(self, report: CMAReportDB) -> None:
+        """Delete a CMA report."""
+        await self.session.delete(report)
+
+    async def expire_old_reports(self, batch_size: int = 100) -> int:
+        """Expire reports past their expiration date."""
+        result = await self.session.execute(
+            update(CMAReportDB)
+            .where(
+                CMAReportDB.status != "expired",
+                CMAReportDB.expires_at.isnot(None),
+                CMAReportDB.expires_at <= datetime.now(UTC),
+            )
+            .values(status="expired")
+            .returning(CMAReportDB.id)
+        )
+        expired_ids = list(result.scalars().all())
+        await self.session.flush()
+        return len(expired_ids)

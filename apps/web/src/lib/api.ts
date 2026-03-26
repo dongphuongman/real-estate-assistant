@@ -186,6 +186,14 @@ import {
   DataExportRequest,
   DataExportResponse,
   DataExportStatusResponse,
+  // Task #85: Comparative Market Analysis (CMA)
+  CMAStatus,
+  CMAAdjustment,
+  CMAComparable,
+  CMAValuation,
+  CMAReportCreate,
+  CMAReport,
+  CMAReportListResponse,
 } from './types';
 
 // Task #74: Streaming utilities
@@ -484,16 +492,11 @@ export async function getTaskModelPreferences(): Promise<TaskModelPreferenceList
   return handleResponse<TaskModelPreferenceListResponse>(response);
 }
 
-export async function getTaskModelPreference(
-  taskType: TaskType
-): Promise<TaskModelPreference> {
-  const response = await fetch(
-    `${getApiUrl()}/model-preferences/${encodeURIComponent(taskType)}`,
-    {
-      method: 'GET',
-      headers: buildHeaders(),
-    }
-  );
+export async function getTaskModelPreference(taskType: TaskType): Promise<TaskModelPreference> {
+  const response = await fetch(`${getApiUrl()}/model-preferences/${encodeURIComponent(taskType)}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+  });
   return handleResponse<TaskModelPreference>(response);
 }
 
@@ -523,9 +526,7 @@ export async function updateTaskModelPreference(
   return handleResponse<TaskModelPreference>(response);
 }
 
-export async function deleteTaskModelPreference(
-  preferenceId: string
-): Promise<void> {
+export async function deleteTaskModelPreference(preferenceId: string): Promise<void> {
   const response = await fetch(
     `${getApiUrl()}/model-preferences/${encodeURIComponent(preferenceId)}`,
     {
@@ -540,13 +541,10 @@ export async function deleteTaskModelPreference(
 }
 
 export async function getSystemModelDefaults(): Promise<SystemDefaultsResponse> {
-  const response = await fetch(
-    `${getApiUrl()}/model-preferences/system/defaults`,
-    {
-      method: 'GET',
-      headers: buildHeaders(),
-    }
-  );
+  const response = await fetch(`${getApiUrl()}/model-preferences/system/defaults`, {
+    method: 'GET',
+    headers: buildHeaders(),
+  });
   return handleResponse<SystemDefaultsResponse>(response);
 }
 
@@ -862,9 +860,7 @@ export async function streamChatMessage(
       timeoutMs: heartbeatTimeout,
       onTimeout: () => {
         // Connection stalled - will throw error
-        throw new Error(
-          `Stream stalled: no data received for ${heartbeatTimeout / 1000} seconds`
-        );
+        throw new Error(`Stream stalled: no data received for ${heartbeatTimeout / 1000} seconds`);
       },
     });
   }
@@ -2720,9 +2716,7 @@ export async function getDefaultFilterPreset(): Promise<FilterPreset> {
 /**
  * Create a new filter preset
  */
-export async function createFilterPreset(
-  data: FilterPresetCreate
-): Promise<FilterPreset> {
+export async function createFilterPreset(data: FilterPresetCreate): Promise<FilterPreset> {
   const response = await safeFetch(`${getApiUrl()}/filter-presets`, {
     method: 'POST',
     headers: buildHeaders(),
@@ -2776,14 +2770,11 @@ export async function markFilterPresetUsed(id: string): Promise<FilterPreset> {
  * Set a filter preset as the default
  */
 export async function setFilterPresetDefault(id: string): Promise<FilterPreset> {
-  const response = await safeFetch(
-    `${getApiUrl()}/filter-presets/${id}/set-default`,
-    {
-      method: 'POST',
-      headers: buildHeaders(),
-      credentials: 'include',
-    }
-  );
+  const response = await safeFetch(`${getApiUrl()}/filter-presets/${id}/set-default`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
   return handleResponse<FilterPreset>(response);
 }
 
@@ -2807,14 +2798,11 @@ export async function listDataSources(params?: {
   if (params?.source_type) searchParams.set('source_type', params.source_type);
 
   const query = searchParams.toString();
-  const response = await safeFetch(
-    `${getApiUrl()}/data-sources${query ? `?${query}` : ''}`,
-    {
-      method: 'GET',
-      headers: buildHeaders(),
-      credentials: 'include',
-    }
-  );
+  const response = await safeFetch(`${getApiUrl()}/data-sources${query ? `?${query}` : ''}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
   return handleResponse<DataSourceListResponse>(response);
 }
 
@@ -2846,10 +2834,7 @@ export async function getDataSource(id: string): Promise<DataSource> {
 /**
  * Update a data source
  */
-export async function updateDataSource(
-  id: string,
-  data: DataSourceUpdate
-): Promise<DataSource> {
+export async function updateDataSource(id: string, data: DataSourceUpdate): Promise<DataSource> {
   const response = await safeFetch(`${getApiUrl()}/data-sources/${id}`, {
     method: 'PATCH',
     headers: buildHeaders(),
@@ -2863,14 +2848,11 @@ export async function updateDataSource(
  * Delete a data source (requires confirmation)
  */
 export async function deleteDataSource(id: string, confirm = true): Promise<void> {
-  const response = await safeFetch(
-    `${getApiUrl()}/data-sources/${id}?confirm=${confirm}`,
-    {
-      method: 'DELETE',
-      headers: buildHeaders(),
-      credentials: 'include',
-    }
-  );
+  const response = await safeFetch(`${getApiUrl()}/data-sources/${id}?confirm=${confirm}`, {
+    method: 'DELETE',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: 'Delete failed' }));
     throw new Error(error.detail || 'Delete failed');
@@ -2892,9 +2874,7 @@ export async function syncDataSource(id: string): Promise<DataSourceSyncResponse
 /**
  * Test a data source connection without saving
  */
-export async function testDataSource(
-  data: DataSourceTestRequest
-): Promise<DataSourceTestResponse> {
+export async function testDataSource(data: DataSourceTestRequest): Promise<DataSourceTestResponse> {
   const response = await safeFetch(`${getApiUrl()}/data-sources/test`, {
     method: 'POST',
     headers: buildHeaders(),
@@ -2958,9 +2938,7 @@ export async function getMCPConnector(name: string): Promise<MCPConnectorDetailR
 /**
  * Perform health check on a specific connector
  */
-export async function healthCheckMCPConnector(
-  name: string
-): Promise<MCPConnectorHealthResponse> {
+export async function healthCheckMCPConnector(name: string): Promise<MCPConnectorHealthResponse> {
   const response = await safeFetch(
     `${getApiUrl()}/mcp/connectors/${encodeURIComponent(name)}/health`,
     {
@@ -3036,14 +3014,11 @@ export async function listBulkJobs(params?: {
   if (params?.page_size) searchParams.set('page_size', params.page_size.toString());
 
   const query = searchParams.toString();
-  const response = await safeFetch(
-    `${getApiUrl()}/bulk-jobs${query ? `?${query}` : ''}`,
-    {
-      method: 'GET',
-      headers: buildHeaders(),
-      credentials: 'include',
-    }
-  );
+  const response = await safeFetch(`${getApiUrl()}/bulk-jobs${query ? `?${query}` : ''}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
   return handleResponse<BulkJobListResponse>(response);
 }
 
@@ -3063,14 +3038,11 @@ export async function getBulkJob(jobId: string): Promise<BulkJobResponse> {
  * Cancel a running bulk job
  */
 export async function cancelBulkJob(jobId: string): Promise<BulkJobResponse> {
-  const response = await safeFetch(
-    `${getApiUrl()}/bulk-jobs/${encodeURIComponent(jobId)}/cancel`,
-    {
-      method: 'POST',
-      headers: buildHeaders(),
-      credentials: 'include',
-    }
-  );
+  const response = await safeFetch(`${getApiUrl()}/bulk-jobs/${encodeURIComponent(jobId)}/cancel`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
   return handleResponse<BulkJobResponse>(response);
 }
 
@@ -3078,14 +3050,11 @@ export async function cancelBulkJob(jobId: string): Promise<BulkJobResponse> {
  * Delete a bulk job
  */
 export async function deleteBulkJob(jobId: string): Promise<void> {
-  const response = await safeFetch(
-    `${getApiUrl()}/bulk-jobs/${encodeURIComponent(jobId)}`,
-    {
-      method: 'DELETE',
-      headers: buildHeaders(),
-      credentials: 'include',
-    }
-  );
+  const response = await safeFetch(`${getApiUrl()}/bulk-jobs/${encodeURIComponent(jobId)}`, {
+    method: 'DELETE',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: 'Delete failed' }));
     throw new Error(error.detail || 'Delete failed');
@@ -3234,9 +3203,7 @@ export async function deleteAvatar(): Promise<void> {
 /**
  * Update privacy settings
  */
-export async function updatePrivacySettings(
-  settings: PrivacySettings
-): Promise<ProfileResponse> {
+export async function updatePrivacySettings(settings: PrivacySettings): Promise<ProfileResponse> {
   const response = await safeFetch(`${getApiUrl()}/profile/privacy`, {
     method: 'PUT',
     headers: buildHeaders(),
@@ -3249,9 +3216,7 @@ export async function updatePrivacySettings(
 /**
  * Request GDPR data export
  */
-export async function requestDataExport(
-  request: DataExportRequest
-): Promise<DataExportResponse> {
+export async function requestDataExport(request: DataExportRequest): Promise<DataExportResponse> {
   const response = await safeFetch(`${getApiUrl()}/profile/export`, {
     method: 'POST',
     headers: buildHeaders(),
@@ -3264,13 +3229,122 @@ export async function requestDataExport(
 /**
  * Get data export job status
  */
-export async function getExportStatus(
-  exportId: string
-): Promise<DataExportStatusResponse> {
+export async function getExportStatus(exportId: string): Promise<DataExportStatusResponse> {
   const response = await safeFetch(`${getApiUrl()}/profile/export/${exportId}`, {
     method: 'GET',
     headers: buildHeaders(),
     credentials: 'include',
   });
   return handleResponse<DataExportStatusResponse>(response);
+}
+
+// ============================================================================
+// CMA (Comparative Market Analysis) API - Task #85
+// ============================================================================
+
+/**
+ * Find comparable properties for a subject property
+ */
+export async function findComparables(
+  propertyId: string,
+  params?: {
+    max_distance_km?: number;
+    min_score?: number;
+    max_results?: number;
+  }
+): Promise<CMAComparable[]> {
+  const searchParams = new URLSearchParams();
+  if (params?.max_distance_km) searchParams.set('max_distance_km', String(params.max_distance_km));
+  if (params?.min_score) searchParams.set('min_score', String(params.min_score));
+  if (params?.max_results) searchParams.set('max_results', String(params.max_results));
+
+  const query = searchParams.toString();
+  const response = await safeFetch(
+    `${getApiUrl()}/cma/comparables/${propertyId}${query ? `?${query}` : ''}`,
+    {
+      method: 'POST',
+      headers: buildHeaders(),
+      credentials: 'include',
+    }
+  );
+  return handleResponse<CMAComparable[]>(response);
+}
+
+/**
+ * Generate a new CMA report
+ */
+export async function generateCMAReport(request: CMAReportCreate): Promise<CMAReport> {
+  const response = await safeFetch(`${getApiUrl()}/cma/generate`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(request),
+  });
+  return handleResponse<CMAReport>(response);
+}
+
+/**
+ * Get a CMA report by ID
+ */
+export async function getCMAReport(reportId: string): Promise<CMAReport> {
+  const response = await safeFetch(`${getApiUrl()}/cma/${reportId}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<CMAReport>(response);
+}
+
+/**
+ * Download CMA report as PDF
+ */
+export async function downloadCMAPdf(reportId: string): Promise<Blob> {
+  const response = await safeFetch(`${getApiUrl()}/cma/${reportId}/pdf`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to download PDF: ${response.status}`);
+  }
+
+  return response.blob();
+}
+
+/**
+ * List user's CMA reports
+ */
+export async function listCMAReports(params?: {
+  status?: string;
+  page?: number;
+  page_size?: number;
+}): Promise<CMAReportListResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.status) searchParams.set('status', params.status);
+  if (params?.page) searchParams.set('page', String(params.page));
+  if (params?.page_size) searchParams.set('page_size', String(params.page_size));
+
+  const query = searchParams.toString();
+  const response = await safeFetch(`${getApiUrl()}/cma${query ? `?${query}` : ''}`, {
+    method: 'GET',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+  return handleResponse<CMAReportListResponse>(response);
+}
+
+/**
+ * Delete a CMA report
+ */
+export async function deleteCMAReport(reportId: string): Promise<void> {
+  const response = await safeFetch(`${getApiUrl()}/cma/${reportId}`, {
+    method: 'DELETE',
+    headers: buildHeaders(),
+    credentials: 'include',
+  });
+
+  if (!response.ok && response.status !== 204) {
+    throw new Error(`Failed to delete report: ${response.status}`);
+  }
 }

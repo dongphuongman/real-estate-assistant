@@ -33,6 +33,7 @@ from api.routers import (
     auth_jwt,  # JWT authentication endpoints
     bulk_jobs,  # Task #80: Import/Export Data API
     chat,
+    cma,  # Task #85: Comparative Market Analysis
     collections,  # Task #37: Property collections
     data_sources,  # Task #79: Data Sources Dashboard
     documents,  # Task #43: Document Management
@@ -404,6 +405,8 @@ if settings.auth_jwt_enabled:
 app.include_router(ranking_config.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 # Task #83: Investment Report Generator
 app.include_router(investment.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
+# Task #85: Comparative Market Analysis (CMA)
+app.include_router(cma.router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["System"])
@@ -469,8 +472,7 @@ async def readiness_check():
     vs_health = health.dependencies.get("vector_store")
     if vs_health and vs_health.status == HealthStatus.UNHEALTHY:
         return JSONResponse(
-            content={"status": "not_ready", "reason": "vector_store_unhealthy"},
-            status_code=503
+            content={"status": "not_ready", "reason": "vector_store_unhealthy"}, status_code=503
         )
 
     return {"status": "ready"}

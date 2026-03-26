@@ -65,7 +65,9 @@ class User(Base):
     )
 
     # GDPR fields
-    gdpr_consent_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    gdpr_consent_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     data_export_requested_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
@@ -997,10 +999,14 @@ class NotificationPreferenceDB(Base):
     # Advanced settings
     quiet_hours_start: Mapped[Optional[str]] = mapped_column(String(5), nullable=True)  # HH:MM
     quiet_hours_end: Mapped[Optional[str]] = mapped_column(String(5), nullable=True)  # HH:MM
-    price_drop_threshold: Mapped[float] = mapped_column(Float, default=5.0, nullable=False)  # Percent
+    price_drop_threshold: Mapped[float] = mapped_column(
+        Float, default=5.0, nullable=False
+    )  # Percent
 
     # Digest settings
-    daily_digest_time: Mapped[str] = mapped_column(String(5), default="09:00", nullable=False)  # HH:MM
+    daily_digest_time: Mapped[str] = mapped_column(
+        String(5), default="09:00", nullable=False
+    )  # HH:MM
     weekly_digest_day: Mapped[str] = mapped_column(String(10), default="monday", nullable=False)
 
     # Expert/Marketing preferences
@@ -1009,9 +1015,15 @@ class NotificationPreferenceDB(Base):
 
     # Unsubscribe management
     unsubscribe_token: Mapped[str] = mapped_column(
-        String(64), unique=True, nullable=False, index=True, default=lambda: str(uuid4()).replace("-", "") + str(uuid4()).replace("-", "")
+        String(64),
+        unique=True,
+        nullable=False,
+        index=True,
+        default=lambda: str(uuid4()).replace("-", "") + str(uuid4()).replace("-", ""),
     )
-    unsubscribed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    unsubscribed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     unsubscribed_types: Mapped[Optional[list]] = mapped_column(
         JSON, nullable=True, default=list
     )  # ["marketing", "price_alerts", ...]
@@ -1030,9 +1042,7 @@ class NotificationPreferenceDB(Base):
     # Relationships
     user: Mapped["User"] = relationship("User", backref="notification_preferences")
 
-    __table_args__ = (
-        Index("ix_notification_prefs_unsubscribe_token", "unsubscribe_token"),
-    )
+    __table_args__ = (Index("ix_notification_prefs_unsubscribe_token", "unsubscribe_token"),)
 
     def __repr__(self) -> str:
         return f"<NotificationPreferenceDB(id={self.id[:8]}..., user_id={self.user_id[:8]}..., frequency={self.alert_frequency})>"
@@ -2132,9 +2142,7 @@ class BulkJob(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
 
     # Job identification
-    job_type: Mapped[str] = mapped_column(
-        String(20), nullable=False, index=True
-    )  # import, export
+    job_type: Mapped[str] = mapped_column(String(20), nullable=False, index=True)  # import, export
     source_type: Mapped[str] = mapped_column(
         String(50), nullable=False, index=True
     )  # url, file_upload, portal_api, search
@@ -2219,10 +2227,7 @@ class UserActivityEvent(Base):
 
     # Timestamp
     event_timestamp: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(UTC),
-        nullable=False,
-        index=True
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False, index=True
     )
 
     __table_args__ = (
@@ -2288,3 +2293,67 @@ class TaskModelPreference(Base):
     def __repr__(self) -> str:
         return f"<TaskModelPreference(user={self.user_id[:8]}..., task={self.task_type}, model={self.provider}/{self.model_name})>"
 
+
+class CMAReportDB(Base):
+    """
+    Comparative Market Analysis (CMA) report storage.
+
+    Stores generated CMA reports with subject property data,
+    selected comparables, adjustments, and final valuation.
+    """
+
+    __tablename__ = "cma_reports"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+
+    # User association
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+
+    # Report status
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="draft", index=True)
+    # Values: draft, completed, expired
+
+    # Subject property reference
+    subject_property_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+
+    # Snapshot of subject property at report creation time
+    subject_data: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+
+    # Comparable properties with scores and adjustments
+    # Structure: [{"property_id": str, "similarity_score": float, "adjustments": [...], "adjusted_price": float}]
+    comparables: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+
+    # Final valuation result
+    # Structure: {"estimated_value": float, "value_range_low": float, "value_range_high": float, "confidence_score": float, "price_per_sqm": float}
+    valuation: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+
+    # Market context at report time (optional)
+    # Structure: {"avg_price_per_sqm": float, "median_price": float, "trend": str, "inventory_count": int}
+    market_context: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+    expires_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
+
+    # Relationships
+    user: Mapped["User"] = relationship("User", backref="cma_reports")
+
+    __table_args__ = (
+        Index("ix_cma_reports_user_status", "user_id", "status"),
+        Index("ix_cma_reports_user_created", "user_id", "created_at"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<CMAReport(id={self.id[:8]}..., user={self.user_id[:8]}..., status={self.status})>"
