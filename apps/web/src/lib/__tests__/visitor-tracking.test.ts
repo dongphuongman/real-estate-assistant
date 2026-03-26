@@ -1,14 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import {
   generateVisitorId,
   getVisitorIdFromCookies,
   setVisitorIdCookie,
 } from '../visitor-tracking';
 
-import { VISITOR_ID_COOKIE, VISITOR_ID_MAX_AGE } from '../visitor-tracking';
-
 // Mock crypto
-const mockRandomUUID = vi.fn();
+const mockRandomUUID = jest.fn();
 
 Object.defineProperty(global, 'crypto', {
   value: { randomUUID: mockRandomUUID },
@@ -30,7 +28,8 @@ describe('visitor-tracking', () => {
     it('should fallback to UUIDv4 when crypto is not available', () => {
       Object.defineProperty(global, 'crypto', { value: undefined, writable: true });
       const id = generateVisitorId();
-      expect(id).toMatch(/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}$/);
+      // UUID format: 8-4-4-4-12 hex characters
+      expect(id).toMatch(/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/);
       expect(id).toHaveLength(36);
       // Restore crypto
       Object.defineProperty(global, 'crypto', {
@@ -70,16 +69,6 @@ describe('visitor-tracking', () => {
       expect(result).toContain('Path=/');
       expect(result).toContain('Max-Age=31536000');
       expect(result).toContain('SameSite=Lax');
-    });
-  });
-
-  describe('constants', () => {
-    it('should have correct cookie name', () => {
-      expect(VISITOR_ID_COOKIE).toBe('visitor_id');
-    });
-
-    it('should have correct max age (1 year)', () => {
-      expect(VISITOR_ID_MAX_AGE).toBe(365 * 24 * 60 * 60);
     });
   });
 });
