@@ -26,6 +26,7 @@ RESET := \033[0m
 .PHONY: help security security-quick test test-api test-web lint lint-api lint-web format
 .PHONY: docker-up docker-down docker-logs docker-build
 .PHONY: ci ci-quick dev dev-api dev-web setup clean install
+.PHONY: sprav sprav-quick sprav-json
 
 # Default target
 .DEFAULT_GOAL := help
@@ -58,6 +59,9 @@ help: ## Show this help message
 	@echo ""
 	@echo "$(GREEN)CI/CD:$(RESET)"
 	@sed -n 's/^## ci/\tmake &/p' $(MAKEFILE_LIST)
+	@echo ""
+	@echo "$(GREEN)SPRAV (Pre-Release Validation):$(RESET)"
+	@sed -n 's/^## sprav/\tmake &/p' $(MAKEFILE_LIST)
 	@echo ""
 	@echo "$(GREEN)Maintenance:$(RESET)"
 	@sed -n 's/^## clean/\tmake &/p' $(MAKEFILE_LIST)
@@ -173,6 +177,22 @@ ci:
 ## ci-quick: Run quick CI (skip slower scans)
 ci-quick:
 	$(PYTHON) $(SCRIPTS_DIR)/ci/ci_parity.py --quick
+
+## ============================================================================
+## SPRAV - Pre-Release Acceptance Validation
+## ============================================================================
+
+## sprav: Run full SPRAV validation
+sprav:
+	$(PYTHON) $(SCRIPTS_DIR)/sprav/run_validation.py --output docs/releases/sprav-report.md
+
+## sprav-quick: Run quick SPRAV validation (skip slow checks)
+sprav-quick:
+	$(PYTHON) $(SCRIPTS_DIR)/sprav/run_validation.py --quick --output docs/releases/sprav-report.md
+
+## sprav-json: Run SPRAV validation and output JSON
+sprav-json:
+	$(PYTHON) $(SCRIPTS_DIR)/sprav/run_validation.py --json --output docs/releases/sprav-results.json
 
 ## ============================================================================
 ## MAINTENANCE

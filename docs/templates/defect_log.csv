@@ -1,0 +1,4 @@
+ID,Title,Severity,Priority,Component,Status,Owner,Description,Steps_to_Reproduce,Expected_Behavior,Actual_Behavior,Environment,Evidence,Created_At,Updated_At
+D001,Example defect title,Critical,P1,API,Open,,"Detailed description of the defect","1. Step one
+2. Step two
+3. Step three","Expected result","Actual result","Local development","Link to screenshot/log","2024-01-15T10:00:00","2024-01-15T10:00:00"
