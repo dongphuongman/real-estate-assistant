@@ -802,7 +802,7 @@ def main(argv: Sequence[str]) -> int:
         output = generate_markdown_report(report)
 
     if args.output:
-        with open(args.output, "w") as f:
+        with open(args.output, "w", encoding="utf-8") as f:
             f.write(output)
         print(f"Report saved to: {args.output}")
     else:
