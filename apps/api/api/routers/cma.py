@@ -13,17 +13,17 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.deps.auth import get_current_active_user
-from data.schemas import (
+from data.schemas import Property
+from db.database import get_db
+from db.models import User
+from db.repositories import CMAReportRepository
+from db.schemas import (
     CMAComparableResponse,
     CMAReportCreate,
     CMAReportListResponse,
     CMAReportResponse,
     CMAValuationResponse,
-    Property,
 )
-from db.database import get_db
-from db.models import User
-from db.repositories import CMAReportRepository
 
 logger = logging.getLogger(__name__)
 
