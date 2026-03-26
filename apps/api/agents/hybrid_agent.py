@@ -204,12 +204,78 @@ Context from property database will be provided when relevant."""
                 return_intermediate_steps=True,
             )
         except Exception:
-            from langchain.agents import AgentType, initialize_agent
+            # Fallback for older LangChain versions
+            from langchain.agents import create_react_agent
+            from langchain.prompts import PromptTemplate
+            from langchain_core.agents import AgentExecutor as _AgentExecutor
 
-            return initialize_agent(
+            prompt = PromptTemplate.from_template(
+                """You are a specialized Real Estate Assistant.
+
+Scope:
+- Answer questions about properties, real estate markets, mortgages, financing, negotiation, neighborhood/location insights, and related decision support.
+- If the user asks for something unrelated to real estate (e.g. cooking, medical, legal outside real estate context), refuse briefly and steer back to real estate.
+
+Your capabilities:
+- Search property database for listings
+- Calculate mortgage payments and costs
+- Compare properties side-by-side
+- Analyze prices and market trends
+- Evaluate locations and neighborhoods
+
+When answering:
+1. Use tools when needed for calculations or analysis
+2. Provide specific numbers and facts
+3. Explain your reasoning
+4. Be concise but thorough
+5. Always cite sources when using property data
+
+Context from property database will be provided when relevant.
+
+{tools}
+
+Use a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).
+
+Valid "action" values: "Final Answer" or {tool_names}
+
+Provide only ONE action per $JSON_BLOB, as shown:
+
+```
+{{
+  "action": $TOOL_NAME,
+  "action_input": $INPUT
+}}
+```
+
+Follow this format:
+
+Question: the input question you must answer
+Thought: you should always think about what to do
+Action:
+```
+$JSON_BLOB
+```
+Observation: the result of the action
+... (this Thought/Action/Observation can repeat N times)
+Thought: I now know the final answer
+Action:
+```
+{{
+  "action": "Final Answer",
+  "action_input": "Final response to human"
+}}
+```
+
+Begin!
+
+Question: {input}
+Thought: {agent_scratchpad}"""
+            )
+
+            agent = create_react_agent(llm=self.llm, tools=self.tools, prompt=prompt)
+            return _AgentExecutor(
+                agent=agent,
                 tools=self.tools,
-                llm=self.llm,
-                agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
                 memory=self.memory,
                 verbose=self.verbose,
                 return_intermediate_steps=True,

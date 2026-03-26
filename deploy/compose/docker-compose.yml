@@ -15,7 +15,7 @@ services:
       dockerfile: deploy/docker/Dockerfile.backend
     container_name: ai-backend
     ports:
-      - "8000:8000"
+      - "8082:8000"
     environment:
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - API_ACCESS_KEY=${API_ACCESS_KEY:-dev-secret-key}
@@ -60,7 +60,7 @@ services:
       - POOL_MAX_WORKERS=${POOL_MAX_WORKERS:-10}
     volumes:
       - ./chroma_db:/app/chroma_db
-      - ./data:/app/data
+      - ./data/audit:/app/data/audit
       - ./.preferences:/app/.preferences
       - ./.notifications:/app/.notifications
       - ./.sessions:/app/.sessions
@@ -79,7 +79,7 @@ services:
       dockerfile: deploy/docker/Dockerfile.frontend
     container_name: ai-frontend
     ports:
-      - "3000:3000"
+      - "3082:3000"
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api/v1}
       - BACKEND_API_URL=${BACKEND_API_URL:-http://backend:8000/api/v1}
@@ -165,7 +165,7 @@ services:
     image: redis:7-alpine
     container_name: redis
     ports:
-      - "6379:6379"
+      - "16379:6379"
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis_data:/data

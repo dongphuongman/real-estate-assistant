@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Search as SearchIcon,
@@ -22,7 +22,10 @@ import {
 } from '@/lib/geo-validation';
 import { HeartButton, ListingGenerator } from '@/components/property';
 import dynamic from 'next/dynamic';
-import MapControls, { type MapFilterOptions, DEFAULT_CLUSTER_OPTIONS } from '@/components/search/map-controls';
+import MapControls, {
+  type MapFilterOptions,
+  DEFAULT_CLUSTER_OPTIONS,
+} from '@/components/search/map-controls';
 import { SaveSearchButton } from '@/components/search/save-search-button';
 import { PresetSelector } from '@/components/search/preset-selector';
 import type { FilterPreset } from '@/lib/types';
@@ -45,7 +48,7 @@ const EXAMPLE_QUERIES = [
   'Luxury apartment with parking in Warsaw',
 ];
 
-export default function SearchPage() {
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -985,5 +988,34 @@ export default function SearchPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function SearchPageFallback() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col space-y-8">
+        <div className="flex flex-col space-y-4">
+          <div className="h-9 w-64 bg-muted animate-pulse rounded" />
+          <div className="h-5 w-96 bg-muted animate-pulse rounded" />
+        </div>
+        <div className="flex gap-4">
+          <div className="flex-1 h-10 bg-muted animate-pulse rounded" />
+          <div className="h-10 w-24 bg-muted animate-pulse rounded" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="h-[600px] bg-muted animate-pulse rounded-lg" />
+          <div className="md:col-span-3 h-[400px] bg-muted animate-pulse rounded-lg" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<SearchPageFallback />}>
+      <SearchPageContent />
+    </Suspense>
   );
 }

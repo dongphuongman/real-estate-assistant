@@ -99,8 +99,9 @@ deploy/
 apps/database/
 
 # Additional exclusions
+# Note: apps/api/data/ contains Python source code, must be included
 data/
-**/data/
+!apps/api/data/
 **/audit/*.csv
 uv.lock
 coverage.xml
