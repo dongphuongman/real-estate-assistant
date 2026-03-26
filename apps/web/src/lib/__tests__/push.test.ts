@@ -1,260 +1,212 @@
-/**
- * Tests for Push Notification Utilities.
- *
- * Task #58: Comprehensive Test Suite Update
- *
- * Note: These tests verify utility functions handle browser environments.
- * We test the functions that are exported and work with the test environment.
- */
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 
-// Mock Notification API before importing the module
-class MockNotification {
-  static permission: NotificationPermission = 'default';
-  static requestPermission = jest.fn().mockResolvedValue('default');
+// Mock navigator before importing the module
+const mockPushManager = {
+  getSubscription: jest.fn(),
+  subscribe: jest.fn(),
+};
 
-  constructor(_title: string, _options?: NotificationOptions) {
-    // Mock implementation
-  }
-}
+const mockServiceWorkerRegistration = {
+  pushManager: mockPushManager,
+  endpoint: 'https://push.example.com',
+  showNotification: jest.fn(),
+};
 
-// Set up global Notification mock
-Object.defineProperty(global, 'Notification', {
-  value: MockNotification,
+const mockServiceWorker = {
+  ready: Promise.resolve(mockServiceWorkerRegistration),
+};
+
+const mockNotification = {
+  requestPermission: jest.fn(),
+  permission: 'default' as NotificationPermission,
+};
+
+// Set up global mocks
+Object.defineProperty(global, 'navigator', {
+  value: {
+    serviceWorker: mockServiceWorker,
+    Notification: mockNotification,
+  },
   writable: true,
-  configurable: true,
 });
 
-// Mock PushManager in window to make isPushSupported return true
-Object.defineProperty(window, 'PushManager', {
-  value: jest.fn(),
-  writable: true,
-  configurable: true,
+// Mock console methods
+const originalConsole = { ...console };
+beforeEach(() => {
+  console.warn = jest.fn();
+  console.log = jest.fn();
+  console.error = jest.fn();
 });
 
+afterEach(() => {
+  console.warn = originalConsole.warn;
+  console.log = originalConsole.log;
+  console.error = originalConsole.error;
+});
+
+// Import after mocks are set up
 import {
   isPushSupported,
-  getNotificationPermission,
-  areNotificationsEnabled,
   requestNotificationPermission,
+  getNotificationPermission,
+  subscribeToPush,
+  unsubscribeFromPush,
+  getPushSubscription,
 } from '../push';
 
-describe('Push Utilities', () => {
-  // Store original serviceWorker for proper restoration
-  const originalServiceWorker = navigator.serviceWorker;
-
+describe('push notifications', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Reset permission to default
-    MockNotification.permission = 'default';
-    MockNotification.requestPermission = jest.fn().mockResolvedValue('default');
-    // Ensure PushManager is available
-    Object.defineProperty(window, 'PushManager', {
-      value: jest.fn(),
-      writable: true,
-      configurable: true,
-    });
-    // Ensure serviceWorker is available in navigator
-    Object.defineProperty(navigator, 'serviceWorker', {
-      value: originalServiceWorker || {},
-      writable: true,
-      configurable: true,
-    });
-  });
-
-  afterEach(() => {
-    // Restore serviceWorker after each test
-    Object.defineProperty(navigator, 'serviceWorker', {
-      value: originalServiceWorker,
-      writable: true,
-      configurable: true,
-    });
   });
 
   describe('isPushSupported', () => {
-    it('returns true when PushManager and serviceWorker are available', () => {
-      const result = isPushSupported();
-      expect(result).toBe(true);
+    it('should return true when serviceWorker and PushManager are available', () => {
+      expect(isPushSupported()).toBe(true);
     });
 
-    it('returns false when PushManager is not available', () => {
-      const originalPushManager = (window as unknown as Record<string, unknown>).PushManager;
-
-      // @ts-expect-error - removing PushManager for test
-      delete (window as unknown as Record<string, unknown>).PushManager;
-
-      const result = isPushSupported();
-
-      expect(result).toBe(false);
-
-      // Restore
-      if (originalPushManager) {
-        Object.defineProperty(window, 'PushManager', {
-          value: originalPushManager,
-          writable: true,
-          configurable: true,
-        });
-      }
-    });
-
-    it('returns false when serviceWorker is not in navigator', () => {
-      const originalSW = navigator.serviceWorker;
-
-      // Delete the property to make 'serviceWorker' in navigator return false
-      // @ts-expect-error - removing serviceWorker for test
-      delete (navigator as Record<string, unknown>).serviceWorker;
-
-      const result = isPushSupported();
-
-      expect(result).toBe(false);
-
-      // Restore
-      Object.defineProperty(navigator, 'serviceWorker', {
-        value: originalSW,
+    it('should return false when serviceWorker is not available', () => {
+      Object.defineProperty(global, 'navigator', {
+        value: {},
         writable: true,
-        configurable: true,
+      });
+      expect(isPushSupported()).toBe(false);
+      // Restore
+      Object.defineProperty(global, 'navigator', {
+        value: {
+          serviceWorker: mockServiceWorker,
+          Notification: mockNotification,
+        },
+        writable: true,
       });
     });
   });
 
   describe('getNotificationPermission', () => {
-    it('returns default when permission is default', () => {
-      MockNotification.permission = 'default';
-      expect(getNotificationPermission()).toBe('default');
-    });
-
-    it('returns granted when permission is granted', () => {
-      MockNotification.permission = 'granted';
+    it('should return current permission status', () => {
+      mockNotification.permission = 'granted' as NotificationPermission;
       expect(getNotificationPermission()).toBe('granted');
     });
 
-    it('returns denied when permission is denied', () => {
-      MockNotification.permission = 'denied';
+    it('should return denied when permission is denied', () => {
+      mockNotification.permission = 'denied' as NotificationPermission;
       expect(getNotificationPermission()).toBe('denied');
     });
   });
 
-  describe('areNotificationsEnabled', () => {
-    it('returns false when permission is default', () => {
-      MockNotification.permission = 'default';
-      expect(areNotificationsEnabled()).toBe(false);
+  describe('requestNotificationPermission', () => {
+    it('should return granted when user grants permission', async () => {
+      mockNotification.requestPermission.mockResolvedValue('granted');
+      const result = await requestNotificationPermission();
+      expect(result).toBe('granted');
     });
 
-    it('returns true when permission is granted', () => {
-      MockNotification.permission = 'granted';
-      expect(areNotificationsEnabled()).toBe(true);
+    it('should return denied when user denies permission', async () => {
+      mockNotification.requestPermission.mockResolvedValue('denied');
+      const result = await requestNotificationPermission();
+      expect(result).toBe('denied');
     });
 
-    it('returns false when permission is denied', () => {
-      MockNotification.permission = 'denied';
-      expect(areNotificationsEnabled()).toBe(false);
+    it('should return denied when Notification is not available', async () => {
+      const originalNotification = mockNotification;
+      Object.defineProperty(global.navigator, 'Notification', {
+        value: undefined,
+        writable: true,
+      });
+      const result = await requestNotificationPermission();
+      expect(result).toBe('denied');
+      expect(console.warn).toHaveBeenCalledWith('[Push] Push notifications are not supported');
+      // Restore
+      Object.defineProperty(global.navigator, 'Notification', {
+        value: originalNotification,
+        writable: true,
+      });
     });
   });
 
-  describe('requestNotificationPermission', () => {
-    it('returns granted when user accepts', async () => {
-      MockNotification.requestPermission = jest.fn().mockResolvedValue('granted');
-
-      const result = await requestNotificationPermission();
-
-      expect(result).toBe('granted');
-      expect(MockNotification.requestPermission).toHaveBeenCalled();
-    });
-
-    it('returns denied when user denies', async () => {
-      MockNotification.requestPermission = jest.fn().mockResolvedValue('denied');
-
-      const result = await requestNotificationPermission();
-
-      expect(result).toBe('denied');
-    });
-
-    it('returns default when user dismisses', async () => {
-      MockNotification.requestPermission = jest.fn().mockResolvedValue('default');
-
-      const result = await requestNotificationPermission();
-
-      expect(result).toBe('default');
-    });
-
-    it('returns denied when push is not supported', async () => {
-      const originalPushManager = (window as unknown as Record<string, unknown>).PushManager;
-
-      // @ts-expect-error - removing PushManager for test
-      delete (window as unknown as Record<string, unknown>).PushManager;
-
-      const result = await requestNotificationPermission();
-
-      expect(result).toBe('denied');
-
-      // Restore
-      Object.defineProperty(window, 'PushManager', {
-        value: originalPushManager,
+  describe('getPushSubscription', () => {
+    it('should return null when push is not supported', async () => {
+      Object.defineProperty(global, 'navigator', {
+        value: { Notification: mockNotification },
         writable: true,
-        configurable: true,
+      });
+      const result = await getPushSubscription();
+      expect(result).toBeNull();
+      // Restore
+      Object.defineProperty(global, 'navigator', {
+        value: {
+          serviceWorker: mockServiceWorker,
+          Notification: mockNotification,
+        },
+        writable: true,
       });
     });
 
-    it('returns denied when requestPermission throws', async () => {
-      MockNotification.requestPermission = jest.fn().mockRejectedValue(new Error('User dismissed'));
-
-      const result = await requestNotificationPermission();
-
-      expect(result).toBe('denied');
+    it('should return subscription when available', async () => {
+      const mockSubscription = { endpoint: 'https://push.example.com/sub/123' };
+      mockPushManager.getSubscription.mockResolvedValue(mockSubscription);
+      const result = await getPushSubscription();
+      expect(result).toBe(mockSubscription);
     });
-  });
-});
 
-describe('Push Utilities Integration', () => {
-  beforeEach(() => {
-    // Ensure PushManager is available for integration tests
-    Object.defineProperty(window, 'PushManager', {
-      value: jest.fn(),
-      writable: true,
-      configurable: true,
-    });
-  });
-
-  it('correctly relates permission and enabled status', () => {
-    MockNotification.permission = 'granted';
-    const permission = getNotificationPermission();
-    const enabled = areNotificationsEnabled();
-
-    expect(enabled).toBe(permission === 'granted');
-    expect(enabled).toBe(true);
-  });
-
-  it('isPushSupported checks for required APIs', () => {
-    const supported = isPushSupported();
-
-    // Should return true with PushManager and serviceWorker
-    expect(supported).toBe(true);
-  });
-});
-
-describe('Push Utilities Error Handling', () => {
-  beforeEach(() => {
-    // Ensure PushManager is available
-    Object.defineProperty(window, 'PushManager', {
-      value: jest.fn(),
-      writable: true,
-      configurable: true,
+    it('should return null when error occurs', async () => {
+      mockPushManager.getSubscription.mockRejectedValue(new Error('Get subscription error'));
+      const result = await getPushSubscription();
+      expect(result).toBeNull();
+      expect(console.error).toHaveBeenCalledWith(
+        '[Push] Error getting subscription:',
+        expect.any(Error)
+      );
     });
   });
 
-  it('handles notification permission request gracefully', async () => {
-    // Request permission should never throw
-    const result = await requestNotificationPermission();
+  describe('subscribeToPush', () => {
+    it('should return null when permission is denied', async () => {
+      mockNotification.requestPermission.mockResolvedValue('denied');
+      const result = await subscribeToPush();
+      expect(result).toBeNull();
+      expect(console.log).toHaveBeenCalledWith('[Push] Permission status:', 'denied');
+    });
 
-    // Should return a valid permission string
-    expect(['granted', 'denied', 'default']).toContain(result);
+    it('should subscribe when permission is granted', async () => {
+      mockNotification.requestPermission.mockResolvedValue('granted');
+      const mockSubscription = { endpoint: 'https://push.example.com/sub/123' };
+      mockPushManager.subscribe.mockResolvedValue(mockSubscription);
+      const result = await subscribeToPush();
+      expect(result).toBe(mockSubscription);
+    });
+
+    it('should return null when subscription fails', async () => {
+      mockNotification.requestPermission.mockResolvedValue('granted');
+      mockPushManager.subscribe.mockRejectedValue(new Error('Subscribe error'));
+      const result = await subscribeToPush();
+      expect(result).toBeNull();
+      expect(console.error).toHaveBeenCalledWith('[Push] Error subscribing:', expect.any(Error));
+    });
   });
 
-  it('getNotificationPermission never throws', () => {
-    // This function should always return a valid permission
-    expect(() => getNotificationPermission()).not.toThrow();
-  });
+  describe('unsubscribeFromPush', () => {
+    it('should return true when successfully unsubscribed', async () => {
+      const mockSubscription = {
+        unsubscribe: jest.fn().mockResolvedValue(true),
+      };
+      mockPushManager.getSubscription.mockResolvedValue(mockSubscription);
+      const result = await unsubscribeFromPush();
+      expect(result).toBe(true);
+      expect(mockSubscription.unsubscribe).toHaveBeenCalled();
+      expect(console.log).toHaveBeenCalledWith('[Push] Successfully unsubscribed');
+    });
 
-  it('areNotificationsEnabled never throws', () => {
-    expect(() => areNotificationsEnabled()).not.toThrow();
+    it('should return true when no subscription exists', async () => {
+      mockPushManager.getSubscription.mockResolvedValue(null);
+      const result = await unsubscribeFromPush();
+      expect(result).toBe(true);
+    });
+
+    it('should return false when error occurs', async () => {
+      mockPushManager.getSubscription.mockRejectedValue(new Error('Unsubscribe error'));
+      const result = await unsubscribeFromPush();
+      expect(result).toBe(false);
+      expect(console.error).toHaveBeenCalledWith('[Push] Error unsubscribing:', expect.any(Error));
+    });
   });
 });
