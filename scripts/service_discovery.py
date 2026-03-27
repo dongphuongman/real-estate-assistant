@@ -12,10 +12,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent / "port"))
+# Add scripts directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent))
 
-from port_manager import PortManager
+from port.port_manager import PortManager
 
 
 class ServiceDiscovery:

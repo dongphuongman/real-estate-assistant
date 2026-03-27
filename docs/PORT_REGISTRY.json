@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "project": "ai-real-estate-assistant",
-  "lastUpdated": "2026-03-27T00:00:00Z",
+  "lastUpdated": "2026-03-27T13:34:35.053262+00:00",
   "ranges": {
     "frontend": {
       "start": 3800,
@@ -19,5 +19,45 @@
     "backend": 8000
   },
   "sharedServices": [],
-  "allocations": []
+  "allocations": [
+    {
+      "id": "6ba4d4b1-a312-4bfa-b248-7a8ea5c745b5",
+      "serviceName": "test-backend",
+      "category": "backend",
+      "port": 8000,
+      "status": "active",
+      "createdAt": "2026-03-27T13:30:12.443889+00:00",
+      "lastUsedAt": "2026-03-27T13:30:12.443904+00:00",
+      "pid": null,
+      "metadata": {
+        "env": "development"
+      }
+    },
+    {
+      "id": "5f70ba90-2cd2-4a0d-a691-f6fc63d521da",
+      "serviceName": "ai-real-estate-assistant",
+      "category": "backend",
+      "port": 8001,
+      "status": "active",
+      "createdAt": "2026-03-27T13:34:34.425834+00:00",
+      "lastUsedAt": "2026-03-27T13:34:34.425846+00:00",
+      "pid": null,
+      "metadata": {
+        "env": "development"
+      }
+    },
+    {
+      "id": "b1e03c4d-debf-438a-9096-97e99da1fe2d",
+      "serviceName": "ai-real-estate-assistant-web",
+      "category": "frontend",
+      "port": 3800,
+      "status": "active",
+      "createdAt": "2026-03-27T13:34:35.053239+00:00",
+      "lastUsedAt": "2026-03-27T13:34:35.053248+00:00",
+      "pid": null,
+      "metadata": {
+        "env": "development"
+      }
+    }
+  ]
 }
