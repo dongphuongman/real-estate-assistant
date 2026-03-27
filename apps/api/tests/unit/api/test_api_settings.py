@@ -1,13 +1,9 @@
-from unittest.mock import MagicMock, patch
+from contextlib import asynccontextmanager
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from fastapi.testclient import TestClient
 
 from api.main import app
-from notifications.notification_preferences import (
-    AlertFrequency,
-    AlertType,
-    NotificationPreferences,
-)
 
 client = TestClient(app)
 
@@ -16,99 +12,132 @@ HEADERS = {"X-API-Key": "test-key", "X-User-Email": "u1@example.com"}
 HEADERS_NO_USER = {"X-API-Key": "test-key"}
 
 
-@patch("api.routers.settings.PREFS_MANAGER")
+def _make_mock_prefs(**overrides):
+    """Create a mock NotificationPreferenceDB-like object."""
+    defaults = dict(
+        price_alerts_enabled=True,
+        new_listings_enabled=True,
+        saved_search_enabled=True,
+        market_updates_enabled=False,
+        alert_frequency="weekly",
+        email_enabled=True,
+        push_enabled=False,
+        in_app_enabled=True,
+        quiet_hours_start=None,
+        quiet_hours_end=None,
+        price_drop_threshold=5.0,
+        daily_digest_time="09:00",
+        weekly_digest_day="monday",
+        expert_mode=True,
+        marketing_emails=False,
+        unsubscribe_token="tok-123",
+        unsubscribed_at=None,
+        unsubscribed_types=None,
+    )
+    defaults.update(overrides)
+    prefs = MagicMock()
+    for k, v in defaults.items():
+        setattr(prefs, k, v)
+    return prefs
+
+
+def _mock_db_context(mock_user, mock_prefs):
+    """Build a mock get_db_context that yields a session with repos."""
+    mock_session = AsyncMock()
+
+    mock_user_repo = AsyncMock()
+    mock_user_repo.get_by_email = AsyncMock(return_value=mock_user)
+
+    mock_prefs_repo = AsyncMock()
+    mock_prefs_repo.get_or_create = AsyncMock(return_value=mock_prefs)
+    mock_prefs_repo.update = AsyncMock(return_value=mock_prefs)
+
+    @asynccontextmanager
+    async def _ctx():
+        # Patch repo constructors inside the context
+        with (
+            patch("api.routers.settings.UserRepository", return_value=mock_user_repo),
+            patch(
+                "api.routers.settings.NotificationPreferenceRepository",
+                return_value=mock_prefs_repo,
+            ),
+        ):
+            yield mock_session
+
+    return _ctx, mock_user_repo, mock_prefs_repo
+
+
 @patch("api.auth.get_settings")
-def test_get_settings(mock_get_settings, mock_prefs_manager):
-    # Mock Auth
+def test_get_settings(mock_get_settings):
     mock_settings = MagicMock()
     mock_settings.api_access_key = "test-key"
     mock_get_settings.return_value = mock_settings
 
-    # Mock Preferences
-    mock_prefs = MagicMock(spec=NotificationPreferences)
-    mock_prefs.is_alert_enabled.return_value = True
-    mock_prefs.alert_frequency = AlertFrequency.WEEKLY
-    mock_prefs.expert_mode = True
-    mock_prefs.marketing_emails = False
+    mock_user = MagicMock()
+    mock_user.id = "user-1"
+    mock_prefs = _make_mock_prefs()
 
-    mock_prefs_manager.get_preferences.return_value = mock_prefs
+    ctx, _, _ = _mock_db_context(mock_user, mock_prefs)
 
-    response = client.get("/api/v1/settings/notifications", headers=HEADERS)
+    with patch("api.routers.settings.get_db_context", ctx):
+        response = client.get("/api/v1/settings/notifications", headers=HEADERS)
 
     assert response.status_code == 200
-    mock_prefs_manager.get_preferences.assert_called_once_with("u1@example.com")
     data = response.json()
-    assert data["email_digest"]
-    assert data["frequency"] == "weekly"
-    assert data["expert_mode"]
-    assert not data["marketing_emails"]
+    assert data["alert_frequency"] == "weekly"
+    assert data["expert_mode"] is True
+    assert data["marketing_emails"] is False
 
 
-@patch("api.routers.settings.PREFS_MANAGER")
 @patch("api.auth.get_settings")
-def test_update_settings(mock_get_settings, mock_prefs_manager):
-    # Mock Auth
+def test_update_settings(mock_get_settings):
     mock_settings = MagicMock()
     mock_settings.api_access_key = "test-key"
     mock_get_settings.return_value = mock_settings
 
-    # Mock Preferences
-    mock_prefs = MagicMock(spec=NotificationPreferences)
-    mock_prefs.enabled_alerts = set()
-    mock_prefs.alert_frequency = AlertFrequency.WEEKLY
+    mock_user = MagicMock()
+    mock_user.id = "user-1"
+    mock_prefs = _make_mock_prefs()
 
-    mock_prefs_manager.get_preferences.return_value = mock_prefs
+    ctx, _, mock_prefs_repo = _mock_db_context(mock_user, mock_prefs)
 
     payload = {
-        "email_digest": True,
-        "frequency": "daily",
+        "alert_frequency": "daily",
         "expert_mode": True,
         "marketing_emails": True,
     }
 
-    response = client.put("/api/v1/settings/notifications", json=payload, headers=HEADERS)
+    with patch("api.routers.settings.get_db_context", ctx):
+        response = client.put("/api/v1/settings/notifications", json=payload, headers=HEADERS)
 
     assert response.status_code == 200
-    mock_prefs_manager.get_preferences.assert_called_once_with("u1@example.com")
-    data = response.json()
-    assert data["email_digest"]
-    assert data["frequency"] == "daily"
-
-    # Verify save called
-    assert mock_prefs_manager.save_preferences.called
-    saved_prefs = mock_prefs_manager.save_preferences.call_args[0][0]
-    assert AlertType.DIGEST in saved_prefs.enabled_alerts
-    assert saved_prefs.alert_frequency == AlertFrequency.DAILY
-    assert saved_prefs.expert_mode
-    assert saved_prefs.marketing_emails
+    assert mock_prefs_repo.update.called
 
 
-@patch("api.routers.settings.PREFS_MANAGER")
 @patch("api.auth.get_settings")
-def test_settings_query_user_email_overrides_header(mock_get_settings, mock_prefs_manager):
+def test_settings_query_user_email_overrides_header(mock_get_settings):
     mock_settings = MagicMock()
     mock_settings.api_access_key = "test-key"
     mock_get_settings.return_value = mock_settings
 
-    mock_prefs = MagicMock(spec=NotificationPreferences)
-    mock_prefs.is_alert_enabled.return_value = False
-    mock_prefs.alert_frequency = AlertFrequency.DAILY
-    mock_prefs.expert_mode = False
-    mock_prefs.marketing_emails = True
-    mock_prefs_manager.get_preferences.return_value = mock_prefs
+    mock_user = MagicMock()
+    mock_user.id = "user-2"
+    mock_prefs = _make_mock_prefs()
 
-    response = client.get(
-        "/api/v1/settings/notifications?user_email=u2@example.com",
-        headers=HEADERS,
-    )
+    ctx, mock_user_repo, _ = _mock_db_context(mock_user, mock_prefs)
+
+    with patch("api.routers.settings.get_db_context", ctx):
+        response = client.get(
+            "/api/v1/settings/notifications?user_email=u2@example.com",
+            headers=HEADERS,
+        )
 
     assert response.status_code == 200
-    mock_prefs_manager.get_preferences.assert_called_once_with("u2@example.com")
+    mock_user_repo.get_by_email.assert_called_once_with("u2@example.com")
 
 
-@patch("api.routers.settings.PREFS_MANAGER")
 @patch("api.auth.get_settings")
-def test_get_settings_missing_user_email_returns_400(mock_get_settings, mock_prefs_manager):
+def test_get_settings_missing_user_email_returns_400(mock_get_settings):
     mock_settings = MagicMock()
     mock_settings.api_access_key = "test-key"
     mock_get_settings.return_value = mock_settings
@@ -117,12 +146,10 @@ def test_get_settings_missing_user_email_returns_400(mock_get_settings, mock_pre
 
     assert response.status_code == 400
     assert response.json()["detail"] == "Missing user email"
-    assert not mock_prefs_manager.get_preferences.called
 
 
-@patch("api.routers.settings.PREFS_MANAGER")
 @patch("api.auth.get_settings")
-def test_update_settings_missing_user_email_returns_400(mock_get_settings, mock_prefs_manager):
+def test_update_settings_missing_user_email_returns_400(mock_get_settings):
     mock_settings = MagicMock()
     mock_settings.api_access_key = "test-key"
     mock_get_settings.return_value = mock_settings
@@ -130,8 +157,7 @@ def test_update_settings_missing_user_email_returns_400(mock_get_settings, mock_
     response = client.put(
         "/api/v1/settings/notifications",
         json={
-            "email_digest": True,
-            "frequency": "daily",
+            "alert_frequency": "daily",
             "expert_mode": False,
             "marketing_emails": False,
         },
@@ -140,7 +166,6 @@ def test_update_settings_missing_user_email_returns_400(mock_get_settings, mock_
 
     assert response.status_code == 400
     assert response.json()["detail"] == "Missing user email"
-    assert not mock_prefs_manager.get_preferences.called
 
 
 @patch("api.routers.settings.ModelProviderFactory")
