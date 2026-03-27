@@ -184,6 +184,7 @@ celerybeat.pid
 
 # Environments
 .env
+.env.ports
 .venv
 .venv_ci
 env/
