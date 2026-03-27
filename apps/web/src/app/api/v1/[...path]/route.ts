@@ -1,6 +1,6 @@
-import type { NextRequest } from "next/server";
+import type { NextRequest } from 'next/server';
 
-export const runtime = "nodejs";
+export const runtime = 'nodejs';
 
 type ProxyContext = {
   params: Promise<{
@@ -9,39 +9,39 @@ type ProxyContext = {
 };
 
 const HOP_BY_HOP_RESPONSE_HEADERS = new Set<string>([
-  "connection",
-  "keep-alive",
-  "proxy-authenticate",
-  "proxy-authorization",
-  "te",
-  "trailer",
-  "transfer-encoding",
-  "upgrade",
+  'connection',
+  'keep-alive',
+  'proxy-authenticate',
+  'proxy-authorization',
+  'te',
+  'trailer',
+  'transfer-encoding',
+  'upgrade',
 ]);
 
 const FORWARDED_REQUEST_HEADERS = [
-  "accept",
-  "accept-language",
-  "content-type",
-  "user-agent",
-  "x-user-email",
-  "x-request-id",
+  'accept',
+  'accept-language',
+  'content-type',
+  'user-agent',
+  'x-user-email',
+  'x-request-id',
 ] as const;
 
 function isProductionRuntime(): boolean {
-  if (process.env.NODE_ENV === "production") return true;
-  if (process.env.VERCEL_ENV === "production") return true;
-  if (process.env.VERCEL === "1") return true;
+  if (process.env.NODE_ENV === 'production') return true;
+  if (process.env.VERCEL_ENV === 'production') return true;
+  if (process.env.VERCEL === '1') return true;
   return false;
 }
 
 function isLocalhostUrl(value: string): boolean {
   const trimmed = value.trim().toLowerCase();
   return (
-    trimmed.includes("://localhost") ||
-    trimmed.includes("://127.0.0.1") ||
-    trimmed.includes("://[::1]") ||
-    trimmed.includes("://0.0.0.0")
+    trimmed.includes('://localhost') ||
+    trimmed.includes('://127.0.0.1') ||
+    trimmed.includes('://[::1]') ||
+    trimmed.includes('://0.0.0.0')
   );
 }
 
@@ -50,15 +50,21 @@ function getBackendApiBaseUrl(): string {
   if (isProductionRuntime()) {
     const trimmed = raw?.trim();
     if (!trimmed) {
-      throw new Error("BACKEND_API_URL must be set in production");
+      throw new Error('BACKEND_API_URL must be set in production');
     }
     if (isLocalhostUrl(trimmed)) {
-      throw new Error("BACKEND_API_URL must not point to localhost in production");
+      throw new Error('BACKEND_API_URL must not point to localhost in production');
     }
   }
 
-  const fallback = raw || "http://localhost:8000/api/v1";
-  return fallback.replace(/\/+$/, "");
+  // Use BACKEND_API_URL env var with dynamic port support
+  const defaultBackendUrl =
+    process.env.BACKEND_API_URL ||
+    (process.env.BACKEND_PORT
+      ? `http://localhost:${process.env.BACKEND_PORT}/api/v1`
+      : 'http://localhost:8000/api/v1');
+  const fallback = raw || defaultBackendUrl;
+  return fallback.replace(/\/+$/, '');
 }
 
 function getApiAccessKey(): string | undefined {
@@ -71,7 +77,7 @@ function getApiAccessKey(): string | undefined {
   const rotated = process.env.API_ACCESS_KEYS;
   if (!rotated) return undefined;
   const first = rotated
-    .split(",")
+    .split(',')
     .map((value) => value.trim())
     .find((value) => Boolean(value));
   return first ? first : undefined;
@@ -79,7 +85,7 @@ function getApiAccessKey(): string | undefined {
 
 function buildBackendUrl(requestUrl: URL, pathParts: string[]): string {
   const base = getBackendApiBaseUrl();
-  const encodedPath = pathParts.map((part) => encodeURIComponent(part)).join("/");
+  const encodedPath = pathParts.map((part) => encodeURIComponent(part)).join('/');
   const joined = encodedPath ? `${base}/${encodedPath}` : base;
   const target = new URL(joined);
   target.search = requestUrl.search;
@@ -95,7 +101,7 @@ function buildBackendRequestHeaders(original: Headers): Headers {
   }
 
   const apiKey = getApiAccessKey();
-  if (apiKey) headers.set("X-API-Key", apiKey);
+  if (apiKey) headers.set('X-API-Key', apiKey);
 
   return headers;
 }
@@ -105,27 +111,29 @@ async function proxyRequest(request: Request, context: ProxyContext): Promise<Re
   const { path } = await context.params;
   const pathParts = path ?? [];
 
-  const body = request.method === "GET" || request.method === "HEAD" ? undefined : request.body;
+  const body = request.method === 'GET' || request.method === 'HEAD' ? undefined : request.body;
 
-  const init: RequestInit & { duplex?: "half" } = {
+  const init: RequestInit & { duplex?: 'half' } = {
     method: request.method,
     headers: buildBackendRequestHeaders(request.headers),
     body,
-    redirect: "manual",
+    redirect: 'manual',
   };
-  if (body) init.duplex = "half";
+  if (body) init.duplex = 'half';
 
   let backendUrl: string;
   try {
     backendUrl = buildBackendUrl(requestUrl, pathParts);
   } catch (error) {
     const message =
-      error instanceof Error && error.message.trim() ? error.message.trim() : "Proxy configuration error";
+      error instanceof Error && error.message.trim()
+        ? error.message.trim()
+        : 'Proxy configuration error';
     return new Response(JSON.stringify({ detail: message }), {
       status: 500,
       headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-store",
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store',
       },
     });
   }

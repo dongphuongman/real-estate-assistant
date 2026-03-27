@@ -10,6 +10,8 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, Field, root_validator
 
+from config.port_config import get_frontend_url_for_settings
+
 
 def _parse_csv_list(value: Optional[str]) -> list[str]:
     if not value:
@@ -232,8 +234,9 @@ class AppSettings(BaseModel):
     )
 
     # Frontend URL (for email links)
+    # Uses port_config for dynamic port allocation support
     frontend_url: str = Field(
-        default_factory=lambda: os.getenv("FRONTEND_URL", "http://localhost:3000"),
+        default_factory=lambda: os.getenv("FRONTEND_URL") or get_frontend_url_for_settings(),
         description="Frontend URL for email links (verification, password reset)",
     )
 
