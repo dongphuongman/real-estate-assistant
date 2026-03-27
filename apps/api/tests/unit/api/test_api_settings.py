@@ -286,37 +286,45 @@ def test_list_model_catalog_includes_runtime_error_for_local_provider(
     ]
 
 
-@patch("api.routers.settings.PREFS_MANAGER")
 @patch("api.auth.get_settings")
-def test_get_settings_returns_500_on_unhandled_error(mock_get_settings, mock_prefs_manager):
+def test_get_settings_returns_500_on_unhandled_error(mock_get_settings):
     mock_settings = MagicMock()
     mock_settings.api_access_key = "test-key"
     mock_get_settings.return_value = mock_settings
-    mock_prefs_manager.get_preferences.side_effect = RuntimeError("boom")
 
-    response = client.get("/api/v1/settings/notifications", headers=HEADERS)
+    # get_db_context raises RuntimeError -> caught as 500
+    @asynccontextmanager
+    async def _failing_ctx():
+        raise RuntimeError("boom")
+        yield  # noqa: unreachable
+
+    with patch("api.routers.settings.get_db_context", _failing_ctx):
+        response = client.get("/api/v1/settings/notifications", headers=HEADERS)
     assert response.status_code == 500
     assert response.json()["detail"] == "boom"
 
 
-@patch("api.routers.settings.PREFS_MANAGER")
 @patch("api.auth.get_settings")
-def test_update_settings_returns_500_on_unhandled_error(mock_get_settings, mock_prefs_manager):
+def test_update_settings_returns_500_on_unhandled_error(mock_get_settings):
     mock_settings = MagicMock()
     mock_settings.api_access_key = "test-key"
     mock_get_settings.return_value = mock_settings
-    mock_prefs_manager.get_preferences.side_effect = RuntimeError("boom")
 
-    response = client.put(
-        "/api/v1/settings/notifications",
-        json={
-            "email_digest": True,
-            "frequency": "daily",
-            "expert_mode": False,
-            "marketing_emails": False,
-        },
-        headers=HEADERS,
-    )
+    @asynccontextmanager
+    async def _failing_ctx():
+        raise RuntimeError("boom")
+        yield  # noqa: unreachable
+
+    with patch("api.routers.settings.get_db_context", _failing_ctx):
+        response = client.put(
+            "/api/v1/settings/notifications",
+            json={
+                "alert_frequency": "daily",
+                "expert_mode": False,
+                "marketing_emails": False,
+            },
+            headers=HEADERS,
+        )
     assert response.status_code == 500
     assert response.json()["detail"] == "boom"
 
