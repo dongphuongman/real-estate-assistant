@@ -5,6 +5,7 @@ This module provides token counting, context compression, summarization,
 and optimization for managing conversation context windows across providers.
 """
 
+import asyncio
 import logging
 import re
 import time
@@ -384,9 +385,13 @@ class ContextManager:
         self.compressor = ContextCompressor()
         self.summarizer = ContextSummarizer()
 
-        # Initialize metrics database
+        # Initialize metrics database (async)
         if settings.context_metrics_enabled:
-            init_context_metrics_db()
+            try:
+                loop = asyncio.get_running_loop()
+                loop.create_task(init_context_metrics_db())
+            except RuntimeError:
+                asyncio.run(init_context_metrics_db())
 
     def optimize_context(
         self,
@@ -637,7 +642,7 @@ class ContextManager:
         return 0.0
 
     def _log_metrics(self, metrics: ContextMetrics) -> None:
-        """Log metrics to database."""
+        """Log metrics to database (fire-and-forget async)."""
         try:
             usage_metrics = ContextUsageMetrics(
                 timestamp=metrics.timestamp,
@@ -655,6 +660,12 @@ class ContextManager:
                 messages_after=metrics.messages_after,
                 processing_time_ms=metrics.processing_time_ms,
             )
-            log_context_metrics(usage_metrics)
+            # Schedule async logging without blocking the caller
+            try:
+                loop = asyncio.get_running_loop()
+                loop.create_task(log_context_metrics(usage_metrics))
+            except RuntimeError:
+                # No running loop — run in a new one
+                asyncio.run(log_context_metrics(usage_metrics))
         except Exception as e:
             logger.warning("Failed to log context metrics: %s", e)

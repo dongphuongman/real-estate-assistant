@@ -366,15 +366,17 @@ class TestContextMetrics:
         with tempfile.TemporaryDirectory() as tmpdir:
             yield Path(tmpdir) / "test_metrics.db"
 
-    def test_init_context_metrics_db(self, temp_db_path):
+    @pytest.mark.asyncio
+    async def test_init_context_metrics_db(self, temp_db_path):
         """Test database initialization."""
-        init_context_metrics_db(temp_db_path)
+        await init_context_metrics_db(temp_db_path)
 
         assert temp_db_path.exists()
 
-    def test_log_and_retrieve_metrics(self, temp_db_path):
+    @pytest.mark.asyncio
+    async def test_log_and_retrieve_metrics(self, temp_db_path):
         """Test logging and retrieving metrics."""
-        init_context_metrics_db(temp_db_path)
+        await init_context_metrics_db(temp_db_path)
 
         metrics = ContextUsageMetrics(
             timestamp=datetime.now(),
@@ -393,10 +395,10 @@ class TestContextMetrics:
             processing_time_ms=5.5,
         )
 
-        log_context_metrics(metrics, db_path=temp_db_path)
+        await log_context_metrics(metrics, db_path=temp_db_path)
 
         # Retrieve metrics
-        results = get_usage_by_session("test-session", days=1, db_path=temp_db_path)
+        results = await get_usage_by_session("test-session", days=1, db_path=temp_db_path)
 
         assert len(results) == 1
         assert results[0].session_id == "test-session"

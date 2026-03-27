@@ -307,12 +307,21 @@ async def chat_endpoint(
             raw_steps = result.get("intermediate_steps") or []
             intermediate_steps = sanitize_intermediate_steps(raw_steps) if raw_steps else None
 
+        # Build citation stats if available
+        citation_stats = None
+        raw_citation_stats = result.get("citation_stats")
+        if raw_citation_stats and isinstance(raw_citation_stats, dict):
+            from api.models import CitationStats
+
+            citation_stats = CitationStats(**raw_citation_stats)
+
         return ChatResponse(
             response=answer,
             sources=sources,
             sources_truncated=sources_truncated,
             session_id=session_id,
             intermediate_steps=intermediate_steps,
+            citation_stats=citation_stats,
         )
 
     except Exception as e:
