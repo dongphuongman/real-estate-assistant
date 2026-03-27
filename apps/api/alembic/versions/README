@@ -1,0 +1,39 @@
+# Alembic Versions Directory
+
+This directory contains database migration scripts.
+
+## Creating a New Migration
+
+```bash
+# Auto-generate migration from model changes
+cd apps/api
+alembic revision --autogenerate -m "description of changes"
+
+# Create empty migration
+alembic revision -m "description of changes"
+```
+
+## Running Migrations
+
+```bash
+# Apply all pending migrations
+alembic upgrade head
+
+# Rollback one migration
+alembic downgrade -1
+
+# Rollback to specific revision
+alembic downgrade <revision_id>
+
+# View migration history
+alembic history
+
+# View current revision
+alembic current
+```
+
+## Migration Naming Convention
+
+Migrations are named: `YYYYMMDD_HHMMSS_<revision>_<slug>.py`
+
+Example: `20260327_143052_abc123_add_user_table.py`

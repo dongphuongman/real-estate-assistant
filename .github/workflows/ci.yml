@@ -26,6 +26,76 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_CONFIG: .gitleaks.toml
 
+  secret-validation:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'NestLab-Tech'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for placeholder secrets
+        run: |
+          echo "Checking for placeholder secrets in configuration files..."
+
+          # Patterns that indicate placeholder/unconfigured secrets
+          PATTERNS=(
+            "your-generated-api-key-here"
+            "your-jwt-secret-key-here"
+            "change-me"
+            "changeme"
+            "xxx.apps.googleusercontent.com"
+            "GOCSPX-xxx"
+          )
+
+          EXIT_CODE=0
+
+          for pattern in "${PATTERNS[@]}"; do
+            # Check .env.example files (should have placeholders - skip)
+            # Check deploy/compose/.env (should NOT have placeholders)
+            if grep -r "$pattern" deploy/compose/.env 2>/dev/null; then
+              echo "::error::Found placeholder '$pattern' in deploy/compose/.env"
+              EXIT_CODE=1
+            fi
+          done
+
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "✅ No placeholder secrets found in production configs"
+          else
+            echo "::error::Placeholder secrets detected. Please update deploy/compose/.env with real values."
+          fi
+
+          exit $EXIT_CODE
+
+      - name: Check for exposed secrets pattern
+        run: |
+          echo "Checking for potentially exposed secrets..."
+
+          # Check for patterns that look like real secrets (not in .example files)
+          SECRET_PATTERNS=(
+            "ghp_[a-zA-Z0-9]{36}"
+            "gho_[a-zA-Z0-9]{36}"
+            "sk-[a-zA-Z0-9]{48,}"
+            "sk-ant-[a-zA-Z0-9]{80,}"
+          )
+
+          EXIT_CODE=0
+
+          for pattern in "${SECRET_PATTERNS[@]}"; do
+            # Only check .env files that are not .example
+            if find . -name ".env" -not -name ".env.example" -not -name ".env.ports" -exec grep -E "$pattern" {} \; 2>/dev/null; then
+              echo "::error::Found exposed secret matching pattern in .env file"
+              EXIT_CODE=1
+            fi
+          done
+
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "✅ No exposed secrets detected"
+          else
+            echo "::error::Exposed secrets detected. Please rotate and move to GitHub Secrets."
+          fi
+
+          exit $EXIT_CODE
+
   backend:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'NestLab-Tech'
