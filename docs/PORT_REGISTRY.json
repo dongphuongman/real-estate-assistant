@@ -1,0 +1,23 @@
+{
+  "version": "1.0.0",
+  "project": "ai-real-estate-assistant",
+  "lastUpdated": "2026-03-27T00:00:00Z",
+  "ranges": {
+    "frontend": {
+      "start": 3800,
+      "end": 3899,
+      "description": "Next.js frontend"
+    },
+    "backend": {
+      "start": 8000,
+      "end": 8099,
+      "description": "FastAPI backend"
+    }
+  },
+  "defaults": {
+    "frontend": 3800,
+    "backend": 8000
+  },
+  "sharedServices": [],
+  "allocations": []
+}
