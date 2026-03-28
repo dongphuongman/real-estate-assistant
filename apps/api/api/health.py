@@ -22,6 +22,7 @@ from fastapi import HTTPException, status
 
 from api.dependencies import get_vector_store
 from config.settings import get_settings
+from core.circuit_breaker import get_all_breaker_states
 
 logger = logging.getLogger(__name__)
 
@@ -344,9 +345,26 @@ async def get_health_status(include_dependencies: bool = True) -> HealthCheckRes
                 health_result: DependencyHealth = result  # type: ignore[assignment]
                 dependencies[health_result.name] = health_result
 
+    # Include circuit breaker states (Task #96)
+    breaker_states = get_all_breaker_states()
+    circuit_breakers: dict[str, DependencyHealth] = {}
+    for name, state in breaker_states.items():
+        breaker_status = HealthStatus.HEALTHY
+        if state["state"] == "open":
+            breaker_status = HealthStatus.UNHEALTHY
+        elif state["state"] == "half_open":
+            breaker_status = HealthStatus.DEGRADED
+        circuit_breakers[name] = DependencyHealth(
+            name=f"circuit_breaker:{name}",
+            status=breaker_status,
+            message=f"State: {state['state']}, failures: {state['total_failures']}/{state['total_calls']}",
+            details=state,
+        )
+    dependencies.update(circuit_breakers)
+
     # Determine overall status
     # - UNHEALTHY if any critical dependency is unhealthy
-    # - DEGRADED if any non-critical dependency is unhealthy
+    # - DEGRADED if any non-critical dependency is unhealthy or circuit breaker is open
     # - HEALTHY otherwise
     critical_unhealthy = any(
         d.status == HealthStatus.UNHEALTHY and d.name in {"vector_store"}

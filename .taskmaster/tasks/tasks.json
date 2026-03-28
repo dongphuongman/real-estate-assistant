@@ -1038,10 +1038,11 @@
         "description": "Implement audit logging as required by PRD NFR Security: \"audit logs.\" Create a dedicated audit trail system that records who did what, when, and from where. Currently only basic logging exists with no tamper-evident audit trail.",
         "details": "## Why\\nPRD NFR Security requires \"audit logs.\" No dedicated audit trail exists.\\n\\n## Acceptance Criteria\\n1. Audit records for admin actions (ingest, reindex, settings changes)\\n2. Auth event logging (login, logout, failed attempts)\\n3. Append-only, tamper-evident entries with hash chain\\n4. Admin query endpoint with time-range and action-type filters\\n5. Structured format with correlation to X-Request-ID\\n6. Unit tests for all audit scenarios\\n\\n## Files\\n- apps/api/services/audit.py (new)\\n- apps/api/db/models.py (AuditLog model)\\n- apps/api/api/routers/admin.py (query endpoint)\\n- apps/api/api/middleware/audit.py (middleware)",
         "testStrategy": "",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "high",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-03-28T20:38:37.115Z"
       },
       {
         "id": "96",
@@ -1049,10 +1050,11 @@
         "description": "Implement and test graceful degradation when external services (LLM providers, ChromaDB, database) are unavailable, as required by PRD NFR Reliability. Currently no E2E validation of degradation behavior exists.",
         "details": "## Why\\nPRD requires \"graceful degradation when providers/vector store are unavailable.\"\\n\\n## Acceptance Criteria\\n1. ChromaDB unavailable → search returns clear error, chat works with reduced capability\\n2. All LLM providers unavailable → user sees friendly message with retry option\\n3. Single provider fails → automatic fallback to next provider in routing\\n4. Database unavailable → health endpoint reports degraded, read-only mode where possible\\n5. Circuit breaker pattern implemented for external service calls\\n6. Degradation state surfaced in admin health endpoint\\n7. Integration tests for each degradation scenario\\n\\n## Files\\n- apps/api/api/routers/chat.py (degradation handling)\\n- apps/api/api/routers/search.py (degradation handling)\\n- apps/api/services/health.py (degradation state)\\n- apps/api/core/circuit_breaker.py (new)",
         "testStrategy": "",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "high",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-03-28T20:38:48.698Z"
       },
       {
         "id": "97",
@@ -1336,9 +1338,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-28T12:38:47.858Z",
+      "lastModified": "2026-03-28T20:38:48.699Z",
       "taskCount": 93,
-      "completedCount": 67,
+      "completedCount": 72,
       "tags": [
         "master"
       ]

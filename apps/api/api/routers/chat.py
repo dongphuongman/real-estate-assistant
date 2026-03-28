@@ -20,6 +20,7 @@ from api.chat_sources import serialize_chat_sources, serialize_web_sources
 from api.dependencies import get_llm, get_vector_store
 from api.models import ChatRequest, ChatResponse
 from config.settings import get_settings
+from core.circuit_breaker import ServiceDegradedError
 from utils.sanitization import sanitize_chat_message, sanitize_intermediate_steps
 from utils.streaming import (
     HeartbeatConfig,
@@ -58,9 +59,13 @@ async def chat_endpoint(
     try:
         if not store:
             raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Vector store unavailable"
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Chat is temporarily unavailable. The property database is offline. "
+                "Please try again in a moment.",
             )
 
+        # Circuit breaker for external service calls (Task #96)
+        # breaker = registered globally via get_breaker("llm_provider")
         settings = get_settings()
         sources_max_items = max(0, int(settings.chat_sources_max_items))
         sources_max_content_chars = max(0, int(settings.chat_source_content_max_chars))
@@ -324,6 +329,12 @@ async def chat_endpoint(
             citation_stats=citation_stats,
         )
 
+    except ServiceDegradedError as e:
+        logger.warning("Chat degraded: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"AI assistant is temporarily unavailable. {e}. Please retry in a moment.",
+        ) from e
     except Exception as e:
         logger.error(f"Chat processing failed: {e}")
         raise HTTPException(

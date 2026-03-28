@@ -11,6 +11,7 @@ from api.models import (
     SearchResponse,
     SearchResultItem,
 )
+from core.circuit_breaker import ServiceDegradedError, get_breaker
 from data.schemas import Property
 from services.ranking_explainer import create_ranking_explainer
 from utils.sanitization import sanitize_search_query
@@ -106,8 +107,12 @@ async def search_properties(
     """
     if not store:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Vector store is not available"
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Search is temporarily unavailable. The property database is offline. Please try again in a moment.",
         )
+
+    # Use circuit breaker for vector store calls (Task #96)
+    breaker = get_breaker("vector_store")
 
     # Sanitize search query to prevent injection attacks
     try:
@@ -128,23 +133,32 @@ async def search_properties(
             )
 
     try:
-        # Perform hybrid search (Vector + Keyword)
-        results = store.hybrid_search(
-            query=sanitized_query,
-            k=request.limit,
-            filters=request.filters,
-            alpha=request.alpha,
-            lat=request.lat,
-            lon=request.lon,
-            radius_km=request.radius_km,
-            min_lat=request.min_lat,
-            max_lat=request.max_lat,
-            min_lon=request.min_lon,
-            max_lon=request.max_lon,
-            polygon=request.polygon,
-            sort_by=request.sort_by.value if request.sort_by else None,
-            sort_order=request.sort_order.value if request.sort_order else None,
-        )
+        # Perform hybrid search (Vector + Keyword) with circuit breaker
+        async def _do_search():
+            return store.hybrid_search(
+                query=sanitized_query,
+                k=request.limit,
+                filters=request.filters,
+                alpha=request.alpha,
+                lat=request.lat,
+                lon=request.lon,
+                radius_km=request.radius_km,
+                min_lat=request.min_lat,
+                max_lat=request.max_lat,
+                min_lon=request.min_lon,
+                max_lon=request.max_lon,
+                polygon=request.polygon,
+                sort_by=request.sort_by.value if request.sort_by else None,
+                sort_order=request.sort_order.value if request.sort_order else None,
+            )
+
+        try:
+            results = await breaker.call(_do_search)
+        except ServiceDegradedError as e:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=f"Search is temporarily degraded: {e}. Please retry in a moment.",
+            ) from e
 
         # Generate explanations if requested
         explanations = []
