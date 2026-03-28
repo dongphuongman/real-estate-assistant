@@ -102,6 +102,12 @@ add_request_size_limits(app)
 add_csrf_middleware(app)
 add_error_handlers(app)
 
+# Audit middleware (Task #95) — conditionally enabled with JWT auth
+if settings.auth_jwt_enabled:
+    from api.middleware.audit import add_audit_middleware
+
+    add_audit_middleware(app)
+
 # Global scheduler instance
 scheduler = None
 

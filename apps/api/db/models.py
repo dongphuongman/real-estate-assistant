@@ -2357,3 +2357,77 @@ class CMAReportDB(Base):
 
     def __repr__(self) -> str:
         return f"<CMAReport(id={self.id[:8]}..., user={self.user_id[:8]}..., status={self.status})>"
+
+
+# =============================================================================
+# Audit Logging System (Task #95)
+# =============================================================================
+
+
+class AuditLogEntry(Base):
+    """Tamper-evident audit log with hash chain integrity.
+
+    Records who did what, when, and from where. Append-only entries
+    linked via SHA-256 hash chain for tamper detection.
+    """
+
+    __tablename__ = "audit_log_entries"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+
+    # Who performed the action
+    actor_id: Mapped[Optional[str]] = mapped_column(
+        String(36),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    actor_email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    actor_role: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+
+    # What action was performed
+    action: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    resource: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    details: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+
+    # Where from
+    ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
+    user_agent: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+
+    # Correlation
+    request_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True, index=True)
+
+    # Tamper-evident hash chain
+    prev_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    entry_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+
+    # Timestamp
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        nullable=False,
+        index=True,
+    )
+
+    __table_args__ = (
+        Index("ix_audit_log_action_created", "action", "created_at"),
+        Index("ix_audit_log_actor_created", "actor_id", "created_at"),
+    )
+
+    def compute_hash(self, previous_hash: str = "") -> str:
+        """Compute SHA-256 hash for this entry linked to previous."""
+        import hashlib
+        import json
+
+        payload = (
+            f"{self.actor_id or ''}|{self.action}|{self.resource or ''}|"
+            f"{json.dumps(self.details or {}, sort_keys=True, default=str)}|"
+            f"{self.id or ''}|{previous_hash}"
+        )
+        return hashlib.sha256(payload.encode()).hexdigest()
+
+    def __repr__(self) -> str:
+        return (
+            f"<AuditLogEntry(id={self.id[:8]}..., action={self.action}, "
+            f"actor={self.actor_email or 'anonymous'})>"
+        )

@@ -8,6 +8,7 @@ from typing import Annotated, Optional
 
 import pandas as pd
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import get_vector_store
 from api.models import (
@@ -28,6 +29,7 @@ from api.models import (
 from config.settings import settings
 from data.csv_loader import DataLoaderCsv, DataLoaderExcel
 from data.schemas import Property, PropertyCollection
+from db.database import get_db
 from notifications.alert_storage_stats import load_alert_storage_summary
 from utils.property_cache import load_collection, save_collection
 from vector_store.chroma_store import ChromaPropertyStore
@@ -719,3 +721,78 @@ def _get_available_portal_names() -> list[str]:
         return AdapterRegistry.list_adapters()
     except Exception:
         return []
+
+
+# =============================================================================
+# Audit Log Endpoints (Task #95)
+# =============================================================================
+
+
+@router.get("/audit", tags=["Audit"])
+async def list_audit_logs(
+    action: Optional[str] = None,
+    actor_id: Optional[str] = None,
+    resource: Optional[str] = None,
+    request_id: Optional[str] = None,
+    start_time: Optional[str] = None,
+    end_time: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0,
+    session: AsyncSession = Depends(get_db),
+):
+    """Query audit log entries with filters and pagination."""
+    from datetime import UTC, datetime
+
+    from db.schemas import AuditLogEntryResponse, AuditLogListResponse
+    from services.audit_service import AuditService
+
+    st = datetime.fromisoformat(start_time).replace(tzinfo=UTC) if start_time else None
+    et = datetime.fromisoformat(end_time).replace(tzinfo=UTC) if end_time else None
+
+    service = AuditService(session)
+    entries, total = await service.query(
+        action=action,
+        actor_id=actor_id,
+        resource=resource,
+        request_id=request_id,
+        start_time=st,
+        end_time=et,
+        limit=limit,
+        offset=offset,
+    )
+    return AuditLogListResponse(
+        items=[AuditLogEntryResponse.model_validate(e) for e in entries],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.get("/audit/verify", tags=["Audit"])
+async def verify_audit_chain(
+    limit: int = 1000,
+    session: AsyncSession = Depends(get_db),
+):
+    """Verify hash-chain integrity of the audit log."""
+    from db.schemas import ChainVerificationResponse
+    from services.audit_service import AuditService
+
+    service = AuditService(session)
+    result = await service.verify_chain(limit=limit)
+    return ChainVerificationResponse(**result)
+
+
+@router.get("/audit/{entry_id}", tags=["Audit"])
+async def get_audit_entry(
+    entry_id: str,
+    session: AsyncSession = Depends(get_db),
+):
+    """Get a single audit log entry by ID."""
+    from db.schemas import AuditLogEntryResponse
+    from services.audit_service import AuditService
+
+    service = AuditService(session)
+    entry = await service.get_by_id(entry_id)
+    if entry is None:
+        raise HTTPException(status_code=404, detail="Audit entry not found")
+    return AuditLogEntryResponse.model_validate(entry)

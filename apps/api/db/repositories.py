@@ -13,6 +13,7 @@ from db.models import (
     AgentInquiry,
     AgentListing,
     AgentProfile,
+    AuditLogEntry,
     CMAReportDB,
     CollectionDB,
     DocumentDB,
@@ -3048,3 +3049,147 @@ class CMAReportRepository:
         expired_ids = list(result.scalars().all())
         await self.session.flush()
         return len(expired_ids)
+
+
+# =============================================================================
+# Audit Log Repository (Task #95)
+# =============================================================================
+
+
+class AuditLogRepository:
+    """Repository for AuditLogEntry operations with hash-chain integrity."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def append(
+        self,
+        *,
+        actor_id: Optional[str] = None,
+        actor_email: Optional[str] = None,
+        actor_role: Optional[str] = None,
+        action: str,
+        resource: Optional[str] = None,
+        details: Optional[dict[str, Any]] = None,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
+        request_id: Optional[str] = None,
+    ) -> AuditLogEntry:
+        """Create a new audit log entry linked to the hash chain."""
+        # Get previous hash from the most recent entry
+        prev = await self.session.execute(
+            select(AuditLogEntry).order_by(AuditLogEntry.created_at.desc()).limit(1)
+        )
+        prev_entry = prev.scalar_one_or_none()
+        prev_hash = prev_entry.entry_hash if prev_entry else ""
+
+        now = datetime.now(UTC)
+        entry_id = str(uuid4())
+        entry = AuditLogEntry(
+            id=entry_id,
+            actor_id=actor_id,
+            actor_email=actor_email,
+            actor_role=actor_role,
+            action=action,
+            resource=resource,
+            details=details or {},
+            ip_address=ip_address,
+            user_agent=user_agent,
+            request_id=request_id,
+            prev_hash=prev_hash,
+            created_at=now,
+        )
+        entry.entry_hash = entry.compute_hash(prev_hash)
+        self.session.add(entry)
+        await self.session.flush()
+        return entry
+
+    async def query(
+        self,
+        *,
+        action: Optional[str] = None,
+        actor_id: Optional[str] = None,
+        resource: Optional[str] = None,
+        request_id: Optional[str] = None,
+        start_time: Optional[datetime] = None,
+        end_time: Optional[datetime] = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> tuple[list[AuditLogEntry], int]:
+        """Query audit log entries with filters. Returns (entries, total)."""
+        conditions = []
+        if action:
+            conditions.append(AuditLogEntry.action == action)
+        if actor_id:
+            conditions.append(AuditLogEntry.actor_id == actor_id)
+        if resource:
+            conditions.append(AuditLogEntry.resource == resource)
+        if request_id:
+            conditions.append(AuditLogEntry.request_id == request_id)
+        if start_time:
+            conditions.append(AuditLogEntry.created_at >= start_time)
+        if end_time:
+            conditions.append(AuditLogEntry.created_at <= end_time)
+
+        base = select(AuditLogEntry)
+        for c in conditions:
+            base = base.where(c)
+
+        # Count
+        count_q = select(func.count()).select_from(base.subquery())
+        total = (await self.session.execute(count_q)).scalar() or 0
+
+        # Fetch page
+        rows = await self.session.execute(
+            base.order_by(AuditLogEntry.created_at.desc()).limit(limit).offset(offset)
+        )
+        entries = list(rows.scalars().all())
+        return entries, total
+
+    async def verify_chain(self, limit: int = 1000) -> dict[str, Any]:
+        """Verify hash-chain integrity of the last N entries.
+
+        Returns dict with 'valid' bool and list of broken entries.
+        """
+        rows = await self.session.execute(
+            select(AuditLogEntry).order_by(AuditLogEntry.created_at.asc()).limit(limit)
+        )
+        entries = list(rows.scalars().all())
+
+        broken: list[dict[str, Any]] = []
+        prev_hash = ""
+        for entry in entries:
+            if entry.prev_hash != prev_hash:
+                broken.append(
+                    {
+                        "entry_id": entry.id,
+                        "reason": "prev_hash_mismatch",
+                        "expected": prev_hash,
+                        "actual": entry.prev_hash,
+                    }
+                )
+            expected_hash = entry.compute_hash(prev_hash)
+            if entry.entry_hash != expected_hash:
+                broken.append(
+                    {
+                        "entry_id": entry.id,
+                        "reason": "entry_hash_mismatch",
+                        "expected": expected_hash,
+                        "actual": entry.entry_hash,
+                    }
+                )
+            prev_hash = entry.entry_hash
+
+        return {
+            "valid": len(broken) == 0,
+            "checked_count": len(entries),
+            "broken_count": len(broken),
+            "broken_entries": broken[:20],
+        }
+
+    async def get_by_id(self, entry_id: str) -> Optional[AuditLogEntry]:
+        """Get a single audit log entry by ID."""
+        result = await self.session.execute(
+            select(AuditLogEntry).where(AuditLogEntry.id == entry_id)
+        )
+        return result.scalar_one_or_none()

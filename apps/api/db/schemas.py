@@ -2361,3 +2361,46 @@ class ComparableSearchResponse(BaseModel):
     comparables: list[CMAComparableResponse]
     total_found: int
     search_params: dict[str, Any]
+
+
+# =============================================================================
+# Audit Log Schemas (Task #95)
+# =============================================================================
+
+
+class AuditLogEntryResponse(BaseModel):
+    """Schema for a single audit log entry."""
+
+    id: str
+    actor_id: Optional[str] = None
+    actor_email: Optional[str] = None
+    actor_role: Optional[str] = None
+    action: str
+    resource: Optional[str] = None
+    details: dict[str, Any] = {}
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    request_id: Optional[str] = None
+    prev_hash: str
+    entry_hash: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class AuditLogListResponse(BaseModel):
+    """Schema for paginated audit log list."""
+
+    items: list[AuditLogEntryResponse]
+    total: int
+    limit: int
+    offset: int
+
+
+class ChainVerificationResponse(BaseModel):
+    """Schema for hash-chain verification result."""
+
+    valid: bool
+    checked_count: int
+    broken_count: int
+    broken_entries: list[dict[str, Any]]
