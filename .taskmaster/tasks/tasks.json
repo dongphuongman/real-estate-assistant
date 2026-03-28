@@ -1062,10 +1062,11 @@
         "description": "Implement versioned API contract enforcement as required by PRD NFR Scalability. The backend uses /api/v1/ prefix but no mechanism prevents breaking changes within v1. CI has OpenAPI drift checks but no breaking-change detection.",
         "details": "## Why\\nPRD requires \"versioned endpoints.\" No breaking-change detection in CI.\\n\\n## Acceptance Criteria\\n1. OpenAPI schema diff CI step detects breaking changes (removed fields, changed types)\\n2. API versioning strategy documented in ADR\\n3. All endpoint responses include API version in response header\\n4. Backward compatibility test suite ensures v1 contract stability\\n5. CI blocks PR on breaking API changes\\n\\n## Files\\n- .github/workflows/ci.yml (add OpenAPI diff step)\\n- docs/adr/ (new ADR for API versioning)\\n- apps/api/api/middleware/versioning.py (new)\\n- apps/api/tests/integration/api/test_versioning.py (new)",
         "testStrategy": "",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "high",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-03-28T22:29:50.734Z"
       },
       {
         "id": "98",
@@ -1073,12 +1074,13 @@
         "description": "Standardize all backend and frontend logging to structured JSON format as required by PRD NFR Observability. Currently logging is inconsistent — some structured, some plain text. Task #81 (System Health Metrics) is done but logs are not standardized.",
         "details": "## Why\\nPRD requires \"structured logs, traces, metrics, request IDs, audit events.\"\\n\\n## Acceptance Criteria\\n1. All backend log output in structured JSON format\\n2. Required fields: timestamp, level, request_id, service, message\\n3. Log level policy documented (what gets INFO vs DEBUG vs WARN vs ERROR)\\n4. No sensitive data in any log entry (verified by automated scan)\\n5. Frontend error logging includes request_id correlation\\n6. Consistent log format across all services\\n\\n## Files\\n- apps/api/core/logging.py (standardized formatter)\\n- apps/api/config/settings.py (log level config)\\n- apps/web/src/lib/logger.ts (frontend structured logging)\\n- docs/adr/ (log level policy)",
         "testStrategy": "",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [
           "81"
         ],
         "priority": "high",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-03-28T22:48:49.832Z"
       },
       {
         "id": "99",
@@ -1086,10 +1088,11 @@
         "description": "Integrate the existing E2E test suite into CI pipeline. Sprint 4 calls for \"Full e2e tests, static checks, stabilization.\" E2E tests exist in apps/api/tests/e2e/ (auth, chat, search, documents, infrastructure, observability, UI) but they never run in CI. The PRD DoD requires \"All CI jobs green after push.\"",
         "details": "## Why\\nSprint 4 requires \"Full e2e tests.\" E2E exists but doesn't run in CI.\\n\\n## Acceptance Criteria\\n1. E2E covers all user flows: search, chat, tools, settings, auth, exports\\n2. E2E runs in CI as separate job (can be continue-on-error initially)\\n3. E2E results uploaded as CI artifacts\\n4. Test parity: same tests pass locally and in CI\\n5. Flaky test rate < 5%\\n6. E2E job uses service containers (Postgres, Redis) in CI\\n\\n## Files\\n- .github/workflows/ci.yml (add e2e job)\\n- apps/api/tests/e2e/ (existing tests, may need CI adjustments)\\n- apps/api/pyproject.toml (ensure e2e dependencies)",
         "testStrategy": "",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "high",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-03-28T22:48:33.398Z"
       },
       {
         "id": "100",
@@ -1338,9 +1341,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-28T20:38:48.699Z",
+      "lastModified": "2026-03-28T22:48:49.833Z",
       "taskCount": 93,
-      "completedCount": 72,
+      "completedCount": 74,
       "tags": [
         "master"
       ]
