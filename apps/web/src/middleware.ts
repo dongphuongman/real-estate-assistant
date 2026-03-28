@@ -50,18 +50,14 @@ export async function middleware(request: NextRequest) {
   // Extract locale from pathname or use default
   const pathSegments = pathname.split('/').filter(Boolean);
   const localeFromPath = pathSegments[0];
-  const hasLocalePrefix = locales.includes(localeFromPath as typeof locales[number]);
+  const hasLocalePrefix = locales.includes(localeFromPath as (typeof locales)[number]);
   const currentLocale = hasLocalePrefix ? localeFromPath : defaultLocale;
 
   // Get the path without locale prefix for route checking
-  const pathWithoutLocale = hasLocalePrefix
-    ? '/' + pathSegments.slice(1).join('/')
-    : pathname;
+  const pathWithoutLocale = hasLocalePrefix ? '/' + pathSegments.slice(1).join('/') : pathname;
 
   // Check if this is a public route (auth pages)
-  const isAuthRoute =
-    pathWithoutLocale.startsWith('/auth/') ||
-    pathWithoutLocale === '/auth';
+  const isAuthRoute = pathWithoutLocale.startsWith('/auth/') || pathWithoutLocale === '/auth';
 
   if (isAuthRoute) {
     return intlResponse;
@@ -78,7 +74,7 @@ export async function middleware(request: NextRequest) {
       // Extract locale from redirect path
       const redirectSegments = redirectPath.split('/').filter(Boolean);
       const redirectLocale = redirectSegments[0];
-      const redirectPathWithoutLocale = locales.includes(redirectLocale as typeof locales[number])
+      const redirectPathWithoutLocale = locales.includes(redirectLocale as (typeof locales)[number])
         ? '/' + redirectSegments.slice(1).join('/')
         : redirectPath;
 
@@ -88,6 +84,11 @@ export async function middleware(request: NextRequest) {
       }
     }
     // For non-auth redirects, continue with auth check
+  }
+
+  // Allow CI Lighthouse audits to bypass auth
+  if (process.env.LHCI_AUTH_BYPASS === 'true') {
+    return intlResponse;
   }
 
   // Check for access_token cookie (set by backend auth)
