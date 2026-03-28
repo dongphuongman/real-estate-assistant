@@ -24,6 +24,8 @@ If you find my tools helpful and want to support the development of practical, o
 
 > Your support helps cover compute costs, API usage, and specialized data services, and keeps the tools free and accessible.
 
+> **[5-Minute Quickstart →](docs/QUICKSTART_5MIN.md)** — Clone, configure, Docker up. Running in 5 minutes.
+
 ![AI Real Estate Assistant (Docker Run)](assets/image.png)
 
 ## 🌿 Branching & Versioning
@@ -109,8 +111,8 @@ Copy-Item .env.example .env
 docker compose -f deploy/compose/docker-compose.yml up --build
 
 # 3. Access
-# Frontend: http://localhost:3000
-# Backend API: http://localhost:8000/docs
+# Frontend: http://localhost:3082
+# Backend API: http://localhost:8082/docs
 ```
 
 #### Optional: Local LLM with Ollama
