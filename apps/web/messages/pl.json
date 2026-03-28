@@ -34,9 +34,11 @@
     "other": "Inne",
     "results": "Wyniki",
     "noResults": "Brak wyników",
-    "tryAgain": "Spróbuj ponownie"
+    "tryAgain": "Spróbuj ponownie",
+    "skipToContent": "Przejdź do treści głównej"
   },
   "nav": {
+    "mainNavigation": "Nawigacja główna",
     "home": "Strona główna",
     "search": "Szukaj",
     "favorites": "Ulubione",

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Cinzel } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { MainNav } from '@/components/layout/main-nav';
+import { SkipNav } from '@/components/layout/SkipNav';
 import { Providers } from '@/components/providers';
 import { locales, type Locale } from '@/i18n/config';
 
@@ -122,12 +123,15 @@ export default async function LocaleLayout({
       >
         <NextIntlClientProvider messages={messages}>
           <Providers>
+            <SkipNav />
             <header className="border-b bg-background">
               <div className="relative flex h-16 items-center px-4 container mx-auto">
                 <MainNav />
               </div>
             </header>
-            <main className="flex-1">{children}</main>
+            <main id="main-content" className="flex-1">
+              {children}
+            </main>
           </Providers>
         </NextIntlClientProvider>
       </body>

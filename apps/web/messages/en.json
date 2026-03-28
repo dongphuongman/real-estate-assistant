@@ -34,9 +34,11 @@
     "other": "Other",
     "results": "Results",
     "noResults": "No results",
-    "tryAgain": "Try again"
+    "tryAgain": "Try again",
+    "skipToContent": "Skip to main content"
   },
   "nav": {
+    "mainNavigation": "Main navigation",
     "home": "Home",
     "search": "Search",
     "favorites": "Favorites",

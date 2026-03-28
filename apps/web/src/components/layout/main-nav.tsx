@@ -98,7 +98,10 @@ export function MainNav() {
   };
 
   return (
-    <nav className="flex items-center justify-center space-x-6 lg:space-x-8">
+    <nav
+      aria-label={t('mainNavigation')}
+      className="flex items-center justify-center space-x-6 lg:space-x-8"
+    >
       {/* Logo - absolutely positioned on the left */}
       <div className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-xl hidden md:block">
         AI Estate
@@ -108,6 +111,7 @@ export function MainNav() {
         <Link
           key={route.href}
           href={`/${locale}${route.href}`}
+          aria-current={isActiveRoute(route.href) ? 'page' : undefined}
           className={cn(
             'text-sm font-medium transition-colors hover:text-primary flex items-center gap-x-2',
             isActiveRoute(route.href) ? 'text-foreground' : 'text-muted-foreground'
