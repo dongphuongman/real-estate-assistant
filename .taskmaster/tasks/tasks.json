@@ -1016,7 +1016,7 @@
         "description": "Create an opinionated single-path quickstart guide as called for by the PRD and Roadmap: \"Run your AI realtor in 5 minutes (local Docker Compose, BYOK).\" Current quickstart is multi-path and not opinionated enough for the 5-minute target.",
         "details": "## Why\\nRoadmap: \"Documentation: Run your AI realtor in 5 minutes (local Docker Compose, BYOK).\" Current quickstart covers 3 methods.\\n\\n## Acceptance Criteria\\n1. Single-page guide: clone → configure .env → docker compose up → working app in <=5 minutes\\n2. Pre-built Docker images available on GHCR (no local build needed)\\n3. Minimal .env.example with only required fields (1 LLM API key)\\n4. Smoke test script that verifies the stack is working after setup\\n5. Guide linked prominently from README.md\\n6. Tested on fresh machine (Windows + macOS)\\n\\n## Files\\n- docs/QUICKSTART_5MIN.md (new)\\n- README.md (add link)\\n- .env.example (simplify)\\n- deploy/compose/docker-compose.yml (verify one-command up)",
         "testStrategy": "",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "high",
         "subtasks": []
