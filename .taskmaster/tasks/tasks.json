@@ -1,0 +1,1347 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": "25",
+        "title": "Create deploy/ directory structure and move Docker files",
+        "description": "Create the new deploy/ directory with docker/ and compose/ subdirectories, and move all Docker-related files from root and frontend locations to the new structure.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "category": "infrastructure",
+        "details": "1. Create directory structure: deploy/docker/, deploy/compose/, deploy/k8s/\n2. Move Dockerfile.backend (root) to deploy/docker/Dockerfile.backend\n3. Move frontend/Dockerfile.frontend to deploy/docker/Dockerfile.frontend\n4. Move docker-compose.yml (root) to deploy/compose/docker-compose.yml\n5. Create deploy/compose/docker-compose.gpu.yml for GPU variant based on docker-compose.yml\n6. Update all path references in Docker files (e.g., COPY commands, WORKDIR paths) to reflect new project root relative locations\n7. Update docker-compose files to reference Dockerfiles at their new locations (../docker/...)\n8. Create placeholder .gitkeep in deploy/k8s/ for future use",
+        "testStrategy": "1. Verify directory structure matches PRD specification\n2. Run 'docker build -f deploy/docker/Dockerfile.backend .' to ensure backend builds\n3. Run 'docker build -f deploy/docker/Dockerfile.frontend ./frontend' to ensure frontend builds\n4. Run 'docker-compose -f deploy/compose/docker-compose.yml config' to validate compose file syntax\n5. Run 'docker-compose -f deploy/compose/docker-compose.gpu.yml config' to validate GPU variant",
+        "subtasks": [],
+        "updatedAt": "2026-02-11T20:55:19.167Z"
+      },
+      {
+        "id": "26",
+        "title": "Restructure scripts/ directory into subdirectories",
+        "description": "Reorganize the scripts/ directory by creating subdirectories (ci, dev, docs, security, validation) and moving existing scripts into their appropriate categories.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "category": "infrastructure",
+        "details": "1. Create subdirectories: scripts/ci/, scripts/dev/, scripts/docs/, scripts/security/, scripts/validation/\n2. Move ci-related scripts to scripts/ci/: ci_parity.py, ci_full.py, compose_smoke.py, coverage_gate.py, security_local.py\n3. Move development scripts to scripts/dev/: bootstrap_uv.py, start.py, start.sh, start.ps1, setup.sh, setup.ps1, run-ci-full.ps1, run-pre-commit.ps1, run-docker-cpu.ps1, run-docker-gpu.ps1, run-docker-gpu-internet.ps1, verify_ollama.ps1, sync_claude_mcp_from_trae.ps1\n4. Move documentation scripts to scripts/docs/: export_openapi.py, generate_api_reference.py, update_api_reference_full.py\n5. Move security scripts to scripts/security/: forbidden_tokens_check.py, security_scan.py\n6. Move validation scripts to scripts/validation/: system_validate.py, validate_taskmaster.py\n7. Review any remaining scripts in root scripts/ and categorize appropriately or remove if obsolete",
+        "testStrategy": "1. Verify directory tree matches PRD structure using 'tree scripts/' or similar\n2. For each moved script, verify shebang lines and imports still work\n3. Run 'python -m py_compile' on each Python script to check for syntax errors\n4. Execute a representative script from each category (e.g., scripts/dev/start.py) to verify path resolution",
+        "subtasks": [],
+        "updatedAt": "2026-02-11T20:55:52.506Z"
+      },
+      {
+        "id": "27",
+        "title": "Update .devcontainer configuration for FastAPI + Next.js",
+        "description": "Update the .devcontainer/devcontainer.json file to reflect the new FastAPI backend and Next.js frontend stack, removing outdated Streamlit references.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "category": "infrastructure",
+        "details": "1. Update .devcontainer/devcontainer.json:\n   - Change image to one supporting Python 3.11+ and Node.js\n   - Update extensions: include Python, Prettier, ESLint, Docker extensions\n   - Update forwardPorts: add 8000 (FastAPI), 3000 (Next.js), remove Streamlit ports\n   - Update postCreateCommand to use uv for Python setup and npm/yarn for frontend\n   - Configure workspaceFolder to point to project root\n   - Add environment variables for development mode\n2. Update VS Code settings in devcontainer for Python interpreter and formatting\n3. Add healthcheck commands in lifecycle scripts to verify services are running",
+        "testStrategy": "1. Validate JSON syntax of devcontainer.json\n2. Build the dev container: 'devcontainer build --workspace-folder .'\n3. Reopen in container and verify:\n   - Python 3.11+ is available\n   - Node.js is available\n   - uv is installed\n   - Extensions are loaded\n   - Ports 8000 and 3000 are forwarded\n4. Run postCreateCommand manually to verify setup completes",
+        "subtasks": [],
+        "updatedAt": "2026-02-11T20:57:12.692Z"
+      },
+      {
+        "id": "28",
+        "title": "Update security script references and remove broken wrapper",
+        "description": "Update documentation and CI references to use scripts/security/local_scan.py as the canonical security scanner, and remove the broken security-scan.py wrapper.",
+        "status": "done",
+        "dependencies": [
+          "26"
+        ],
+        "priority": "medium",
+        "category": "infrastructure",
+        "details": "1. Remove root-level security-scan.py wrapper (already broken - imports non-existent module)\n2. Update documentation references:\n   - CLAUDE.md: Update security section to reference scripts/security/local_scan.py\n   - README.md: Update security scan command\n   - .taskmaster/docs/prd_refactoring.md: Update planned paths\n3. Update CI workflow references if needed:\n   - .github/workflows/ci.yml already uses correct paths (scripts/security/)\n4. Verify local_scan.py works correctly:\n   - Run 'python scripts/security/local_scan.py --help'\n   - Run 'python scripts/security/local_scan.py --quick'\n5. Update docstring in local_scan.py to reference correct path\n6. No file rename needed - local_scan.py is already the canonical location",
+        "testStrategy": "1. Verify root security-scan.py is removed\n2. Verify scripts/security/local_scan.py exists and runs\n3. Run 'python scripts/security/local_scan.py --help' to verify it executes\n4. Run 'python scripts/security/local_scan.py --quick' for quick scan\n5. Check documentation for correct paths\n6. Verify CI workflows reference correct paths",
+        "subtasks": [],
+        "updatedAt": "2026-02-19T10:15:28.267Z"
+      },
+      {
+        "id": "29",
+        "title": "Update CI/CD workflows with new paths",
+        "description": "Update .github/workflows/ci.yml and .github/workflows/semgrep.yml to use the new script paths and Docker file locations.",
+        "status": "done",
+        "dependencies": [
+          "25",
+          "26",
+          "28"
+        ],
+        "priority": "high",
+        "category": "infrastructure",
+        "details": "1. Update .github/workflows/ci.yml:\n   - Update script paths: scripts/xxx -> scripts/ci/xxx, scripts/dev/xxx, etc.\n   - Update docker-compose paths: docker-compose.yml -> deploy/compose/docker-compose.yml\n   - Update Dockerfile paths for build steps\n   - Update security scan command to use scripts/security/local_scan.py\n2. Update .github/workflows/semgrep.yml if it references any moved scripts\n3. Verify all environment variables and secrets references remain valid\n4. Ensure working-directory settings in workflow jobs are correct for new structure\n5. Update any relative path references in workflow commands",
+        "testStrategy": "1. Validate YAML syntax for both workflow files\n2. Dry-run workflow locally using 'act' or similar tool if available\n3. Create a test branch and push to trigger CI workflow\n4. Monitor GitHub Actions logs for path-related errors\n5. Verify all workflow steps complete successfully",
+        "subtasks": [],
+        "updatedAt": "2026-02-19T10:59:16.740Z"
+      },
+      {
+        "id": "30",
+        "title": "Create Makefile for common commands",
+        "description": "Create a root-level Makefile with convenient targets for security scanning, testing, linting, docker operations, and running full CI locally.",
+        "status": "done",
+        "dependencies": [
+          "26",
+          "28",
+          "29"
+        ],
+        "priority": "medium",
+        "category": "infrastructure",
+        "details": "1. Create Makefile with the following targets:\n   - make security: runs 'python scripts/security/local_scan.py'\n   - make test: runs 'python -m pytest' or equivalent test command\n   - make lint: runs 'ruff check .' and 'ruff format --check .'\n   - make docker-up: runs 'docker-compose -f deploy/compose/docker-compose.yml up -d'\n   - make docker-down: runs 'docker-compose -f deploy/compose/docker-compose.yml down'\n   - make ci: runs full CI locally via scripts/dev/run-ci-full.ps1 or equivalent\n   - make setup: runs scripts/dev/setup.sh (or .ps1 on Windows)\n   - make dev: runs scripts/dev/start.py\n2. Add .PHONY declaration for all targets\n3. Include help target that displays all available commands\n4. Add variables for common paths (DOCKER_COMPOSE_FILE, SCRIPT_DIR, etc.)\n5. Ensure Makefile is cross-platform compatible (or document Windows limitations)",
+        "testStrategy": "1. Run 'make help' to verify all targets are listed\n2. Execute each target individually:\n   - make security\n   - make test\n   - make lint\n   - make docker-up (verify containers start)\n   - make docker-down (verify containers stop)\n   - make ci\n3. Verify targets fail appropriately when dependencies are missing\n4. Test Makefile on both Unix and Windows (with WSL or make equivalent)",
+        "subtasks": [],
+        "updatedAt": "2026-02-19T11:03:55.333Z"
+      },
+      {
+        "id": "31",
+        "title": "Update documentation with new structure",
+        "description": "Update README.md, CLAUDE.md, and any other documentation files to reflect the new project structure, script locations, and commands.",
+        "status": "done",
+        "dependencies": [
+          "25",
+          "26",
+          "27",
+          "28",
+          "29",
+          "30"
+        ],
+        "priority": "medium",
+        "category": "infrastructure",
+        "details": "1. Update README.md:\n   - Update project structure diagram\n   - Update all script path references (old -> new)\n   - Update Docker commands to use new paths\n   - Update development setup instructions\n   - Add Makefile usage examples\n2. Update CLAUDE.md:\n   - Update script paths for AI assistant context\n   - Reflect new directory structure in any path descriptions\n   - Update workflow references\n3. Update any inline documentation or comments in moved files\n4. Update CONTRIBUTING.md if it exists with new command patterns\n5. Search for references to old paths in other .md files and update accordingly",
+        "testStrategy": "1. Use grep to find remaining references to old paths: 'security-scan.py', 'scripts/ci_parity.py', 'Dockerfile.backend' at root\n2. Verify all code examples in documentation are valid\n3. Check that all internal links still work\n4. Have another team member review documentation for clarity",
+        "subtasks": [],
+        "updatedAt": "2026-02-19T11:10:24.749Z"
+      },
+      {
+        "id": "32",
+        "title": "Final validation and integration testing",
+        "description": "Perform comprehensive validation to ensure all refactored paths work correctly, Docker containers build and run, and all scripts execute without errors.",
+        "status": "done",
+        "dependencies": [
+          "25",
+          "26",
+          "27",
+          "28",
+          "29",
+          "30",
+          "31"
+        ],
+        "priority": "high",
+        "category": "infrastructure",
+        "details": "1. Run full CI pipeline to verify all changes work together\n2. Test Docker workflows:\n   - Build backend: 'docker build -f deploy/docker/Dockerfile.backend .'\n   - Build frontend: 'docker build -f deploy/docker/Dockerfile.frontend ./frontend'\n   - Start services: 'docker-compose -f deploy/compose/docker-compose.yml up -d'\n   - Verify services are accessible on expected ports\n3. Test all Makefile targets end-to-end\n4. Run security scan: 'python scripts/security/local_scan.py' or 'make security'\n5. Test dev container from fresh start:\n   - Delete .devcontainer cache\n   - Rebuild and reopen container\n   - Verify all setup completes\n6. Validate no broken imports or path references in any Python file\n7. Create a smoke test that exercises key functionality",
+        "testStrategy": "1. Full CI/CD pipeline run with green status\n2. All Makefile targets pass without errors\n3. Docker containers start successfully and respond to health checks\n4. All scripts in scripts/ execute without import errors\n5. Dev container builds and setup completes within expected time\n6. No broken links or missing file references found via automated checks\n7. Create validation checklist and verify all items pass",
+        "subtasks": [],
+        "updatedAt": "2026-02-19T11:15:16.095Z"
+      },
+      {
+        "id": "33",
+        "title": "Deploy to Vercel/Render (BLOCKED)",
+        "description": "Deploy frontend to Vercel and backend to Render/Railway production environment. BLOCKED: Requires completion of local testing gates (#60, #61) and production optimization (#62).",
+        "status": "done",
+        "dependencies": [
+          "62"
+        ],
+        "priority": "low",
+        "category": "deployment",
+        "blockedBy": [
+          "60",
+          "61",
+          "62"
+        ],
+        "details": "1. Review and verify recent CI changes:\n   - Check .github/workflows/ci.yml for any recent modifications\n   - Verify all security scripts are working correctly\n   - Confirm pre-commit hooks are functioning\n2. Local validation (must pass first):\n   - Run backend locally: 'python -m uvicorn api.main:app --reload'\n   - Run frontend locally: 'cd apps/web && npm run dev'\n   - Test key functionality (chat API, property search)\n   - Run security scan: 'python scripts/security/local_scan.py'\n   - Run tests: 'npm run test'\n3. Prepare for Vercel deployment (FRONTEND):\n   - Update environment variables for Vercel\n   - Configure BACKEND_API_URL in Vercel dashboard\n   - Set up production API key\n4. Deploy frontend to Vercel:\n   - Connect GitHub repository to Vercel\n   - Configure build settings (root directory: apps/web, build command: npm run build)\n   - Set environment variables in Vercel dashboard\n   - Deploy and verify deployment is accessible\n5. Deploy backend to Render/Railway (BACKEND):\n   - Create new Web Service on Render or Railway\n   - Connect GitHub repository\n   - Configure build command: pip install -e .[dev]\n   - Configure start command: python -m uvicorn api.main:app --host 0.0.0.0 --port $PORT\n   - Set environment variables (API keys, CORS, etc.)\n   - Deploy and verify API health endpoint\n6. Post-deployment validation:\n   - Test live frontend at Vercel URL\n   - Test live backend at Render/Railway URL\n   - Monitor logs for errors\n   - Verify API connectivity from frontend",
+        "testStrategy": "1. Backend runs on port 8000 without errors\n2. Frontend runs on port 3000 without errors\n3. Security scan passes (or acceptable warnings)\n4. Unit tests pass\n5. Application works locally end-to-end\n6. Vercel deployment completes successfully\n7. Render/Railway deployment completes successfully\n8. Live application is accessible and functional\n9. API endpoints respond correctly\n10. Frontend can communicate with backend",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Add CE Phase 1 + Phase 2 as deployment blockers",
+            "description": "Task #33 (Deploy to Vercel/Render) should have dependencies on #90 (License), #91 (WCAG), #92 (Lighthouse CI), and #100 (SPRAV validation) since the PRD acceptance criteria must be met before production deployment.",
+            "details": "Add dependencies: #90, #91, #92, #100 to Task #33\n<info added on 2026-03-27T22:31:26.663Z>\nPrevious blockers #60, #61, #62 are complete. Current deployment blockers are PRD compliance gaps: CE Phase 1 gates (License #90, WCAG #91, Lighthouse #92) and Phase 2 gate (SPRAV #100). Task #33 must not proceed until all PRD acceptance criteria are satisfied.\n</info added on 2026-03-27T22:31:26.663Z>",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 33,
+            "parentId": "undefined",
+            "updatedAt": "2026-03-28T10:03:44.225Z"
+          }
+        ],
+        "updatedAt": "2026-03-28T10:03:44.225Z"
+      },
+      {
+        "id": "34",
+        "title": "Refactor repo for local PowerShell scripts and Docker",
+        "description": "Fix port consistency, Docker configuration issues, update documentation, and add convenience scripts for easier local development.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "category": "infrastructure",
+        "details": "1. Fix port consistency:\n   - Update scripts/launcher/start.py: change default ports from 8001/3001 to 8000/3000\n   - Update deploy/compose/docker-compose.yml: change port mappings from 8001:8000 to 8000:8000 and 3001:3000 to 3000:3000\n2. Fix Docker issues:\n   - Add API_ACCESS_KEY default in docker-compose.yml: ${API_ACCESS_KEY:-dev-secret-key}\n   - Fix frontend health check for Windows compatibility (use localhost instead of $(hostname -i))\n   - Add environment variable documentation in docker-compose.yml comments\n3. Update documentation:\n   - Add scripts/ directory structure documentation to CLAUDE.md\n   - Update all script path references (scripts/dev/ -> scripts/core/ or scripts/launcher/)\n   - Update all port references to use 8000/3000 consistently\n   - Update QUICKSTART.md with correct script examples\n4. Add convenience scripts:\n   - Create scripts/run.ps1 for easy local development\n   - Create scripts/docker-up.ps1 for quick Docker start\n5. Verify all changes work correctly",
+        "testStrategy": "1. Run .\\scripts\\core\\local\\backend.ps1 - verify backend runs on port 8000\n2. Run .\\scripts\\core\\local\\frontend.ps1 - verify frontend runs on port 3000\n3. Run .\\scripts\\core\\local\\run.ps1 - verify both services start\n4. Run .\\scripts\\core\\docker\\cpu.ps1 - verify Docker starts correctly\n5. Run .\\scripts\\run.ps1 - verify convenience wrapper works\n6. Run .\\scripts\\docker-up.ps1 - verify Docker wrapper works\n7. Check all documentation for correct paths and ports",
+        "subtasks": [],
+        "updatedAt": "2026-02-19T12:07:00.519Z"
+      },
+      {
+        "id": "35",
+        "title": "User Authentication System",
+        "description": "Implement real authentication to replace the current simulated auth system. Users should be able to register, login, and manage their sessions securely.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "category": "feature",
+        "details": "1. Backend - JWT Authentication:\n   - Create User model with email, password_hash, verified, created_at\n   - Implement /auth/register endpoint with email verification\n   - Implement /auth/login endpoint returning JWT tokens\n   - Implement /auth/logout endpoint for session invalidation\n   - Implement /auth/refresh endpoint for token renewal\n   - Implement /auth/password-reset endpoint\n\n2. Backend - OAuth Providers:\n   - Add Google OAuth integration\n   - Add Apple OAuth integration (optional)\n   - Create /auth/oauth/{provider} endpoints\n\n3. Backend - Middleware:\n   - Add JWT validation middleware\n   - Add rate limiting for auth endpoints\n   - Add CSRF protection\n\n4. Frontend - Auth Pages:\n   - Update /auth/login with real form submission\n   - Update /auth/register with email verification flow\n   - Add /auth/forgot-password page\n   - Add /auth/reset-password page\n   - Store JWT tokens securely (httpOnly cookies preferred)\n\n5. Frontend - Auth State:\n   - Create AuthContext for user state management\n   - Add protected route wrapper\n   - Add logout functionality",
+        "testStrategy": "1. Unit tests for password hashing and JWT generation\n2. Integration tests for all auth endpoints\n3. Test OAuth flow with mock providers\n4. Test token refresh and expiration\n5. Test rate limiting on auth endpoints\n6. E2E tests for login/register/logout flows",
+        "subtasks": [],
+        "updatedAt": "2026-02-20T01:19:00.735Z"
+      },
+      {
+        "id": "36",
+        "title": "Saved Searches & Alerts",
+        "description": "Allow users to save their search criteria and receive email alerts when new properties match their saved searches.",
+        "status": "done",
+        "dependencies": [
+          "35"
+        ],
+        "priority": "high",
+        "category": "feature",
+        "details": "1. Backend - Saved Search Model:\n   - Create SavedSearch model with user_id, filters, alert_frequency, is_active\n   - Store filter criteria (price_range, location, property_type, rooms, etc.)\n\n2. Backend - API Endpoints:\n   - GET /saved-searches - List user's saved searches\n   - POST /saved-searches - Create new saved search\n   - PUT /saved-searches/{id} - Update saved search\n   - DELETE /saved-searches/{id} - Delete saved search\n   - PATCH /saved-searches/{id}/toggle - Pause/resume alerts\n\n3. Backend - Alert System:\n   - Background job to check for new matching properties\n   - Email notification when matches found\n   - Daily/weekly digest options\n   - Rate limiting to prevent spam\n\n4. Frontend - UI:\n   - \"Save Search\" button on search results page\n   - Saved searches management in settings\n   - Alert frequency selector\n   - Toggle for pausing alerts",
+        "testStrategy": "1. Unit tests for saved search model and filters\n2. Integration tests for CRUD operations\n3. Test alert triggering with mock properties\n4. Test email notification sending\n5. E2E test for save/search/alert flow",
+        "subtasks": [],
+        "updatedAt": "2026-02-20T08:41:33.067Z"
+      },
+      {
+        "id": "37",
+        "title": "Property Favorites/Watchlist",
+        "description": "Implement a favorites/watchlist system where users can save individual properties for later review, organize them into collections, and add notes.",
+        "status": "done",
+        "dependencies": [
+          "35"
+        ],
+        "priority": "high",
+        "category": "feature",
+        "details": "1. Backend - Favorites Model:\n   - Create Favorite model with user_id, property_id, collection_id, notes, created_at\n   - Create Collection model with user_id, name, description, is_default\n\n2. Backend - API Endpoints:\n   - GET /favorites - List user's favorites\n   - POST /favorites - Add property to favorites\n   - DELETE /favorites/{property_id} - Remove from favorites\n   - PATCH /favorites/{property_id} - Update notes/collection\n   - GET /collections - List collections\n   - POST /collections - Create collection\n   - PUT /collections/{id} - Update collection\n   - DELETE /collections/{id} - Delete collection\n\n3. Frontend - UI:\n   - Heart icon on property cards to add/remove favorites\n   - /favorites page with grid view of saved properties\n   - Collection sidebar for organizing favorites\n   - Notes editor for each saved property\n   - Share watchlist via link (optional)",
+        "testStrategy": "1. Unit tests for favorites model\n2. Integration tests for CRUD operations\n3. Test collection management\n4. Test notes functionality\n5. E2E test for add/view/remove favorites",
+        "subtasks": [],
+        "updatedAt": "2026-02-20T11:15:55.120Z"
+      },
+      {
+        "id": "38",
+        "title": "Price History & Trends",
+        "description": "Implement price history tracking and trend analysis to show how property prices have changed over time.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "category": "feature",
+        "details": "1. Backend - Price History Model:\n   - Create PriceSnapshot model with property_id, price, price_per_sqm, recorded_at\n   - Background job to capture price snapshots periodically\n\n2. Backend - API Endpoints:\n   - GET /market/price-history/{property_id} - Get price history for a property\n   - GET /market/trends - Get market trend data (avg prices by city/district)\n   - GET /market/indicators - Get market indicators (rising/falling/stable)\n\n3. Backend - Analytics:\n   - Calculate price trends (1m, 3m, 6m, 1y)\n   - Calculate market indicators\n   - Price drop detection and alerts\n\n4. Frontend - UI:\n   - Price history chart component (line chart)\n   - Trend indicators on property cards\n   - Market trends dashboard\n   - Price alert subscription",
+        "testStrategy": "1. Unit tests for trend calculations\n2. Integration tests for price history API\n3. Test price snapshot capture\n4. Test alert triggering on price drops\n5. Verify chart rendering with sample data",
+        "subtasks": [],
+        "updatedAt": "2026-02-20T19:50:47.038Z"
+      },
+      {
+        "id": "39",
+        "title": "Advanced Investment Analytics",
+        "description": "Enhance the investment analysis tools with more advanced metrics including cash flow projections, tax implications, and risk assessment.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "category": "feature",
+        "details": "1. Backend - Enhanced Calculators:\n   - Cash flow projection (1, 5, 10, 20 years)\n   - Tax implications calculator (property tax, income tax deductions)\n   - Appreciation scenarios (pessimistic -2%, realistic +3%, optimistic +7%)\n   - Risk assessment score (0-100) based on market volatility\n\n2. Backend - Portfolio Metrics:\n   - Aggregate metrics for multiple properties\n   - Diversification score\n   - Overall portfolio risk\n\n3. Frontend - Enhanced UI:\n   - Cash flow projection chart\n   - Scenario comparison table\n   - Risk assessment visualization\n   - Portfolio dashboard view",
+        "testStrategy": "1. Unit tests for all calculator functions\n2. Verify projection calculations\n3. Test risk scoring algorithm\n4. Verify chart data formatting\n5. Compare results with known investment scenarios",
+        "subtasks": [],
+        "updatedAt": "2026-03-05T22:28:59.647Z"
+      },
+      {
+        "id": "40",
+        "title": "Neighborhood Insights Enhancement",
+        "description": "Enhance the neighborhood quality index with more detailed data including crime statistics, school ratings, and public transport accessibility.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "category": "feature",
+        "details": "1. Backend - Data Sources:\n   - Integrate crime statistics API (if available for Poland)\n   - Integrate school ratings/distance data\n   - Add public transport accessibility score (GTFS data)\n   - Add air quality index integration\n   - Add noise level data\n\n2. Backend - Enhanced Scoring:\n   - Update NeighborhoodQualityIndexTool with new factors\n   - Add weighted scoring configuration\n   - Add historical comparison\n\n3. Frontend - Enhanced UI:\n   - Detailed neighborhood breakdown (crime, schools, transport)\n   - Comparison with city average\n   - Interactive map with POI markers\n   - \"What's nearby\" section",
+        "testStrategy": "1. Unit tests for each scoring factor\n2. Integration tests with external APIs\n3. Verify scoring calculations\n4. Test fallback when data unavailable\n5. Verify map marker rendering",
+        "subtasks": [],
+        "updatedAt": "2026-03-06T00:06:39.404Z"
+      },
+      {
+        "id": "41",
+        "title": "Multi-language UI",
+        "description": "Implement full internationalization (i18n) for the UI, supporting Polish (primary market), English, and Russian languages.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "low",
+        "category": "feature",
+        "details": "1. Setup i18n:\n   - Add next-intl package\n   - Configure i18n in next.config.ts\n   - Create locales directory structure\n\n2. Translations:\n   - Create translation files for PL, EN, RU\n   - Extract all UI strings to translation keys\n   - Add language switcher component\n\n3. Localization:\n   - Localized date formatting\n   - Localized number/currency formatting\n   - RTL support consideration (for future)\n\n4. Files to create/modify:\n   - apps/web/src/locales/en.json\n   - apps/web/src/locales/pl.json\n   - apps/web/src/locales/ru.json\n   - apps/web/src/components/ui/language-switcher.tsx",
+        "testStrategy": "1. Verify all pages render in each language\n2. Test language switching\n3. Verify date/number formatting per locale\n4. Check for missing translation keys\n5. Test with long text (German/Polish words)",
+        "subtasks": [],
+        "updatedAt": "2026-03-06T09:20:51.978Z"
+      },
+      {
+        "id": "42",
+        "title": "Rent vs Buy Calculator",
+        "description": "Create a calculator that compares the financial implications of renting vs buying a property over time.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "low",
+        "category": "feature",
+        "details": "1. Backend - Calculator:\n   - Monthly rent vs mortgage payment comparison\n   - Total cost calculation over 5, 10, 15, 30 years\n   - Break-even point calculation (when buying becomes cheaper)\n   - Opportunity cost of down payment (if invested instead)\n   - Tax benefits of ownership (deductions)\n   - Maintenance and repair costs\n   - Property appreciation consideration\n\n2. API Endpoint:\n   - POST /tools/rent-vs-buy - Calculate comparison\n\n3. Frontend - UI:\n   - Rent vs Buy calculator form\n   - Side-by-side comparison chart\n   - Break-even timeline visualization\n   - Sensitivity analysis (what-if scenarios)",
+        "testStrategy": "1. Unit tests for all calculations\n2. Verify break-even calculation\n3. Test with various input scenarios\n4. Compare with online calculators for validation\n5. E2E test for calculator flow",
+        "subtasks": [],
+        "updatedAt": "2026-03-06T18:08:22.388Z"
+      },
+      {
+        "id": "43",
+        "title": "Document Management",
+        "description": "Implement a document management system where users can upload, store, and organize property-related documents such as contracts, inspection reports, and photos.",
+        "status": "done",
+        "dependencies": [
+          "35"
+        ],
+        "priority": "low",
+        "category": "feature",
+        "details": "1. Backend - Document Model:\n   - Create Document model with user_id, property_id, filename, file_type, category, tags, expiry_date\n   - Support file types: PDF, DOC, DOCX, JPG, PNG\n\n2. Backend - Storage:\n   - Configure file storage (local S3-compatible or cloud storage)\n   - Implement secure file upload/download\n   - Add file size limits (10MB max)\n   - Add virus scanning (optional)\n\n3. Backend - API Endpoints:\n   - POST /documents - Upload document\n   - GET /documents - List documents\n   - GET /documents/{id} - Download document\n   - DELETE /documents/{id} - Delete document\n   - PATCH /documents/{id} - Update metadata\n\n4. Backend - OCR (optional):\n   - Extract text from PDFs/images\n   - Make documents searchable\n\n5. Frontend - UI:\n   - Document upload with drag-drop\n   - Document list with filters\n   - Document preview (PDF viewer)\n   - Expiry reminders",
+        "testStrategy": "1. Unit tests for document model\n2. Integration tests for upload/download\n3. Test file type validation\n4. Test file size limits\n5. Test document categorization\n6. Verify secure file access",
+        "subtasks": [],
+        "updatedAt": "2026-03-18T15:14:55.184Z"
+      },
+      {
+        "id": "44",
+        "title": "Mobile PWA",
+        "description": "Convert the web application into a Progressive Web App (PWA) to provide a mobile-friendly experience with offline capabilities.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "low",
+        "category": "feature",
+        "details": "1. PWA Configuration:\n   - Create manifest.json with app icons, name, theme colors\n   - Register service worker for caching\n   - Configure offline page fallbacks\n\n2. Offline Capabilities:\n   - Cache property search results\n   - Cache viewed property details\n   - Offline form submission (sync when online)\n   - Cache static assets\n\n3. Push Notifications:\n   - Configure push notification service\n   - Subscribe to price alerts\n   - Subscribe to new property alerts\n   - Notification preferences in settings\n\n4. Mobile Optimization:\n   - Add to home screen prompt\n   - Mobile-optimized navigation\n   - Touch-friendly UI improvements\n   - Responsive image loading\n\n5. Files to create:\n   - apps/web/public/manifest.json\n   - apps/web/public/sw.js (service worker)\n   - apps/web/src/lib/push-notifications.ts",
+        "testStrategy": "1. Verify manifest.json is valid\n2. Test offline mode in Chrome DevTools\n3. Test add to home screen on mobile\n4. Verify push notification subscription\n5. Test cached content access offline\n6. Lighthouse PWA audit score > 90",
+        "subtasks": [],
+        "updatedAt": "2026-03-11T14:40:21.506Z"
+      },
+      {
+        "id": "45",
+        "title": "Agent/Broker Integration",
+        "description": "Integrate real estate agent/broker functionality to connect users with professionals for property inquiries, viewing appointments, and listing management.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "low",
+        "category": "feature",
+        "details": "1. Backend - Agent Model:\n   - Create Agent model with name, email, phone, agency, rating, specialties, service_areas\n   - Create AgentListing model for agent's properties\n\n2. Backend - API Endpoints:\n   - GET /agents - List agents (with filters by area, specialty)\n   - GET /agents/{id} - Get agent details\n   - POST /agents/{id}/contact - Send inquiry to agent\n   - POST /agents/{id}/schedule-viewing - Request viewing appointment\n   - GET /agents/{id}/listings - Get agent's listings\n\n3. Backend - Agent Dashboard (optional):\n   - Agent registration/login\n   - Manage listings\n   - View inquiries\n   - Schedule management\n\n4. Frontend - UI:\n   - Agent directory page with search/filters\n   - Agent profile page with ratings/reviews\n   - Contact form on property pages\n   - Viewing appointment scheduler\n   - Commission calculator tool",
+        "testStrategy": "1. Unit tests for agent model\n2. Integration tests for all endpoints\n3. Test contact form submission\n4. Test appointment scheduling\n5. Verify agent search/filtering\n6. E2E test for agent contact flow",
+        "subtasks": [],
+        "updatedAt": "2026-03-18T13:46:22.458Z"
+      },
+      {
+        "id": "46",
+        "title": "Frontend Auth Integration",
+        "description": "Implement frontend authentication integration with JWT backend. Connect login/register pages to real API endpoints, create AuthContext for state management, and add protected routes.",
+        "status": "done",
+        "dependencies": [
+          "35"
+        ],
+        "priority": "high",
+        "category": "feature",
+        "details": "This task depends on Task #35 (User Authentication System - Backend) which provides the JWT auth endpoints.\n\n1. Auth Context:\n   - Create AuthContext.tsx for user state management\n   - Create useAuth hook for easy access\n   - Handle loading states and error handling\n   - Store CSRF token from cookie\n\n2. Auth API Functions:\n   - Create lib/auth.ts with API functions\n   - login(email, password)\n   - register(email, password, name)\n   - logout()\n   - getCurrentUser()\n   - forgotPassword(email)\n   - resetPassword(token, password)\n   - getGoogleOAuthUrl()\n\n3. Auth Pages Refactor:\n   - Update /auth/login with real API calls and OAuth button\n   - Update /auth/register with real API calls\n   - Create /auth/forgot-password page\n   - Create /auth/reset-password page\n   - Create /auth/verify-email page\n   - Create /auth/oauth/callback page\n\n4. Protected Routes:\n   - Create middleware.ts for route protection\n   - Check for auth cookies\n   - Redirect unauthenticated users to /auth/login\n   - Allow public routes: /auth/*, /api/*, /health\n\n5. UI Components:\n   - Create LoginForm.tsx component\n   - Create RegisterForm.tsx component\n   - Create OAuthButtons.tsx component\n   - Create UserMenu.tsx component for header\n\n6. Integration:\n   - Update header to show user menu when authenticated\n   - Add logout functionality\n   - Handle token refresh on 401 responses",
+        "testStrategy": "1. Component tests for AuthContext\n2. Form validation tests\n3. Protected route tests\n4. E2E tests for login/register/logout flows\n5. Test OAuth flow (mocked)",
+        "subtasks": [],
+        "updatedAt": "2026-02-20T17:46:50.397Z"
+      },
+      {
+        "id": "47",
+        "title": "Auth Security Hardening",
+        "description": "Add security hardening measures for the authentication system including CSRF protection, rate limiting on auth endpoints, and audit logging integration.",
+        "status": "done",
+        "dependencies": [
+          "35"
+        ],
+        "priority": "high",
+        "category": "feature",
+        "details": "This task depends on Task #35 (User Authentication System - Backend) which provides the JWT auth endpoints.\n\n1. CSRF Protection:\n   - Create api/middleware/csrf.py\n   - Implement double-submit cookie pattern\n   - Read CSRF token from cookie\n   - Validate against X-CSRF-Token header\n   - Skip for GET, HEAD, OPTIONS requests\n   - Skip for routes using Authorization header (API clients)\n\n2. Rate Limiting on Auth Endpoints:\n   - Login: 5 attempts per minute per IP\n   - Register: 3 per minute per IP\n   - Password reset: 3 per minute per IP\n   - Email verification resend: 3 per minute per IP\n   - Use existing rate limiter from middleware/observability.py\n\n3. Audit Logging Integration:\n   - Log all auth events (login, logout, register)\n   - Log failed login attempts\n   - Log password reset requests\n   - Integrate with existing audit.py system\n\n4. RBAC Integration:\n   - Map JWT roles to existing Role enum in rbac.py\n   - Extend UserContext with user_id from JWT\n   - Add get_user_context_from_jwt function\n\n5. Security Headers:\n   - Ensure auth cookies have Secure flag in production\n   - Verify SameSite=Strict is set\n   - Add rate limit headers to responses\n\n6. Additional Security:\n   - Add account lockout after 5 failed login attempts\n   - Add breached password checking (optional, haveibeenpwned API)\n   - Add password strength validation on server side",
+        "testStrategy": "1. Unit tests for CSRF middleware\n2. Integration tests for rate limiting\n3. Test account lockout mechanism\n4. Security penetration tests\n5. Test audit logging captures all auth events",
+        "subtasks": [],
+        "updatedAt": "2026-02-20T18:45:08.275Z"
+      },
+      {
+        "id": "48",
+        "title": "Excel Data Loader",
+        "description": "Extend the existing CSV data loader to support Excel files (.xlsx, .xls, .ods) for property data ingestion.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "category": "feature",
+        "details": "1. Excel Loader Implementation:\n   - Create ExcelDataLoader class that extends CSV loader patterns\n   - Support sheet selection and header row configuration\n   - Reuse existing format_df logic for schema normalization\n   - Handle edge cases (empty sheets, merged cells, multiple sheets)\n\n2. Frontend File Upload UI:\n   - Add Excel file type support to upload component\n   - Show sheet selector when Excel file is detected\n   - Display file metadata (source name, row count)\n   - Progress indicator for large files\n\n3. Source Tagging and Persistence:\n   - Track source type (csv/excel) in PropertyCollection.metadata\n   - Implement delete_by_source() for data management\n   - Add source filter in search and analytics\n\n4. Files to create/modify:\n   - apps/api/data/excel_loader.py\n   - apps/web/src/components/data-source/sheet-selector.tsx\n   - Update existing CSV upload components",
+        "testStrategy": "1. Upload .xlsx file with 100+ properties successfully\n2. Properties appear in search with correct source tagging\n3. Unit tests for Excel parsing with edge cases (empty sheets, merged cells)\n4. Test sheet selection UI\n5. Verify data normalization matches CSV loader output",
+        "subtasks": [],
+        "updatedAt": "2026-03-19T12:29:45.736Z"
+      },
+      {
+        "id": "49",
+        "title": "Portal/API Integration Framework",
+        "description": "Create an extensible adapter system for ingesting property data from external real estate portals and APIs.",
+        "status": "done",
+        "dependencies": [
+          "48"
+        ],
+        "priority": "high",
+        "category": "feature",
+        "details": "1. External Source Adapter Interface:\n   - Define ExternalSourceAdapter Protocol with fetch() method\n   - Create adapter registry for managing available sources\n   - Implement error handling for rate limits and partial failures\n   - Add retry logic with exponential backoff\n\n2. UI Portal Configuration:\n   - Add \"Portal\" tab in Data Sources section\n   - Portal selector, filters (city, price range, rooms, type)\n   - Fetch button with progress indication\n   - Schedule for automatic updates\n\n3. First Real Portal Adapter:\n   - Implement adapter for a documented portal API (e.g., idealista, olx)\n   - Normalize portal data to internal DataFrame format\n   - Wire into existing ingestion pipeline\n   - Handle authentication and API limits\n\n4. Security and Secrets Management:\n   - Store portal API keys in environment variables only\n   - Never commit secrets; add to .env.example templates\n   - Validate API key presence before attempting connection\n   - Log all API calls for audit purposes",
+        "testStrategy": "1. Successfully fetch 50+ properties from test portal\n2. Data normalizes correctly through format_df pipeline\n3. Portal-sourced properties appear in analytics with source attribution\n4. Test rate limiting and error handling\n5. Verify API key security (no secrets in code)",
+        "subtasks": [],
+        "updatedAt": "2026-03-19T14:44:56.605Z"
+      },
+      {
+        "id": "50",
+        "title": "Geographic Mapping Enhancement",
+        "description": "Integrate professional mapping services (Mapbox) for property visualization with heatmaps, clustering, and interactive filters.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "category": "feature",
+        "details": "1. Mapbox Integration Setup:\n   - Add Mapbox GL JS dependency to frontend\n   - Configure Mapbox API key via environment variable\n   - Create base map component with property markers\n   - Handle map loading states and errors\n\n2. Heatmap Visualization:\n   - Price heatmap mode (gradient by price/sqm)\n   - Yield heatmap for investment properties\n   - Toggle between heatmap and cluster modes\n   - Color gradient legend\n\n3. Map Filters and Interactions:\n   - Filter by price range, rooms, type on map\n   - Click marker to show property card preview\n   - Draw polygon/bounding box for geo-search\n   - Zoom level controls\n\n4. City Overview Map:\n   - Aggregate statistics by district/neighborhood\n   - Show neighborhood boundaries and labels\n   - Click district to filter search results\n   - Population density overlay (optional)",
+        "testStrategy": "1. Map loads with 1000+ property markers without lag\n2. Heatmap renders correctly with color gradient legend\n3. Drawing a polygon correctly filters search results\n4. Test Mapbox API key configuration\n5. Verify responsive map on mobile devices",
+        "subtasks": [],
+        "updatedAt": "2026-03-07T00:32:04.297Z"
+      },
+      {
+        "id": "51",
+        "title": "Commute Time Analysis",
+        "description": "Calculate and visualize commute times from properties to user-defined destinations using multiple transport modes.",
+        "status": "done",
+        "dependencies": [
+          "50"
+        ],
+        "priority": "medium",
+        "category": "feature",
+        "details": "1. Routing Integration:\n   - Integrate OpenRouteService or similar API\n   - Support car, public transport, bike, walking modes\n   - Handle rate limits and caching\n   - Store commute time results for performance\n\n2. Isochrone Generation:\n   - Generate \"30-minute commute\" polygons\n   - Overlay on property map\n   - Calculate actual commute time for each property\n   - Multiple isochrone layers (15, 30, 45, 60 min)\n\n3. User Inputs:\n   - Add work/school address input\n   - Transport mode selector\n   - Maximum commute time filter\n   - Save frequent destinations\n\n4. Results Ranking:\n   - Sort properties by commute convenience\n   - Show commute time in property cards\n   - Highlight \"commute-friendly\" properties\n   - Compare multiple destinations",
+        "testStrategy": "1. Isochrone polygon renders accurately on map\n2. Commute times match realistic expectations\n3. Sorting by commute time works correctly\n4. Test routing API rate limiting\n5. Verify caching reduces API calls",
+        "subtasks": [],
+        "updatedAt": "2026-03-09T19:52:36.494Z"
+      },
+      {
+        "id": "52",
+        "title": "Total Cost of Ownership Calculator",
+        "description": "Extend mortgage calculator to include utilities, parking, taxes, insurance, and other ownership costs.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "category": "feature",
+        "details": "1. Cost Categories:\n   - Utilities (electricity, gas, water, internet)\n   - Parking (rented or owned)\n   - Property tax and insurance\n   - Maintenance reserves (1-2% of value annually)\n   - HOA/condo fees\n\n2. Input Form:\n   - Add monthly cost fields to calculator\n   - Location-based defaults (tax rates by region)\n   - Optional vs required cost categories\n   - Save/load cost profiles\n\n3. Calculation Logic:\n   - Sum all monthly costs with mortgage\n   - Calculate total monthly and annual cost\n   - Generate cost breakdown pie chart\n   - 5, 10, 20 year projections\n\n4. Comparison Mode:\n   - Compare \"central small flat\" vs \"suburban larger\"\n   - Show trade-off analysis\n   - Recommend based on user priorities\n   - Export comparison as PDF",
+        "testStrategy": "1. Total cost matches manual calculation for test cases\n2. Comparison mode produces logical recommendations\n3. UI handles missing optional costs gracefully\n4. Test location-based defaults\n5. Verify chart rendering with various data",
+        "subtasks": [],
+        "updatedAt": "2026-03-09T16:22:23.892Z"
+      },
+      {
+        "id": "53",
+        "title": "Market Anomaly Detection",
+        "description": "Automatically detect and alert on unusual market conditions including price spikes, drops, and trends.",
+        "status": "done",
+        "dependencies": [
+          "38"
+        ],
+        "priority": "medium",
+        "category": "feature",
+        "details": "1. Anomaly Algorithms:\n   - Statistical outlier detection (z-score, IQR)\n   - Time series anomaly detection\n   - Price spike/drop thresholds\n   - Seasonal adjustment\n\n2. Monitoring Engine:\n   - Daily batch analysis of price changes\n   - Continuous monitoring of new listings\n   - Comparison to historical baselines\n   - Alert queue management\n\n3. Alerting System:\n   - Email alerts for significant anomalies\n   - In-app notifications for users\n   - Threshold configuration per user\n   - Digest mode (daily/weekly)\n\n4. Visualization:\n   - Highlight anomalies in charts\n   - Anomaly timeline view\n   - Drill-down to affected properties\n   - Export anomaly reports",
+        "testStrategy": "1. Detects known historical anomalies\n2. False positive rate < 10%\n3. Alerts sent within 1 hour of detection\n4. Test threshold configuration\n5. Verify visualization renders correctly",
+        "subtasks": [],
+        "updatedAt": "2026-03-09T20:55:38.473Z"
+      },
+      {
+        "id": "54",
+        "title": "Property Description Generator",
+        "description": "Use LLM to generate listing descriptions, headline variants, and social media summaries from structured property data.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "category": "feature",
+        "details": "1. Prompt Engineering:\n   - Create description generation prompt templates\n   - Handle tone variations (professional, casual, luxury)\n   - Include all key property facts\n   - Multi-language support\n\n2. API Endpoint:\n   - POST /api/v1/tools/generate-description\n   - Input: property data fields\n   - Output: full description, headlines, summary\n   - Rate limiting per user\n\n3. UI Integration:\n   - Add \"Generate Description\" button in property details\n   - Show generated text with edit capability\n   - Tone selector for different outputs\n   - Copy to clipboard functionality\n\n4. Platform Variants:\n   - Generate different lengths for portal vs social\n   - Adapt tone per platform guidelines\n   - Keep core facts consistent across variants\n   - Character count limits per platform",
+        "testStrategy": "1. Generated descriptions are factually accurate\n2. Different tones produce appropriate variations\n3. Character limits respected for each platform\n4. Test rate limiting\n5. Verify multi-language output",
+        "subtasks": [],
+        "updatedAt": "2026-03-09T19:15:43.932Z"
+      },
+      {
+        "id": "55",
+        "title": "Lead Scoring System",
+        "description": "Score incoming leads by likelihood to close, budget fit, and urgency to help agents prioritize.",
+        "status": "done",
+        "dependencies": [
+          "35"
+        ],
+        "priority": "medium",
+        "category": "feature",
+        "details": "1. Scoring Model:\n   - Define scoring factors (budget match, urgency, readiness)\n   - Weight factors based on historical data\n   - Calculate composite score 0-100\n   - Explainability for each score\n\n2. Data Collection:\n   - Track lead behavior (searches, favorites, inquiries)\n   - Capture qualification signals\n   - Store lead interactions in database\n   - Privacy compliance (GDPR)\n\n3. Dashboard UI:\n   - Lead list sorted by score\n   - Score breakdown for each lead\n   - Filter by score ranges\n   - Export lead reports\n\n4. Notifications:\n   - Alert on high-scoring new leads\n   - Daily digest of leads needing attention\n   - Integration with existing notification system\n   - Customizable alert thresholds",
+        "testStrategy": "1. Scores predict lead conversion with >70% accuracy\n2. Agents report improved prioritization\n3. High-score leads generate more viewings\n4. Test data collection privacy compliance\n5. Verify dashboard performance with 1000+ leads",
+        "subtasks": [],
+        "updatedAt": "2026-03-10T11:30:22.350Z"
+      },
+      {
+        "id": "56",
+        "title": "Agent Performance Analytics",
+        "description": "Track and visualize per-agent metrics including leads, deals, time to close, and conversion rates.",
+        "status": "done",
+        "dependencies": [
+          "55"
+        ],
+        "priority": "medium",
+        "category": "feature",
+        "details": "1. Data Model:\n   - Agent entity with properties\n   - Lead assignment tracking\n   - Deal outcome tracking\n   - Commission calculations\n\n2. Metrics Calculation:\n   - Total leads, active deals, closed deals\n   - Average time to close\n   - Conversion rate by stage\n   - Strength analysis (property types, locations)\n\n3. Analytics Dashboard:\n   - Agent overview cards with key metrics\n   - Performance trends over time\n   - Comparison to team averages\n   - Goal tracking and progress\n\n4. Insights:\n   - Identify top-performing agents\n   - Flag agents needing support\n   - Suggest coaching topics\n   - Predictive performance modeling",
+        "testStrategy": "1. Metrics match CRM data (integration test)\n2. Dashboard loads in < 2 seconds\n3. Actionable insights are accurate\n4. Test commission calculations\n5. Verify team comparison accuracy",
+        "subtasks": [],
+        "updatedAt": "2026-03-10T22:02:37.151Z"
+      },
+      {
+        "id": "57",
+        "title": "E-Signature Integration",
+        "description": "Integrate document generation and e-signature workflow for rental/purchase agreements.",
+        "status": "done",
+        "dependencies": [
+          "43"
+        ],
+        "priority": "low",
+        "category": "feature",
+        "details": "1. Document Templates:\n   - Rental agreement template\n   - Purchase offer template\n   - Lease renewal template\n   - Customizable clauses\n\n2. PDF Generation:\n   - Fill property and party details\n   - Generate professional PDF\n   - Include terms and conditions\n   - Add company branding\n\n3. E-Signature API:\n   - Integrate DocuSign or similar\n   - Signature request workflow\n   - Status tracking\n   - Reminder automation\n\n4. Document Management:\n   - Store signed documents securely\n   - Download/view signed agreements\n   - Audit log of all actions\n   - Expiry tracking for unsigned docs",
+        "testStrategy": "1. Generated documents are legally valid\n2. Signature workflow completes successfully\n3. Documents persist and are retrievable\n4. Test e-signature API integration\n5. Verify audit log completeness",
+        "subtasks": [],
+        "updatedAt": "2026-03-19T11:05:44.970Z"
+      },
+      {
+        "id": "58",
+        "title": "Comprehensive Test Suite Update",
+        "description": "Update all unit and integration tests for new features to achieve 90%+ code coverage.",
+        "status": "done",
+        "dependencies": [
+          "43",
+          "44",
+          "45",
+          "48",
+          "49",
+          "50",
+          "51",
+          "52",
+          "53",
+          "54",
+          "55",
+          "56",
+          "57"
+        ],
+        "priority": "high",
+        "category": "testing",
+        "details": "1. Backend Unit Tests:\n   - Test all new API endpoints\n   - Test data models and validation\n   - Test business logic calculations\n   - Mock external API calls\n\n2. Backend Integration Tests:\n   - Test endpoint-to-database flows\n   - Test authentication and authorization\n   - Test file upload/download\n   - Test caching behavior\n\n3. Frontend Unit Tests:\n   - Test all new components\n   - Test hooks and contexts\n   - Test form validation\n   - Test API client functions\n\n4. Coverage Requirements:\n   - Backend: 90%+ line coverage\n   - Frontend: 90%+ line coverage\n   - Critical paths: 100% coverage\n   - Generate coverage reports",
+        "testStrategy": "1. Run pytest --cov with 90%+ threshold\n2. Run npm test -- --coverage with 90%+ threshold\n3. All tests pass without errors\n4. No skipped tests without justification\n5. Coverage reports generated successfully",
+        "subtasks": [],
+        "updatedAt": "2026-03-19T17:00:10.587Z"
+      },
+      {
+        "id": "59",
+        "title": "Local E2E Validation",
+        "description": "Run full end-to-end test suite locally and verify all features work together.",
+        "status": "done",
+        "dependencies": [
+          "58"
+        ],
+        "priority": "high",
+        "category": "testing",
+        "details": "1. E2E Test Setup:\n   - Configure Playwright/Cypress for local testing\n   - Set up test database with fixtures\n   - Configure test environment variables\n   - Create test user accounts\n\n2. Critical Path Testing:\n   - User registration and login flow\n   - Property search and filtering\n   - Property details and favorites\n   - Chat with AI assistant\n   - Document upload and management\n\n3. Docker Compose Validation:\n   - Run full stack via docker-compose\n   - Verify service health checks\n   - Test inter-service communication\n   - Verify data persistence\n\n4. Integration Scenarios:\n   - Search → View → Favorite → Alert flow\n   - Document → Sign → Store flow\n   - Lead → Score → Assign flow\n   - Map → Filter → Property → Chat flow",
+        "testStrategy": "1. All E2E tests pass locally\n2. Docker Compose stack starts successfully\n3. All health checks return green\n4. No console errors in browser\n5. All critical user flows complete",
+        "subtasks": [],
+        "updatedAt": "2026-03-19T18:36:36.096Z"
+      },
+      {
+        "id": "60",
+        "title": "Local Performance Benchmarking",
+        "description": "Run performance benchmarks locally to ensure the application meets latency and throughput targets.",
+        "status": "done",
+        "dependencies": [
+          "59"
+        ],
+        "priority": "high",
+        "category": "testing",
+        "details": "1. Lighthouse Audits:\n   - Run Lighthouse on all major pages\n   - Target: Performance score 90+\n   - Target: Accessibility score 90+\n   - Target: Best Practices score 90+\n\n2. API Response Time Testing:\n   - Search API: p95 < 2 seconds\n   - Chat API: p95 < 8 seconds\n   - Document upload: < 5 seconds for 10MB\n   - Map data loading: < 3 seconds\n\n3. Load Testing:\n   - Simulate 100 concurrent users\n   - Test sustained load for 10 minutes\n   - Monitor memory and CPU usage\n   - Identify performance bottlenecks\n\n4. Database Performance:\n   - Query execution time analysis\n   - Index effectiveness review\n   - Connection pool sizing\n   - N+1 query detection",
+        "testStrategy": "1. Lighthouse scores meet targets\n2. API p95 latencies meet targets\n3. System handles 100 concurrent users\n4. No memory leaks detected\n5. Database queries optimized",
+        "subtasks": [],
+        "updatedAt": "2026-03-19T19:01:44.108Z"
+      },
+      {
+        "id": "61",
+        "title": "Local Security Audit",
+        "description": "Run comprehensive security scans locally and fix all critical/high vulnerabilities.",
+        "status": "done",
+        "dependencies": [
+          "59"
+        ],
+        "priority": "high",
+        "category": "testing",
+        "details": "1. Static Analysis:\n   - Run Semgrep security rules\n   - Run Bandit for Python code\n   - Run ESLint security plugin\n   - Review and fix all findings\n\n2. Dependency Scanning:\n   - Run npm audit for frontend\n   - Run pip-audit for backend\n   - Run Trivy for container images\n   - Update vulnerable dependencies\n\n3. Secret Detection:\n   - Run Gitleaks on entire codebase\n   - Verify no API keys in code\n   - Check .env.example has no real secrets\n   - Review git history for accidental commits\n\n4. Authentication Testing:\n   - Test JWT token validation\n   - Test session management\n   - Test CSRF protection\n   - Test rate limiting effectiveness",
+        "testStrategy": "1. No critical/high vulnerabilities in scan results\n2. All medium vulnerabilities have remediation plan\n3. No secrets detected in codebase\n4. Authentication tests all pass\n5. Security scan report generated",
+        "subtasks": [],
+        "updatedAt": "2026-03-19T19:08:20.447Z"
+      },
+      {
+        "id": "62",
+        "title": "Production Deployment Optimization",
+        "description": "Optimize application for production deployment including caching, monitoring, and performance tuning. BLOCKED until local testing gates (#60, #61) pass.",
+        "status": "done",
+        "dependencies": [
+          "60",
+          "61"
+        ],
+        "priority": "low",
+        "category": "deployment",
+        "blockedBy": [
+          "60",
+          "61"
+        ],
+        "details": "1. Caching Strategy:\n   - Redis integration for session cache\n   - Response caching for search results\n   - Static asset CDN configuration\n   - Cache invalidation policies\n\n2. Performance Monitoring:\n   - Application Performance Monitoring (APM)\n   - Error tracking (Sentry integration)\n   - Custom metrics dashboard\n   - Performance budgets\n\n3. Database Optimization:\n   - Query optimization and indexing\n   - Connection pooling configuration\n   - Read replica setup for scaling\n   - Backup and restore procedures\n\n4. Auto-scaling Configuration:\n   - Horizontal scaling rules\n   - Load balancer configuration\n   - Container orchestration setup\n   - Blue-green deployment strategy",
+        "testStrategy": "1. p95 latency < 2s for search, < 8s for chat\n2. System handles 1000 concurrent users\n3. Auto-scaling activates under load\n4. Backups restore successfully\n5. Monitoring dashboards functional",
+        "subtasks": [],
+        "updatedAt": "2026-03-19T19:12:36.278Z"
+      },
+      {
+        "id": "63",
+        "title": "Backend Push Notification Support",
+        "description": "Implement backend support for push notifications including VAPID key generation, push subscription storage, and notification sending service.",
+        "details": "1. VAPID Key Generation:\n   - Generate VAPID keys for web push authentication\n   - Create /api/v1/push/vapid-public-key endpoint\n   - Store keys securely in environment variables\n\n2. Push Subscription Storage:\n   - Create /api/v1/push/subscribe endpoint (POST)\n   - Create /api/v1/push/unsubscribe endpoint (DELETE)\n   - Store subscriptions in database (user device tokens)\n   - Associate subscriptions with user accounts\n\n3. Push Notification Service:\n   - Create notification service module\n   - Integrate with web push libraries (web-push or similar)\n   - Support sending notifications to specific users or all users\n\n4. Trigger Hooks:\n   - Price drop detection for saved properties\n   - New property matching saved searches\n   - Market anomaly alerts",
+        "testStrategy": "1. Test VAPID key generation endpoint\n2. Test subscription storage (create/delete)\n3. Test notification sending to subscribed devices\n4. Verify price drop triggers notification\n5. Verify new property triggers notification",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-03-11T16:08:40.131Z"
+      },
+      {
+        "id": "64",
+        "title": "MCP Connector Interface",
+        "description": "Define abstract MCP (Model Context Protocol) connector interface with allowlist support for live data layer. Based on ADR-0005-mcp-live-data-layer.md - strategic foundation for real-time market truth.",
+        "details": "1. Define abstract MCPConnector base class with lifecycle methods (connect, disconnect, health_check)\n2. Create MCPConnectorConfig for connector configuration (endpoint, credentials, allowlist status)\n3. Implement MCPConnectorRegistry for connector discovery and instantiation\n4. Add allowlist validation - only allowlisted connectors can be used in CE\n5. Create MCPConnectorResult dataclass for standardized responses\n6. Add connection pooling and timeout handling\n7. Document interface contract for future connector implementations",
+        "testStrategy": "1. Unit tests for MCPConnector abstract methods\n2. Test MCPConnectorConfig validation\n3. Test registry allowlist enforcement\n4. Test connection lifecycle with mock connectors\n5. Verify no network calls in unit tests",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-03-20T14:34:25.752Z"
+      },
+      {
+        "id": "65",
+        "title": "Citation Quality Enhancement",
+        "description": "Improve source citation accuracy in RAG responses for better transparency and trust.",
+        "details": "1. Enhance citation extraction from retrieved documents\n2. Add citation confidence scoring\n3. Implement citation deduplication\n4. Add source type indicators (PDF, DOCX, web, etc.)\n5. Create citation formatting options (inline, footnotes, endnotes)\n6. Add citation validation against source content\n7. Update frontend to display enhanced citations",
+        "testStrategy": "1. Unit tests for citation extraction\n2. Test confidence scoring accuracy\n3. Test deduplication logic\n4. Integration test with RAG pipeline\n5. E2E test for citation display in UI",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-03-20T15:19:56.143Z"
+      },
+      {
+        "id": "66",
+        "title": "Query Intent Classification Enhancement",
+        "description": "Enhanced intent detection for better routing between RAG-only, Hybrid, and Agent+Tools paths.",
+        "details": "1. Expand intent taxonomy (property_search, market_analysis, comparison, mortgage, location, document_qa, general)\n2. Add confidence thresholds for routing decisions\n3. Implement multi-intent detection for complex queries\n4. Add context-aware classification using conversation history\n5. Create intent-specific prompt templates\n6. Add classification metrics logging for improvement",
+        "testStrategy": "1. Unit tests for each intent type\n2. Test confidence threshold boundaries\n3. Test multi-intent scenarios\n4. Benchmark classification accuracy\n5. Test routing decisions match expected paths",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-03-20T16:36:39.290Z"
+      },
+      {
+        "id": "67",
+        "title": "Map Clustering UI",
+        "description": "Cluster property markers on map view for better performance with large datasets.",
+        "details": "1. Implement client-side marker clustering using Leaflet/Mapbox\n2. Add cluster click-to-expand functionality\n3. Show cluster summary info (price range, property count)\n4. Add configurable cluster radius and zoom thresholds\n5. Implement smooth cluster animation on zoom\n6. Handle edge cases (single property, overlapping clusters)\n7. Add cluster styling based on property types",
+        "testStrategy": "1. Unit tests for clustering algorithm\n2. Test with various dataset sizes (10, 100, 1000 properties)\n3. Test cluster expansion/collapse behavior\n4. E2E test for map interaction\n5. Performance test for large datasets",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-03-20T19:37:46.839Z"
+      },
+      {
+        "id": "68",
+        "title": "MCP Allowlist Governance",
+        "description": "Implement allowlist configuration and validation for MCP connectors. Only allowlisted connectors can be used in CE to ensure data minimization and safe extension points.",
+        "details": "1. Create allowlist configuration file (mcp_allowlist.yaml)\n2. Implement AllowlistValidator class\n3. Add connector registration with allowlist check\n4. Create admin API to view/manage allowlist\n5. Add allowlist validation on connector instantiation\n6. Log allowlist violations for audit\n7. Document allowlist governance policy",
+        "testStrategy": "1. Unit tests for AllowlistValidator\n2. Test allowlist configuration parsing\n3. Test rejection of non-allowlisted connectors\n4. Test admin API endpoints\n5. Verify logging of violations",
+        "status": "done",
+        "dependencies": [
+          "64"
+        ],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-03-20T21:32:45.966Z"
+      },
+      {
+        "id": "69",
+        "title": "MCP Logging Boundaries",
+        "description": "Add audit logging for MCP connector calls with data minimization and PII protection boundaries.",
+        "details": "1. Create MCPAuditLogger with structured logging\n2. Define logging boundaries (request/response metadata, no PII)\n3. Add request ID correlation across connector calls\n4. Implement configurable log retention\n5. Create audit log query API\n6. Add redaction rules for sensitive data\n7. Document audit logging configuration",
+        "testStrategy": "1. Unit tests for MCPAuditLogger\n2. Test PII redaction rules\n3. Test request ID correlation\n4. Test log retention policy\n5. Verify no sensitive data in logs",
+        "status": "done",
+        "dependencies": [
+          "64"
+        ],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-03-23T17:18:11.539Z"
+      },
+      {
+        "id": "70",
+        "title": "MCP Stub Testing Framework",
+        "description": "Create deterministic MCP stubs for unit testing without network access. Based on ADR-0005 requirement for testable connector layer.",
+        "details": "1. Create MCPStub base class with configurable responses\n2. Implement StubConnector for common test scenarios\n3. Add fixture data for property listings, search results\n4. Create StubRegistry for managing test stubs\n5. Add network isolation verification in tests\n6. Document stub usage patterns for connector testing\n7. Add CI check to ensure no network calls in unit tests",
+        "testStrategy": "1. Test stub returns configured responses\n2. Test StubConnector with various scenarios\n3. Verify network isolation (no external calls)\n4. Test fixture data consistency\n5. Integration test with HybridAgent",
+        "status": "done",
+        "dependencies": [
+          "64",
+          "65"
+        ],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-03-20T22:11:59.705Z"
+      },
+      {
+        "id": "71",
+        "title": "MCP Registry API",
+        "description": "API endpoints for MCP connector management - list, status, health check.",
+        "details": "1. Create GET /api/v1/admin/connectors endpoint (list all)\n2. Create GET /api/v1/admin/connectors/{id} endpoint (details)\n3. Create GET /api/v1/admin/connectors/{id}/health endpoint\n4. Add connector status indicators (active, disabled, error)\n5. Implement rate limiting per connector\n6. Add OpenAPI documentation\n7. Create admin UI component for connector management",
+        "testStrategy": "1. Unit tests for each endpoint\n2. Test authentication/authorization\n3. Test rate limiting\n4. Test error handling\n5. E2E test for admin UI",
+        "status": "done",
+        "dependencies": [
+          "64"
+        ],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-03-23T18:24:58.460Z"
+      },
+      {
+        "id": "72",
+        "title": "MCP Web Scraper Connector",
+        "description": "Example MCP connector for web scraping (allowlisted). Demonstrates connector implementation pattern.",
+        "details": "1. Implement WebScraperConnector extending MCPConnector\n2. Add configurable scraping targets (URLs, selectors)\n3. Implement rate limiting and retry logic\n4. Add response parsing and normalization\n5. Register in allowlist by default for CE\n6. Add error handling for blocked/failed requests\n7. Document connector implementation pattern",
+        "testStrategy": "1. Unit tests with stub responses\n2. Test rate limiting\n3. Test retry logic\n4. Test response parsing\n5. Integration test with HybridAgent",
+        "status": "done",
+        "dependencies": [
+          "65",
+          "68"
+        ],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-03-23T20:40:17.138Z"
+      },
+      {
+        "id": "73",
+        "title": "Context Window Optimization",
+        "description": "Optimize context window usage for long conversations to reduce token costs and improve response quality.",
+        "details": "1. Implement conversation summarization for long threads\n2. Add sliding window context management\n3. Create priority-based context selection\n4. Add token counting before API calls\n5. Implement context compression for repeated content\n6. Add configurable context window limits\n7. Log context usage metrics",
+        "testStrategy": "1. Unit tests for summarization\n2. Test sliding window logic\n3. Test token counting accuracy\n4. Test context compression\n5. Benchmark token reduction",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-03-21T09:11:04.228Z"
+      },
+      {
+        "id": "74",
+        "title": "Response Streaming Improvements",
+        "description": "Enhanced SSE streaming with better error recovery and retry mechanisms.",
+        "details": "1. Implement exponential backoff for reconnection\n2. Add heartbeat mechanism for connection health\n3. Create client-side buffer for interrupted streams\n4. Add stream resume capability\n5. Implement graceful degradation on failures\n6. Add streaming metrics (latency, throughput)\n7. Document error handling patterns",
+        "testStrategy": "1. Unit tests for backoff logic\n2. Test heartbeat mechanism\n3. Test stream resume\n4. Test graceful degradation\n5. E2E test for error scenarios",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-03-21T10:42:54.739Z"
+      },
+      {
+        "id": "75",
+        "title": "Advanced Filter Presets",
+        "description": "Saveable filter combinations for quick access to common search patterns.",
+        "details": "1. Create FilterPreset model (name, filters, user_id)\n2. Add POST /api/v1/search/presets endpoint\n3. Add GET /api/v1/search/presets endpoint (list user presets)\n4. Add DELETE /api/v1/search/presets/{id} endpoint\n5. Create preset selector UI component\n6. Add preset application to search form\n7. Limit presets per user (configurable)",
+        "testStrategy": "1. Unit tests for preset CRUD\n2. Test preset application\n3. Test user isolation\n4. E2E test for preset workflow\n5. Test preset limits",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-03-21T15:31:49.071Z"
+      },
+      {
+        "id": "76",
+        "title": "Search Result Ranking Tuning",
+        "description": "Improve hybrid search relevance scoring with configurable ranking weights.",
+        "details": "1. Implement BM25 + semantic score fusion\n2. Add configurable ranking weights (recency, price match, location)\n3. Create A/B testing framework for ranking experiments\n4. Add search quality metrics (CTR, dwell time)\n5. Implement personalized ranking based on user history\n6. Add ranking explanation for transparency\n7. Document ranking algorithm and tuning guide",
+        "testStrategy": "1. Unit tests for score fusion\n2. Test ranking weight configuration\n3. Benchmark ranking quality\n4. Test personalization impact\n5. A/B test validation",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-03-21T20:45:13.973Z"
+      },
+      {
+        "id": "77",
+        "title": "Geo-Bounding Box Search",
+        "description": "Search within user-drawn polygon on map for precise area filtering.",
+        "details": "1. Add polygon drawing tools to map component\n2. Implement geo-bounding-box query in Chroma/PostGIS\n3. Add polygon validation (max area, complexity)\n4. Create polygon-to-WKT conversion\n5. Add polygon persistence in search state\n6. Implement polygon-based filter in search API\n7. Add clear/reset polygon functionality",
+        "testStrategy": "1. Unit tests for polygon validation\n2. Test geo query accuracy\n3. Test polygon drawing UX\n4. Test polygon persistence\n5. Performance test with complex polygons",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-03-21T21:48:35.767Z"
+      },
+      {
+        "id": "78",
+        "title": "Property Enrichment Hooks",
+        "description": "Interface for optional property data enrichment from external sources.",
+        "details": "1. Create PropertyEnrichmentHook interface\n2. Add enrichment pipeline configuration\n3. Implement enrichment caching with TTL\n4. Add enrichment status indicators\n5. Create enrichment source registry\n6. Add fallback behavior for failed enrichment\n7. Document enrichment extension pattern",
+        "testStrategy": "1. Unit tests for hook interface\n2. Test enrichment pipeline\n3. Test caching behavior\n4. Test fallback scenarios\n5. Integration test with property search",
+        "status": "done",
+        "dependencies": [
+          "64"
+        ],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-03-23T20:20:02.360Z"
+      },
+      {
+        "id": "79",
+        "title": "Data Sources Dashboard",
+        "description": "Admin UI for managing data sources (CSV, JSON, API connectors) with upload and sync status.",
+        "details": "1. Create DataSourcesPage component with list view\n2. Add data source cards showing status, last sync, record count\n3. Implement CSV/JSON file upload with validation\n4. Add data source connection testing\n5. Create sync trigger and scheduling UI\n6. Add data source health indicators\n7. Implement data source deletion with confirmation",
+        "testStrategy": "1. Unit tests for data source components\n2. Test file upload validation\n3. Test sync triggering\n4. E2E test for data source workflow\n5. Test error handling and recovery",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-03-22T20:14:03.377Z"
+      },
+      {
+        "id": "80",
+        "title": "Import/Export Data API",
+        "description": "API endpoints for bulk data import/export operations (CSV, JSON, Parquet).",
+        "details": "1. Create POST /api/v1/admin/data/import endpoint\n2. Create GET /api/v1/admin/data/export endpoint\n3. Add async job tracking for large operations\n4. Implement data validation during import\n5. Add export format selection and field picker\n6. Create import/export job status API\n7. Add rate limiting for bulk operations",
+        "testStrategy": "1. Unit tests for import/export logic\n2. Test async job tracking\n3. Test data validation\n4. Test rate limiting\n5. E2E test for full import/export cycle",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-03-22T22:16:15.226Z"
+      },
+      {
+        "id": "81",
+        "title": "System Health Metrics",
+        "description": "Health check endpoints and system metrics for monitoring.",
+        "details": "1. Create GET /health endpoint (basic health)\n2. Create GET /health/ready endpoint (K8s readiness)\n3. Create GET /health/live endpoint (K8s liveness)\n4. Add GET /api/v1/admin/metrics endpoint (Prometheus format)\n5. Track key metrics: request latency, error rate, vector store size\n6. Add component health checks (DB, Redis, Chroma)\n7. Create metrics dashboard widget",
+        "testStrategy": "1. Unit tests for health endpoints\n2. Test metrics collection\n3. Test component health checks\n4. Integration test with monitoring\n5. Load test for metrics endpoint",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-03-22T23:00:16.545Z"
+      },
+      {
+        "id": "82",
+        "title": "User Activity Analytics",
+        "description": "Basic usage analytics (CE-safe, no external tracking).",
+        "details": "1. Create UserActivityEvent model (local storage only)\n2. Track search queries and result clicks\n3. Track feature usage (tools, exports)\n4. Add privacy-preserving aggregation\n5. Create usage dashboard with charts\n6. Add data retention policy (30 days default)\n7. Export usage data as CSV",
+        "testStrategy": "1. Unit tests for activity tracking\n2. Test aggregation logic\n3. Test retention policy\n4. Test dashboard rendering\n5. Privacy compliance verification",
+        "status": "done",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-03-23T21:10:19.960Z"
+      },
+      {
+        "id": "83",
+        "title": "Investment Analysis Calculator",
+        "description": "ROI, cash flow projections, and investment return calculations.",
+        "details": "1. Create InvestmentCalculator service class\n2. Implement ROI calculation (simple and annualized)\n3. Add cash flow projection with configurable periods\n4. Calculate cap rate and cash-on-cash return\n5. Add mortgage integration for leveraged returns\n6. Create investment report generation\n7. Build investment analysis UI component",
+        "testStrategy": "1. Unit tests for each calculation\n2. Test edge cases (zero values, negative cash flow)\n3. Test mortgage integration\n4. Test report generation\n5. E2E test for investment workflow",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-03-23T09:39:39.564Z"
+      },
+      {
+        "id": "84",
+        "title": "Market Trends Dashboard",
+        "description": "Price trends, market statistics, and area insights dashboard.",
+        "details": "1. Create MarketTrends service for statistics aggregation\n2. Implement price trend calculation (monthly, yearly)\n3. Add market statistics (avg price, price/m², days on market)\n4. Create trend chart components (line, bar)\n5. Add area comparison functionality\n6. Implement trend data caching\n7. Build market trends dashboard page",
+        "testStrategy": "1. Unit tests for trend calculations\n2. Test statistics aggregation\n3. Test caching behavior\n4. Test chart rendering\n5. E2E test for trends page",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-03-23T10:40:49.922Z"
+      },
+      {
+        "id": "85",
+        "title": "Comparative Market Analysis",
+        "description": "Comparative Market Analysis (CMA) reports generation for property valuation.",
+        "details": "1. Create CMA report template structure\n2. Implement comparable property selection algorithm\n3. Add adjustment calculations for differences\n4. Create PDF report generation\n5. Add report sharing and export\n6. Implement report history storage\n7. Build CMA wizard UI",
+        "testStrategy": "1. Unit tests for comparable selection\n2. Test adjustment calculations\n3. Test PDF generation\n4. Test report export\n5. E2E test for CMA workflow",
+        "status": "done",
+        "dependencies": [
+          "83",
+          "84"
+        ],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-03-26T12:14:37.574Z"
+      },
+      {
+        "id": "86",
+        "title": "Notification Preferences UI",
+        "description": "Enhanced notification settings page with granular control over alerts.",
+        "details": "1. Create NotificationPreferences model\n2. Add notification type toggles (price alerts, new listings, saved search)\n3. Implement notification frequency settings (instant, daily, weekly)\n4. Add notification channel selection (email, push, in-app)\n5. Create notification preview functionality\n6. Add unsubscribe/token management\n7. Build notification preferences UI",
+        "testStrategy": "1. Unit tests for preference model\n2. Test toggle functionality\n3. Test frequency settings\n4. Test channel selection\n5. E2E test for preferences workflow",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-03-23T14:14:54.303Z"
+      },
+      {
+        "id": "87",
+        "title": "Model Preferences Per-Task",
+        "description": "Allow different LLM models for different task types (chat, search, tools).",
+        "details": "1. Create TaskModelPreference model\n2. Add model selection per task type\n3. Implement fallback chain configuration\n4. Add model capability validation\n5. Create model preference UI\n6. Add cost estimation per model\n7. Document model selection logic",
+        "testStrategy": "1. Unit tests for preference model\n2. Test fallback chain\n3. Test capability validation\n4. Test cost estimation\n5. E2E test for model selection",
+        "status": "done",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-03-24T10:11:49.872Z"
+      },
+      {
+        "id": "88",
+        "title": "User Profile Management",
+        "description": "User profile data management and preferences.",
+        "details": "1. Create UserProfile model with editable fields\n2. Add profile update API endpoints\n3. Implement profile picture upload\n4. Add language and timezone settings\n5. Create profile privacy controls\n6. Add data export (GDPR compliance)\n7. Build profile settings UI",
+        "testStrategy": "1. Unit tests for profile model\n2. Test profile update API\n3. Test picture upload\n4. Test data export\n5. E2E test for profile workflow",
+        "status": "done",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-03-24T12:47:02.820Z"
+      },
+      {
+        "id": "89",
+        "title": "Fix remaining npm vulnerabilities in web app",
+        "description": "Address the 4 remaining npm vulnerabilities in the frontend web application that couldn't be fixed in Phase 3.",
+        "details": "## Remaining npm Vulnerabilities\n\n| Package | Severity | Current | Issue |\n|---------|----------|---------|-------|\n| `jspdf` | Critical | 2.5.2 | Prototype pollution in html method |\n| `next` | Moderate | 16.1.5 | Authorization bypass in auth redirects |\n| `flatted` | High | 3.3.4 | npm advisory error (says <=3.4.1 is vulnerable) |\n\n## Potential Solutions\n\n1. **jspdf**: Check for updates from maintainer, or consider:\n   - Switching to alternative PDF library (pdf-lib, pdfmake)\n   - Sanitizing HTML input before passing to html() method\n   - Using server-side PDF generation instead\n\n2. **next**: Monitor for security patches from Vercel\n   - Currently on Next.js 16.1.5 (latest stable)\n   - Downgrade to v15 would be breaking change\n   - Check Vercel security advisories for patches\n\n3. **flatted**: This appears to be an npm advisory error\n   - Latest version 3.3.4 is installed\n   - Advisory says versions <=3.4.1 are vulnerable\n   - May need to wait for advisory correction or use override\n\n## Files to Modify\n- `apps/web/package.json` - overrides section\n- `apps/api/pyproject.toml` if switching PDF library\n\n## Acceptance Criteria\n- [ ] npm audit shows 0 vulnerabilities OR\n- [ ] All remaining vulnerabilities have documented workarounds/mitigations",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-03-25T12:07:23.380Z"
+      },
+      {
+        "id": "90",
+        "title": "[CE] License Reconciliation → AGPLv3",
+        "description": "Reconcile the project license to AGPLv3 as specified in the PRD V4. Currently the LICENSE file contains MIT text, AGENTS.md says \"Never use GPL/AGPL packages\" (conflicts with AGPLv3 project license), and package.json files have no license field. This is a foundational decision that blocks community contribution guidelines (#103) and public CE launch.",
+        "details": "## Why\\nPRD V4 states \"License: AGPLv3\" for Community Edition. LICENSE file contains MIT. AGENTS.md says \"Never use GPL/AGPL packages\" which conflicts.\\n\\n## Files\\n- LICENSE — update to AGPLv3 full text\\n- AGENTS.md — remove/update GPL constraint\\n- CONTRIBUTING.md — update license reference\\n- package.json (root + apps/web) — add \"license\": \"AGPL-3.0-only\"\\n- pyproject.toml — verify license field\\n\\n## Acceptance Criteria\\n1. LICENSE file updated to AGPLv3 full text\\n2. ADR-0009 documents the license decision and rationale\\n3. AGENTS.md constraint updated to allow AGPLv3 project license while still avoiding GPL dependencies\\n4. All package.json files have correct license field\\n5. CONTRIBUTING.md references AGPLv3\\n6. README.md license badge updated",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "License decision: Keep MIT (not AGPLv3)",
+            "description": "DECISION: Keep MIT license (not AGPLv3). Rationale: eliminates file dissonance, simpler for sponsors, honest to existing MIT-marked code. Task changes to: verify PRD.md reflects MIT, update ADR-0009 documenting MIT decision, ensure all package.json have \"license\":\"MIT\", verify AGENTS.md GPL constraint is about dependencies (not project license).",
+            "details": "## Rationale for MIT over AGPLv3\\n- Eliminates dissonance between LICENSE file and other docs\\n- Simpler for future sponsors\\n- Honest to current codebase already marked MIT\\n\\n## Acceptance Criteria (updated)\\n1. PRD V4 updated: \"License: MIT\" (was AGPLv3)\\n2. ADR-0009 documents MIT decision with rationale\\n3. All package.json files have \"license\": \"MIT\"\\n4. AGENTS.md: clarify GPL constraint applies to dependencies, not project license\\n5. CONTRIBUTING.md references MIT correctly\n<info added on 2026-03-28T10:03:07.453Z>\nLicense reconciled to MIT. PRD.MD updated from AGPLv3 to MIT. ADR-0009 created documenting MIT decision and rationale. LICENSE file, package.json, and pyproject.toml already had MIT license correctly set. AGENTS.md GPL constraint confirmed to apply only to dependencies, not project license. All acceptance criteria met.\n</info added on 2026-03-28T10:03:07.453Z>",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 90,
+            "parentId": "undefined",
+            "updatedAt": "2026-03-28T12:02:32.340Z"
+          }
+        ],
+        "updatedAt": "2026-03-28T12:02:32.340Z"
+      },
+      {
+        "id": "91",
+        "title": "[CE] WCAG 2.1 AA Accessibility Compliance",
+        "description": "Implement WCAG 2.1 AA compliance for all interactive controls as mandated by the PRD V4 Acceptance Criteria: \"WCAG 2.1 AA for interactive controls, focus management, labels, error feedback.\" Currently lighthouse.config.js has accessibility assertions but there is no comprehensive WCAG audit or automated accessibility testing.",
+        "details": "## Why\\nPRD mandates WCAG 2.1 AA. No task exists. Lighthouse checks basic issues but not full WCAG compliance.\\n\\n## Subtasks\\n1. Add axe-core integration to Jest/Playwright test suite\\n2. Audit and fix chat page (labels, roles, live regions for streaming responses)\\n3. Audit and fix search page (filter controls, result cards, map accessibility)\\n4. Audit and fix settings/analytics/knowledge pages\\n5. Implement keyboard focus management across route transitions\\n6. Manual screen reader validation pass (NVDA or VoiceOver)\\n\\n## Acceptance Criteria\\n1. All interactive controls have proper ARIA labels and roles\\n2. Focus management works on route changes (chat, search, settings, analytics)\\n3. All form inputs have associated labels and error feedback is announced to screen readers\\n4. Color contrast ratios meet 4.5:1 (normal text) and 3:1 (large text)\\n5. Keyboard navigation reaches every interactive element\\n6. axe-core automated scan passes with 0 violations on all pages\\n7. Manual screen reader test on chat and search pages",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Add skip navigation link to layout",
+            "description": "Add a skip-to-content link as the first focusable element in the layout. This is critical for keyboard users to bypass repeated navigation. [Updated: 28/03/2026]",
+            "details": "Files: apps/web/src/app/[locale]/layout.tsx, apps/web/src/components/layout/SkipNav.tsx (new)\n<info added on 2026-03-28T10:56:06.777Z>\nStatus reverted to pending. The landmark region implementation was rolled back as it was completed during a planning-only phase and the code changes were not retained. The identified files (apps/web/src/app/[locale]/layout.tsx and a new SkipNav component) still require actual implementation to add proper ARIA landmark regions (banner, navigation, main, contentinfo) to the layout structure.\n</info added on 2026-03-28T10:56:06.777Z>",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 91,
+            "updatedAt": "2026-03-28T12:38:47.765Z",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Add landmark regions to layout",
+            "description": "Add ARIA landmark roles (banner, navigation, main, contentinfo) to layout components. Currently only <main> exists semantically. [Updated: 28/03/2026]",
+            "details": "Files: apps/web/src/components/layout/Navbar.tsx, apps/web/src/app/[locale]/layout.tsx\n<info added on 2026-03-28T10:56:25.637Z>\nStatus reverted to pending. Implementation was rolled back during the planning-only phase.\n</info added on 2026-03-28T10:56:25.637Z>",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 91,
+            "parentId": "undefined",
+            "updatedAt": "2026-03-28T12:38:47.808Z"
+          },
+          {
+            "id": 3,
+            "title": "Integrate axe-core into test suite",
+            "description": "Install jest-axe and add automated accessibility checks to existing test suites. Catch WCAG violations in CI. [Updated: 28/03/2026]",
+            "details": "Files: apps/web/package.json, apps/web/src/app/__tests__/ or component test files\n<info added on 2026-03-28T10:25:19.510Z>\nCOMPLETED: Integrated jest-axe for automated accessibility testing.\n- Created src/lib/__tests__/axe-helper.ts — reusable axe utility with checkA11y() function\n- Created src/components/ui/__tests__/button.a11y.test.tsx — 4 a11y tests (default, destructive, disabled, asChild/link) — all passing\n- Installed jest-axe as dev dependency\n- Pattern established for adding a11y tests to other components\n</info added on 2026-03-28T10:25:19.510Z>\n<info added on 2026-03-28T10:56:35.612Z>\nSTATUS REVERTED TO PENDING: Implementation was rolled back during planning-only phase. Previous work (jest-axe integration, axe-helper utility, button a11y tests) was undone. This subtask needs to be re-implemented when the feature moves beyond planning stage.\n</info added on 2026-03-28T10:56:35.612Z>",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 91,
+            "parentId": "undefined",
+            "updatedAt": "2026-03-28T12:38:47.857Z"
+          }
+        ],
+        "updatedAt": "2026-03-28T12:38:47.857Z"
+      },
+      {
+        "id": "92",
+        "title": "[CE] Lighthouse >=90 CI Enforcement",
+        "description": "Add Lighthouse CI step to enforce PRD requirement of \"Lighthouse >=90 on desktop for search and chat pages.\" The lighthouse.config.js already has correct assertions (performance >=0.9, accessibility >=0.9) but CI never executes Lighthouse audits.",
+        "details": "## Why\\nPRD requires Lighthouse >=90 on desktop for search and chat. lighthouse.config.js exists but CI never runs it.\\n\\n## Files\\n- .github/workflows/ci.yml — add Lighthouse audit step\\n- apps/web/lighthouse.config.js — already has correct assertions\\n\\n## Acceptance Criteria\\n1. CI pipeline includes Lighthouse audit step after frontend build\\n2. Lighthouse assertions block PR merge on score regression\\n3. Both search and chat pages score >= 90 on performance and accessibility\\n4. Lighthouse report uploaded as CI artifact\\n5. Baseline scores documented in docs/performance/",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "93",
+        "title": "[CE] 5-Minute Quickstart Documentation",
+        "description": "Create an opinionated single-path quickstart guide as called for by the PRD and Roadmap: \"Run your AI realtor in 5 minutes (local Docker Compose, BYOK).\" Current quickstart is multi-path and not opinionated enough for the 5-minute target.",
+        "details": "## Why\\nRoadmap: \"Documentation: Run your AI realtor in 5 minutes (local Docker Compose, BYOK).\" Current quickstart covers 3 methods.\\n\\n## Acceptance Criteria\\n1. Single-page guide: clone → configure .env → docker compose up → working app in <=5 minutes\\n2. Pre-built Docker images available on GHCR (no local build needed)\\n3. Minimal .env.example with only required fields (1 LLM API key)\\n4. Smoke test script that verifies the stack is working after setup\\n5. Guide linked prominently from README.md\\n6. Tested on fresh machine (Windows + macOS)\\n\\n## Files\\n- docs/QUICKSTART_5MIN.md (new)\\n- README.md (add link)\\n- .env.example (simplify)\\n- deploy/compose/docker-compose.yml (verify one-command up)",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "94",
+        "title": "[CE] Telegram Connector Community Issue",
+        "description": "Create a GitHub Issue for a Telegram connector as a community contribution opportunity. The Roadmap explicitly states: \"Community Issues: create Telegram connector issue for community contribution.\" The existing MCP connector pattern (#64) provides the architectural foundation.",
+        "details": "## Why\\nRoadmap: \"Community Issues: create Telegram connector issue for community contribution.\" MCP connector pattern exists.\\n\\n## Acceptance Criteria\\n1. GitHub Issue created with good-first-issue + community labels\\n2. Issue contains: architectural guidance, expected MCP connector interface, reference to existing MCP connector code\\n3. Acceptance criteria for the connector clearly defined\\n4. Issue linked from CONTRIBUTING.md as contribution opportunity\\n5. Sample code sketch showing expected interface\\n\\n## Files\\n- New GitHub Issue\\n- CONTRIBUTING.md (add link)",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "95",
+        "title": "[CE] Audit Logging System",
+        "description": "Implement audit logging as required by PRD NFR Security: \"audit logs.\" Create a dedicated audit trail system that records who did what, when, and from where. Currently only basic logging exists with no tamper-evident audit trail.",
+        "details": "## Why\\nPRD NFR Security requires \"audit logs.\" No dedicated audit trail exists.\\n\\n## Acceptance Criteria\\n1. Audit records for admin actions (ingest, reindex, settings changes)\\n2. Auth event logging (login, logout, failed attempts)\\n3. Append-only, tamper-evident entries with hash chain\\n4. Admin query endpoint with time-range and action-type filters\\n5. Structured format with correlation to X-Request-ID\\n6. Unit tests for all audit scenarios\\n\\n## Files\\n- apps/api/services/audit.py (new)\\n- apps/api/db/models.py (AuditLog model)\\n- apps/api/api/routers/admin.py (query endpoint)\\n- apps/api/api/middleware/audit.py (middleware)",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "96",
+        "title": "[CE] Graceful Degradation Testing",
+        "description": "Implement and test graceful degradation when external services (LLM providers, ChromaDB, database) are unavailable, as required by PRD NFR Reliability. Currently no E2E validation of degradation behavior exists.",
+        "details": "## Why\\nPRD requires \"graceful degradation when providers/vector store are unavailable.\"\\n\\n## Acceptance Criteria\\n1. ChromaDB unavailable → search returns clear error, chat works with reduced capability\\n2. All LLM providers unavailable → user sees friendly message with retry option\\n3. Single provider fails → automatic fallback to next provider in routing\\n4. Database unavailable → health endpoint reports degraded, read-only mode where possible\\n5. Circuit breaker pattern implemented for external service calls\\n6. Degradation state surfaced in admin health endpoint\\n7. Integration tests for each degradation scenario\\n\\n## Files\\n- apps/api/api/routers/chat.py (degradation handling)\\n- apps/api/api/routers/search.py (degradation handling)\\n- apps/api/services/health.py (degradation state)\\n- apps/api/core/circuit_breaker.py (new)",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "97",
+        "title": "[CE] Versioned API Contract Enforcement",
+        "description": "Implement versioned API contract enforcement as required by PRD NFR Scalability. The backend uses /api/v1/ prefix but no mechanism prevents breaking changes within v1. CI has OpenAPI drift checks but no breaking-change detection.",
+        "details": "## Why\\nPRD requires \"versioned endpoints.\" No breaking-change detection in CI.\\n\\n## Acceptance Criteria\\n1. OpenAPI schema diff CI step detects breaking changes (removed fields, changed types)\\n2. API versioning strategy documented in ADR\\n3. All endpoint responses include API version in response header\\n4. Backward compatibility test suite ensures v1 contract stability\\n5. CI blocks PR on breaking API changes\\n\\n## Files\\n- .github/workflows/ci.yml (add OpenAPI diff step)\\n- docs/adr/ (new ADR for API versioning)\\n- apps/api/api/middleware/versioning.py (new)\\n- apps/api/tests/integration/api/test_versioning.py (new)",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "98",
+        "title": "[CE] Structured Log Standardization",
+        "description": "Standardize all backend and frontend logging to structured JSON format as required by PRD NFR Observability. Currently logging is inconsistent — some structured, some plain text. Task #81 (System Health Metrics) is done but logs are not standardized.",
+        "details": "## Why\\nPRD requires \"structured logs, traces, metrics, request IDs, audit events.\"\\n\\n## Acceptance Criteria\\n1. All backend log output in structured JSON format\\n2. Required fields: timestamp, level, request_id, service, message\\n3. Log level policy documented (what gets INFO vs DEBUG vs WARN vs ERROR)\\n4. No sensitive data in any log entry (verified by automated scan)\\n5. Frontend error logging includes request_id correlation\\n6. Consistent log format across all services\\n\\n## Files\\n- apps/api/core/logging.py (standardized formatter)\\n- apps/api/config/settings.py (log level config)\\n- apps/web/src/lib/logger.ts (frontend structured logging)\\n- docs/adr/ (log level policy)",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          "81"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "99",
+        "title": "[CE] Full E2E Test Suite in CI",
+        "description": "Integrate the existing E2E test suite into CI pipeline. Sprint 4 calls for \"Full e2e tests, static checks, stabilization.\" E2E tests exist in apps/api/tests/e2e/ (auth, chat, search, documents, infrastructure, observability, UI) but they never run in CI. The PRD DoD requires \"All CI jobs green after push.\"",
+        "details": "## Why\\nSprint 4 requires \"Full e2e tests.\" E2E exists but doesn't run in CI.\\n\\n## Acceptance Criteria\\n1. E2E covers all user flows: search, chat, tools, settings, auth, exports\\n2. E2E runs in CI as separate job (can be continue-on-error initially)\\n3. E2E results uploaded as CI artifacts\\n4. Test parity: same tests pass locally and in CI\\n5. Flaky test rate < 5%\\n6. E2E job uses service containers (Postgres, Redis) in CI\\n\\n## Files\\n- .github/workflows/ci.yml (add e2e job)\\n- apps/api/tests/e2e/ (existing tests, may need CI adjustments)\\n- apps/api/pyproject.toml (ensure e2e dependencies)",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "100",
+        "title": "[CE] SPRAV Pre-Release Full Validation Run",
+        "description": "Execute a full SPRAV pre-release validation run before any production deployment. The SPRAV validation framework exists (scripts/sprav/, docs/templates/sprav_report.md) and Task #33 (Deploy) is blocked. This is the final quality gate that unblocks deployment. The Alembic migration is fresh (March 27, 2026) and needs validation.",
+        "details": "## Why\\nSPRAV framework exists. Task #33 blocked. Full validation needed before deploy.\\n\\n## Acceptance Criteria\\n1. `make sprav` completes with 0 blockers\\n2. Backend unit coverage >= 90% on critical paths\\n3. Backend integration coverage >= 70%\\n4. Security scans: 0 secrets, 0 high-confidence vulnerabilities\\n5. Alembic migration validated against fresh and migrated databases\\n6. All CI jobs green (lint, test, security, compose_smoke)\\n7. Report generated in artifacts/validation_report.md\\n8. SPRAV roles (team-lead, architect, qa) all report PASSED\\n\\n## Dependencies\\nDepends on #95 (Audit Logging), #96 (Graceful Degradation), #97 (Versioned API), #98 (Structured Logs), #99 (E2E in CI)\\n\\n## Files\\n- scripts/sprav/ (existing framework)\\n- docs/templates/sprav_report.md (existing template)\\n- artifacts/validation_report.md (generated report)",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          "95",
+          "96",
+          "97",
+          "98",
+          "99"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "101",
+        "title": "[CE] Alembic Migration Data Population",
+        "description": "Create idempotent seed scripts for dev/demo data and ensure Docker Compose runs migration + seed automatically. The Alembic migration system was freshly implemented (March 27, 2026) with a single initial migration. No data seeding strategy exists.",
+        "details": "## Why\\nFresh Alembic migration (March 27). No seed strategy.\\n\\n## Acceptance Criteria\\n1. Idempotent seed script exists for development/demo data\\n2. Seed script populates: sample properties, sample users, notification preferences\\n3. Docker Compose setup runs migration + seed automatically on first start\\n4. Seed script safe to run multiple times (idempotent)\\n5. Data population workflow documented\\n6. Seed data covers at least 2 cities with 20+ properties each\\n\\n## Files\\n- apps/api/alembic/seed.py (new)\\n- deploy/compose/docker-compose.yml (auto-seed on startup)\\n- docs/development/DATA_POPULATION.md (new)",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "102",
+        "title": "[CE] npm Vulnerability Ongoing Monitoring",
+        "description": "Add ongoing npm vulnerability monitoring to CI. Task #89 fixed current vulnerabilities but no ongoing gate exists to prevent regression. High/critical vulnerabilities should block PRs.",
+        "details": "## Why\\n#89 fixed current vulns but no ongoing gate.\\n\\n## Acceptance Criteria\\n1. `npm audit` CI step fails on high/critical vulnerabilities\\n2. Dependabot or Renovate configured for automatic dependency update PRs\\n3. Weekly audit schedule documented\\n4. Audit exceptions documented in .nsprc or npm audit config\\n\\n## Files\\n- .github/workflows/ci.yml (add npm audit step)\\n- .github/dependabot.yml (new)\\n- apps/web/package.json (audit config)",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          "89"
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "103",
+        "title": "[CE] Community Contribution Guidelines Enhancement",
+        "description": "Enhance CONTRIBUTING.md with Community Edition-specific sections, PR templates, DCO/CLA requirements, and curated \"good first issue\" labels. This enables community contributions and is required for the CE public launch.",
+        "details": "## Why\\nCE public launch requires contribution guidelines. Depends on license decision (#90).\\n\\n## Acceptance Criteria\\n1. CONTRIBUTING.md updated with CE-specific sections (code of conduct, PR process, review SLA)\\n2. PR template includes checklist for CE compliance (license header, tests, docs)\\n3. At least 5 issues labeled `good first issue` created\\n4. DCO (Developer Certificate of Origin) requirement documented\\n5. Code review turnaround SLA stated (e.g., 48 hours for community PRs)\\n6. SECURITY.md with responsible disclosure process\\n\\n## Files\\n- CONTRIBUTING.md (enhance)\\n- .github/PULL_REQUEST_TEMPLATE.md (new)\\n- .github/ISSUE_TEMPLATE/ (new templates)\\n- SECURITY.md (new)",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          "90"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "104",
+        "title": "[CE] Community Metrics Dashboard",
+        "description": "Create community health metrics tracking as called for by the Roadmap: \"Metrics: >=100 GitHub stars, first external PRs merged, doc site visits growth.\" No tracking infrastructure exists.",
+        "details": "## Why\\nRoadmap defines community metrics but no tracking.\\n\\n## Acceptance Criteria\\n1. GitHub stars tracked weekly (manual or automated)\\n2. External PR tracking (time to first external PR merged)\\n3. Monthly community health report template in docs/community/\\n4. CONTRIBUTING.md references metrics goals\\n\\n## Files\\n- docs/community/METRICS.md (new)\\n- docs/community/monthly-report-template.md (new)",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "105",
+        "title": "[CE] API Reference Completeness Audit",
+        "description": "Audit API reference documentation for completeness. The DoD requires \"OpenAPI and API reference drift checks pass.\" CI has drift checks for OpenAPI schema and API reference, but the reference may not cover all new endpoints added by tasks #64-#88 (MCP admin/audit, enrichment hooks, user profile, notification preferences, model preferences, data sources, bulk jobs, etc.).",
+        "details": "## Why\\nDoD requires API reference drift checks. New endpoints may be undocumented.\\n\\n## Acceptance Criteria\\n1. All /api/v1/* endpoints documented in OpenAPI schema with request/response examples\\n2. API reference markdown (docs/api/) covers all endpoints\\n3. Drift checks pass for all endpoints (CI green)\\n4. Error response schemas documented for each endpoint\\n5. Authentication requirements documented per endpoint (API Key vs JWT)\\n\\n## Files\\n- apps/api/api/routers/*.py (docstrings for OpenAPI)\\n- docs/api/API_REFERENCE.md (audit and update)\\n- docs/api/openapi.json (regenerate)\\n- scripts/docs/export_openapi.py (verify drift check)",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "106",
+        "title": "[private] Success Metrics Tracking Infrastructure",
+        "description": "[PRIVATE - DEFERRED] Build infrastructure to track the 4 PRD Success Metrics: engagement (avg session >3 min, 30% return users), relevance (>=80% match accuracy), conversion (>=15% chat-to-viewing), performance (p95 latency). This is Hosted Pro scope — not required for CE stabilization.",
+        "details": "## Why\\nPRD defines 4 Success Metrics but measurement infrastructure is Pro/hosted scope.\\n\\n## Acceptance Criteria\\n1. Session duration tracking implemented (target: avg >3 min)\\n2. Return user tracking implemented (target: 30% return)\\n3. Search relevance rating mechanism (thumbs up/down on results)\\n4. Chat-to-viewing conversion funnel tracking (target: >=15%)\\n5. p95 latency metrics surfaced per endpoint\\n6. Admin metrics dashboard with real-time success metric KPIs\\n7. Automated alerts when metrics fall below PRD targets",
+        "testStrategy": "",
+        "status": "deferred",
+        "dependencies": [
+          "82",
+          "81"
+        ],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-03-27T22:30:59.943Z"
+      },
+      {
+        "id": "107",
+        "title": "[private] Dynamic Pricing & Market Positioning",
+        "description": "[PRIVATE - DEFERRED] Estimate fair rent/sale price per property based on location, area, rooms, and recent comparables. Highlight above/below market by percentage. Suggest price adjustment ranges. Extends existing Price History (#38) and CMA (#85) features.",
+        "details": "## Why\\nFEATURE_IDEAS: Dynamic Pricing and Market Positioning — agent-facing tool.\\n\\n## Acceptance Criteria\\n1. Fair price estimation endpoint: POST /api/v1/tools/fair-price\\n2. Above/Below Market indicator on property cards (percentage)\\n3. Price adjustment suggestion ranges for agents\\n4. Integration with existing comparable selector (#85)\\n5. Unit tests for pricing model with known datasets\\n6. Confidence score per estimate",
+        "testStrategy": "",
+        "status": "deferred",
+        "dependencies": [
+          "38",
+          "85"
+        ],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-03-27T22:30:59.975Z"
+      },
+      {
+        "id": "108",
+        "title": "[private] Negotiation Helper",
+        "description": "[PRIVATE - DEFERRED] Analyze market data for a specific property, suggest negotiation strategy, generate emails/messages to landlord/agency. Depends on Dynamic Pricing (#107) for market analysis.",
+        "details": "## Why\\nFEATURE_IDEAS: Negotiation Helper — agent-facing tool.\\n\\n## Acceptance Criteria\\n1. Negotiation analysis endpoint: POST /api/v1/tools/negotiation\\n2. Strategy suggestions (aggressive, moderate, conservative) with data backing\\n3. Email/message template generation with configurable tone\\n4. Price band visualization showing realistic negotiation range\\n5. Historical negotiation success rates where data available",
+        "testStrategy": "",
+        "status": "deferred",
+        "dependencies": [
+          "107",
+          "85"
+        ],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-03-27T22:31:00.005Z"
+      },
+      {
+        "id": "109",
+        "title": "[private] Personalised Recommendations Engine",
+        "description": "[PRIVATE - DEFERRED] Build a personalization engine where users describe budget/lifestyle/family situation and the system builds a persona, proposing suitable listings with explanations. Pro feature.",
+        "details": "## Why\\nFEATURE_IDEAS: Personalised Recommendations — Pro feature.\\n\\n## Acceptance Criteria\\n1. User persona model (budget range, lifestyle tags, family size, location preferences)\\n2. Recommendation endpoint: POST /api/v1/recommendations\\n3. Explanation generation per recommendation\\n4. Recommendation quality metric >= 70% user satisfaction\\n5. Integration with existing search pipeline\\n6. Persona evolves based on user behavior (favorites, searches, activity)",
+        "testStrategy": "",
+        "status": "deferred",
+        "dependencies": [
+          "37",
+          "82"
+        ],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-03-27T22:31:00.034Z"
+      },
+      {
+        "id": "110",
+        "title": "[private] Shared Shortlists",
+        "description": "[PRIVATE - DEFERRED] Allow users to create shareable shortlists where family/friends can comment and vote on properties. Pro collaboration feature.",
+        "details": "## Acceptance Criteria\\n1. Shortlist creation with unique shareable link\\n2. Multi-user comment thread per property in shortlist\\n3. Simple vote/score mechanism per property (thumbs up/down)\\n4. Email notification when someone comments on shared shortlist\\n5. Privacy controls (public, link-only, invite-only)\\n6. Shortlist activity feed",
+        "testStrategy": "",
+        "status": "deferred",
+        "dependencies": [
+          "37"
+        ],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-03-27T22:31:00.060Z"
+      },
+      {
+        "id": "111",
+        "title": "[private] CRM Integration (HubSpot/Pipedrive)",
+        "description": "[PRIVATE - DEFERRED] Two-way CRM sync with HubSpot and Pipedrive for leads and deals. Follows ExternalSourceAdapter pattern from FEATURE_IDEAS.",
+        "details": "## Acceptance Criteria\\n1. Adapter interface following ExternalSourceAdapter pattern\\n2. Two-way sync: leads from chat to CRM, CRM status back to app\\n3. Webhook endpoint for CRM event notifications\\n4. OAuth flow for CRM authorization\\n5. Rate limiting and retry logic per CRM API limits\\n6. Sync status dashboard in admin\\n7. Per-user CRM credential storage (encrypted)",
+        "testStrategy": "",
+        "status": "deferred",
+        "dependencies": [
+          "55",
+          "45"
+        ],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-03-27T22:31:00.086Z"
+      },
+      {
+        "id": "112",
+        "title": "[private] Calendar Integration for Viewings",
+        "description": "[PRIVATE - DEFERRED] Schedule viewing appointments with iCal/Google Calendar integration. Agent availability management and reminder notifications.",
+        "details": "## Acceptance Criteria\\n1. Viewing scheduling UI on property detail page\\n2. iCal/Google Calendar invite generation (.ics file)\\n3. Agent availability management (working hours, blocked slots)\\n4. Reminder notifications (email + push, 24h and 1h before)\\n5. Calendar sync endpoint: POST /api/v1/tools/schedule-viewing\\n6. Reschedule and cancel flows with notification",
+        "testStrategy": "",
+        "status": "deferred",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-03-27T22:31:00.112Z"
+      },
+      {
+        "id": "113",
+        "title": "[private] BI Export Pipelines",
+        "description": "[PRIVATE - DEFERRED] Scheduled exports to Power BI, Tableau, Metabase. CSV/Parquet/SQL view exports for data teams. Extends existing export API (#80).",
+        "details": "## Acceptance Criteria\\n1. Scheduled export configuration (daily, weekly, monthly cron)\\n2. Export formats: CSV, Parquet, SQL views\\n3. Pre-built export templates for common BI queries (price trends, inventory, leads)\\n4. Webhook notification on export completion\\n5. Integration with existing export API (#80)\\n6. Admin UI for managing scheduled exports\\n7. Export history with download links",
+        "testStrategy": "",
+        "status": "deferred",
+        "dependencies": [
+          "80"
+        ],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-03-27T22:31:00.138Z"
+      },
+      {
+        "id": "114",
+        "title": "[private] Portfolio Vacancy & Absorption Analytics",
+        "description": "[PRIVATE - DEFERRED] Track vacancy rates, absorption rates, and identify \"white spots\" on map where demand exceeds supply. Flag underperforming properties with long exposure or low interest. Pro manager analytics.",
+        "details": "## Acceptance Criteria\\n1. Vacancy rate calculation by city/district\\n2. Absorption rate tracking over time (properties sold/rented per period)\\n3. \"White spots\" identification (high demand, low supply areas) on map\\n4. Underperforming property flagging (long exposure, low interest metrics)\\n5. Integration with market trends dashboard (#84)\\n6. Admin dashboard with portfolio health overview",
+        "testStrategy": "",
+        "status": "deferred",
+        "dependencies": [
+          "39",
+          "56"
+        ],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-03-27T22:31:00.163Z"
+      },
+      {
+        "id": "115",
+        "title": "[private] Multi-Agent Orchestration Framework",
+        "description": "[PRIVATE - DEFERRED] Build multi-agent orchestration framework for lead qualification, legal analysis, and complex workflows. PRD Hosted Pro scope: \"Multi-agent orchestration (lead qualification, legal analysis).\"",
+        "details": "## Acceptance Criteria\\n1. Agent-to-agent communication protocol\\n2. Task delegation and result aggregation\\n3. Human-in-the-loop escalation for uncertain decisions\\n4. Agent capability registry\\n5. Orchestration flow definition (DAG-based)\\n6. Monitoring dashboard for multi-agent conversations\\n7. Agent performance metrics per orchestration run",
+        "testStrategy": "",
+        "status": "deferred",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-03-27T22:31:00.190Z"
+      },
+      {
+        "id": "116",
+        "title": "[private] Voice Mode with Telephony",
+        "description": "[PRIVATE - DEFERRED] Implement voice mode with telephony integration. PRD Hosted Pro scope: \"voice mode with telephony.\" Real-time voice conversation with transcription.",
+        "details": "## Acceptance Criteria\\n1. STT (speech-to-text) pipeline using Whisper or similar\\n2. TTS (text-to-speech) pipeline for agent responses\\n3. Phone number integration (Twilio/Vonage)\\n4. Real-time voice conversation with <2s latency\\n5. Full transcription logging for compliance\\n6. Voice-to-chat handoff (switch from voice to text mid-conversation)\\n7. Multi-language voice support",
+        "testStrategy": "",
+        "status": "deferred",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-03-27T22:31:00.215Z"
+      },
+      {
+        "id": "117",
+        "title": "[private] Dialog Efficiency & Conversion Analytics",
+        "description": "[PRIVATE - DEFERRED] Build analytics dashboard for dialog efficiency and conversion as specified in PRD Hosted Pro: \"Analytics dashboard for dialog efficiency and conversion.\" Depends on Success Metrics infrastructure (#106).",
+        "details": "## Acceptance Criteria\\n1. Conversation quality scoring (helpfulness, accuracy, completeness)\\n2. Agent response time metrics (first token, full response, tool execution)\\n3. Conversion funnel analytics (chat → property view → inquiry → viewing → deal)\\n4. A/B test framework for prompt and routing experiments\\n5. Dialog pattern analysis (common questions, escalation triggers)\\n6. ROI calculator: conversation cost vs. conversion value\\n7. Export to BI tools pipeline",
+        "testStrategy": "",
+        "status": "deferred",
+        "dependencies": [
+          "106"
+        ],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-03-27T22:31:00.241Z"
+      }
+    ],
+    "metadata": {
+      "version": "1.0.0",
+      "lastModified": "2026-03-28T12:38:47.858Z",
+      "taskCount": 93,
+      "completedCount": 67,
+      "tags": [
+        "master"
+      ]
+    }
+  }
+}
