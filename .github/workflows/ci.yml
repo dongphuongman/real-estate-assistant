@@ -313,6 +313,73 @@ jobs:
             done
           fi
 
+  e2e:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'NestLab-Tech'
+    needs: [frontend]
+    timeout-minutes: 20
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        env:
+          CI: 'true'
+          PLAYWRIGHT_START_WEB: 'false'
+        run: npx playwright test
+
+      - name: Upload E2E report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: artifacts/e2e-report/
+
+      - name: Upload E2E output (screenshots/traces)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-output
+          path: artifacts/e2e-output/
+
+      - name: E2E summary
+        if: always()
+        run: |
+          echo "### E2E Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f artifacts/e2e-report/results.json ]; then
+            PASSED=$(python3 -c "import json; d=json.load(open('artifacts/e2e-report/results.json')); print(d.get('stats',{}).get('passed',0))")
+            FAILED=$(python3 -c "import json; d=json.load(open('artifacts/e2e-report/results.json')); print(d.get('stats',{}).get('failed',0))")
+            TOTAL=$(python3 -c "import json; d=json.load(open('artifacts/e2e-report/results.json')); print(d.get('stats',{}).get('total',0))")
+            echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Total | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+            echo "| Passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
+            echo "| Failed | $FAILED |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No results.json found" >> $GITHUB_STEP_SUMMARY
+          fi
+
   compose_smoke:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'NestLab-Tech'
@@ -467,7 +534,7 @@ jobs:
   pipeline_health:
     runs-on: ubuntu-latest
     if: always() && github.repository_owner == 'NestLab-Tech'
-    needs: [gitleaks, backend, frontend, security, audit, semgrep, trivy, compose_smoke, lighthouse]
+    needs: [gitleaks, backend, frontend, security, audit, semgrep, trivy, compose_smoke, lighthouse, e2e]
     permissions:
       contents: read
     steps:
