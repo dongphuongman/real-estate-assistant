@@ -1,0 +1,124 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AI Real Estate Assistant",
+    "version": "3.0.0",
+    "description": "API contract baseline for v1 endpoints. Regenerate with: make schema-baseline"
+  },
+  "x-api-contract-version": "1.0.0",
+  "paths": {
+    "/api/v1/search": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search for properties",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["query"],
+                "properties": {
+                  "query": {"type": "string"},
+                  "limit": {"type": "integer", "default": 10},
+                  "filters": {"type": "object"},
+                  "alpha": {"type": "number"},
+                  "lat": {"type": "number"},
+                  "lon": {"type": "number"},
+                  "radius_km": {"type": "number"},
+                  "include_explanation": {"type": "boolean", "default": false}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {"type": "array"},
+                    "count": {"type": "integer"}
+                  }
+                }
+              }
+            }
+          },
+          "503": {"description": "Service unavailable"}
+        }
+      }
+    },
+    "/api/v1/chat": {
+      "post": {
+        "tags": ["Chat"],
+        "summary": "Process a chat message",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["message"],
+                "properties": {
+                  "message": {"type": "string"},
+                  "session_id": {"type": "string"},
+                  "stream": {"type": "boolean", "default": false},
+                  "include_intermediate_steps": {"type": "boolean", "default": false}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Chat response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "response": {"type": "string"},
+                    "sources": {"type": "array"},
+                    "sources_truncated": {"type": "boolean"},
+                    "session_id": {"type": "string"}
+                  }
+                }
+              }
+            }
+          },
+          "503": {"description": "Service unavailable"}
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "Health status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {"type": "string", "enum": ["healthy", "degraded", "unhealthy"]},
+                    "version": {"type": "string"},
+                    "timestamp": {"type": "string"},
+                    "uptime_seconds": {"type": "number"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {}
+  }
+}

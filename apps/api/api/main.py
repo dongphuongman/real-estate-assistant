@@ -23,6 +23,7 @@ from api.middleware.csrf import add_csrf_middleware
 from api.middleware.error_handler import add_error_handlers
 from api.middleware.request_size import add_request_size_limits
 from api.middleware.security import add_security_headers
+from api.middleware.versioning import add_versioning_middleware
 from api.observability import REQUEST_ID_HEADER, add_observability
 from api.routers import (
     admin,
@@ -98,6 +99,7 @@ app = FastAPI(
 
 add_observability(app, logger)
 add_security_headers(app)
+add_versioning_middleware(app)  # Task #97: API version headers
 add_request_size_limits(app)
 add_csrf_middleware(app)
 add_error_handlers(app)
