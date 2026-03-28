@@ -1005,7 +1005,7 @@
         "description": "Add Lighthouse CI step to enforce PRD requirement of \"Lighthouse >=90 on desktop for search and chat pages.\" The lighthouse.config.js already has correct assertions (performance >=0.9, accessibility >=0.9) but CI never executes Lighthouse audits.",
         "details": "## Why\\nPRD requires Lighthouse >=90 on desktop for search and chat. lighthouse.config.js exists but CI never runs it.\\n\\n## Files\\n- .github/workflows/ci.yml — add Lighthouse audit step\\n- apps/web/lighthouse.config.js — already has correct assertions\\n\\n## Acceptance Criteria\\n1. CI pipeline includes Lighthouse audit step after frontend build\\n2. Lighthouse assertions block PR merge on score regression\\n3. Both search and chat pages score >= 90 on performance and accessibility\\n4. Lighthouse report uploaded as CI artifact\\n5. Baseline scores documented in docs/performance/",
         "testStrategy": "",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "high",
         "subtasks": []
