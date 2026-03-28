@@ -9,7 +9,7 @@ Open Core & Walled Garden strategy. Conversational, data‑driven assistant for 
 - Manager: tracks portfolio KPIs, market trends, and team performance.
 
 ## Community Edition (Open Source)
-- License: AGPLv3
+- License: MIT
 - Chat assistant: intent detection, quick answers, tool invocations.
 - Property search: hybrid retrieval (semantic + keyword), filters, geo radius.
 - Tools: mortgage calculator, property comparison, price analysis, location analysis.

@@ -245,3 +245,7 @@ Keep `main` reserved for releases (merge from `dev` when publishing).
 - Keep `README.md` concise.
 - Place detailed docs in `docs/`.
 - Update `docs/api/API_REFERENCE.md` for API changes.
+
+## ⚖️ License
+
+By contributing to this project, you agree that your contributions will be licensed under the [MIT License](../../LICENSE).
