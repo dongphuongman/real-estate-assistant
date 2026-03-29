@@ -12,7 +12,8 @@
     "test:ci": "jest --ci --coverage",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "lighthouse": "lhci autorun"
+    "lighthouse": "lhci autorun",
+    "audit": "npm audit --audit-level=high --omit=dev"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "10.2.6",
