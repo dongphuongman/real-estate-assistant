@@ -1156,10 +1156,11 @@
         "description": "Create community health metrics tracking as called for by the Roadmap: \"Metrics: >=100 GitHub stars, first external PRs merged, doc site visits growth.\" No tracking infrastructure exists.",
         "details": "## Why\\nRoadmap defines community metrics but no tracking.\\n\\n## Acceptance Criteria\\n1. GitHub stars tracked weekly (manual or automated)\\n2. External PR tracking (time to first external PR merged)\\n3. Monthly community health report template in docs/community/\\n4. CONTRIBUTING.md references metrics goals\\n\\n## Files\\n- docs/community/METRICS.md (new)\\n- docs/community/monthly-report-template.md (new)",
         "testStrategy": "",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [],
         "priority": "medium",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-03-29T18:25:57.793Z"
       },
       {
         "id": "105",
@@ -1343,7 +1344,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-29T18:25:45.332Z",
+      "lastModified": "2026-03-29T18:25:57.793Z",
       "taskCount": 93,
       "completedCount": 78,
       "tags": [
