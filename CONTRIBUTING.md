@@ -172,6 +172,17 @@ Looking for a place to start? Check these community-friendly issues:
 
 Filter by [`good first issue`](https://github.com/AleksNeStu/ai-real-estate-assistant/labels/good%20first%20issue) label for more opportunities.
 
+### Community Metrics Goals
+
+We track community health metrics to measure project growth. See [docs/community/METRICS.md](docs/community/METRICS.md) for the full tracking framework.
+
+| Goal | Target | Why |
+|------|--------|-----|
+| GitHub Stars | >= 100 | Visibility and adoption |
+| External PRs Merged | >= 1 | Active community participation |
+| Open Good First Issues | >= 5 | Always have onboarding opportunities |
+| External Contributors | >= 3 | Diverse contributor base |
+
 ## Architecture Overview
 
 ```
