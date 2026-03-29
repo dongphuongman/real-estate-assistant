@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -11,6 +12,10 @@ def main() -> int:
     # Add api_root to path for imports to work (code uses "from api.xxx")
     if str(api_root) not in sys.path:
         sys.path.insert(0, str(api_root))
+
+    # Enable JWT auth so ALL conditional routers are included in the schema.
+    # This ensures the exported OpenAPI captures every endpoint.
+    os.environ.setdefault("ENABLE_JWT_AUTH", "true")
 
     from api.main import app as fastapi_app
     from api.openapi_export import export_openapi_schema

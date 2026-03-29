@@ -257,6 +257,58 @@ Example response:
 
 ### Endpoints
 
+### Authentication Requirements by Router
+
+| Router | Prefix | Auth Type | JWT-Gated | Notes |
+|--------|--------|-----------|-----------|-------|
+| search | `/api/v1` | API Key | No | Core search |
+| chat | `/api/v1` | API Key | No | Chat + streaming |
+| rag | `/api/v1` | API Key | No | Upload + QA |
+| settings | `/api/v1` | API Key | No | Models, notifications |
+| tools | `/api/v1` | API Key | No | Mortgage, comparison, etc. |
+| prompt_templates | `/api/v1` | API Key | No | Prompt management |
+| admin | `/api/v1` | API Key | No | Ingest, reindex, portals |
+| data_sources | `/api/v1` | API Key | No | Data source CRUD |
+| bulk_jobs | `/api/v1` | API Key | No | Import/export jobs |
+| exports | `/api/v1` | API Key | No | Property export |
+| auth (magic link) | `/api/v1` | None | No | Request/verify code |
+| metrics | `/metrics` | None | No | Prometheus |
+| health | `/health` | None | No | Health check |
+| mcp_admin | `/api/v1` | Own auth | No | MCP connector CRUD |
+| mcp_audit | `/api/v1` | Own auth | No | MCP audit logs |
+| ranking_config | `/api/v1` | API Key | No | Ranking weights |
+| investment | `/api/v1` | API Key | No | Investment reports |
+| cma | `/api/v1` | None | No | Comparative Market Analysis |
+| auth_jwt | `/api/v1` | JWT | **Yes** | Login, register, refresh |
+| saved_searches | `/api/v1` | JWT | **Yes** | Saved search CRUD |
+| collections | `/api/v1` | JWT | **Yes** | Property collections |
+| favorites | `/api/v1` | JWT | **Yes** | Property favorites |
+| filter_presets | `/api/v1` | JWT | **Yes** | Filter presets |
+| market | `/api/v1` | JWT | **Yes** | Price history, trends |
+| anomalies | `/api/v1` | JWT | **Yes** | Market anomalies |
+| leads | `/api/v1` | JWT | **Yes** | Lead scoring |
+| agent_analytics | `/api/v1` | JWT | **Yes** | Agent performance |
+| push | `/api/v1` | JWT | **Yes** | Push notifications |
+| agents | `/api/v1` | JWT | **Yes** | Agent/broker integration |
+| documents | `/api/v1` | JWT | **Yes** | Document management |
+| esignatures | `/api/v1` | JWT | **Yes** | E-signature integration |
+| user_activity | `/api/v1` | JWT | **Yes** | Activity analytics |
+| model_preferences | `/api/v1` | JWT | **Yes** | Per-task model prefs |
+| profile | `/api/v1` | JWT | **Yes** | User profile management |
+
+> **Note**: JWT-gated routers are only loaded when `ENABLE_JWT_AUTH=true`. The OpenAPI export script sets this automatically to capture all endpoints.
+
+### Regenerating the OpenAPI Schema
+
+To include all endpoints (including JWT-gated) in the schema:
+
+```bash
+python scripts/docs/export_openapi.py          # Export with JWT enabled
+python scripts/docs/generate_api_reference.py  # Generate markdown
+```
+
+The export script automatically sets `ENABLE_JWT_AUTH=true` to capture the full API surface.
+
 ## POST /api/v1/admin/excel/sheets
 
 **Summary**: Get Excel Sheets
