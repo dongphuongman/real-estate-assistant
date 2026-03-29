@@ -88,3 +88,20 @@ ai-real-estate-assistant/
 | **Claude config** | `CLAUDE.md` |
 | **Workspace Rules** | `.agent/workspace-rules.md` |
 | **Workflow Index** | `.agent/workspace-workflows.md` |
+
+
+## 🚨 CRITICAL RULE: UNIFIED LOCAL-DEV SCRIPTS 🚨
+**DO NOT use standard commands like 
+pm run dev or docker-compose up directly.**
+This project belongs to the NestSolo meta-repo and uses dynamic port allocation (via 
+estdev) to prevent cross-agent conflicts.
+
+To run the project locally, you MUST use the provided wrapper scripts:
+- Native: ./scripts/start.sh or .\scripts\start.ps1
+- Docker: ./scripts/start-docker.sh or .\scripts\start-docker.ps1
+- Stop: ./scripts/stop.sh or .\scripts\stop.ps1
+
+**How to find the active port:**
+Once the script starts, the assigned port is written to the runtime directory. To discover it, read:
+cat .runtime/port.txt
+Alternatively, use cat .runtime/ports.json for a full list of allocated service ports.

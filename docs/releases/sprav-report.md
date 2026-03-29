@@ -1,14 +1,14 @@
 # SPRAV Report: v1.0.0
 
-**Date:** 2026-03-26T19:13:45.049927
+**Date:** 2026-03-29T14:44:20.199690
 **Release:** v1.0.0
 **Overall Status:** FAILED
 
 ## Summary
 
 - Total Validations: 5
-- Passed: 0
-- Failed: 5
+- Passed: 1
+- Failed: 4
 - Blockers: 0
 - Warnings: 0
 - Skipped: 0
@@ -24,7 +24,7 @@
 | automation | Automation Pipeline | ✗ FAILED | 0/3 checks passed |
 | architect | Architecture Quality | ✗ FAILED | 1/2 checks passed |
 | qa | QA Validation | ✗ FAILED | 0/3 checks passed |
-| backend | Backend Validation | ✗ FAILED | 0/1 checks passed |
+| backend | Backend Validation | ✓ PASSED | 1/1 checks passed |
 | frontend | Frontend Validation | ✗ FAILED | 0/2 checks passed |
 
 ## Evidence
@@ -37,6 +37,7 @@
 ### Backend Validation
 
 - Type check (mypy): WARNINGS (continue-on-error)
+- Forbidden token scan: PASSED
 - API health check: SKIPPED (server not running)
 
 ## Defects
@@ -54,10 +55,9 @@ LOCAL SECURITY SCAN REPORT (CI/ |
 | D004 | Medium | Architecture Quality | Frontend lint issues |
 | D005 | Medium | QA Validation | Backend unit tests failed |
 | D006 | Medium | QA Validation | Backend integration tests failed |
-| D007 | Medium | QA Validation | Frontend coverage too low: 37.02% |
-| D008 | Medium | Backend Validation | Forbidden tokens detected |
-| D009 | Medium | Frontend Validation | Frontend build failed |
-| D010 | Medium | Frontend Validation | TypeScript errors detected |
+| D007 | Medium | QA Validation | Frontend coverage too low: 51.44% |
+| D008 | Medium | Frontend Validation | Frontend build failed |
+| D009 | Medium | Frontend Validation | TypeScript errors detected |
 
 ## GO Criteria
 
