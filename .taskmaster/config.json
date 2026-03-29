@@ -29,7 +29,7 @@
     "logLevel": "warn",
     "debug": false,
     "defaultNumTasks": 7,
-    "defaultSubtasks": 5,
+    "defaultSubtasks": 4,
     "defaultPriority": "medium",
     "projectName": "AI Real Estate Assistant",
     "responseLanguage": "English",
