@@ -4,9 +4,24 @@ Tests for Push Notification Service.
 Task #58: Comprehensive Test Suite Update
 """
 
+import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
+
+# Mock pywebpush if not installed (optional dependency)
+if "pywebpush" not in sys.modules:
+    class _MockWebPushException(Exception):
+        """Mock WebPushException matching pywebpush interface."""
+
+        def __init__(self, message="", response=None):
+            super().__init__(message)
+            self.response = response
+
+    _mock_pywebpush = MagicMock()
+    sys.modules["pywebpush"] = _mock_pywebpush
+    sys.modules["pywebpush"].WebPushException = _MockWebPushException
+
 from pywebpush import WebPushException
 
 from notifications.push_service import (

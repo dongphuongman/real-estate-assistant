@@ -78,7 +78,7 @@ def test_search_store_unavailable(valid_headers):
     response = client.post("/api/v1/search", json={"query": "test"}, headers=valid_headers)
 
     assert response.status_code == 503
-    assert "not available" in response.json()["detail"]
+    assert "unavailable" in response.json()["detail"]
 
     app.dependency_overrides = {}
 
