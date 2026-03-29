@@ -242,7 +242,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
 
@@ -342,7 +342,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
 
@@ -397,7 +397,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
 
