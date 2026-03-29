@@ -1100,7 +1100,7 @@
         "description": "Execute a full SPRAV pre-release validation run before any production deployment. The SPRAV validation framework exists (scripts/sprav/, docs/templates/sprav_report.md) and Task #33 (Deploy) is blocked. This is the final quality gate that unblocks deployment. The Alembic migration is fresh (March 27, 2026) and needs validation.",
         "details": "## Why\\nSPRAV framework exists. Task #33 blocked. Full validation needed before deploy.\\n\\n## Acceptance Criteria\\n1. `make sprav` completes with 0 blockers\\n2. Backend unit coverage >= 90% on critical paths\\n3. Backend integration coverage >= 70%\\n4. Security scans: 0 secrets, 0 high-confidence vulnerabilities\\n5. Alembic migration validated against fresh and migrated databases\\n6. All CI jobs green (lint, test, security, compose_smoke)\\n7. Report generated in artifacts/validation_report.md\\n8. SPRAV roles (team-lead, architect, qa) all report PASSED\\n\\n## Dependencies\\nDepends on #95 (Audit Logging), #96 (Graceful Degradation), #97 (Versioned API), #98 (Structured Logs), #99 (E2E in CI)\\n\\n## Files\\n- scripts/sprav/ (existing framework)\\n- docs/templates/sprav_report.md (existing template)\\n- artifacts/validation_report.md (generated report)",
         "testStrategy": "",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "95",
           "96",
