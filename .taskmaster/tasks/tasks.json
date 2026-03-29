@@ -533,7 +533,7 @@
         ],
         "priority": "high",
         "category": "testing",
-        "details": "1. E2E Test Setup:\n   - Configure Playwright/Cypress for local testing\n   - Set up test database with fixtures\n   - Configure test environment variables\n   - Create test user accounts\n\n2. Critical Path Testing:\n   - User registration and login flow\n   - Property search and filtering\n   - Property details and favorites\n   - Chat with AI assistant\n   - Document upload and management\n\n3. Docker Compose Validation:\n   - Run full stack via docker-compose\n   - Verify service health checks\n   - Test inter-service communication\n   - Verify data persistence\n\n4. Integration Scenarios:\n   - Search \u00e2\u2020\u2019 View \u00e2\u2020\u2019 Favorite \u00e2\u2020\u2019 Alert flow\n   - Document \u00e2\u2020\u2019 Sign \u00e2\u2020\u2019 Store flow\n   - Lead \u00e2\u2020\u2019 Score \u00e2\u2020\u2019 Assign flow\n   - Map \u00e2\u2020\u2019 Filter \u00e2\u2020\u2019 Property \u00e2\u2020\u2019 Chat flow",
+        "details": "1. E2E Test Setup:\n   - Configure Playwright/Cypress for local testing\n   - Set up test database with fixtures\n   - Configure test environment variables\n   - Create test user accounts\n\n2. Critical Path Testing:\n   - User registration and login flow\n   - Property search and filtering\n   - Property details and favorites\n   - Chat with AI assistant\n   - Document upload and management\n\n3. Docker Compose Validation:\n   - Run full stack via docker-compose\n   - Verify service health checks\n   - Test inter-service communication\n   - Verify data persistence\n\n4. Integration Scenarios:\n   - Search â†’ View â†’ Favorite â†’ Alert flow\n   - Document â†’ Sign â†’ Store flow\n   - Lead â†’ Score â†’ Assign flow\n   - Map â†’ Filter â†’ Property â†’ Chat flow",
         "testStrategy": "1. All E2E tests pass locally\n2. Docker Compose stack starts successfully\n3. All health checks return green\n4. No console errors in browser\n5. All critical user flows complete",
         "subtasks": [],
         "updatedAt": "2026-03-19T18:36:36.096Z"
@@ -858,7 +858,7 @@
         "id": "84",
         "title": "Market Trends Dashboard",
         "description": "Price trends, market statistics, and area insights dashboard.",
-        "details": "1. Create MarketTrends service for statistics aggregation\n2. Implement price trend calculation (monthly, yearly)\n3. Add market statistics (avg price, price/m\u00c2\u02db, days on market)\n4. Create trend chart components (line, bar)\n5. Add area comparison functionality\n6. Implement trend data caching\n7. Build market trends dashboard page",
+        "details": "1. Create MarketTrends service for statistics aggregation\n2. Implement price trend calculation (monthly, yearly)\n3. Add market statistics (avg price, price/mÂ˛, days on market)\n4. Create trend chart components (line, bar)\n5. Add area comparison functionality\n6. Implement trend data caching\n7. Build market trends dashboard page",
         "testStrategy": "1. Unit tests for trend calculations\n2. Test statistics aggregation\n3. Test caching behavior\n4. Test chart rendering\n5. E2E test for trends page",
         "status": "done",
         "dependencies": [],
@@ -931,9 +931,9 @@
       },
       {
         "id": "90",
-        "title": "[CE] License Reconciliation \u00e2\u2020\u2019 AGPLv3",
+        "title": "[CE] License Reconciliation â†’ AGPLv3",
         "description": "Reconcile the project license to AGPLv3 as specified in the PRD V4. Currently the LICENSE file contains MIT text, AGENTS.md says \"Never use GPL/AGPL packages\" (conflicts with AGPLv3 project license), and package.json files have no license field. This is a foundational decision that blocks community contribution guidelines (#103) and public CE launch.",
-        "details": "## Why\\nPRD V4 states \"License: AGPLv3\" for Community Edition. LICENSE file contains MIT. AGENTS.md says \"Never use GPL/AGPL packages\" which conflicts.\\n\\n## Files\\n- LICENSE \u00e2\u20ac\u201d update to AGPLv3 full text\\n- AGENTS.md \u00e2\u20ac\u201d remove/update GPL constraint\\n- CONTRIBUTING.md \u00e2\u20ac\u201d update license reference\\n- package.json (root + apps/web) \u00e2\u20ac\u201d add \"license\": \"AGPL-3.0-only\"\\n- pyproject.toml \u00e2\u20ac\u201d verify license field\\n\\n## Acceptance Criteria\\n1. LICENSE file updated to AGPLv3 full text\\n2. ADR-0009 documents the license decision and rationale\\n3. AGENTS.md constraint updated to allow AGPLv3 project license while still avoiding GPL dependencies\\n4. All package.json files have correct license field\\n5. CONTRIBUTING.md references AGPLv3\\n6. README.md license badge updated",
+        "details": "## Why\\nPRD V4 states \"License: AGPLv3\" for Community Edition. LICENSE file contains MIT. AGENTS.md says \"Never use GPL/AGPL packages\" which conflicts.\\n\\n## Files\\n- LICENSE â€” update to AGPLv3 full text\\n- AGENTS.md â€” remove/update GPL constraint\\n- CONTRIBUTING.md â€” update license reference\\n- package.json (root + apps/web) â€” add \"license\": \"AGPL-3.0-only\"\\n- pyproject.toml â€” verify license field\\n\\n## Acceptance Criteria\\n1. LICENSE file updated to AGPLv3 full text\\n2. ADR-0009 documents the license decision and rationale\\n3. AGENTS.md constraint updated to allow AGPLv3 project license while still avoiding GPL dependencies\\n4. All package.json files have correct license field\\n5. CONTRIBUTING.md references AGPLv3\\n6. README.md license badge updated",
         "testStrategy": "",
         "status": "done",
         "dependencies": [],
@@ -989,7 +989,7 @@
             "id": 3,
             "title": "Integrate axe-core into test suite",
             "description": "Install jest-axe and add automated accessibility checks to existing test suites. Catch WCAG violations in CI. [Updated: 28/03/2026]",
-            "details": "Files: apps/web/package.json, apps/web/src/app/__tests__/ or component test files\n<info added on 2026-03-28T10:25:19.510Z>\nCOMPLETED: Integrated jest-axe for automated accessibility testing.\n- Created src/lib/__tests__/axe-helper.ts \u00e2\u20ac\u201d reusable axe utility with checkA11y() function\n- Created src/components/ui/__tests__/button.a11y.test.tsx \u00e2\u20ac\u201d 4 a11y tests (default, destructive, disabled, asChild/link) \u00e2\u20ac\u201d all passing\n- Installed jest-axe as dev dependency\n- Pattern established for adding a11y tests to other components\n</info added on 2026-03-28T10:25:19.510Z>\n<info added on 2026-03-28T10:56:35.612Z>\nSTATUS REVERTED TO PENDING: Implementation was rolled back during planning-only phase. Previous work (jest-axe integration, axe-helper utility, button a11y tests) was undone. This subtask needs to be re-implemented when the feature moves beyond planning stage.\n</info added on 2026-03-28T10:56:35.612Z>",
+            "details": "Files: apps/web/package.json, apps/web/src/app/__tests__/ or component test files\n<info added on 2026-03-28T10:25:19.510Z>\nCOMPLETED: Integrated jest-axe for automated accessibility testing.\n- Created src/lib/__tests__/axe-helper.ts â€” reusable axe utility with checkA11y() function\n- Created src/components/ui/__tests__/button.a11y.test.tsx â€” 4 a11y tests (default, destructive, disabled, asChild/link) â€” all passing\n- Installed jest-axe as dev dependency\n- Pattern established for adding a11y tests to other components\n</info added on 2026-03-28T10:25:19.510Z>\n<info added on 2026-03-28T10:56:35.612Z>\nSTATUS REVERTED TO PENDING: Implementation was rolled back during planning-only phase. Previous work (jest-axe integration, axe-helper utility, button a11y tests) was undone. This subtask needs to be re-implemented when the feature moves beyond planning stage.\n</info added on 2026-03-28T10:56:35.612Z>",
             "status": "done",
             "dependencies": [],
             "parentTaskId": 91,
@@ -1003,7 +1003,7 @@
         "id": "92",
         "title": "[CE] Lighthouse >=90 CI Enforcement",
         "description": "Add Lighthouse CI step to enforce PRD requirement of \"Lighthouse >=90 on desktop for search and chat pages.\" The lighthouse.config.js already has correct assertions (performance >=0.9, accessibility >=0.9) but CI never executes Lighthouse audits.",
-        "details": "## Why\\nPRD requires Lighthouse >=90 on desktop for search and chat. lighthouse.config.js exists but CI never runs it.\\n\\n## Files\\n- .github/workflows/ci.yml \u00e2\u20ac\u201d add Lighthouse audit step\\n- apps/web/lighthouse.config.js \u00e2\u20ac\u201d already has correct assertions\\n\\n## Acceptance Criteria\\n1. CI pipeline includes Lighthouse audit step after frontend build\\n2. Lighthouse assertions block PR merge on score regression\\n3. Both search and chat pages score >= 90 on performance and accessibility\\n4. Lighthouse report uploaded as CI artifact\\n5. Baseline scores documented in docs/performance/",
+        "details": "## Why\\nPRD requires Lighthouse >=90 on desktop for search and chat. lighthouse.config.js exists but CI never runs it.\\n\\n## Files\\n- .github/workflows/ci.yml â€” add Lighthouse audit step\\n- apps/web/lighthouse.config.js â€” already has correct assertions\\n\\n## Acceptance Criteria\\n1. CI pipeline includes Lighthouse audit step after frontend build\\n2. Lighthouse assertions block PR merge on score regression\\n3. Both search and chat pages score >= 90 on performance and accessibility\\n4. Lighthouse report uploaded as CI artifact\\n5. Baseline scores documented in docs/performance/",
         "testStrategy": "",
         "status": "done",
         "dependencies": [],
@@ -1014,7 +1014,7 @@
         "id": "93",
         "title": "[CE] 5-Minute Quickstart Documentation",
         "description": "Create an opinionated single-path quickstart guide as called for by the PRD and Roadmap: \"Run your AI realtor in 5 minutes (local Docker Compose, BYOK).\" Current quickstart is multi-path and not opinionated enough for the 5-minute target.",
-        "details": "## Why\\nRoadmap: \"Documentation: Run your AI realtor in 5 minutes (local Docker Compose, BYOK).\" Current quickstart covers 3 methods.\\n\\n## Acceptance Criteria\\n1. Single-page guide: clone \u00e2\u2020\u2019 configure .env \u00e2\u2020\u2019 docker compose up \u00e2\u2020\u2019 working app in <=5 minutes\\n2. Pre-built Docker images available on GHCR (no local build needed)\\n3. Minimal .env.example with only required fields (1 LLM API key)\\n4. Smoke test script that verifies the stack is working after setup\\n5. Guide linked prominently from README.md\\n6. Tested on fresh machine (Windows + macOS)\\n\\n## Files\\n- docs/QUICKSTART_5MIN.md (new)\\n- README.md (add link)\\n- .env.example (simplify)\\n- deploy/compose/docker-compose.yml (verify one-command up)",
+        "details": "## Why\\nRoadmap: \"Documentation: Run your AI realtor in 5 minutes (local Docker Compose, BYOK).\" Current quickstart covers 3 methods.\\n\\n## Acceptance Criteria\\n1. Single-page guide: clone â†’ configure .env â†’ docker compose up â†’ working app in <=5 minutes\\n2. Pre-built Docker images available on GHCR (no local build needed)\\n3. Minimal .env.example with only required fields (1 LLM API key)\\n4. Smoke test script that verifies the stack is working after setup\\n5. Guide linked prominently from README.md\\n6. Tested on fresh machine (Windows + macOS)\\n\\n## Files\\n- docs/QUICKSTART_5MIN.md (new)\\n- README.md (add link)\\n- .env.example (simplify)\\n- deploy/compose/docker-compose.yml (verify one-command up)",
         "testStrategy": "",
         "status": "done",
         "dependencies": [],
@@ -1048,7 +1048,7 @@
         "id": "96",
         "title": "[CE] Graceful Degradation Testing",
         "description": "Implement and test graceful degradation when external services (LLM providers, ChromaDB, database) are unavailable, as required by PRD NFR Reliability. Currently no E2E validation of degradation behavior exists.",
-        "details": "## Why\\nPRD requires \"graceful degradation when providers/vector store are unavailable.\"\\n\\n## Acceptance Criteria\\n1. ChromaDB unavailable \u00e2\u2020\u2019 search returns clear error, chat works with reduced capability\\n2. All LLM providers unavailable \u00e2\u2020\u2019 user sees friendly message with retry option\\n3. Single provider fails \u00e2\u2020\u2019 automatic fallback to next provider in routing\\n4. Database unavailable \u00e2\u2020\u2019 health endpoint reports degraded, read-only mode where possible\\n5. Circuit breaker pattern implemented for external service calls\\n6. Degradation state surfaced in admin health endpoint\\n7. Integration tests for each degradation scenario\\n\\n## Files\\n- apps/api/api/routers/chat.py (degradation handling)\\n- apps/api/api/routers/search.py (degradation handling)\\n- apps/api/services/health.py (degradation state)\\n- apps/api/core/circuit_breaker.py (new)",
+        "details": "## Why\\nPRD requires \"graceful degradation when providers/vector store are unavailable.\"\\n\\n## Acceptance Criteria\\n1. ChromaDB unavailable â†’ search returns clear error, chat works with reduced capability\\n2. All LLM providers unavailable â†’ user sees friendly message with retry option\\n3. Single provider fails â†’ automatic fallback to next provider in routing\\n4. Database unavailable â†’ health endpoint reports degraded, read-only mode where possible\\n5. Circuit breaker pattern implemented for external service calls\\n6. Degradation state surfaced in admin health endpoint\\n7. Integration tests for each degradation scenario\\n\\n## Files\\n- apps/api/api/routers/chat.py (degradation handling)\\n- apps/api/api/routers/search.py (degradation handling)\\n- apps/api/services/health.py (degradation state)\\n- apps/api/core/circuit_breaker.py (new)",
         "testStrategy": "",
         "status": "done",
         "dependencies": [],
@@ -1071,7 +1071,7 @@
       {
         "id": "98",
         "title": "[CE] Structured Log Standardization",
-        "description": "Standardize all backend and frontend logging to structured JSON format as required by PRD NFR Observability. Currently logging is inconsistent \u00e2\u20ac\u201d some structured, some plain text. Task #81 (System Health Metrics) is done but logs are not standardized.",
+        "description": "Standardize all backend and frontend logging to structured JSON format as required by PRD NFR Observability. Currently logging is inconsistent â€” some structured, some plain text. Task #81 (System Health Metrics) is done but logs are not standardized.",
         "details": "## Why\\nPRD requires \"structured logs, traces, metrics, request IDs, audit events.\"\\n\\n## Acceptance Criteria\\n1. All backend log output in structured JSON format\\n2. Required fields: timestamp, level, request_id, service, message\\n3. Log level policy documented (what gets INFO vs DEBUG vs WARN vs ERROR)\\n4. No sensitive data in any log entry (verified by automated scan)\\n5. Frontend error logging includes request_id correlation\\n6. Consistent log format across all services\\n\\n## Files\\n- apps/api/core/logging.py (standardized formatter)\\n- apps/api/config/settings.py (log level config)\\n- apps/web/src/lib/logger.ts (frontend structured logging)\\n- docs/adr/ (log level policy)",
         "testStrategy": "",
         "status": "done",
@@ -1141,12 +1141,13 @@
         "description": "Enhance CONTRIBUTING.md with Community Edition-specific sections, PR templates, DCO/CLA requirements, and curated \"good first issue\" labels. This enables community contributions and is required for the CE public launch.",
         "details": "## Why\\nCE public launch requires contribution guidelines. Depends on license decision (#90).\\n\\n## Acceptance Criteria\\n1. CONTRIBUTING.md updated with CE-specific sections (code of conduct, PR process, review SLA)\\n2. PR template includes checklist for CE compliance (license header, tests, docs)\\n3. At least 5 issues labeled `good first issue` created\\n4. DCO (Developer Certificate of Origin) requirement documented\\n5. Code review turnaround SLA stated (e.g., 48 hours for community PRs)\\n6. SECURITY.md with responsible disclosure process\\n\\n## Files\\n- CONTRIBUTING.md (enhance)\\n- .github/PULL_REQUEST_TEMPLATE.md (new)\\n- .github/ISSUE_TEMPLATE/ (new templates)\\n- SECURITY.md (new)",
         "testStrategy": "",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [
           "90"
         ],
         "priority": "high",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-03-29T17:50:14.402Z"
       },
       {
         "id": "104",
@@ -1173,7 +1174,7 @@
       {
         "id": "106",
         "title": "[private] Success Metrics Tracking Infrastructure",
-        "description": "[PRIVATE - DEFERRED] Build infrastructure to track the 4 PRD Success Metrics: engagement (avg session >3 min, 30% return users), relevance (>=80% match accuracy), conversion (>=15% chat-to-viewing), performance (p95 latency). This is Hosted Pro scope \u00e2\u20ac\u201d not required for CE stabilization.",
+        "description": "[PRIVATE - DEFERRED] Build infrastructure to track the 4 PRD Success Metrics: engagement (avg session >3 min, 30% return users), relevance (>=80% match accuracy), conversion (>=15% chat-to-viewing), performance (p95 latency). This is Hosted Pro scope â€” not required for CE stabilization.",
         "details": "## Why\\nPRD defines 4 Success Metrics but measurement infrastructure is Pro/hosted scope.\\n\\n## Acceptance Criteria\\n1. Session duration tracking implemented (target: avg >3 min)\\n2. Return user tracking implemented (target: 30% return)\\n3. Search relevance rating mechanism (thumbs up/down on results)\\n4. Chat-to-viewing conversion funnel tracking (target: >=15%)\\n5. p95 latency metrics surfaced per endpoint\\n6. Admin metrics dashboard with real-time success metric KPIs\\n7. Automated alerts when metrics fall below PRD targets",
         "testStrategy": "",
         "status": "deferred",
@@ -1189,7 +1190,7 @@
         "id": "107",
         "title": "[private] Dynamic Pricing & Market Positioning",
         "description": "[PRIVATE - DEFERRED] Estimate fair rent/sale price per property based on location, area, rooms, and recent comparables. Highlight above/below market by percentage. Suggest price adjustment ranges. Extends existing Price History (#38) and CMA (#85) features.",
-        "details": "## Why\\nFEATURE_IDEAS: Dynamic Pricing and Market Positioning \u00e2\u20ac\u201d agent-facing tool.\\n\\n## Acceptance Criteria\\n1. Fair price estimation endpoint: POST /api/v1/tools/fair-price\\n2. Above/Below Market indicator on property cards (percentage)\\n3. Price adjustment suggestion ranges for agents\\n4. Integration with existing comparable selector (#85)\\n5. Unit tests for pricing model with known datasets\\n6. Confidence score per estimate",
+        "details": "## Why\\nFEATURE_IDEAS: Dynamic Pricing and Market Positioning â€” agent-facing tool.\\n\\n## Acceptance Criteria\\n1. Fair price estimation endpoint: POST /api/v1/tools/fair-price\\n2. Above/Below Market indicator on property cards (percentage)\\n3. Price adjustment suggestion ranges for agents\\n4. Integration with existing comparable selector (#85)\\n5. Unit tests for pricing model with known datasets\\n6. Confidence score per estimate",
         "testStrategy": "",
         "status": "deferred",
         "dependencies": [
@@ -1204,7 +1205,7 @@
         "id": "108",
         "title": "[private] Negotiation Helper",
         "description": "[PRIVATE - DEFERRED] Analyze market data for a specific property, suggest negotiation strategy, generate emails/messages to landlord/agency. Depends on Dynamic Pricing (#107) for market analysis.",
-        "details": "## Why\\nFEATURE_IDEAS: Negotiation Helper \u00e2\u20ac\u201d agent-facing tool.\\n\\n## Acceptance Criteria\\n1. Negotiation analysis endpoint: POST /api/v1/tools/negotiation\\n2. Strategy suggestions (aggressive, moderate, conservative) with data backing\\n3. Email/message template generation with configurable tone\\n4. Price band visualization showing realistic negotiation range\\n5. Historical negotiation success rates where data available",
+        "details": "## Why\\nFEATURE_IDEAS: Negotiation Helper â€” agent-facing tool.\\n\\n## Acceptance Criteria\\n1. Negotiation analysis endpoint: POST /api/v1/tools/negotiation\\n2. Strategy suggestions (aggressive, moderate, conservative) with data backing\\n3. Email/message template generation with configurable tone\\n4. Price band visualization showing realistic negotiation range\\n5. Historical negotiation success rates where data available",
         "testStrategy": "",
         "status": "deferred",
         "dependencies": [
@@ -1219,7 +1220,7 @@
         "id": "109",
         "title": "[private] Personalised Recommendations Engine",
         "description": "[PRIVATE - DEFERRED] Build a personalization engine where users describe budget/lifestyle/family situation and the system builds a persona, proposing suitable listings with explanations. Pro feature.",
-        "details": "## Why\\nFEATURE_IDEAS: Personalised Recommendations \u00e2\u20ac\u201d Pro feature.\\n\\n## Acceptance Criteria\\n1. User persona model (budget range, lifestyle tags, family size, location preferences)\\n2. Recommendation endpoint: POST /api/v1/recommendations\\n3. Explanation generation per recommendation\\n4. Recommendation quality metric >= 70% user satisfaction\\n5. Integration with existing search pipeline\\n6. Persona evolves based on user behavior (favorites, searches, activity)",
+        "details": "## Why\\nFEATURE_IDEAS: Personalised Recommendations â€” Pro feature.\\n\\n## Acceptance Criteria\\n1. User persona model (budget range, lifestyle tags, family size, location preferences)\\n2. Recommendation endpoint: POST /api/v1/recommendations\\n3. Explanation generation per recommendation\\n4. Recommendation quality metric >= 70% user satisfaction\\n5. Integration with existing search pipeline\\n6. Persona evolves based on user behavior (favorites, searches, activity)",
         "testStrategy": "",
         "status": "deferred",
         "dependencies": [
@@ -1328,7 +1329,7 @@
         "id": "117",
         "title": "[private] Dialog Efficiency & Conversion Analytics",
         "description": "[PRIVATE - DEFERRED] Build analytics dashboard for dialog efficiency and conversion as specified in PRD Hosted Pro: \"Analytics dashboard for dialog efficiency and conversion.\" Depends on Success Metrics infrastructure (#106).",
-        "details": "## Acceptance Criteria\\n1. Conversation quality scoring (helpfulness, accuracy, completeness)\\n2. Agent response time metrics (first token, full response, tool execution)\\n3. Conversion funnel analytics (chat \u00e2\u2020\u2019 property view \u00e2\u2020\u2019 inquiry \u00e2\u2020\u2019 viewing \u00e2\u2020\u2019 deal)\\n4. A/B test framework for prompt and routing experiments\\n5. Dialog pattern analysis (common questions, escalation triggers)\\n6. ROI calculator: conversation cost vs. conversion value\\n7. Export to BI tools pipeline",
+        "details": "## Acceptance Criteria\\n1. Conversation quality scoring (helpfulness, accuracy, completeness)\\n2. Agent response time metrics (first token, full response, tool execution)\\n3. Conversion funnel analytics (chat â†’ property view â†’ inquiry â†’ viewing â†’ deal)\\n4. A/B test framework for prompt and routing experiments\\n5. Dialog pattern analysis (common questions, escalation triggers)\\n6. ROI calculator: conversation cost vs. conversion value\\n7. Export to BI tools pipeline",
         "testStrategy": "",
         "status": "deferred",
         "dependencies": [
@@ -1341,9 +1342,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-28T23:29:48.708Z",
+      "lastModified": "2026-03-29T17:50:14.402Z",
       "taskCount": 93,
-      "completedCount": 75,
+      "completedCount": 76,
       "tags": [
         "master"
       ]

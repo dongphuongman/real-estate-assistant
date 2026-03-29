@@ -87,6 +87,49 @@ Format: `type(scope): description (Task #XX)`
 | `chore` | Maintenance, CI, tooling |
 | `ci` | CI/CD changes |
 
+## Community Edition (CE) Contributions
+
+This project offers a **Community Edition** that is open-source and welcomes contributions. Some features are reserved for paid editions (Pro, Enterprise) as noted in the MCP connector allowlist.
+
+### CE-Compatible Contributions
+
+Contributions are CE-compatible when they:
+
+- Do not introduce Pro/Enterprise-only features into CE code paths
+- Use edition-gated patterns (see `apps/api/mcp/config/mcp_allowlist.yaml`)
+- Include tests that run without paid API keys
+- Do not require proprietary data or services
+
+### Edition Access Control
+
+Connectors and features use an edition-based allowlist:
+
+| Edition | Available Connectors |
+|---------|---------------------|
+| Community (CE) | echo_stub, google_maps, openstreetmap, web_scraper |
+| Pro | + salesforce, stripe, hubspot |
+| Enterprise | + slack, custom connectors |
+
+When adding a new connector, add it to the appropriate section in `mcp/config/mcp_allowlist.yaml`.
+
+## Developer Certificate of Origin (DCO)
+
+By contributing to this project, you agree that you have the right to submit your contribution under the project's license. Each commit must include a `Signed-off-by` line:
+
+```
+feat(search): add polygon-based spatial filter
+
+Signed-off-by: Your Name <your.email@example.com>
+```
+
+You can add this automatically with `git commit -s`.
+
+By signing off, you certify that:
+
+- The contribution was created in whole or in part by you
+- You have the right to submit it under the open-source license indicated
+- The contribution does not violate any third-party intellectual property rights
+
 ## Pull Request Process
 
 1. Create a feature branch from `dev`: `git checkout -b feature/short-description`
@@ -95,11 +138,37 @@ Format: `type(scope): description (Task #XX)`
 4. Push and open a PR against `dev`
 5. Ensure CI passes (linting, tests, security scans)
 
+### PR Review SLA
+
+| PR Source | Initial Review | Follow-up Review |
+|-----------|---------------|-----------------|
+| Community contributors | Within 48 hours | Within 24 hours |
+| Maintainers | Within 24 hours | Within 12 hours |
+
+We aim to provide actionable feedback on every community PR within 48 hours. If you haven't received a review after 48 hours, please comment on the PR to bump it.
+
+### PR Checklist
+
+When submitting a PR, ensure you have addressed all items in the pull request template, including:
+
+- [ ] Code follows project style guidelines
+- [ ] Self-review completed
+- [ ] Tests added for new functionality
+- [ ] All existing tests pass
+- [ ] Documentation updated (if applicable)
+- [ ] License headers added to new files (SPDX: `SPDX-License-Identifier: MIT`)
+- [ ] CE compliance verified (no Pro/Enterprise features in CE code paths)
+- [ ] No secrets or credentials in the diff
+
 ## Good First Issues
 
 Looking for a place to start? Check these community-friendly issues:
 
-- **[Community: Implement Telegram Bot MCP Connector](https://github.com/AleksNeStu/ai-real-estate-assistant/issues/16)** — Build a Telegram bot connector following the MCP pattern (Python async, HTTP APIs)
+- **[Community: Implement Telegram Bot MCP Connector](https://github.com/AleksNeStu/ai-real-estate-assistant/issues/16)** - Build a Telegram bot connector following the MCP pattern
+- **[Community: Add Email Notification MCP Connector](https://github.com/AleksNeStu/ai-real-estate-assistant/issues/NEW)** - Implement email notifications via SMTP/sendgrid
+- **[Community: Add iCal Export for Saved Searches](https://github.com/AleksNeStu/ai-real-estate-assistant/issues/NEW)** - Calendar export for property viewing schedules
+- **[Community: Add CSV Export for Property Results](https://github.com/AleksNeStu/ai-real-estate-assistant/issues/NEW)** - Export search results as spreadsheet
+- **[Community: Add Property Comparison Tool](https://github.com/AleksNeStu/ai-real-estate-assistant/issues/NEW)** - Side-by-side property comparison UI
 
 Filter by [`good first issue`](https://github.com/AleksNeStu/ai-real-estate-assistant/labels/good%20first%20issue) label for more opportunities.
 
@@ -119,6 +188,28 @@ apps/
         ├── components/ # UI components
         └── lib/      # API client, utilities
 ```
+
+### MCP Connector Pattern
+
+Community connectors follow the `MCPConnector[T]` abstract base class:
+
+1. Extend `MCPConnector` from `apps/api/mcp/base.py`
+2. Implement required methods: `connect()`, `disconnect()`, `health_check()`, `execute()`
+3. Register in `apps/api/mcp/registry.py`
+4. Add to `apps/api/config/mcp_allowlist.yaml` under `community_edition`
+5. Add tests in `apps/api/tests/unit/mcp/`
+
+Reference implementation: `apps/api/mcp/connectors/web_scraper.py`
+
+## Security
+
+Please report security vulnerabilities privately. See [SECURITY.md](SECURITY.md) for our responsible disclosure process.
+
+**Do not** report security issues through public GitHub issues.
+
+## Code of Conduct
+
+This project follows the [Contributor Covenant Code of Conduct](.github/CODE_OF_CONDUCT.md). By participating, you agree to uphold this code.
 
 ## Questions?
 
