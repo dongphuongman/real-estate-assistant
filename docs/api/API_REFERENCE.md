@@ -298,6 +298,307 @@ Example response:
 
 > **Note**: JWT-gated routers are only loaded when `ENABLE_JWT_AUTH=true`. The OpenAPI export script sets this automatically to capture all endpoints.
 
+### JWT-Authenticated Endpoints
+
+The following endpoints require JWT authentication (`Authorization: Bearer <token>`). They are only available when `ENABLE_JWT_AUTH=true`.
+
+#### JWT Auth (`/api/v1/auth`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| POST | `/auth/register` | Register a new user | TokenResponse |
+| POST | `/auth/login` | Login with email and password | TokenResponse |
+| POST | `/auth/logout` | Logout user | MessageResponse |
+| POST | `/auth/refresh` | Refresh access token | TokenResponse |
+| GET | `/auth/me` | Get current user | UserResponse |
+| POST | `/auth/verify-email` | Verify email address | MessageResponse |
+| POST | `/auth/resend-verification` | Resend verification email | MessageResponse |
+| POST | `/auth/forgot-password` | Request password reset | MessageResponse |
+| POST | `/auth/reset-password` | Reset password | MessageResponse |
+| POST | `/auth/admin/unlock-account` | Unlock a locked account (admin) | MessageResponse |
+| GET | `/auth/oauth/google` | Start Google OAuth flow | Redirect |
+| GET | `/auth/oauth/callback` | OAuth callback | TokenResponse |
+| GET | `/auth/oauth/apple` | Start Apple OAuth flow | Redirect |
+
+#### Saved Searches (`/api/v1/saved-searches`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| POST | `/saved-searches` | Create a saved search | SavedSearchResponse |
+| GET | `/saved-searches` | List user's saved searches | SavedSearchListResponse |
+| GET | `/saved-searches/{search_id}` | Get a saved search | SavedSearchResponse |
+| PATCH | `/saved-searches/{search_id}` | Update a saved search | SavedSearchResponse |
+| DELETE | `/saved-searches/{search_id}` | Delete a saved search | 204 |
+| POST | `/saved-searches/{search_id}/toggle-alert` | Toggle alert for a saved search | SavedSearchResponse |
+| POST | `/saved-searches/{search_id}/use` | Mark search as used | SavedSearchResponse |
+
+#### Collections (`/api/v1/collections`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| POST | `/collections` | Create a collection | CollectionResponse |
+| GET | `/collections` | List user's collections | CollectionListResponse |
+| GET | `/collections/default` | Get or create default collection | CollectionResponse |
+| GET | `/collections/{collection_id}` | Get a collection | CollectionResponse |
+| PUT | `/collections/{collection_id}` | Update a collection | CollectionResponse |
+| DELETE | `/collections/{collection_id}` | Delete a collection | 204 |
+
+#### Favorites (`/api/v1/favorites`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| POST | `/favorites` | Add a property to favorites | FavoriteResponse |
+| GET | `/favorites` | List user's favorites | FavoriteListResponse |
+| GET | `/favorites/check/{property_id}` | Check if property is favorited | FavoriteCheckResponse |
+| GET | `/favorites/ids` | Get all favorited property IDs | list[str] |
+| GET | `/favorites/{favorite_id}` | Get a favorite with property data | FavoriteWithPropertyResponse |
+| PATCH | `/favorites/{favorite_id}` | Update a favorite | FavoriteResponse |
+| DELETE | `/favorites/{favorite_id}` | Remove a favorite | 204 |
+| DELETE | `/favorites/by-property/{property_id}` | Remove favorite by property ID | 204 |
+| POST | `/favorites/{favorite_id}/move/{collection_id}` | Move favorite to collection | FavoriteResponse |
+
+#### Filter Presets (`/api/v1/filter-presets`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| POST | `/filter-presets` | Create a filter preset | FilterPresetResponse |
+| GET | `/filter-presets` | List user's filter presets | FilterPresetListResponse |
+| GET | `/filter-presets/default` | Get user's default preset | FilterPresetResponse |
+| GET | `/filter-presets/{preset_id}` | Get a filter preset | FilterPresetResponse |
+| PATCH | `/filter-presets/{preset_id}` | Update a filter preset | FilterPresetResponse |
+| DELETE | `/filter-presets/{preset_id}` | Delete a filter preset | 204 |
+| POST | `/filter-presets/{preset_id}/use` | Mark preset as used | FilterPresetResponse |
+| POST | `/filter-presets/{preset_id}/set-default` | Set preset as default | FilterPresetResponse |
+
+#### Market Analytics (`/api/v1/market`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| GET | `/market/price-history/{property_id}` | Get price history for a property | PriceHistoryResponse |
+| GET | `/market/trends` | Get market trend data | MarketTrendsResponse |
+| GET | `/market/indicators` | Get market indicators | MarketIndicatorsResponse |
+| GET | `/market/compare` | Compare two areas | AreaComparisonResponse |
+| GET | `/market/area/{city}` | Get insights for a single area | AreaInsightsResponse |
+
+#### Anomalies (`/api/v1/anomalies`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| GET | `/anomalies` | List market anomalies | AnomalyListResponse |
+| GET | `/anomalies/stats` | Get anomaly statistics | AnomalyStatsResponse |
+| GET | `/anomalies/{anomaly_id}` | Get anomaly details | AnomalyResponse |
+| POST | `/anomalies/{anomaly_id}/dismiss` | Dismiss an anomaly | object |
+| GET | `/anomalies/stream` | Stream anomalies (SSE) | StreamingResponse |
+
+#### Lead Scoring (`/api/v1/leads`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| POST | `/leads/track` | Track visitor interaction | object |
+| POST | `/leads/visitor` | Create or get visitor | LeadResponse |
+| GET | `/leads` | List leads | LeadListResponse |
+| GET | `/leads/high-value` | Get high-value leads | list[LeadWithScoreResponse] |
+| GET | `/leads/{lead_id}` | Get lead details | LeadDetailResponse |
+| GET | `/leads/{lead_id}/score` | Get lead score breakdown | LeadScoreBreakdown |
+| PATCH | `/leads/{lead_id}` | Update lead | LeadResponse |
+| PATCH | `/leads/{lead_id}/status` | Update lead status | LeadResponse |
+| POST | `/leads/{lead_id}/assign` | Assign agent to lead | AgentAssignmentResponse |
+| POST | `/leads/bulk/assign` | Bulk assign leads | BulkOperationResponse |
+| POST | `/leads/bulk/status` | Bulk update status | BulkOperationResponse |
+| POST | `/leads/scores/recalculate` | Recalculate lead scores | RecalculateScoresResponse |
+| GET | `/leads/scores/statistics` | Get scoring statistics | dict |
+| GET | `/leads/export` | Export leads | StreamingResponse |
+| DELETE | `/leads/{lead_id}` | Delete lead data | MessageResponse |
+
+#### Agent Analytics (`/api/v1/agent-analytics`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| GET | `/agent-analytics/me` | Get my performance metrics | AgentMetricsResponse |
+| GET | `/agent-analytics/me/comparison` | Get team comparison | TeamComparisonResponse |
+| GET | `/agent-analytics/me/trends` | Get performance trends | PerformanceTrendsResponse |
+| GET | `/agent-analytics/me/insights` | Get coaching insights | CoachingInsightsResponse |
+| GET | `/agent-analytics/me/goals` | Get goal progress | GoalProgressListResponse |
+| GET | `/agent-analytics/top-performers` | Get top performers | TopPerformersResponse |
+| GET | `/agent-analytics/needs-support` | Get agents needing support | AgentsNeedingSupportResponse |
+| POST | `/agent-analytics/deals` | Create deal | DealResponse |
+| GET | `/agent-analytics/deals` | List my deals | DealListResponse |
+| GET | `/agent-analytics/deals/{deal_id}` | Get deal details | DealResponse |
+| PATCH | `/agent-analytics/deals/{deal_id}` | Update deal | DealResponse |
+
+#### Push Notifications (`/api/v1/push`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| GET | `/push/vapid-public-key` | Get VAPID public key | VapidPublicKeyResponse |
+| POST | `/push/subscribe` | Subscribe to push notifications | PushSubscriptionResponse |
+| DELETE | `/push/unsubscribe` | Unsubscribe from push notifications | 204 |
+| GET | `/push/subscriptions` | List push subscriptions | PushSubscriptionListResponse |
+| DELETE | `/push/subscriptions/{subscription_id}` | Delete a push subscription | 204 |
+
+#### Agents / Broker Integration (`/api/v1/agents`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| GET | `/agents` | List agents | AgentProfileListResponse |
+| GET | `/agents/{agent_id}` | Get agent details | AgentProfileResponse |
+| GET | `/agents/{agent_id}/listings` | Get agent listings | AgentListingListResponse |
+| POST | `/agents/{agent_id}/contact` | Contact agent | AgentInquiryResponse |
+| POST | `/agents/{agent_id}/schedule-viewing` | Schedule viewing | ViewingAppointmentResponse |
+| GET | `/agents/profile` | Get own profile | AgentProfileResponse |
+| POST | `/agents/profile` | Create profile | AgentProfileResponse |
+| PATCH | `/agents/profile` | Update profile | AgentProfileResponse |
+| GET | `/agents/inquiries` | List inquiries | AgentInquiryListResponse |
+| PATCH | `/agents/inquiries/{inquiry_id}` | Update inquiry | AgentInquiryResponse |
+| GET | `/agents/appointments` | List appointments | ViewingAppointmentListResponse |
+| PATCH | `/agents/appointments/{appointment_id}` | Update appointment | ViewingAppointmentResponse |
+
+#### Documents (`/api/v1/documents`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| POST | `/documents` | Upload a document | DocumentUploadResponse |
+| GET | `/documents` | List documents | DocumentListResponse |
+| GET | `/documents/expiring` | Get expiring documents | ExpiringDocumentsResponse |
+| GET | `/documents/{document_id}` | Download a document | StreamingResponse |
+| PATCH | `/documents/{document_id}` | Update document metadata | DocumentResponse |
+| DELETE | `/documents/{document_id}` | Delete a document | 204 |
+
+#### E-Signatures (`/api/v1/signatures`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| POST | `/signatures/request` | Create a signature request | SignatureRequestResponse |
+| GET | `/signatures` | List signature requests | SignatureRequestListResponse |
+| GET | `/signatures/{request_id}` | Get signature request details | SignatureRequestResponse |
+| POST | `/signatures/{request_id}/cancel` | Cancel a signature request | object |
+| POST | `/signatures/{request_id}/reminder` | Send reminder to signers | object |
+| GET | `/signatures/{request_id}/download` | Download signed document | StreamingResponse |
+| GET | `/signatures/templates` | List document templates | list |
+| GET | `/signatures/templates/{template_id}` | Get template details | object |
+| POST | `/signatures/templates` | Create document template | object |
+| PUT | `/signatures/templates/{template_id}` | Update template | object |
+| DELETE | `/signatures/templates/{template_id}` | Delete template | 204 |
+
+#### User Activity Analytics (`/api/v1/user-activity`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| GET | `/user-activity/summary` | Get activity summary | UserActivitySummary |
+| GET | `/user-activity/trends` | Get activity trends | UserActivityTrendsResponse |
+| GET | `/user-activity/export` | Export activity data | StreamingResponse |
+| GET | `/user-activity/admin/summary` | Get global activity summary (admin) | UserActivitySummary |
+| GET | `/user-activity/admin/trends` | Get global activity trends (admin) | UserActivityTrendsResponse |
+
+#### Model Preferences (`/api/v1/model-preferences`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| GET | `/model-preferences` | List user model preferences | TaskModelPreferenceListResponse |
+| GET | `/model-preferences/{task_type}` | Get preference for task type | TaskModelPreferenceResponse |
+| POST | `/model-preferences` | Create model preference | TaskModelPreferenceResponse |
+| PUT | `/model-preferences/{preference_id}` | Update model preference | TaskModelPreferenceResponse |
+| DELETE | `/model-preferences/{preference_id}` | Delete model preference | 204 |
+| GET | `/model-preferences/system/defaults` | Get system default preferences | SystemDefaultsResponse |
+| GET | `/model-preferences/system/cost-estimate` | Get cost estimate for model | ModelCostEstimate |
+
+#### User Profile (`/api/v1/profile`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| GET | `/profile` | Get user profile | ProfileResponse |
+| PUT | `/profile` | Update user profile | ProfileResponse |
+| POST | `/profile/avatar` | Upload avatar | AvatarUploadResponse |
+| DELETE | `/profile/avatar` | Delete avatar | 204 |
+| PUT | `/profile/privacy` | Update privacy settings | ProfileResponse |
+| POST | `/profile/export` | Request data export | DataExportResponse |
+| GET | `/profile/export/{export_id}` | Get export status | DataExportStatusResponse |
+
+### API-Key & Ungated Endpoints (Not in OpenAPI Snapshot)
+
+The following endpoints require API key authentication or have their own auth, and may not appear in the committed OpenAPI schema.
+
+#### Ranking Configuration (`/api/v1/ranking`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| GET | `/ranking/configs` | List ranking configs | list[RankingConfigResponse] |
+| GET | `/ranking/configs/active` | Get active config | RankingConfigResponse |
+| GET | `/ranking/configs/weights` | Get ranking weights | RankingWeightsResponse |
+| GET | `/ranking/configs/{config_id}` | Get a config | RankingConfigResponse |
+| POST | `/ranking/configs` | Create config | RankingConfigResponse |
+| PATCH | `/ranking/configs/{config_id}` | Update config | RankingConfigResponse |
+| POST | `/ranking/configs/{config_id}/activate` | Activate config | RankingConfigResponse |
+| DELETE | `/ranking/configs/{config_id}` | Delete config | 204 |
+
+#### Investment Reports (`/api/v1/investment`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| POST | `/investment/report` | Generate investment report | InvestmentReportResponse |
+| POST | `/investment/analyze` | Analyze investment property | InvestmentAnalysisResult |
+| POST | `/investment/analyze/advanced` | Advanced investment analysis | AdvancedInvestmentResult |
+
+#### Comparative Market Analysis (`/api/v1/cma`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| POST | `/cma/comparables/{property_id}` | Find comparable properties | list[CMAComparableResponse] |
+| POST | `/cma/generate` | Generate CMA report | CMAReportResponse |
+| GET | `/cma/{report_id}` | Get CMA report | CMAReportResponse |
+| GET | `/cma/{report_id}/pdf` | Download CMA as PDF | StreamingResponse |
+| GET | `/cma` | List CMA reports | CMAReportListResponse |
+| DELETE | `/cma/{report_id}` | Delete CMA report | 204 |
+
+#### Data Sources (`/api/v1/data-sources`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| GET | `/data-sources` | List data sources | DataSourceListResponse |
+| POST | `/data-sources` | Create data source | DataSourceResponse |
+| GET | `/data-sources/{source_id}` | Get data source details | DataSourceResponse |
+| PATCH | `/data-sources/{source_id}` | Update data source | DataSourceResponse |
+| DELETE | `/data-sources/{source_id}` | Delete data source | 204 |
+| POST | `/data-sources/{source_id}/sync` | Trigger data source sync | DataSourceSyncResponse |
+| POST | `/data-sources/test` | Test data source connection | DataSourceTestResponse |
+| GET | `/data-sources/{source_id}/history` | Get sync history | SyncHistoryResponse |
+
+#### Bulk Jobs (`/api/v1/bulk-jobs`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| POST | `/bulk-jobs/import` | Create import job | BulkJobCreateResponse |
+| POST | `/bulk-jobs/export` | Create export job | BulkJobCreateResponse |
+| GET | `/bulk-jobs` | List bulk jobs | BulkJobListResponse |
+| GET | `/bulk-jobs/{job_id}` | Get job details | BulkJobResponse |
+| POST | `/bulk-jobs/{job_id}/cancel` | Cancel a job | BulkJobResponse |
+| DELETE | `/bulk-jobs/{job_id}` | Delete a job | 204 |
+
+#### MCP Admin (`/api/v1/mcp`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| GET | `/mcp/allowlist` | List allowlist entries | MCPAllowlistResponse |
+| POST | `/mcp/allowlist` | Add allowlist entry | MCPAllowlistEntryResponse |
+| DELETE | `/mcp/allowlist/{name}` | Remove allowlist entry | 204 |
+| GET | `/mcp/allowlist/violations` | List allowlist violations | MCPViolationsListResponse |
+| DELETE | `/mcp/allowlist/violations` | Clear violations | 204 |
+| POST | `/mcp/allowlist/reload` | Reload allowlist | MCPReloadResponse |
+| GET | `/mcp/connectors` | List MCP connectors | MCPConnectorsListResponse |
+| GET | `/mcp/connectors/{name}` | Get connector details | MCPConnectorDetailResponse |
+| GET | `/mcp/connectors/{name}/health` | Check connector health | MCPConnectorHealthResponse |
+| GET | `/mcp/health` | Overall MCP health check | MCPHealthResponse |
+
+#### MCP Audit (`/api/v1/admin/mcp/audit`)
+
+| Method | Path | Summary | Response |
+|--------|------|---------|----------|
+| GET | `/admin/mcp/audit` | List audit log entries | AuditListResponse |
+| GET | `/admin/mcp/audit/storage` | Get storage metrics | StorageMetricsResponse |
+| POST | `/admin/mcp/audit/cleanup` | Cleanup old audit logs | CleanupResponse |
+| GET | `/admin/mcp/audit/request/{request_id}` | Get audit log for request | object |
+| GET | `/admin/mcp/audit/connector/{connector_name}` | Get audit log for connector | list |
+
 ### Regenerating the OpenAPI Schema
 
 To include all endpoints (including JWT-gated) in the schema:
