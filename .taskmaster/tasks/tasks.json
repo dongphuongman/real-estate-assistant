@@ -1129,12 +1129,13 @@
         "description": "Add ongoing npm vulnerability monitoring to CI. Task #89 fixed current vulnerabilities but no ongoing gate exists to prevent regression. High/critical vulnerabilities should block PRs.",
         "details": "## Why\\n#89 fixed current vulns but no ongoing gate.\\n\\n## Acceptance Criteria\\n1. `npm audit` CI step fails on high/critical vulnerabilities\\n2. Dependabot or Renovate configured for automatic dependency update PRs\\n3. Weekly audit schedule documented\\n4. Audit exceptions documented in .nsprc or npm audit config\\n\\n## Files\\n- .github/workflows/ci.yml (add npm audit step)\\n- .github/dependabot.yml (new)\\n- apps/web/package.json (audit config)",
         "testStrategy": "",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "89"
         ],
         "priority": "medium",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-03-29T18:46:01.962Z"
       },
       {
         "id": "103",
@@ -1168,10 +1169,11 @@
         "description": "Audit API reference documentation for completeness. The DoD requires \"OpenAPI and API reference drift checks pass.\" CI has drift checks for OpenAPI schema and API reference, but the reference may not cover all new endpoints added by tasks #64-#88 (MCP admin/audit, enrichment hooks, user profile, notification preferences, model preferences, data sources, bulk jobs, etc.).",
         "details": "## Why\\nDoD requires API reference drift checks. New endpoints may be undocumented.\\n\\n## Acceptance Criteria\\n1. All /api/v1/* endpoints documented in OpenAPI schema with request/response examples\\n2. API reference markdown (docs/api/) covers all endpoints\\n3. Drift checks pass for all endpoints (CI green)\\n4. Error response schemas documented for each endpoint\\n5. Authentication requirements documented per endpoint (API Key vs JWT)\\n\\n## Files\\n- apps/api/api/routers/*.py (docstrings for OpenAPI)\\n- docs/api/API_REFERENCE.md (audit and update)\\n- docs/api/openapi.json (regenerate)\\n- scripts/docs/export_openapi.py (verify drift check)",
         "testStrategy": "",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "medium",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-03-29T18:40:27.310Z"
       },
       {
         "id": "106",
@@ -1344,9 +1346,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-29T18:31:12.316Z",
+      "lastModified": "2026-03-29T18:46:01.962Z",
       "taskCount": 93,
-      "completedCount": 79,
+      "completedCount": 81,
       "tags": [
         "master"
       ]

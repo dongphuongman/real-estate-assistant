@@ -15,7 +15,7 @@ def main() -> int:
 
     # Enable JWT auth so ALL conditional routers are included in the schema.
     # This ensures the exported OpenAPI captures every endpoint.
-    os.environ.setdefault("ENABLE_JWT_AUTH", "true")
+    os.environ.setdefault("AUTH_JWT_ENABLED", "true")
 
     from api.main import app as fastapi_app
     from api.openapi_export import export_openapi_schema
