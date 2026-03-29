@@ -1117,10 +1117,11 @@
         "description": "Create idempotent seed scripts for dev/demo data and ensure Docker Compose runs migration + seed automatically. The Alembic migration system was freshly implemented (March 27, 2026) with a single initial migration. No data seeding strategy exists.",
         "details": "## Why\\nFresh Alembic migration (March 27). No seed strategy.\\n\\n## Acceptance Criteria\\n1. Idempotent seed script exists for development/demo data\\n2. Seed script populates: sample properties, sample users, notification preferences\\n3. Docker Compose setup runs migration + seed automatically on first start\\n4. Seed script safe to run multiple times (idempotent)\\n5. Data population workflow documented\\n6. Seed data covers at least 2 cities with 20+ properties each\\n\\n## Files\\n- apps/api/alembic/seed.py (new)\\n- deploy/compose/docker-compose.yml (auto-seed on startup)\\n- docs/development/DATA_POPULATION.md (new)",
         "testStrategy": "",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "medium",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-03-29T18:25:45.331Z"
       },
       {
         "id": "102",
@@ -1141,13 +1142,13 @@
         "description": "Enhance CONTRIBUTING.md with Community Edition-specific sections, PR templates, DCO/CLA requirements, and curated \"good first issue\" labels. This enables community contributions and is required for the CE public launch.",
         "details": "## Why\\nCE public launch requires contribution guidelines. Depends on license decision (#90).\\n\\n## Acceptance Criteria\\n1. CONTRIBUTING.md updated with CE-specific sections (code of conduct, PR process, review SLA)\\n2. PR template includes checklist for CE compliance (license header, tests, docs)\\n3. At least 5 issues labeled `good first issue` created\\n4. DCO (Developer Certificate of Origin) requirement documented\\n5. Code review turnaround SLA stated (e.g., 48 hours for community PRs)\\n6. SECURITY.md with responsible disclosure process\\n\\n## Files\\n- CONTRIBUTING.md (enhance)\\n- .github/PULL_REQUEST_TEMPLATE.md (new)\\n- .github/ISSUE_TEMPLATE/ (new templates)\\n- SECURITY.md (new)",
         "testStrategy": "",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [
           "90"
         ],
         "priority": "high",
         "subtasks": [],
-        "updatedAt": "2026-03-29T17:50:14.402Z"
+        "updatedAt": "2026-03-29T17:59:56.746Z"
       },
       {
         "id": "104",
@@ -1342,9 +1343,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-29T17:50:14.402Z",
+      "lastModified": "2026-03-29T18:25:45.332Z",
       "taskCount": 93,
-      "completedCount": 76,
+      "completedCount": 78,
       "tags": [
         "master"
       ]
