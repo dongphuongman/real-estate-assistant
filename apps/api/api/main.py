@@ -145,6 +145,17 @@ async def startup_event():
         )
     app.state.vector_store = vector_store
 
+    # 1.1 Auto-seed demo data (opt-in via SEED_ON_STARTUP env var)
+    if os.getenv("SEED_ON_STARTUP", "false").lower() == "true":
+        logger.info("SEED_ON_STARTUP enabled — seeding demo data...")
+        try:
+            from alembic.seed import seed_all
+
+            await seed_all()
+            logger.info("Demo data seeded successfully.")
+        except Exception as e:
+            logger.warning("Auto-seed failed (non-fatal): %s", e)
+
     # 1.5 Initialize Auth Database (if JWT auth enabled)
     if settings.auth_jwt_enabled:
         logger.info("Initializing Auth Database...")

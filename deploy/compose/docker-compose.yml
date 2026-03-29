@@ -58,6 +58,8 @@ services:
       - DB_POOL_TIMEOUT_SECONDS=${DB_POOL_TIMEOUT_SECONDS:-30}
       - DB_POOL_RECYCLE_SECONDS=${DB_POOL_RECYCLE_SECONDS:-3600}
       - POOL_MAX_WORKERS=${POOL_MAX_WORKERS:-10}
+      # Auto-seed on startup (set to "true" for fresh dev/demo data)
+      - SEED_ON_STARTUP=${SEED_ON_STARTUP:-false}
     volumes:
       - ./chroma_db:/app/chroma_db
       - ./data/audit:/app/data/audit
