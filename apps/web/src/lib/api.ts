@@ -3348,3 +3348,25 @@ export async function deleteCMAReport(reportId: string): Promise<void> {
     throw new Error(`Failed to delete report: ${response.status}`);
   }
 }
+
+// ============================================================================
+// Task #118: Search Relevance Feedback
+// ============================================================================
+
+/**
+ * Submit a relevance rating for a search result.
+ * Rating: 1 = thumbs down (poor match), 5 = thumbs up (great match).
+ */
+export async function submitFeedback(
+  query: string,
+  propertyId: string,
+  rating: number
+): Promise<{ id: string }> {
+  const response = await safeFetch(`${getApiUrl()}/feedback/rating`, {
+    method: 'POST',
+    headers: buildHeaders(),
+    credentials: 'include',
+    body: JSON.stringify({ query, property_id: propertyId, rating }),
+  });
+  return handleResponse<{ id: string }>(response);
+}

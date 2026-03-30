@@ -21,6 +21,7 @@ import {
   deserializePolygonFromUrl,
 } from '@/lib/geo-validation';
 import { HeartButton, ListingGenerator } from '@/components/property';
+import { RelevanceRating } from '@/components/search/relevance-rating';
 import dynamic from 'next/dynamic';
 import MapControls, {
   type MapFilterOptions,
@@ -972,6 +973,11 @@ function SearchPageContent() {
                                 {prop.id && (
                                   <div className="pt-2">
                                     <ListingGenerator propertyId={prop.id} compact />
+                                  </div>
+                                )}
+                                {prop.id && (
+                                  <div className="pt-1">
+                                    <RelevanceRating query={query} propertyId={prop.id} />
                                   </div>
                                 )}
                               </div>

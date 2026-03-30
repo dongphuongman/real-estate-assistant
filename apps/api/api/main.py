@@ -41,6 +41,7 @@ from api.routers import (
     esignatures,  # Task #57: E-Signature Integration
     exports,
     favorites,  # Task #37: Property favorites
+    feedback,  # Task #118: Search Relevance Rating
     filter_presets,  # Task #75: Advanced Filter Presets
     investment,  # Task #83: Investment Report Generator
     leads,  # Task #55: Lead Scoring System
@@ -426,6 +427,8 @@ app.include_router(ranking_config.router, prefix="/api/v1", dependencies=[Depend
 app.include_router(investment.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 # Task #85: Comparative Market Analysis (CMA)
 app.include_router(cma.router, prefix="/api/v1")
+# Task #118: Search Relevance Rating
+app.include_router(feedback.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 
 
 @app.get("/health", tags=["System"])

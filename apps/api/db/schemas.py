@@ -2404,3 +2404,48 @@ class ChainVerificationResponse(BaseModel):
     checked_count: int
     broken_count: int
     broken_entries: list[dict[str, Any]]
+
+
+# ============================================================================
+# Task #118: Search Feedback & Relevance Rating
+# ============================================================================
+
+
+class FeedbackCreate(BaseModel):
+    """Schema for submitting a search result rating."""
+
+    query: str = Field(
+        ..., min_length=1, max_length=1000, description="Search query that produced the result"
+    )
+    property_id: str = Field(..., min_length=1, max_length=100, description="Rated property ID")
+    rating: int = Field(..., ge=1, le=5, description="Rating from 1 (poor) to 5 (excellent)")
+
+    @field_validator("rating")
+    @classmethod
+    def validate_rating(cls, v: int) -> int:
+        if v < 1 or v > 5:
+            raise ValueError("Rating must be between 1 and 5")
+        return v
+
+
+class FeedbackResponse(BaseModel):
+    """Schema for a submitted rating response."""
+
+    id: str
+    query: str
+    property_id: str
+    rating: int
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class RelevanceMetrics(BaseModel):
+    """Aggregated relevance metrics for admin dashboard."""
+
+    avg_rating: float = Field(..., description="Average rating across all feedback")
+    total_ratings: int = Field(..., description="Total number of ratings")
+    positive_pct: float = Field(..., description="Percentage of ratings 4-5 (positive)")
+    ratings_by_score: dict[str, int] = Field(
+        default_factory=dict, description="Count of ratings grouped by score (1-5)"
+    )

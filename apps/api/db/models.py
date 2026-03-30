@@ -2431,3 +2431,25 @@ class AuditLogEntry(Base):
             f"<AuditLogEntry(id={self.id[:8]}..., action={self.action}, "
             f"actor={self.actor_email or 'anonymous'})>"
         )
+
+
+class SearchFeedback(Base):
+    """User relevance rating for search results (Task #118)."""
+
+    __tablename__ = "search_feedback"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    search_query: Mapped[str] = mapped_column(Text, nullable=False)
+    property_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    rating: Mapped[int] = mapped_column(Integer, nullable=False)  # 1-5
+    user_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
+
+    __table_args__ = (Index("ix_search_feedback_created", "created_at"),)
+
+    def __repr__(self) -> str:
+        return f"<SearchFeedback(id={self.id[:8]}..., rating={self.rating})>"

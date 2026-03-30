@@ -216,6 +216,13 @@
       "searchFailed": "Search Failed",
       "connectionFailed": "Connection failed. Please try again.",
       "timeout": "Search timed out. Please try again."
+    },
+    "feedback": {
+      "helpful": "Was this helpful?",
+      "thumbsUp": "Thumbs up — relevant result",
+      "thumbsDown": "Thumbs down — not relevant",
+      "thanks": "Thanks for your feedback!",
+      "error": "Failed to submit"
     }
   },
   "mortgage": {
