@@ -21,6 +21,7 @@ from api.dependencies import get_vector_store
 from api.health import HealthStatus, get_git_info, get_health_status
 from api.middleware.csrf import add_csrf_middleware
 from api.middleware.error_handler import add_error_handlers
+from api.middleware.latency import add_latency_middleware
 from api.middleware.request_size import add_request_size_limits
 from api.middleware.security import add_security_headers
 from api.middleware.versioning import add_versioning_middleware
@@ -99,6 +100,7 @@ app = FastAPI(
 
 
 add_observability(app, logger)
+add_latency_middleware(app)  # Task #120: p95 latency monitoring
 add_security_headers(app)
 add_versioning_middleware(app)  # Task #97: API version headers
 add_request_size_limits(app)

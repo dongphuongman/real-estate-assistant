@@ -523,6 +523,24 @@ async def admin_metrics(request: Request):
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
+@router.get("/admin/metrics/latency", response_model=dict)
+async def admin_latency_metrics(request: Request):
+    """
+    Return p95 latency metrics for search and chat endpoints (Task #120).
+
+    SLA targets:
+      - search: p95 < 2000 ms
+      - chat:   p95 < 8000 ms
+    """
+    tracker = getattr(request.app.state, "latency_tracker", None)
+    if tracker is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Latency tracker not initialized",
+        )
+    return tracker.get_stats()
+
+
 @router.get("/admin/notifications-stats", response_model=NotificationsAdminStats)
 async def admin_notifications_stats(request: Request):
     try:

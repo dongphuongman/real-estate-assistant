@@ -1181,21 +1181,21 @@
         "description": "[PRIVATE - DEFERRED] Build infrastructure to track the 4 PRD Success Metrics: engagement (avg session >3 min, 30% return users), relevance (>=80% match accuracy), conversion (>=15% chat-to-viewing), performance (p95 latency). This is Hosted Pro scope â€” not required for CE stabilization.",
         "details": "## Why\\nPRD defines 4 Success Metrics but measurement infrastructure is Pro/hosted scope.\\n\\n## Acceptance Criteria\\n1. Session duration tracking implemented (target: avg >3 min)\\n2. Return user tracking implemented (target: 30% return)\\n3. Search relevance rating mechanism (thumbs up/down on results)\\n4. Chat-to-viewing conversion funnel tracking (target: >=15%)\\n5. p95 latency metrics surfaced per endpoint\\n6. Admin metrics dashboard with real-time success metric KPIs\\n7. Automated alerts when metrics fall below PRD targets",
         "testStrategy": "",
-        "status": "deferred",
+        "status": "cancelled",
         "dependencies": [
           "82",
           "81"
         ],
         "priority": "low",
         "subtasks": [],
-        "updatedAt": "2026-03-27T22:30:59.943Z"
+        "updatedAt": "2026-03-29T21:38:27.927Z"
       },
       {
         "id": "107",
         "title": "[private] Dynamic Pricing & Market Positioning",
-        "description": "[PRIVATE - DEFERRED] Estimate fair rent/sale price per property based on location, area, rooms, and recent comparables. Highlight above/below market by percentage. Suggest price adjustment ranges. Extends existing Price History (#38) and CMA (#85) features.",
-        "details": "## Why\\nFEATURE_IDEAS: Dynamic Pricing and Market Positioning â€” agent-facing tool.\\n\\n## Acceptance Criteria\\n1. Fair price estimation endpoint: POST /api/v1/tools/fair-price\\n2. Above/Below Market indicator on property cards (percentage)\\n3. Price adjustment suggestion ranges for agents\\n4. Integration with existing comparable selector (#85)\\n5. Unit tests for pricing model with known datasets\\n6. Confidence score per estimate",
-        "testStrategy": "",
+        "description": "[PRIVATE - DEFERRED] Estimate fair rent/sale price per property based on location, area, rooms, and recent comparables. Highlight above/below market by percentage. Suggest price adjustment ranges. Extends existing Price History (#38) and CMA (#85) features. Pro feature with competitor benchmarks, dynamic market positioning matrix, real-time market data feeds, and offer strategy generator.",
+        "details": "## Why\nFEATURE_IDEAS: Dynamic Pricing and Market Positioning — agent-facing Pro tool.\n\n## Scope\nPro feature (requires Pro subscription)\n\n## Acceptance Criteria\n1. Fair price estimation endpoint: POST /api/v1/tools/fair-price\n2. Above/Below Market indicator on property cards (percentage)\n3. Price adjustment suggestion ranges for agents\n4. Integration with existing comparable selector (#85)\n5. Unit tests for pricing model with known datasets\n6. Confidence score per estimate\n7. Pricing engine with competitor benchmarks (price/m² by region)\n8. Dynamic market positioning matrix (rental vs purchase comparison)\n9. Real-time pricing based on market data feeds\n10. Region-based price normalization\n11. Offer strategy generator with counter-offer templates for rental/purchase",
+        "testStrategy": "## Test Strategy\n1. Unit tests for pricing model with known datasets (existing criteria)\n2. Integration tests for competitor benchmark aggregation by region (price/m²)\n3. Validation tests for market positioning matrix comparing rental vs purchase scenarios\n4. Real-time data feed integration tests with mock market data providers\n5. Region-based price normalization tests across different geographic areas\n6. Offer strategy generator tests validating counter-offer template rendering for both rental and purchase scenarios\n7. End-to-end tests for fair-price endpoint with various property inputs\n8. Confidence score validation tests against historical pricing accuracy",
         "status": "deferred",
         "dependencies": [
           "38",
@@ -1208,9 +1208,9 @@
       {
         "id": "108",
         "title": "[private] Negotiation Helper",
-        "description": "[PRIVATE - DEFERRED] Analyze market data for a specific property, suggest negotiation strategy, generate emails/messages to landlord/agency. Depends on Dynamic Pricing (#107) for market analysis.",
-        "details": "## Why\\nFEATURE_IDEAS: Negotiation Helper â€” agent-facing tool.\\n\\n## Acceptance Criteria\\n1. Negotiation analysis endpoint: POST /api/v1/tools/negotiation\\n2. Strategy suggestions (aggressive, moderate, conservative) with data backing\\n3. Email/message template generation with configurable tone\\n4. Price band visualization showing realistic negotiation range\\n5. Historical negotiation success rates where data available",
-        "testStrategy": "",
+        "description": "[PRIVATE - DEFERRED - PRO] Analyze market data for a specific property, suggest negotiation strategy, generate emails/messages to landlord/agency. Agent-facing tool with offer strategy generation, counter-offer templates, negotiation timeline tracking, and coaching suggestions. Depends on Dynamic Pricing (#107) for market analysis.",
+        "details": "## Why\nFEATURE_IDEAS: Negotiation Helper — agent-facing tool. Pro feature.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. Offer strategy generator based on market data (aggressive, moderate, conservative) with data backing\n2. Counter-offer templates for rental and purchase agreements with configurable tone\n3. Negotiation timeline tracking with milestone management and status updates\n4. Market comparison data integration showing price bands and realistic negotiation range\n5. Agent-facing negotiation coaching suggestions with historical success rates where data available\n6. Negotiation analysis endpoint: POST /api/v1/tools/negotiation\n7. Email/message template generation for landlord/agency communication\n8. Price band visualization showing realistic negotiation range",
+        "testStrategy": "1. Unit tests for offer strategy generation with various market conditions\n2. Integration tests for counter-offer template rendering (rental and purchase)\n3. Timeline tracking CRUD operations validation\n4. Market comparison data accuracy tests against Dynamic Pricing API (#107)\n5. Coaching suggestion relevance tests\n6. Pro feature access gating tests (verify non-Pro users are blocked)",
         "status": "deferred",
         "dependencies": [
           "107",
@@ -1224,8 +1224,8 @@
         "id": "109",
         "title": "[private] Personalised Recommendations Engine",
         "description": "[PRIVATE - DEFERRED] Build a personalization engine where users describe budget/lifestyle/family situation and the system builds a persona, proposing suitable listings with explanations. Pro feature.",
-        "details": "## Why\\nFEATURE_IDEAS: Personalised Recommendations â€” Pro feature.\\n\\n## Acceptance Criteria\\n1. User persona model (budget range, lifestyle tags, family size, location preferences)\\n2. Recommendation endpoint: POST /api/v1/recommendations\\n3. Explanation generation per recommendation\\n4. Recommendation quality metric >= 70% user satisfaction\\n5. Integration with existing search pipeline\\n6. Persona evolves based on user behavior (favorites, searches, activity)",
-        "testStrategy": "",
+        "details": "## Why\nFEATURE_IDEAS: Personalised Recommendations — Pro feature.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. User persona model (budget range, lifestyle tags, family size, location preferences)\n2. Recommendation endpoint: POST /api/v1/recommendations\n3. Explanation generation per recommendation\n4. Recommendation quality metric >= 70% user satisfaction\n5. Integration with existing search pipeline\n6. Persona evolves based on user behavior (favorites, searches, activity)\n7. Collaborative filtering based on user behavior signals (views, favorites, searches, time on page)\n8. Personalized property scoring per user profile — weighted scoring combining persona match, behavioral signals, and collaborative signals\n9. A/B testing framework for recommendation algorithms — ability to run multiple recommendation strategies in parallel and measure effectiveness\n10. Click-through and engagement tracking for recommendation quality — track impressions, clicks, saves, and conversions from recommendations\n11. Cold-start handling for new users — fallback to popularity-based and demographic-based recommendations until sufficient behavioral data is collected",
+        "testStrategy": "1. Unit tests for persona model creation and evolution based on behavioral signals\n2. Integration tests for POST /api/v1/recommendations endpoint with various persona configurations\n3. Collaborative filtering accuracy tests with synthetic user behavior data\n4. Personalized scoring validation — verify scoring weights produce expected rankings for known profiles\n5. A/B testing framework tests — verify proper user bucketing, metric collection, and statistical significance calculation\n6. Click-through and engagement tracking tests — verify event capture, aggregation, and quality metric computation\n7. Cold-start scenario tests — verify new users receive reasonable recommendations and transition to personalized recommendations over time\n8. Explanation generation quality tests — verify explanations are coherent and reference relevant persona attributes",
         "status": "deferred",
         "dependencies": [
           "37",
@@ -1239,7 +1239,7 @@
         "id": "110",
         "title": "[private] Shared Shortlists",
         "description": "[PRIVATE - DEFERRED] Allow users to create shareable shortlists where family/friends can comment and vote on properties. Pro collaboration feature.",
-        "details": "## Acceptance Criteria\\n1. Shortlist creation with unique shareable link\\n2. Multi-user comment thread per property in shortlist\\n3. Simple vote/score mechanism per property (thumbs up/down)\\n4. Email notification when someone comments on shared shortlist\\n5. Privacy controls (public, link-only, invite-only)\\n6. Shortlist activity feed",
+        "details": "## Why\nFEATURE_IDEAS: Shared Shortlists — Pro collaboration feature.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. Share link generation for property shortlists\n2. Multi-user collaboration on shared lists\n3. Comment threads per property\n4. Permission levels (view/edit/admin)\n5. Email notifications for list changes",
         "testStrategy": "",
         "status": "deferred",
         "dependencies": [
@@ -1252,9 +1252,9 @@
       {
         "id": "111",
         "title": "[private] CRM Integration (HubSpot/Pipedrive)",
-        "description": "[PRIVATE - DEFERRED] Two-way CRM sync with HubSpot and Pipedrive for leads and deals. Follows ExternalSourceAdapter pattern from FEATURE_IDEAS.",
-        "details": "## Acceptance Criteria\\n1. Adapter interface following ExternalSourceAdapter pattern\\n2. Two-way sync: leads from chat to CRM, CRM status back to app\\n3. Webhook endpoint for CRM event notifications\\n4. OAuth flow for CRM authorization\\n5. Rate limiting and retry logic per CRM API limits\\n6. Sync status dashboard in admin\\n7. Per-user CRM credential storage (encrypted)",
-        "testStrategy": "",
+        "description": "[PRIVATE - DEFERRED - PRO] Two-way CRM sync with HubSpot and Pipedrive for leads and deals. Follows ExternalSourceAdapter pattern from FEATURE_IDEAS. Pro feature — available to Pro subscribers only.",
+        "details": "## Why\nFEATURE_IDEAS: CRM Integration — Pro collaboration feature.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. Bi-directional sync with HubSpot and Pipedrive (leads from chat to CRM, CRM status back to app)\n2. Contact and deal mapping between platforms with field-level correspondence\n3. Webhook handlers for real-time CRM event notifications and status updates\n4. Lead activity sync including searches, favorites, and inquiries pushed to CRM\n5. Custom field mapping configuration UI for admin-defined field correspondence\n6. OAuth flow for CRM authorization per provider (HubSpot, Pipedrive)\n7. Rate limiting and retry logic per CRM API limits with exponential backoff\n8. Sync status dashboard in admin showing sync health and error logs\n9. Per-user CRM credential storage (encrypted)\n10. Adapter interface following ExternalSourceAdapter pattern for extensibility to additional CRMs",
+        "testStrategy": "1. Unit tests for bi-directional sync logic with HubSpot and Pipedrive API contracts\n2. Integration tests for contact and deal mapping validation between platforms\n3. Webhook handler tests with simulated CRM event payloads\n4. Lead activity sync tests covering searches, favorites, and inquiries\n5. Custom field mapping configuration CRUD and validation tests\n6. OAuth flow end-to-end tests with mock CRM provider\n7. Rate limiting and retry logic tests under various failure scenarios\n8. Sync status dashboard rendering and error log display tests",
         "status": "deferred",
         "dependencies": [
           "55",
@@ -1267,9 +1267,9 @@
       {
         "id": "112",
         "title": "[private] Calendar Integration for Viewings",
-        "description": "[PRIVATE - DEFERRED] Schedule viewing appointments with iCal/Google Calendar integration. Agent availability management and reminder notifications.",
-        "details": "## Acceptance Criteria\\n1. Viewing scheduling UI on property detail page\\n2. iCal/Google Calendar invite generation (.ics file)\\n3. Agent availability management (working hours, blocked slots)\\n4. Reminder notifications (email + push, 24h and 1h before)\\n5. Calendar sync endpoint: POST /api/v1/tools/schedule-viewing\\n6. Reschedule and cancel flows with notification",
-        "testStrategy": "",
+        "description": "[PRIVATE - DEFERRED - PRO] Schedule viewing appointments with Google Calendar and Outlook integration. Agent availability management, recurring scheduling, automated reminders, and calendar invite generation with property details. Pro feature — available to Pro subscribers only.",
+        "details": "## Why\nFEATURE_IDEAS: Calendar Integration for Viewings — Pro feature.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. Google Calendar sync for property viewings (OAuth-based integration)\n2. Outlook calendar sync for property viewings (OAuth-based integration)\n3. Availability slot management for agents (working hours, blocked slots, custom availability windows)\n4. Automated reminder system — email + push notifications before viewings (24h and 1h before)\n5. Recurring viewing scheduling support (weekly, bi-weekly, custom intervals)\n6. Calendar invite generation (.ics file) with property details and map links embedded\n7. Viewing scheduling UI on property detail page\n8. Calendar sync endpoint: POST /api/v1/tools/schedule-viewing\n9. Reschedule and cancel flows with notification updates",
+        "testStrategy": "1. Unit tests for Google Calendar and Outlook OAuth flows and token management\n2. Integration tests for calendar invite (.ics) generation with property details and map links\n3. Availability slot management validation — conflict detection, blocked slots, working hours enforcement\n4. Recurring viewing scheduling tests — creation, modification, and cancellation of recurring series\n5. Automated reminder delivery tests for email and push channels at configured intervals\n6. API endpoint tests for POST /api/v1/tools/schedule-viewing with various payload combinations\n7. Reschedule and cancel flow tests verifying notification dispatch",
         "status": "deferred",
         "dependencies": [],
         "priority": "low",
@@ -1279,23 +1279,87 @@
       {
         "id": "113",
         "title": "[private] BI Export Pipelines",
-        "description": "[PRIVATE - DEFERRED] Scheduled exports to Power BI, Tableau, Metabase. CSV/Parquet/SQL view exports for data teams. Extends existing export API (#80).",
-        "details": "## Acceptance Criteria\\n1. Scheduled export configuration (daily, weekly, monthly cron)\\n2. Export formats: CSV, Parquet, SQL views\\n3. Pre-built export templates for common BI queries (price trends, inventory, leads)\\n4. Webhook notification on export completion\\n5. Integration with existing export API (#80)\\n6. Admin UI for managing scheduled exports\\n7. Export history with download links",
-        "testStrategy": "",
+        "description": "[PRIVATE - DEFERRED] Scheduled exports to Power BI, Tableau, Metabase. CSV/JSON/XLSX exports for data teams with data warehouse integration (BigQuery, Redshift, Snowflake). Pro feature extending existing export API (#80).",
+        "details": "## Why\nFEATURE_IDEAS: BI Export Pipelines — Pro feature for data teams.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. Scheduled exports (daily/weekly/monthly) in CSV, JSON, XLSX formats\n2. Data warehouse integration (BigQuery, Redshift, Snowflake)\n3. Custom export templates with column selection\n4. Email delivery of scheduled reports\n5. Export history and audit log\n6. Integration with existing export API (#80)\n7. Admin UI for managing scheduled exports",
+        "testStrategy": "1. Unit tests for scheduled export configuration (daily, weekly, monthly cron jobs)\n2. Integration tests for CSV, JSON, XLSX format generation and data integrity\n3. Data warehouse connection tests (BigQuery, Redshift, Snowflake) with mock credentials\n4. Custom export template validation — column selection, preview, and save\n5. Email delivery tests for scheduled reports with attachment verification\n6. Export history and audit log CRUD operations validation\n7. Pro subscription gating — verify non-Pro users cannot access BI export features",
         "status": "deferred",
         "dependencies": [
           "80"
         ],
         "priority": "low",
-        "subtasks": [],
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement scheduled export configuration (daily/weekly/monthly cron)",
+            "status": "pending",
+            "description": "Build cron-based scheduling system for automated exports with daily, weekly, and monthly frequency options.",
+            "dependencies": [],
+            "testStrategy": null,
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Add export format support (CSV, JSON, XLSX)",
+            "status": "pending",
+            "description": "Implement export generators for CSV, JSON, and XLSX formats with proper data serialization.",
+            "dependencies": [],
+            "testStrategy": null,
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Build data warehouse integrations (BigQuery, Redshift, Snowflake)",
+            "status": "pending",
+            "description": "Create connectors for direct export to BigQuery, Redshift, and Snowflake with credential management and connection testing.",
+            "dependencies": [],
+            "testStrategy": null,
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Implement custom export templates with column selection",
+            "status": "pending",
+            "description": "Allow users to create and save export templates with configurable column selection and data filters.",
+            "dependencies": [],
+            "testStrategy": null,
+            "parentId": "undefined"
+          },
+          {
+            "id": 5,
+            "title": "Add email delivery for scheduled reports",
+            "status": "pending",
+            "description": "Implement email notification system that delivers scheduled export reports with file attachments or download links.",
+            "dependencies": [],
+            "testStrategy": null,
+            "parentId": "undefined"
+          },
+          {
+            "id": 6,
+            "title": "Build export history and audit log",
+            "status": "pending",
+            "description": "Create audit trail for all exports including timestamps, user, format, status, and download links.",
+            "dependencies": [],
+            "testStrategy": null,
+            "parentId": "undefined"
+          },
+          {
+            "id": 7,
+            "title": "Integrate with existing export API (#80) and add Pro subscription gating",
+            "status": "pending",
+            "description": "Extend existing export API (#80) with new BI export endpoints and ensure Pro-only access control.",
+            "dependencies": [],
+            "testStrategy": null,
+            "parentId": "undefined"
+          }
+        ],
         "updatedAt": "2026-03-27T22:31:00.138Z"
       },
       {
         "id": "114",
         "title": "[private] Portfolio Vacancy & Absorption Analytics",
-        "description": "[PRIVATE - DEFERRED] Track vacancy rates, absorption rates, and identify \"white spots\" on map where demand exceeds supply. Flag underperforming properties with long exposure or low interest. Pro manager analytics.",
-        "details": "## Acceptance Criteria\\n1. Vacancy rate calculation by city/district\\n2. Absorption rate tracking over time (properties sold/rented per period)\\n3. \"White spots\" identification (high demand, low supply areas) on map\\n4. Underperforming property flagging (long exposure, low interest metrics)\\n5. Integration with market trends dashboard (#84)\\n6. Admin dashboard with portfolio health overview",
-        "testStrategy": "",
+        "description": "[PRIVATE - DEFERRED] Track vacancy rates, absorption rates, and identify \"white spots\" on map where demand exceeds supply. Flag underperforming properties with long exposure or low interest. Pro manager analytics. Pro feature — available to Pro subscribers only.",
+        "details": "## Why\nFEATURE_IDEAS: Portfolio Vacancy & Absorption Analytics — Pro feature.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. Vacancy rate tracking by property, district, and city\n2. Market absorption curve visualization (time-on-market trends)\n3. Alerting on vacancy rate spikes above configurable thresholds\n4. Portfolio-level vacancy dashboard for managers\n5. Historical vacancy trend analysis with forecasting\n6. \"White spots\" identification (high demand, low supply areas) on map\n7. Underperforming property flagging (long exposure, low interest metrics)\n8. Integration with market trends dashboard (#84)\n9. Admin dashboard with portfolio health overview",
+        "testStrategy": "1. Unit tests for vacancy rate calculations at property, district, and city levels\n2. Integration tests for absorption curve data aggregation and visualization endpoints\n3. Alerting threshold configuration tests with spike detection scenarios\n4. Portfolio dashboard rendering tests with various vacancy scenarios\n5. Historical trend analysis accuracy tests with forecasting validation\n6. White spots identification tests using known demand/supply data patterns\n7. Underperforming property flagging logic tests with configurable exposure and interest thresholds",
         "status": "deferred",
         "dependencies": [
           "39",
@@ -1308,9 +1372,9 @@
       {
         "id": "115",
         "title": "[private] Multi-Agent Orchestration Framework",
-        "description": "[PRIVATE - DEFERRED] Build multi-agent orchestration framework for lead qualification, legal analysis, and complex workflows. PRD Hosted Pro scope: \"Multi-agent orchestration (lead qualification, legal analysis).\"",
-        "details": "## Acceptance Criteria\\n1. Agent-to-agent communication protocol\\n2. Task delegation and result aggregation\\n3. Human-in-the-loop escalation for uncertain decisions\\n4. Agent capability registry\\n5. Orchestration flow definition (DAG-based)\\n6. Monitoring dashboard for multi-agent conversations\\n7. Agent performance metrics per orchestration run",
-        "testStrategy": "",
+        "description": "[PRIVATE - DEFERRED - PRO] Build multi-agent orchestration framework for lead qualification, legal analysis, and complex workflows. PRD Hosted Pro scope: \"Multi-agent orchestration (lead qualification, legal analysis).\" Pro feature — available to Pro subscribers only.",
+        "details": "## Why\nFEATURE_IDEAS: Multi-Agent Orchestration — Pro feature for complex agent workflows.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. Agent registry with configurable agent personas (Lead Qualifier, Legal Agent, Market Analyst)\n2. Task routing engine dispatching user queries to appropriate agents based on intent classification\n3. Inter-agent communication protocol for multi-step workflows with message passing and context sharing\n4. Task delegation and result aggregation across agents\n5. Agent orchestration dashboard showing active conversations and handoffs between agents\n6. Fallback handling when specialized agent unavailable (graceful degradation to general agent)\n7. Human-in-the-loop escalation for uncertain decisions\n8. Orchestration flow definition (DAG-based) for complex multi-agent pipelines\n9. Agent performance metrics per orchestration run",
+        "testStrategy": "1. Unit tests for agent registry CRUD operations and persona configuration\n2. Integration tests for task routing engine with various user query types\n3. Inter-agent communication protocol tests covering message passing and context sharing\n4. Fallback handling tests verifying graceful degradation when agents are unavailable\n5. Dashboard rendering tests for active conversations and handoff visualization\n6. End-to-end tests for DAG-based orchestration flows (lead qualification, legal analysis)\n7. Performance metrics accuracy and aggregation tests per orchestration run",
         "status": "deferred",
         "dependencies": [],
         "priority": "low",
@@ -1320,9 +1384,9 @@
       {
         "id": "116",
         "title": "[private] Voice Mode with Telephony",
-        "description": "[PRIVATE - DEFERRED] Implement voice mode with telephony integration. PRD Hosted Pro scope: \"voice mode with telephony.\" Real-time voice conversation with transcription.",
-        "details": "## Acceptance Criteria\\n1. STT (speech-to-text) pipeline using Whisper or similar\\n2. TTS (text-to-speech) pipeline for agent responses\\n3. Phone number integration (Twilio/Vonage)\\n4. Real-time voice conversation with <2s latency\\n5. Full transcription logging for compliance\\n6. Voice-to-chat handoff (switch from voice to text mid-conversation)\\n7. Multi-language voice support",
-        "testStrategy": "",
+        "description": "[PRIVATE - DEFERRED] Implement voice mode with telephony integration. PRD Hosted Pro scope: \"voice mode with telephony.\" Real-time voice conversation with transcription. Pro feature — available to Pro subscribers only.",
+        "details": "## Why\nFEATURE_IDEAS: Voice Mode with Telephony — Pro feature for real-time voice conversations.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. Telephony provider integration (Twilio/Vonage) for inbound and outbound calls\n2. Speech-to-text (STT) pipeline for transcribing caller queries\n3. Text-to-speech (TTS) pipeline for AI responses to callers\n4. DTMF handling for menu navigation\n5. Call recording and transcription storage with retention policy\n6. Voice-to-chat handoff preserving conversation context\n7. Real-time voice conversation with <2s latency\n8. Multi-language voice support",
+        "testStrategy": "1. Unit tests for telephony provider integration (Twilio/Vonage) covering inbound and outbound call flows\n2. Integration tests for STT pipeline accuracy with various audio inputs and accents\n3. Integration tests for TTS pipeline output quality and latency\n4. DTMF tone recognition tests for menu navigation scenarios\n5. Call recording storage and retrieval tests with retention policy enforcement\n6. Voice-to-chat handoff tests verifying conversation context preservation\n7. End-to-end latency tests ensuring <2s response time\n8. Multi-language voice support tests covering supported locales",
         "status": "deferred",
         "dependencies": [],
         "priority": "low",
@@ -1332,23 +1396,286 @@
       {
         "id": "117",
         "title": "[private] Dialog Efficiency & Conversion Analytics",
-        "description": "[PRIVATE - DEFERRED] Build analytics dashboard for dialog efficiency and conversion as specified in PRD Hosted Pro: \"Analytics dashboard for dialog efficiency and conversion.\" Depends on Success Metrics infrastructure (#106).",
-        "details": "## Acceptance Criteria\\n1. Conversation quality scoring (helpfulness, accuracy, completeness)\\n2. Agent response time metrics (first token, full response, tool execution)\\n3. Conversion funnel analytics (chat â†’ property view â†’ inquiry â†’ viewing â†’ deal)\\n4. A/B test framework for prompt and routing experiments\\n5. Dialog pattern analysis (common questions, escalation triggers)\\n6. ROI calculator: conversation cost vs. conversion value\\n7. Export to BI tools pipeline",
-        "testStrategy": "",
+        "description": "[PRIVATE - DEFERRED - PRO] Build analytics dashboard for dialog efficiency and conversion as specified in PRD Hosted Pro: \"Analytics dashboard for dialog efficiency and conversion.\" Pro feature — available to Pro subscribers only. Depends on Success Metrics infrastructure (#106).",
+        "details": "## Why\nFEATURE_IDEAS: Dialog Efficiency & Conversion Analytics — Pro feature.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. Full funnel tracking: chat start → property view → agent contact → viewing → deal\n2. Drop-off analysis at each funnel stage with visual breakdown\n3. Conversion optimization suggestions based on historical patterns\n4. A/B testing framework for prompt, routing, and dialog strategy experiments\n5. Agent coaching insights from low-conversion dialogs\n6. Dashboard with daily/weekly/monthly conversion trends\n7. Conversation quality scoring (helpfulness, accuracy, completeness)\n8. Agent response time metrics (first token, full response, tool execution)\n9. Dialog pattern analysis (common questions, escalation triggers)\n10. ROI calculator: conversation cost vs. conversion value\n11. Export to BI tools pipeline",
+        "testStrategy": "1. Unit tests for funnel tracking event capture at each stage (chat start, property view, agent contact, viewing, deal)\n2. Integration tests for drop-off analysis calculations and visual breakdown rendering\n3. Conversion optimization suggestion engine validation against historical data patterns\n4. A/B test framework tests for dialog strategy assignment, tracking, and statistical significance calculation\n5. Agent coaching insight generation tests using sample low-conversion dialog datasets\n6. Dashboard rendering tests for daily, weekly, and monthly trend aggregations\n7. Conversation quality scoring accuracy tests (helpfulness, accuracy, completeness)\n8. Response time metric collection and aggregation tests\n9. Dialog pattern analysis tests for common question clustering and escalation trigger detection\n10. ROI calculator validation with known conversation costs and conversion values\n11. BI export pipeline integration tests",
         "status": "deferred",
         "dependencies": [
-          "106"
+          "118"
         ],
         "priority": "low",
         "subtasks": [],
         "updatedAt": "2026-03-27T22:31:00.241Z"
+      },
+      {
+        "id": "118",
+        "title": "Add user relevance rating to search results",
+        "description": "Add thumbs-up/down feedback on search results. Aggregate match accuracy to measure ≥80% target. Store ratings anonymously. PRD Success Metrics requirement: Relevance: ≥80% user-rated match accuracy. Scope: CE. Priority: High. Estimate: 1 day. Acceptance: POST /api/v1/feedback/rating accepts search_id + rating (1-5); GET /api/v1/admin/metrics/relevance returns avg match accuracy; Frontend rating UI on search result cards; tests for rating submission and aggregation.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-03-30T19:57:45.975Z"
+      },
+      {
+        "id": "119",
+        "title": "Track chat conversation to property viewing inquiry rate",
+        "description": "Track when a chat conversation leads to a viewing inquiry (agent contact form, email, call request). Measure ≥15% target. PRD Success Metrics requirement: Conversion: ≥15% chat→viewing inquiry. Scope: CE. Priority: Medium. Estimate: 0.5 day. Acceptance: Funnel tracking: chat → property view → agent contact → inquiry; GET /api/v1/admin/metrics/conversion returns conversion rates; tests for funnel tracking.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "120",
+        "title": "Add real-time p95 latency monitoring for search and chat",
+        "description": "Implement middleware to track p95 latency for search (<2s) and chat (<8s) endpoints. Expose in admin metrics endpoint with alerts for SLA breach. PRD NFR requirement: Performance: p95 < 2s retrieval; p95 < 8s complex answers. Scope: CE. Priority: High. Estimate: 1 day. Acceptance: p95 latency tracked per endpoint; GET /api/v1/admin/metrics/latency returns p95 values; alert when p95 exceeds SLA targets; tests.",
+        "details": "",
+        "testStrategy": "",
+        "status": "in-progress",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-03-30T20:03:01.939Z"
+      },
+      {
+        "id": "121",
+        "title": "Benchmark and validate search p95 < 2s",
+        "description": "Run load tests against search endpoint with realistic data (1000+ properties). Validate p95 latency meets <2s SLA. Document bottlenecks if any. PRD NFR: p95 < 2s retrieval. Scope: CE. Priority: High. Estimate: 1 day. Dependencies: #120 (latency monitoring). Acceptance: Load test script in tests/performance/; p95 < 2s with 1000-property dataset; results documented in test report; CI gate for regression.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          "120"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "122",
+        "title": "Benchmark and validate chat p95 < 8s",
+        "description": "Run load tests against chat SSE endpoint. Validate p95 latency meets <8s SLA for complex queries. Test with multiple LLM providers. PRD NFR: p95 < 8s complex answers. Scope: CE. Priority: High. Estimate: 1 day. Dependencies: #120 (latency monitoring). Acceptance: Load test script in tests/performance/; p95 < 8s for complex queries with mock LLM; results documented.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          "120"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "123",
+        "title": "Improve BM25 search weighting based on benchmarks",
+        "description": "Follow-up from TM-SEARCH-001. Tune BM25 weights based on benchmark results and relevance feedback. Improve hybrid retrieval quality. Scope: CE. Priority: Medium. Estimate: 1 day. Dependencies: #121 (search benchmark). Acceptance: BM25 weights optimized based on benchmark data; Relevance feedback scores improve by ≥5%; No regression in search latency.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          "121"
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "124",
+        "title": "Resolve protobuf CVE-2026-0994 dependency vulnerability",
+        "description": "Monitor for upstream protobuf patch and update dependency. Remove --ignore-vuln CVE-2026-0994 from CI once patched. Follow-up from TM-QA-012 validation. Scope: CE. Priority: Critical. Estimate: 0.5 day (blocked on upstream). Acceptance: Protobuf dependency updated to patched version; --ignore-vuln CVE-2026-0994 removed from scripts/ci/ci_parity.py; pip-audit passes clean.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "125",
+        "title": "Add end-to-end chat flow test in frontend",
+        "description": "Follow-up from TM-CHAT-001/002. Add Playwright e2e test covering full chat interaction: send message → receive streaming response → sources expander visible. Scope: CE. Priority: High. Estimate: 0.5 day. Acceptance: Playwright test for chat flow in apps/api/tests/e2e/; tests streaming response rendering; tests source expander visibility; passes in CI.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "126",
+        "title": "Make RuleEngine CI step a required branch protection check",
+        "description": "Follow-up from TM-QA-004. Add RuleEngine CI step as required status check in GitHub branch protection rules. Scope: CE. Priority: Medium. Estimate: 0.25 day. Acceptance: RuleEngine step listed as required check in branch protection; PRs cannot merge without passing RuleEngine; documented in developer notes.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "127",
+        "title": "Enhance compose smoke test with authenticated health check",
+        "description": "Follow-up from TM-DEPLOY-002/003. Ensure compose smoke test calls authenticated /api/v1/verify-auth as part of the health check flow. Scope: CE. Priority: Medium. Estimate: 0.25 day. Acceptance: Smoke test calls verify-auth endpoint; test passes with API_ACCESS_KEY set; test skips auth check gracefully when not set.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "128",
+        "title": "Add localization support for chat UI strings",
+        "description": "Follow-up from TM-CHAT-002/005. Extract hardcoded chat UI strings to i18n keys. Support EN, PL, RU at minimum. Scope: CE. Priority: Medium. Estimate: 0.5 day. Acceptance: All chat UI strings use i18n keys; EN, PL, RU translations provided; existing tests remain green.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "129",
+        "title": "Generate full API documentation from OpenAPI schema in CI",
+        "description": "Follow-up from TM-DOCS-005. Enhance OpenAPI-to-markdown generation to produce complete API docs automatically in CI. Scope: CE. Priority: Medium. Estimate: 0.5 day. Acceptance: CI step generates full API docs from openapi.json; no manual drift possible; generated docs published to docs/ directory.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "130",
+        "title": "Add delete/reset knowledge store UX controls",
+        "description": "Follow-up from TM-RAG-005/006. Add UI controls for knowledge store management (delete individual files, reset all, view history). Scope: CE. Priority: Medium. Estimate: 0.5 day. Acceptance: Delete individual uploaded documents; reset all knowledge with confirmation dialog; upload history panel per user email; tests.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "131",
+        "title": "Add provider-specific deployment templates (Vercel + Render)",
+        "description": "Add vercel.json and render.yaml templates optimized for the project stack. Include env var templates and build configurations. Scope: CE. Priority: Low. Estimate: 0.5 day. Acceptance: deploy/templates/vercel.json for frontend; deploy/templates/render.yaml for backend; .env.example references all required vars; documented in quickstart guide.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": []
+      },
+      {
+        "id": "132",
+        "title": "Expand critical module set for coverage gates",
+        "description": "Follow-up from TM-QA-003. Add more modules to the critical coverage gate list to improve test enforcement. Scope: CE. Priority: Low. Estimate: 0.5 day. Acceptance: Critical module list expanded to cover all routers and services; coverage gate enforces ≥90% on critical modules; CI pipeline updated.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": []
+      },
+      {
+        "id": "133",
+        "title": "Add PDF/DOCX parsing as required CE dependency (remove optional)",
+        "description": "Follow-up from TM-RAG-001. Make PDF/DOCX parsing a required dependency in CE rather than optional. Add pypdf and python-docx as standard dependencies. Scope: CE. Priority: Medium. Estimate: 0.5 day. Acceptance: pypdf and python-docx in pyproject.toml dependencies (not optional); RAG upload handles PDF/DOCX without graceful fallback; tests cover both file types.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "134",
+        "title": "Prepare CE for EU AI Act transparency requirements (Aug 2026)",
+        "description": "From research findings (2026_market_and_compliance_summary.md). Add chatbot transparency labeling (You are talking to an AI), 6-month event logging, and data processing documentation. EU AI Act enforcement begins August 2026. Scope: CE. Priority: Medium. Estimate: 1 day. Acceptance: Chat UI shows AI Assistant label prominently; event log retention ≥ 6 months; data processing documentation page; terms of service reference AI usage.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "135",
+        "title": "Expand Critical Module Set for Coverage Gate Enforcement",
+        "description": "Expand the critical module list to cover all routers and services, enforce ≥90% coverage gate on critical modules, and update CI pipeline configuration for improved test enforcement.",
+        "details": "## Implementation Steps\n\n1. **Audit Current Critical Module List**\n   - Review existing critical module configuration (from Task #132 foundation)\n   - Identify all router modules (property routes, search routes, auth routes, agent routes, etc.)\n   - Identify all service modules (RAG service, search service, citation service, streaming service, etc.)\n\n2. **Update Coverage Configuration**\n   - Locate coverage config file (e.g., `.nycrc`, `jest.config.ts`, or `coverage-gate.yml`)\n   - Add all router modules to critical list: `src/routes/**/*.ts`\n   - Add all service modules to critical list: `src/services/**/*.ts`\n   - Ensure threshold is set to ≥90% for critical modules\n   - Maintain existing thresholds for non-critical modules\n\n3. **Update CI Pipeline**\n   - Modify CI configuration (e.g., `.github/workflows/test.yml` or equivalent)\n   - Add coverage gate step that fails build if critical modules below 90%\n   - Add coverage report artifact upload for visibility\n   - Configure coverage summary comment on PRs\n\n4. **Module Coverage Assessment**\n   - Run current test suite with coverage reporting\n   - Identify modules below 90% threshold\n   - Document gaps for follow-up task creation\n\n5. **Documentation**\n   - Update contributing guide with coverage requirements\n   - Document critical module list and rationale\n   - Add coverage badge to README\n\n## Technical Considerations\n- Ensure coverage collection doesn't significantly increase CI runtime\n- Consider using `--changedSince=main` flag for PR builds to focus on changed files\n- Coverage gate should block merge but not block local development\n- Exclude test utilities and mocks from coverage metrics",
+        "testStrategy": "## Verification Steps\n\n1. **Configuration Validation**\n   - Verify all router and service modules are included in critical list\n   - Confirm ≥90% threshold is properly configured\n   - Check that non-critical modules maintain separate threshold\n\n2. **Coverage Gate Enforcement Testing**\n   - Temporarily lower a module's coverage below 90%\n   - Run CI pipeline and verify build fails with clear error message\n   - Restore coverage and verify build passes\n\n3. **CI Pipeline Validation**\n   - Trigger CI build and verify coverage gate step executes\n   - Verify coverage report is generated and uploaded as artifact\n   - Confirm PR coverage comment appears with accurate data\n\n4. **Module Completeness Check**\n   - Cross-reference critical module list with actual codebase structure\n   - Verify no router or service modules are missing from critical list\n   - Check that utility/config modules are NOT in critical list\n\n5. **Regression Testing**\n   - Ensure existing test suite still passes\n   - Verify coverage reporting is accurate (compare with manual calculation)\n   - Confirm no significant CI runtime increase (<2 minutes additional)",
+        "status": "pending",
+        "dependencies": [
+          "132"
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "136",
+        "title": "Add PDF/DOCX parsing as required CE dependency",
+        "description": "Make PDF/DOCX parsing a required dependency in Community Edition by adding pypdf and python-docx as standard (non-optional) dependencies in pyproject.toml, and update RAG upload handlers to process these file types without graceful fallback.",
+        "details": "## Implementation Steps\n\n### 1. Update pyproject.toml\n- Move `pypdf` and `python-docx` from optional dependencies (extras) to the main `dependencies` section\n- Ensure version pins are appropriate (e.g., `pypdf>=3.9.0`, `python-docx>=0.8.11`)\n- Remove any conditional logic or extras group that previously made these optional\n\n### 2. Update RAG Upload Handler\n- Locate the file upload/parsing module in the RAG pipeline\n- Remove any try/except blocks that catch ImportError for pypdf/python-docx and fall back gracefully\n- Ensure PDF parsing uses pypdf directly without availability checks\n- Ensure DOCX parsing uses python-docx directly without availability checks\n- Remove any feature flags or configuration options related to PDF/DOCX support being optional\n\n### 3. Update Parser Registry\n- If there's a parser registry or factory pattern, ensure PDF and DOCX parsers are always registered\n- Remove any conditional registration based on package availability\n\n### 4. Documentation Updates\n- Update README or setup docs to reflect PDF/DOCX as standard supported formats\n- Remove any notes about optional dependencies for these file types\n\n### 5. Acceptance Criteria\n1. `pypdf` and `python-docx` appear in pyproject.toml `[project.dependencies]` (NOT in `[project.optional-dependencies]`)\n2. RAG upload endpoint successfully processes PDF files without fallback behavior\n3. RAG upload endpoint successfully processes DOCX files without fallback behavior\n4. No ImportError handling or graceful degradation for missing PDF/DOCX parsers\n5. Existing functionality remains intact\n6. All tests pass",
+        "testStrategy": "## Test Plan\n\n### Unit Tests\n1. **PDF Parsing Test**: Create test that uploads a sample PDF file through the RAG pipeline and verifies successful text extraction and chunking\n2. **DOCX Parsing Test**: Create test that uploads a sample DOCX file through the RAG pipeline and verifies successful text extraction and chunking\n3. **Dependency Verification Test**: Add test that imports pypdf and python-docx directly to confirm they are available as standard dependencies\n4. **Error Handling Test**: Verify that corrupted/invalid PDF and DOCX files raise appropriate errors (not silent fallbacks)\n\n### Integration Tests\n1. **RAG Upload PDF**: End-to-end test uploading a PDF document and querying against its content\n2. **RAG Upload DOCX**: End-to-end test uploading a DOCX document and querying against its content\n3. **Mixed File Upload**: Test uploading a mix of PDF, DOCX, and other supported formats in one session\n\n### Validation Steps\n1. Run `pip install -e .` on clean environment and verify pypdf/python-docx are installed without extras\n2. Check `pip list` after install to confirm both packages present\n3. Verify no optional dependency groups reference PDF/DOCX parsing\n4. Run full test suite to ensure no regressions",
+        "status": "pending",
+        "dependencies": [
+          "133"
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "137",
+        "title": "Add deployment configuration templates for Vercel, Render, and environment variables",
+        "description": "Create optimized deployment templates for Vercel and Render platforms in deploy/templates/, including vercel.json, render.yaml, and .env.example files with all required environment variables documented and pre-configured for the project stack.",
+        "details": "## Implementation Steps\n\n### 1. Create deploy/templates/ Directory Structure\n- Verify deploy/ directory exists (created in #25)\n- Create deploy/templates/ subdirectory for all deployment configuration templates\n- Add README.md in deploy/templates/ explaining template usage\n\n### 2. Create vercel.json Template (deploy/templates/vercel.json)\n- Configure build settings optimized for Next.js/React frontend\n- Set framework preset to nextjs\n- Define build command: `cd apps/web && npm run build`\n- Set output directory: `apps/web/.next`\n- Configure routing rewrites for API proxy to backend\n- Add environment variable references with placeholders\n- Configure function regions for optimal latency\n- Set node.js version to match project requirements\n- Add headers for security (CSP, CORS)\n- Example structure:\n```json\n{\n  \"version\": 2,\n  \"builds\": [\n    {\n      \"src\": \"apps/web/package.json\",\n      \"use\": \"@vercel/next\"\n    }\n  ],\n  \"routes\": [\n    { \"src\": \"/api/(.*)\", \"dest\": \"${BACKEND_URL}/api/$1\" }\n  ]\n}\n```\n\n### 3. Create render.yaml Template (deploy/templates/render.yaml)\n- Define backend web service (Python/FastAPI)\n  - Build command: `pip install -r requirements.txt`\n  - Start command: `python -m uvicorn api.main:app --host 0.0.0.0 --port $PORT`\n  - Environment: Python 3.11+\n  - Health check endpoint: /health\n- Define PostgreSQL database service\n- Define Redis service for caching/sessions\n- Set environment groups for shared variables\n- Configure auto-scaling parameters\n- Add disk storage for uploads if needed\n- Example structure:\n```yaml\nservices:\n  - type: web\n    name: backend\n    runtime: python\n    buildCommand: pip install -r requirements.txt\n    startCommand: python -m uvicorn api.main:app --host 0.0.0.0 --port $PORT\n    envVars:\n      - key: PYTHON_VERSION\n        value: \"3.11\"\n      - fromGroup: backend-env\n```\n\n### 4. Create .env.example Template (deploy/templates/.env.example)\n- Organize by category with clear comments:\n  - Application Settings (APP_NAME, APP_ENV, APP_URL, PORT)\n  - Database Configuration (DATABASE_URL, DB_POOL_SIZE)\n  - Redis Configuration (REDIS_URL)\n  - Authentication (JWT_SECRET, JWT_EXPIRY, AUTH_PROVIDER)\n  - LLM Provider Settings (OPENAI_API_KEY, ANTHROPIC_API_KEY, DEFAULT_MODEL)\n  - MCP Configuration (MCP_ALLOWLIST, MCP_TIMEOUT)\n  - Search/API Keys (GOOGLE_MAPS_API_KEY, etc.)\n  - File Upload (UPLOAD_DIR, MAX_UPLOAD_SIZE)\n  - CORS Settings (ALLOWED_ORIGINS)\n  - Optional: Ollama (OLLAMA_BASE_URL, OLLAMA_MODEL)\n- Mark required vs optional variables\n- Include sensible defaults where appropriate\n- Add inline documentation for each variable\n\n### 5. Update docs/quickstart.md\n- Add \"First Time Setup\" section referencing .env.example\n- Add deployment section with platform-specific instructions:\n  - Vercel deployment steps using template\n  - Render deployment steps using template\n  - Environment variable configuration guide\n- Include copy commands: `cp deploy/templates/.env.example .env`\n- Document how to customize templates for specific environments\n- Add troubleshooting section for common deployment issues\n\n### 6. Create deploy/templates/README.md\n- Explain purpose of each template file\n- Provide quick-start commands for copying templates\n- Link to full documentation in quickstart.md\n- Note which variables MUST be changed before deployment",
+        "testStrategy": "## Test Plan\n\n### Template Validation\n1. **vercel.json**: Validate JSON syntax with `json.tool` or `jq`\n2. **render.yaml**: Validate YAML syntax with `yamllint` or Python yaml module\n3. **.env.example**: Verify no actual secrets are present, only placeholder values\n\n### Configuration Completeness\n1. **Environment Variables Audit**: Compare .env.example against actual codebase to ensure all required env vars are documented (grep for `os.environ`, `os.getenv`, `settings.` patterns)\n2. **Build Commands**: Verify build commands in templates match actual project build process\n3. **Path References**: Ensure all file paths in templates are correct relative to project structure\n\n### Documentation Verification\n1. **Quickstart Guide**: Verify docs/quickstart.md contains clear first-time setup instructions\n2. **Template README**: Verify deploy/templates/README.md accurately describes each template\n3. **Cross-references**: Ensure quickstart.md correctly references template file paths\n\n### Integration Testing\n1. Copy .env.example to .env: `cp deploy/templates/.env.example .env`\n2. Verify application starts with default/example values where safe\n3. Test Vercel build locally: `vercel build --config deploy/templates/vercel.json`\n4. Validate render.yaml with Render CLI or blueprint validator\n\n### Pre-commit/CI Validation\n1. Add check to CI that verifies .env.example is in sync with codebase requirements\n2. Verify no real API keys or secrets exist in any template files\n3. Run security scan on templates directory",
+        "status": "pending",
+        "dependencies": [
+          "25",
+          "33"
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "138",
+        "title": "[CE] EU AI Act Compliance - Chatbot Transparency & Data Processing Documentation",
+        "description": "Implement EU AI Act compliance measures including chatbot transparency labeling, 6-month event logging retention policy, data processing documentation page, and Terms of Service updates referencing AI usage. Target: EU AI Act effective August 2026.",
+        "details": "## Context\nEU AI Act becomes effective August 2026. This task ensures CE scope compliance with transparency and data processing requirements for AI-powered chatbot features.\n\n## Implementation Steps\n\n### 1. Chatbot Transparency Labeling\n- Add prominent 'AI Assistant' label to chat UI header/badge\n- Include disclaimer: 'You are talking to an AI assistant' in chat window\n- Add visual indicator (icon/badge) distinguishing AI from human agents\n- Ensure label is visible before user sends first message\n- Files: `apps/web/components/chat/ChatHeader.tsx`, `apps/web/components/chat/ChatWindow.tsx`\n\n### 2. Event Logging Retention (6 months)\n- Extend existing audit logging system (Task 95) with retention policy\n- Configure log retention to minimum 6 months for all AI interaction events\n- Implement automated log archival/purge after retention period\n- Add retention configuration to admin settings\n- Files: `apps/api/services/audit.py`, `apps/api/config/settings.py`\n\n### 3. Data Processing Documentation Page\n- Create public-facing '/data-processing' page documenting:\n  - What data the AI chatbot collects\n  - How data is processed and stored\n  - Data retention periods\n  - User rights (access, deletion, correction)\n  - Third-party data sharing (if applicable)\n  - Contact information for data protection inquiries\n- Files: `apps/web/pages/data-processing.tsx`, `apps/api/docs/data-processing.md`\n\n### 4. Terms of Service Updates\n- Add section referencing AI usage in platform\n- Disclose automated decision-making where applicable\n- Link to data processing documentation\n- Files: `apps/web/pages/terms-of-service.tsx`\n\n### 5. Compliance Documentation\n- Document all compliance measures implemented\n- Create internal compliance checklist for EU AI Act\n- Files: `docs/compliance/eu-ai-act.md`",
+        "testStrategy": "## Verification Steps\n\n### Chatbot Transparency\n1. Visual inspection: Verify 'AI Assistant' label is prominently displayed in chat UI\n2. Verify label appears before any user interaction\n3. Test on mobile and desktop viewports\n4. Accessibility test: Label readable by screen readers\n\n### Event Log Retention\n1. Unit test: Verify retention policy configuration (≥6 months / ≥180 days)\n2. Integration test: Verify logs older than retention period are archived/purged\n3. Query audit logs to confirm retention period is enforced\n4. Test retention configuration changes via admin API\n\n### Data Processing Documentation\n1. Verify page is publicly accessible at /data-processing\n2. Content review: All required sections present and accurate\n3. Verify links to Terms of Service work correctly\n4. Cross-browser rendering test\n\n### Terms of Service\n1. Verify AI usage section exists and is accurate\n2. Verify link to data processing documentation works\n3. Legal review sign-off (if applicable)\n\n### Compliance\n1. Run through EU AI Act compliance checklist\n2. Verify all acceptance criteria met:\n   - Chat UI shows AI Assistant label prominently ✓\n   - Event log retention ≥ 6 months ✓\n   - Data processing documentation page exists ✓\n   - Terms of service references AI usage ✓",
+        "status": "pending",
+        "dependencies": [
+          "69",
+          "95"
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "139",
+        "title": "Add PDF/DOCX parsing as required CE dependency",
+        "description": "Follow-up from TM-RAG-001. Make PDF/DOCX parsing a required dependency in Community Edition rather than optional. Add pypdf and python-docx as standard (non-optional) dependencies in pyproject.toml and update RAG upload handlers to process these file types without graceful fallback.",
+        "details": "## Implementation Steps\n\n### 1. Update pyproject.toml Dependencies\n- Move `pypdf` from optional extras to main `dependencies` section\n- Move `python-docx` from optional extras to main `dependencies` section\n- Use version pins: `pypdf>=3.9.0` and `python-docx>=0.8.11`\n- Remove any `[project.optional-dependencies]` groups related to document parsing\n- Verify no other optional groups reference these packages\n\n### 2. Update RAG Upload Handler\n- Locate the document upload/parsing module in the RAG pipeline\n- Remove try/except blocks that handle `ImportError` for pypdf and python-docx\n- Remove any conditional logic that checks for optional dependency availability\n- Ensure PDF parsing uses pypdf directly without fallback wrappers\n- Ensure DOCX parsing uses python-docx directly without fallback wrappers\n- Raise explicit errors if parsing fails rather than silently skipping\n\n### 3. Update Import Statements\n- Change conditional imports to direct imports throughout codebase\n- Remove `importlib.util.find_spec` checks for these libraries\n- Update type hints if any were using `Optional` due to conditional imports\n\n### 4. Documentation Updates\n- Update installation documentation to reflect required dependencies\n- Remove any notes about optional document parsing capabilities\n- Update README if it mentions optional PDF/DOCX support\n\n### 5. Docker/Container Updates\n- Ensure base Docker images include these dependencies\n- Verify no size regressions in container images\n- Update any docker-compose files if they had volume mounts for optional deps",
+        "testStrategy": "## Test Plan\n\n### Unit Tests\n1. **PDF Parsing Test**: Create test that uploads a sample PDF file through the RAG pipeline and verifies successful text extraction, chunking, and embedding generation\n2. **DOCX Parsing Test**: Create test that uploads a sample DOCX file through the RAG pipeline and verifies successful text extraction, chunking, and embedding generation\n3. **Error Handling Test**: Verify that corrupted PDF/DOCX files raise appropriate errors (not silent fallbacks)\n4. **Import Test**: Verify that pypdf and python-docx are importable from the main module without any conditional checks\n\n### Integration Tests\n1. **End-to-End Upload Flow**: Test complete upload → parse → chunk → embed flow for both PDF and DOCX\n2. **Multi-format Upload**: Test uploading a mix of PDF, DOCX, and TXT files in sequence\n3. **Large File Handling**: Test with larger documents to ensure no memory issues\n\n### Dependency Verification\n1. **pyproject.toml Check**: Verify pypdf and python-docx appear in main dependencies, not extras\n2. **Install Test**: Fresh install from pyproject.toml should include both packages\n3. **CI Verification**: Ensure CI pipeline installs these packages by default\n\n### Regression Tests\n1. **Existing Tests**: All existing RAG tests must continue to pass\n2. **TXT Upload**: Plain text file upload should still work correctly\n3. **Search Quality**: Verify search results are not impacted by dependency changes",
+        "status": "pending",
+        "dependencies": [
+          "133",
+          "136"
+        ],
+        "priority": "medium",
+        "subtasks": []
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-29T18:46:01.962Z",
-      "taskCount": 93,
-      "completedCount": 81,
+      "lastModified": "2026-03-30T20:03:01.939Z",
+      "taskCount": 115,
+      "completedCount": 82,
       "tags": [
         "master"
       ]
