@@ -2,7 +2,7 @@
   "master": {
     "tasks": [
       {
-        "id": "25",
+        "id": 25,
         "title": "Create deploy/ directory structure and move Docker files",
         "description": "Create the new deploy/ directory with docker/ and compose/ subdirectories, and move all Docker-related files from root and frontend locations to the new structure.",
         "status": "done",
@@ -15,7 +15,7 @@
         "updatedAt": "2026-02-11T20:55:19.167Z"
       },
       {
-        "id": "26",
+        "id": 26,
         "title": "Restructure scripts/ directory into subdirectories",
         "description": "Reorganize the scripts/ directory by creating subdirectories (ci, dev, docs, security, validation) and moving existing scripts into their appropriate categories.",
         "status": "done",
@@ -28,7 +28,7 @@
         "updatedAt": "2026-02-11T20:55:52.506Z"
       },
       {
-        "id": "27",
+        "id": 27,
         "title": "Update .devcontainer configuration for FastAPI + Next.js",
         "description": "Update the .devcontainer/devcontainer.json file to reflect the new FastAPI backend and Next.js frontend stack, removing outdated Streamlit references.",
         "status": "done",
@@ -41,7 +41,7 @@
         "updatedAt": "2026-02-11T20:57:12.692Z"
       },
       {
-        "id": "28",
+        "id": 28,
         "title": "Update security script references and remove broken wrapper",
         "description": "Update documentation and CI references to use scripts/security/local_scan.py as the canonical security scanner, and remove the broken security-scan.py wrapper.",
         "status": "done",
@@ -56,7 +56,7 @@
         "updatedAt": "2026-02-19T10:15:28.267Z"
       },
       {
-        "id": "29",
+        "id": 29,
         "title": "Update CI/CD workflows with new paths",
         "description": "Update .github/workflows/ci.yml and .github/workflows/semgrep.yml to use the new script paths and Docker file locations.",
         "status": "done",
@@ -73,7 +73,7 @@
         "updatedAt": "2026-02-19T10:59:16.740Z"
       },
       {
-        "id": "30",
+        "id": 30,
         "title": "Create Makefile for common commands",
         "description": "Create a root-level Makefile with convenient targets for security scanning, testing, linting, docker operations, and running full CI locally.",
         "status": "done",
@@ -90,7 +90,7 @@
         "updatedAt": "2026-02-19T11:03:55.333Z"
       },
       {
-        "id": "31",
+        "id": 31,
         "title": "Update documentation with new structure",
         "description": "Update README.md, CLAUDE.md, and any other documentation files to reflect the new project structure, script locations, and commands.",
         "status": "done",
@@ -110,7 +110,7 @@
         "updatedAt": "2026-02-19T11:10:24.749Z"
       },
       {
-        "id": "32",
+        "id": 32,
         "title": "Final validation and integration testing",
         "description": "Perform comprehensive validation to ensure all refactored paths work correctly, Docker containers build and run, and all scripts execute without errors.",
         "status": "done",
@@ -131,7 +131,7 @@
         "updatedAt": "2026-02-19T11:15:16.095Z"
       },
       {
-        "id": "33",
+        "id": 33,
         "title": "Deploy to Vercel/Render (BLOCKED)",
         "description": "Deploy frontend to Vercel and backend to Render/Railway production environment. BLOCKED: Requires completion of local testing gates (#60, #61) and production optimization (#62).",
         "status": "done",
@@ -163,7 +163,7 @@
         "updatedAt": "2026-03-28T10:03:44.225Z"
       },
       {
-        "id": "34",
+        "id": 34,
         "title": "Refactor repo for local PowerShell scripts and Docker",
         "description": "Fix port consistency, Docker configuration issues, update documentation, and add convenience scripts for easier local development.",
         "status": "done",
@@ -176,7 +176,7 @@
         "updatedAt": "2026-02-19T12:07:00.519Z"
       },
       {
-        "id": "35",
+        "id": 35,
         "title": "User Authentication System",
         "description": "Implement real authentication to replace the current simulated auth system. Users should be able to register, login, and manage their sessions securely.",
         "status": "done",
@@ -189,7 +189,7 @@
         "updatedAt": "2026-02-20T01:19:00.735Z"
       },
       {
-        "id": "36",
+        "id": 36,
         "title": "Saved Searches & Alerts",
         "description": "Allow users to save their search criteria and receive email alerts when new properties match their saved searches.",
         "status": "done",
@@ -204,7 +204,7 @@
         "updatedAt": "2026-02-20T08:41:33.067Z"
       },
       {
-        "id": "37",
+        "id": 37,
         "title": "Property Favorites/Watchlist",
         "description": "Implement a favorites/watchlist system where users can save individual properties for later review, organize them into collections, and add notes.",
         "status": "done",
@@ -219,7 +219,7 @@
         "updatedAt": "2026-02-20T11:15:55.120Z"
       },
       {
-        "id": "38",
+        "id": 38,
         "title": "Price History & Trends",
         "description": "Implement price history tracking and trend analysis to show how property prices have changed over time.",
         "status": "done",
@@ -232,7 +232,7 @@
         "updatedAt": "2026-02-20T19:50:47.038Z"
       },
       {
-        "id": "39",
+        "id": 39,
         "title": "Advanced Investment Analytics",
         "description": "Enhance the investment analysis tools with more advanced metrics including cash flow projections, tax implications, and risk assessment.",
         "status": "done",
@@ -245,7 +245,7 @@
         "updatedAt": "2026-03-05T22:28:59.647Z"
       },
       {
-        "id": "40",
+        "id": 40,
         "title": "Neighborhood Insights Enhancement",
         "description": "Enhance the neighborhood quality index with more detailed data including crime statistics, school ratings, and public transport accessibility.",
         "status": "done",
@@ -258,7 +258,7 @@
         "updatedAt": "2026-03-06T00:06:39.404Z"
       },
       {
-        "id": "41",
+        "id": 41,
         "title": "Multi-language UI",
         "description": "Implement full internationalization (i18n) for the UI, supporting Polish (primary market), English, and Russian languages.",
         "status": "done",
@@ -271,7 +271,7 @@
         "updatedAt": "2026-03-06T09:20:51.978Z"
       },
       {
-        "id": "42",
+        "id": 42,
         "title": "Rent vs Buy Calculator",
         "description": "Create a calculator that compares the financial implications of renting vs buying a property over time.",
         "status": "done",
@@ -284,7 +284,7 @@
         "updatedAt": "2026-03-06T18:08:22.388Z"
       },
       {
-        "id": "43",
+        "id": 43,
         "title": "Document Management",
         "description": "Implement a document management system where users can upload, store, and organize property-related documents such as contracts, inspection reports, and photos.",
         "status": "done",
@@ -299,7 +299,7 @@
         "updatedAt": "2026-03-18T15:14:55.184Z"
       },
       {
-        "id": "44",
+        "id": 44,
         "title": "Mobile PWA",
         "description": "Convert the web application into a Progressive Web App (PWA) to provide a mobile-friendly experience with offline capabilities.",
         "status": "done",
@@ -312,7 +312,7 @@
         "updatedAt": "2026-03-11T14:40:21.506Z"
       },
       {
-        "id": "45",
+        "id": 45,
         "title": "Agent/Broker Integration",
         "description": "Integrate real estate agent/broker functionality to connect users with professionals for property inquiries, viewing appointments, and listing management.",
         "status": "done",
@@ -325,7 +325,7 @@
         "updatedAt": "2026-03-18T13:46:22.458Z"
       },
       {
-        "id": "46",
+        "id": 46,
         "title": "Frontend Auth Integration",
         "description": "Implement frontend authentication integration with JWT backend. Connect login/register pages to real API endpoints, create AuthContext for state management, and add protected routes.",
         "status": "done",
@@ -340,7 +340,7 @@
         "updatedAt": "2026-02-20T17:46:50.397Z"
       },
       {
-        "id": "47",
+        "id": 47,
         "title": "Auth Security Hardening",
         "description": "Add security hardening measures for the authentication system including CSRF protection, rate limiting on auth endpoints, and audit logging integration.",
         "status": "done",
@@ -355,7 +355,7 @@
         "updatedAt": "2026-02-20T18:45:08.275Z"
       },
       {
-        "id": "48",
+        "id": 48,
         "title": "Excel Data Loader",
         "description": "Extend the existing CSV data loader to support Excel files (.xlsx, .xls, .ods) for property data ingestion.",
         "status": "done",
@@ -368,7 +368,7 @@
         "updatedAt": "2026-03-19T12:29:45.736Z"
       },
       {
-        "id": "49",
+        "id": 49,
         "title": "Portal/API Integration Framework",
         "description": "Create an extensible adapter system for ingesting property data from external real estate portals and APIs.",
         "status": "done",
@@ -383,7 +383,7 @@
         "updatedAt": "2026-03-19T14:44:56.605Z"
       },
       {
-        "id": "50",
+        "id": 50,
         "title": "Geographic Mapping Enhancement",
         "description": "Integrate professional mapping services (Mapbox) for property visualization with heatmaps, clustering, and interactive filters.",
         "status": "done",
@@ -396,7 +396,7 @@
         "updatedAt": "2026-03-07T00:32:04.297Z"
       },
       {
-        "id": "51",
+        "id": 51,
         "title": "Commute Time Analysis",
         "description": "Calculate and visualize commute times from properties to user-defined destinations using multiple transport modes.",
         "status": "done",
@@ -411,7 +411,7 @@
         "updatedAt": "2026-03-09T19:52:36.494Z"
       },
       {
-        "id": "52",
+        "id": 52,
         "title": "Total Cost of Ownership Calculator",
         "description": "Extend mortgage calculator to include utilities, parking, taxes, insurance, and other ownership costs.",
         "status": "done",
@@ -424,7 +424,7 @@
         "updatedAt": "2026-03-09T16:22:23.892Z"
       },
       {
-        "id": "53",
+        "id": 53,
         "title": "Market Anomaly Detection",
         "description": "Automatically detect and alert on unusual market conditions including price spikes, drops, and trends.",
         "status": "done",
@@ -439,7 +439,7 @@
         "updatedAt": "2026-03-09T20:55:38.473Z"
       },
       {
-        "id": "54",
+        "id": 54,
         "title": "Property Description Generator",
         "description": "Use LLM to generate listing descriptions, headline variants, and social media summaries from structured property data.",
         "status": "done",
@@ -452,7 +452,7 @@
         "updatedAt": "2026-03-09T19:15:43.932Z"
       },
       {
-        "id": "55",
+        "id": 55,
         "title": "Lead Scoring System",
         "description": "Score incoming leads by likelihood to close, budget fit, and urgency to help agents prioritize.",
         "status": "done",
@@ -467,7 +467,7 @@
         "updatedAt": "2026-03-10T11:30:22.350Z"
       },
       {
-        "id": "56",
+        "id": 56,
         "title": "Agent Performance Analytics",
         "description": "Track and visualize per-agent metrics including leads, deals, time to close, and conversion rates.",
         "status": "done",
@@ -482,7 +482,7 @@
         "updatedAt": "2026-03-10T22:02:37.151Z"
       },
       {
-        "id": "57",
+        "id": 57,
         "title": "E-Signature Integration",
         "description": "Integrate document generation and e-signature workflow for rental/purchase agreements.",
         "status": "done",
@@ -497,7 +497,7 @@
         "updatedAt": "2026-03-19T11:05:44.970Z"
       },
       {
-        "id": "58",
+        "id": 58,
         "title": "Comprehensive Test Suite Update",
         "description": "Update all unit and integration tests for new features to achieve 90%+ code coverage.",
         "status": "done",
@@ -524,7 +524,7 @@
         "updatedAt": "2026-03-19T17:00:10.587Z"
       },
       {
-        "id": "59",
+        "id": 59,
         "title": "Local E2E Validation",
         "description": "Run full end-to-end test suite locally and verify all features work together.",
         "status": "done",
@@ -539,7 +539,7 @@
         "updatedAt": "2026-03-19T18:36:36.096Z"
       },
       {
-        "id": "60",
+        "id": 60,
         "title": "Local Performance Benchmarking",
         "description": "Run performance benchmarks locally to ensure the application meets latency and throughput targets.",
         "status": "done",
@@ -554,7 +554,7 @@
         "updatedAt": "2026-03-19T19:01:44.108Z"
       },
       {
-        "id": "61",
+        "id": 61,
         "title": "Local Security Audit",
         "description": "Run comprehensive security scans locally and fix all critical/high vulnerabilities.",
         "status": "done",
@@ -569,7 +569,7 @@
         "updatedAt": "2026-03-19T19:08:20.447Z"
       },
       {
-        "id": "62",
+        "id": 62,
         "title": "Production Deployment Optimization",
         "description": "Optimize application for production deployment including caching, monitoring, and performance tuning. BLOCKED until local testing gates (#60, #61) pass.",
         "status": "done",
@@ -589,7 +589,7 @@
         "updatedAt": "2026-03-19T19:12:36.278Z"
       },
       {
-        "id": "63",
+        "id": 63,
         "title": "Backend Push Notification Support",
         "description": "Implement backend support for push notifications including VAPID key generation, push subscription storage, and notification sending service.",
         "details": "1. VAPID Key Generation:\n   - Generate VAPID keys for web push authentication\n   - Create /api/v1/push/vapid-public-key endpoint\n   - Store keys securely in environment variables\n\n2. Push Subscription Storage:\n   - Create /api/v1/push/subscribe endpoint (POST)\n   - Create /api/v1/push/unsubscribe endpoint (DELETE)\n   - Store subscriptions in database (user device tokens)\n   - Associate subscriptions with user accounts\n\n3. Push Notification Service:\n   - Create notification service module\n   - Integrate with web push libraries (web-push or similar)\n   - Support sending notifications to specific users or all users\n\n4. Trigger Hooks:\n   - Price drop detection for saved properties\n   - New property matching saved searches\n   - Market anomaly alerts",
@@ -601,7 +601,7 @@
         "updatedAt": "2026-03-11T16:08:40.131Z"
       },
       {
-        "id": "64",
+        "id": 64,
         "title": "MCP Connector Interface",
         "description": "Define abstract MCP (Model Context Protocol) connector interface with allowlist support for live data layer. Based on ADR-0005-mcp-live-data-layer.md - strategic foundation for real-time market truth.",
         "details": "1. Define abstract MCPConnector base class with lifecycle methods (connect, disconnect, health_check)\n2. Create MCPConnectorConfig for connector configuration (endpoint, credentials, allowlist status)\n3. Implement MCPConnectorRegistry for connector discovery and instantiation\n4. Add allowlist validation - only allowlisted connectors can be used in CE\n5. Create MCPConnectorResult dataclass for standardized responses\n6. Add connection pooling and timeout handling\n7. Document interface contract for future connector implementations",
@@ -613,7 +613,7 @@
         "updatedAt": "2026-03-20T14:34:25.752Z"
       },
       {
-        "id": "65",
+        "id": 65,
         "title": "Citation Quality Enhancement",
         "description": "Improve source citation accuracy in RAG responses for better transparency and trust.",
         "details": "1. Enhance citation extraction from retrieved documents\n2. Add citation confidence scoring\n3. Implement citation deduplication\n4. Add source type indicators (PDF, DOCX, web, etc.)\n5. Create citation formatting options (inline, footnotes, endnotes)\n6. Add citation validation against source content\n7. Update frontend to display enhanced citations",
@@ -625,7 +625,7 @@
         "updatedAt": "2026-03-20T15:19:56.143Z"
       },
       {
-        "id": "66",
+        "id": 66,
         "title": "Query Intent Classification Enhancement",
         "description": "Enhanced intent detection for better routing between RAG-only, Hybrid, and Agent+Tools paths.",
         "details": "1. Expand intent taxonomy (property_search, market_analysis, comparison, mortgage, location, document_qa, general)\n2. Add confidence thresholds for routing decisions\n3. Implement multi-intent detection for complex queries\n4. Add context-aware classification using conversation history\n5. Create intent-specific prompt templates\n6. Add classification metrics logging for improvement",
@@ -637,7 +637,7 @@
         "updatedAt": "2026-03-20T16:36:39.290Z"
       },
       {
-        "id": "67",
+        "id": 67,
         "title": "Map Clustering UI",
         "description": "Cluster property markers on map view for better performance with large datasets.",
         "details": "1. Implement client-side marker clustering using Leaflet/Mapbox\n2. Add cluster click-to-expand functionality\n3. Show cluster summary info (price range, property count)\n4. Add configurable cluster radius and zoom thresholds\n5. Implement smooth cluster animation on zoom\n6. Handle edge cases (single property, overlapping clusters)\n7. Add cluster styling based on property types",
@@ -649,7 +649,7 @@
         "updatedAt": "2026-03-20T19:37:46.839Z"
       },
       {
-        "id": "68",
+        "id": 68,
         "title": "MCP Allowlist Governance",
         "description": "Implement allowlist configuration and validation for MCP connectors. Only allowlisted connectors can be used in CE to ensure data minimization and safe extension points.",
         "details": "1. Create allowlist configuration file (mcp_allowlist.yaml)\n2. Implement AllowlistValidator class\n3. Add connector registration with allowlist check\n4. Create admin API to view/manage allowlist\n5. Add allowlist validation on connector instantiation\n6. Log allowlist violations for audit\n7. Document allowlist governance policy",
@@ -663,7 +663,7 @@
         "updatedAt": "2026-03-20T21:32:45.966Z"
       },
       {
-        "id": "69",
+        "id": 69,
         "title": "MCP Logging Boundaries",
         "description": "Add audit logging for MCP connector calls with data minimization and PII protection boundaries.",
         "details": "1. Create MCPAuditLogger with structured logging\n2. Define logging boundaries (request/response metadata, no PII)\n3. Add request ID correlation across connector calls\n4. Implement configurable log retention\n5. Create audit log query API\n6. Add redaction rules for sensitive data\n7. Document audit logging configuration",
@@ -677,7 +677,7 @@
         "updatedAt": "2026-03-23T17:18:11.539Z"
       },
       {
-        "id": "70",
+        "id": 70,
         "title": "MCP Stub Testing Framework",
         "description": "Create deterministic MCP stubs for unit testing without network access. Based on ADR-0005 requirement for testable connector layer.",
         "details": "1. Create MCPStub base class with configurable responses\n2. Implement StubConnector for common test scenarios\n3. Add fixture data for property listings, search results\n4. Create StubRegistry for managing test stubs\n5. Add network isolation verification in tests\n6. Document stub usage patterns for connector testing\n7. Add CI check to ensure no network calls in unit tests",
@@ -692,7 +692,7 @@
         "updatedAt": "2026-03-20T22:11:59.705Z"
       },
       {
-        "id": "71",
+        "id": 71,
         "title": "MCP Registry API",
         "description": "API endpoints for MCP connector management - list, status, health check.",
         "details": "1. Create GET /api/v1/admin/connectors endpoint (list all)\n2. Create GET /api/v1/admin/connectors/{id} endpoint (details)\n3. Create GET /api/v1/admin/connectors/{id}/health endpoint\n4. Add connector status indicators (active, disabled, error)\n5. Implement rate limiting per connector\n6. Add OpenAPI documentation\n7. Create admin UI component for connector management",
@@ -706,7 +706,7 @@
         "updatedAt": "2026-03-23T18:24:58.460Z"
       },
       {
-        "id": "72",
+        "id": 72,
         "title": "MCP Web Scraper Connector",
         "description": "Example MCP connector for web scraping (allowlisted). Demonstrates connector implementation pattern.",
         "details": "1. Implement WebScraperConnector extending MCPConnector\n2. Add configurable scraping targets (URLs, selectors)\n3. Implement rate limiting and retry logic\n4. Add response parsing and normalization\n5. Register in allowlist by default for CE\n6. Add error handling for blocked/failed requests\n7. Document connector implementation pattern",
@@ -721,7 +721,7 @@
         "updatedAt": "2026-03-23T20:40:17.138Z"
       },
       {
-        "id": "73",
+        "id": 73,
         "title": "Context Window Optimization",
         "description": "Optimize context window usage for long conversations to reduce token costs and improve response quality.",
         "details": "1. Implement conversation summarization for long threads\n2. Add sliding window context management\n3. Create priority-based context selection\n4. Add token counting before API calls\n5. Implement context compression for repeated content\n6. Add configurable context window limits\n7. Log context usage metrics",
@@ -733,7 +733,7 @@
         "updatedAt": "2026-03-21T09:11:04.228Z"
       },
       {
-        "id": "74",
+        "id": 74,
         "title": "Response Streaming Improvements",
         "description": "Enhanced SSE streaming with better error recovery and retry mechanisms.",
         "details": "1. Implement exponential backoff for reconnection\n2. Add heartbeat mechanism for connection health\n3. Create client-side buffer for interrupted streams\n4. Add stream resume capability\n5. Implement graceful degradation on failures\n6. Add streaming metrics (latency, throughput)\n7. Document error handling patterns",
@@ -745,7 +745,7 @@
         "updatedAt": "2026-03-21T10:42:54.739Z"
       },
       {
-        "id": "75",
+        "id": 75,
         "title": "Advanced Filter Presets",
         "description": "Saveable filter combinations for quick access to common search patterns.",
         "details": "1. Create FilterPreset model (name, filters, user_id)\n2. Add POST /api/v1/search/presets endpoint\n3. Add GET /api/v1/search/presets endpoint (list user presets)\n4. Add DELETE /api/v1/search/presets/{id} endpoint\n5. Create preset selector UI component\n6. Add preset application to search form\n7. Limit presets per user (configurable)",
@@ -757,7 +757,7 @@
         "updatedAt": "2026-03-21T15:31:49.071Z"
       },
       {
-        "id": "76",
+        "id": 76,
         "title": "Search Result Ranking Tuning",
         "description": "Improve hybrid search relevance scoring with configurable ranking weights.",
         "details": "1. Implement BM25 + semantic score fusion\n2. Add configurable ranking weights (recency, price match, location)\n3. Create A/B testing framework for ranking experiments\n4. Add search quality metrics (CTR, dwell time)\n5. Implement personalized ranking based on user history\n6. Add ranking explanation for transparency\n7. Document ranking algorithm and tuning guide",
@@ -769,7 +769,7 @@
         "updatedAt": "2026-03-21T20:45:13.973Z"
       },
       {
-        "id": "77",
+        "id": 77,
         "title": "Geo-Bounding Box Search",
         "description": "Search within user-drawn polygon on map for precise area filtering.",
         "details": "1. Add polygon drawing tools to map component\n2. Implement geo-bounding-box query in Chroma/PostGIS\n3. Add polygon validation (max area, complexity)\n4. Create polygon-to-WKT conversion\n5. Add polygon persistence in search state\n6. Implement polygon-based filter in search API\n7. Add clear/reset polygon functionality",
@@ -781,7 +781,7 @@
         "updatedAt": "2026-03-21T21:48:35.767Z"
       },
       {
-        "id": "78",
+        "id": 78,
         "title": "Property Enrichment Hooks",
         "description": "Interface for optional property data enrichment from external sources.",
         "details": "1. Create PropertyEnrichmentHook interface\n2. Add enrichment pipeline configuration\n3. Implement enrichment caching with TTL\n4. Add enrichment status indicators\n5. Create enrichment source registry\n6. Add fallback behavior for failed enrichment\n7. Document enrichment extension pattern",
@@ -795,7 +795,7 @@
         "updatedAt": "2026-03-23T20:20:02.360Z"
       },
       {
-        "id": "79",
+        "id": 79,
         "title": "Data Sources Dashboard",
         "description": "Admin UI for managing data sources (CSV, JSON, API connectors) with upload and sync status.",
         "details": "1. Create DataSourcesPage component with list view\n2. Add data source cards showing status, last sync, record count\n3. Implement CSV/JSON file upload with validation\n4. Add data source connection testing\n5. Create sync trigger and scheduling UI\n6. Add data source health indicators\n7. Implement data source deletion with confirmation",
@@ -807,7 +807,7 @@
         "updatedAt": "2026-03-22T20:14:03.377Z"
       },
       {
-        "id": "80",
+        "id": 80,
         "title": "Import/Export Data API",
         "description": "API endpoints for bulk data import/export operations (CSV, JSON, Parquet).",
         "details": "1. Create POST /api/v1/admin/data/import endpoint\n2. Create GET /api/v1/admin/data/export endpoint\n3. Add async job tracking for large operations\n4. Implement data validation during import\n5. Add export format selection and field picker\n6. Create import/export job status API\n7. Add rate limiting for bulk operations",
@@ -819,7 +819,7 @@
         "updatedAt": "2026-03-22T22:16:15.226Z"
       },
       {
-        "id": "81",
+        "id": 81,
         "title": "System Health Metrics",
         "description": "Health check endpoints and system metrics for monitoring.",
         "details": "1. Create GET /health endpoint (basic health)\n2. Create GET /health/ready endpoint (K8s readiness)\n3. Create GET /health/live endpoint (K8s liveness)\n4. Add GET /api/v1/admin/metrics endpoint (Prometheus format)\n5. Track key metrics: request latency, error rate, vector store size\n6. Add component health checks (DB, Redis, Chroma)\n7. Create metrics dashboard widget",
@@ -831,7 +831,7 @@
         "updatedAt": "2026-03-22T23:00:16.545Z"
       },
       {
-        "id": "82",
+        "id": 82,
         "title": "User Activity Analytics",
         "description": "Basic usage analytics (CE-safe, no external tracking).",
         "details": "1. Create UserActivityEvent model (local storage only)\n2. Track search queries and result clicks\n3. Track feature usage (tools, exports)\n4. Add privacy-preserving aggregation\n5. Create usage dashboard with charts\n6. Add data retention policy (30 days default)\n7. Export usage data as CSV",
@@ -843,7 +843,7 @@
         "updatedAt": "2026-03-23T21:10:19.960Z"
       },
       {
-        "id": "83",
+        "id": 83,
         "title": "Investment Analysis Calculator",
         "description": "ROI, cash flow projections, and investment return calculations.",
         "details": "1. Create InvestmentCalculator service class\n2. Implement ROI calculation (simple and annualized)\n3. Add cash flow projection with configurable periods\n4. Calculate cap rate and cash-on-cash return\n5. Add mortgage integration for leveraged returns\n6. Create investment report generation\n7. Build investment analysis UI component",
@@ -855,7 +855,7 @@
         "updatedAt": "2026-03-23T09:39:39.564Z"
       },
       {
-        "id": "84",
+        "id": 84,
         "title": "Market Trends Dashboard",
         "description": "Price trends, market statistics, and area insights dashboard.",
         "details": "1. Create MarketTrends service for statistics aggregation\n2. Implement price trend calculation (monthly, yearly)\n3. Add market statistics (avg price, price/mÂ˛, days on market)\n4. Create trend chart components (line, bar)\n5. Add area comparison functionality\n6. Implement trend data caching\n7. Build market trends dashboard page",
@@ -867,7 +867,7 @@
         "updatedAt": "2026-03-23T10:40:49.922Z"
       },
       {
-        "id": "85",
+        "id": 85,
         "title": "Comparative Market Analysis",
         "description": "Comparative Market Analysis (CMA) reports generation for property valuation.",
         "details": "1. Create CMA report template structure\n2. Implement comparable property selection algorithm\n3. Add adjustment calculations for differences\n4. Create PDF report generation\n5. Add report sharing and export\n6. Implement report history storage\n7. Build CMA wizard UI",
@@ -882,7 +882,7 @@
         "updatedAt": "2026-03-26T12:14:37.574Z"
       },
       {
-        "id": "86",
+        "id": 86,
         "title": "Notification Preferences UI",
         "description": "Enhanced notification settings page with granular control over alerts.",
         "details": "1. Create NotificationPreferences model\n2. Add notification type toggles (price alerts, new listings, saved search)\n3. Implement notification frequency settings (instant, daily, weekly)\n4. Add notification channel selection (email, push, in-app)\n5. Create notification preview functionality\n6. Add unsubscribe/token management\n7. Build notification preferences UI",
@@ -894,7 +894,7 @@
         "updatedAt": "2026-03-23T14:14:54.303Z"
       },
       {
-        "id": "87",
+        "id": 87,
         "title": "Model Preferences Per-Task",
         "description": "Allow different LLM models for different task types (chat, search, tools).",
         "details": "1. Create TaskModelPreference model\n2. Add model selection per task type\n3. Implement fallback chain configuration\n4. Add model capability validation\n5. Create model preference UI\n6. Add cost estimation per model\n7. Document model selection logic",
@@ -906,7 +906,7 @@
         "updatedAt": "2026-03-24T10:11:49.872Z"
       },
       {
-        "id": "88",
+        "id": 88,
         "title": "User Profile Management",
         "description": "User profile data management and preferences.",
         "details": "1. Create UserProfile model with editable fields\n2. Add profile update API endpoints\n3. Implement profile picture upload\n4. Add language and timezone settings\n5. Create profile privacy controls\n6. Add data export (GDPR compliance)\n7. Build profile settings UI",
@@ -918,7 +918,7 @@
         "updatedAt": "2026-03-24T12:47:02.820Z"
       },
       {
-        "id": "89",
+        "id": 89,
         "title": "Fix remaining npm vulnerabilities in web app",
         "description": "Address the 4 remaining npm vulnerabilities in the frontend web application that couldn't be fixed in Phase 3.",
         "details": "## Remaining npm Vulnerabilities\n\n| Package | Severity | Current | Issue |\n|---------|----------|---------|-------|\n| `jspdf` | Critical | 2.5.2 | Prototype pollution in html method |\n| `next` | Moderate | 16.1.5 | Authorization bypass in auth redirects |\n| `flatted` | High | 3.3.4 | npm advisory error (says <=3.4.1 is vulnerable) |\n\n## Potential Solutions\n\n1. **jspdf**: Check for updates from maintainer, or consider:\n   - Switching to alternative PDF library (pdf-lib, pdfmake)\n   - Sanitizing HTML input before passing to html() method\n   - Using server-side PDF generation instead\n\n2. **next**: Monitor for security patches from Vercel\n   - Currently on Next.js 16.1.5 (latest stable)\n   - Downgrade to v15 would be breaking change\n   - Check Vercel security advisories for patches\n\n3. **flatted**: This appears to be an npm advisory error\n   - Latest version 3.3.4 is installed\n   - Advisory says versions <=3.4.1 are vulnerable\n   - May need to wait for advisory correction or use override\n\n## Files to Modify\n- `apps/web/package.json` - overrides section\n- `apps/api/pyproject.toml` if switching PDF library\n\n## Acceptance Criteria\n- [ ] npm audit shows 0 vulnerabilities OR\n- [ ] All remaining vulnerabilities have documented workarounds/mitigations",
@@ -930,7 +930,7 @@
         "updatedAt": "2026-03-25T12:07:23.380Z"
       },
       {
-        "id": "90",
+        "id": 90,
         "title": "[CE] License Reconciliation â†’ AGPLv3",
         "description": "Reconcile the project license to AGPLv3 as specified in the PRD V4. Currently the LICENSE file contains MIT text, AGENTS.md says \"Never use GPL/AGPL packages\" (conflicts with AGPLv3 project license), and package.json files have no license field. This is a foundational decision that blocks community contribution guidelines (#103) and public CE launch.",
         "details": "## Why\\nPRD V4 states \"License: AGPLv3\" for Community Edition. LICENSE file contains MIT. AGENTS.md says \"Never use GPL/AGPL packages\" which conflicts.\\n\\n## Files\\n- LICENSE â€” update to AGPLv3 full text\\n- AGENTS.md â€” remove/update GPL constraint\\n- CONTRIBUTING.md â€” update license reference\\n- package.json (root + apps/web) â€” add \"license\": \"AGPL-3.0-only\"\\n- pyproject.toml â€” verify license field\\n\\n## Acceptance Criteria\\n1. LICENSE file updated to AGPLv3 full text\\n2. ADR-0009 documents the license decision and rationale\\n3. AGENTS.md constraint updated to allow AGPLv3 project license while still avoiding GPL dependencies\\n4. All package.json files have correct license field\\n5. CONTRIBUTING.md references AGPLv3\\n6. README.md license badge updated",
@@ -954,7 +954,7 @@
         "updatedAt": "2026-03-28T12:02:32.340Z"
       },
       {
-        "id": "91",
+        "id": 91,
         "title": "[CE] WCAG 2.1 AA Accessibility Compliance",
         "description": "Implement WCAG 2.1 AA compliance for all interactive controls as mandated by the PRD V4 Acceptance Criteria: \"WCAG 2.1 AA for interactive controls, focus management, labels, error feedback.\" Currently lighthouse.config.js has accessibility assertions but there is no comprehensive WCAG audit or automated accessibility testing.",
         "details": "## Why\\nPRD mandates WCAG 2.1 AA. No task exists. Lighthouse checks basic issues but not full WCAG compliance.\\n\\n## Subtasks\\n1. Add axe-core integration to Jest/Playwright test suite\\n2. Audit and fix chat page (labels, roles, live regions for streaming responses)\\n3. Audit and fix search page (filter controls, result cards, map accessibility)\\n4. Audit and fix settings/analytics/knowledge pages\\n5. Implement keyboard focus management across route transitions\\n6. Manual screen reader validation pass (NVDA or VoiceOver)\\n\\n## Acceptance Criteria\\n1. All interactive controls have proper ARIA labels and roles\\n2. Focus management works on route changes (chat, search, settings, analytics)\\n3. All form inputs have associated labels and error feedback is announced to screen readers\\n4. Color contrast ratios meet 4.5:1 (normal text) and 3:1 (large text)\\n5. Keyboard navigation reaches every interactive element\\n6. axe-core automated scan passes with 0 violations on all pages\\n7. Manual screen reader test on chat and search pages",
@@ -1000,7 +1000,7 @@
         "updatedAt": "2026-03-28T12:38:47.857Z"
       },
       {
-        "id": "92",
+        "id": 92,
         "title": "[CE] Lighthouse >=90 CI Enforcement",
         "description": "Add Lighthouse CI step to enforce PRD requirement of \"Lighthouse >=90 on desktop for search and chat pages.\" The lighthouse.config.js already has correct assertions (performance >=0.9, accessibility >=0.9) but CI never executes Lighthouse audits.",
         "details": "## Why\\nPRD requires Lighthouse >=90 on desktop for search and chat. lighthouse.config.js exists but CI never runs it.\\n\\n## Files\\n- .github/workflows/ci.yml â€” add Lighthouse audit step\\n- apps/web/lighthouse.config.js â€” already has correct assertions\\n\\n## Acceptance Criteria\\n1. CI pipeline includes Lighthouse audit step after frontend build\\n2. Lighthouse assertions block PR merge on score regression\\n3. Both search and chat pages score >= 90 on performance and accessibility\\n4. Lighthouse report uploaded as CI artifact\\n5. Baseline scores documented in docs/performance/",
@@ -1011,7 +1011,7 @@
         "subtasks": []
       },
       {
-        "id": "93",
+        "id": 93,
         "title": "[CE] 5-Minute Quickstart Documentation",
         "description": "Create an opinionated single-path quickstart guide as called for by the PRD and Roadmap: \"Run your AI realtor in 5 minutes (local Docker Compose, BYOK).\" Current quickstart is multi-path and not opinionated enough for the 5-minute target.",
         "details": "## Why\\nRoadmap: \"Documentation: Run your AI realtor in 5 minutes (local Docker Compose, BYOK).\" Current quickstart covers 3 methods.\\n\\n## Acceptance Criteria\\n1. Single-page guide: clone â†’ configure .env â†’ docker compose up â†’ working app in <=5 minutes\\n2. Pre-built Docker images available on GHCR (no local build needed)\\n3. Minimal .env.example with only required fields (1 LLM API key)\\n4. Smoke test script that verifies the stack is working after setup\\n5. Guide linked prominently from README.md\\n6. Tested on fresh machine (Windows + macOS)\\n\\n## Files\\n- docs/QUICKSTART_5MIN.md (new)\\n- README.md (add link)\\n- .env.example (simplify)\\n- deploy/compose/docker-compose.yml (verify one-command up)",
@@ -1022,7 +1022,7 @@
         "subtasks": []
       },
       {
-        "id": "94",
+        "id": 94,
         "title": "[CE] Telegram Connector Community Issue",
         "description": "Create a GitHub Issue for a Telegram connector as a community contribution opportunity. The Roadmap explicitly states: \"Community Issues: create Telegram connector issue for community contribution.\" The existing MCP connector pattern (#64) provides the architectural foundation.",
         "details": "## Why\\nRoadmap: \"Community Issues: create Telegram connector issue for community contribution.\" MCP connector pattern exists.\\n\\n## Acceptance Criteria\\n1. GitHub Issue created with good-first-issue + community labels\\n2. Issue contains: architectural guidance, expected MCP connector interface, reference to existing MCP connector code\\n3. Acceptance criteria for the connector clearly defined\\n4. Issue linked from CONTRIBUTING.md as contribution opportunity\\n5. Sample code sketch showing expected interface\\n\\n## Files\\n- New GitHub Issue\\n- CONTRIBUTING.md (add link)",
@@ -1033,7 +1033,7 @@
         "subtasks": []
       },
       {
-        "id": "95",
+        "id": 95,
         "title": "[CE] Audit Logging System",
         "description": "Implement audit logging as required by PRD NFR Security: \"audit logs.\" Create a dedicated audit trail system that records who did what, when, and from where. Currently only basic logging exists with no tamper-evident audit trail.",
         "details": "## Why\\nPRD NFR Security requires \"audit logs.\" No dedicated audit trail exists.\\n\\n## Acceptance Criteria\\n1. Audit records for admin actions (ingest, reindex, settings changes)\\n2. Auth event logging (login, logout, failed attempts)\\n3. Append-only, tamper-evident entries with hash chain\\n4. Admin query endpoint with time-range and action-type filters\\n5. Structured format with correlation to X-Request-ID\\n6. Unit tests for all audit scenarios\\n\\n## Files\\n- apps/api/services/audit.py (new)\\n- apps/api/db/models.py (AuditLog model)\\n- apps/api/api/routers/admin.py (query endpoint)\\n- apps/api/api/middleware/audit.py (middleware)",
@@ -1045,7 +1045,7 @@
         "updatedAt": "2026-03-28T20:38:37.115Z"
       },
       {
-        "id": "96",
+        "id": 96,
         "title": "[CE] Graceful Degradation Testing",
         "description": "Implement and test graceful degradation when external services (LLM providers, ChromaDB, database) are unavailable, as required by PRD NFR Reliability. Currently no E2E validation of degradation behavior exists.",
         "details": "## Why\\nPRD requires \"graceful degradation when providers/vector store are unavailable.\"\\n\\n## Acceptance Criteria\\n1. ChromaDB unavailable â†’ search returns clear error, chat works with reduced capability\\n2. All LLM providers unavailable â†’ user sees friendly message with retry option\\n3. Single provider fails â†’ automatic fallback to next provider in routing\\n4. Database unavailable â†’ health endpoint reports degraded, read-only mode where possible\\n5. Circuit breaker pattern implemented for external service calls\\n6. Degradation state surfaced in admin health endpoint\\n7. Integration tests for each degradation scenario\\n\\n## Files\\n- apps/api/api/routers/chat.py (degradation handling)\\n- apps/api/api/routers/search.py (degradation handling)\\n- apps/api/services/health.py (degradation state)\\n- apps/api/core/circuit_breaker.py (new)",
@@ -1057,7 +1057,7 @@
         "updatedAt": "2026-03-28T20:38:48.698Z"
       },
       {
-        "id": "97",
+        "id": 97,
         "title": "[CE] Versioned API Contract Enforcement",
         "description": "Implement versioned API contract enforcement as required by PRD NFR Scalability. The backend uses /api/v1/ prefix but no mechanism prevents breaking changes within v1. CI has OpenAPI drift checks but no breaking-change detection.",
         "details": "## Why\\nPRD requires \"versioned endpoints.\" No breaking-change detection in CI.\\n\\n## Acceptance Criteria\\n1. OpenAPI schema diff CI step detects breaking changes (removed fields, changed types)\\n2. API versioning strategy documented in ADR\\n3. All endpoint responses include API version in response header\\n4. Backward compatibility test suite ensures v1 contract stability\\n5. CI blocks PR on breaking API changes\\n\\n## Files\\n- .github/workflows/ci.yml (add OpenAPI diff step)\\n- docs/adr/ (new ADR for API versioning)\\n- apps/api/api/middleware/versioning.py (new)\\n- apps/api/tests/integration/api/test_versioning.py (new)",
@@ -1069,7 +1069,7 @@
         "updatedAt": "2026-03-28T22:29:50.734Z"
       },
       {
-        "id": "98",
+        "id": 98,
         "title": "[CE] Structured Log Standardization",
         "description": "Standardize all backend and frontend logging to structured JSON format as required by PRD NFR Observability. Currently logging is inconsistent â€” some structured, some plain text. Task #81 (System Health Metrics) is done but logs are not standardized.",
         "details": "## Why\\nPRD requires \"structured logs, traces, metrics, request IDs, audit events.\"\\n\\n## Acceptance Criteria\\n1. All backend log output in structured JSON format\\n2. Required fields: timestamp, level, request_id, service, message\\n3. Log level policy documented (what gets INFO vs DEBUG vs WARN vs ERROR)\\n4. No sensitive data in any log entry (verified by automated scan)\\n5. Frontend error logging includes request_id correlation\\n6. Consistent log format across all services\\n\\n## Files\\n- apps/api/core/logging.py (standardized formatter)\\n- apps/api/config/settings.py (log level config)\\n- apps/web/src/lib/logger.ts (frontend structured logging)\\n- docs/adr/ (log level policy)",
@@ -1083,7 +1083,7 @@
         "updatedAt": "2026-03-28T23:29:48.708Z"
       },
       {
-        "id": "99",
+        "id": 99,
         "title": "[CE] Full E2E Test Suite in CI",
         "description": "Integrate the existing E2E test suite into CI pipeline. Sprint 4 calls for \"Full e2e tests, static checks, stabilization.\" E2E tests exist in apps/api/tests/e2e/ (auth, chat, search, documents, infrastructure, observability, UI) but they never run in CI. The PRD DoD requires \"All CI jobs green after push.\"",
         "details": "## Why\\nSprint 4 requires \"Full e2e tests.\" E2E exists but doesn't run in CI.\\n\\n## Acceptance Criteria\\n1. E2E covers all user flows: search, chat, tools, settings, auth, exports\\n2. E2E runs in CI as separate job (can be continue-on-error initially)\\n3. E2E results uploaded as CI artifacts\\n4. Test parity: same tests pass locally and in CI\\n5. Flaky test rate < 5%\\n6. E2E job uses service containers (Postgres, Redis) in CI\\n\\n## Files\\n- .github/workflows/ci.yml (add e2e job)\\n- apps/api/tests/e2e/ (existing tests, may need CI adjustments)\\n- apps/api/pyproject.toml (ensure e2e dependencies)",
@@ -1095,7 +1095,7 @@
         "updatedAt": "2026-03-28T22:48:33.398Z"
       },
       {
-        "id": "100",
+        "id": 100,
         "title": "[CE] SPRAV Pre-Release Full Validation Run",
         "description": "Execute a full SPRAV pre-release validation run before any production deployment. The SPRAV validation framework exists (scripts/sprav/, docs/templates/sprav_report.md) and Task #33 (Deploy) is blocked. This is the final quality gate that unblocks deployment. The Alembic migration is fresh (March 27, 2026) and needs validation.",
         "details": "## Why\\nSPRAV framework exists. Task #33 blocked. Full validation needed before deploy.\\n\\n## Acceptance Criteria\\n1. `make sprav` completes with 0 blockers\\n2. Backend unit coverage >= 90% on critical paths\\n3. Backend integration coverage >= 70%\\n4. Security scans: 0 secrets, 0 high-confidence vulnerabilities\\n5. Alembic migration validated against fresh and migrated databases\\n6. All CI jobs green (lint, test, security, compose_smoke)\\n7. Report generated in artifacts/validation_report.md\\n8. SPRAV roles (team-lead, architect, qa) all report PASSED\\n\\n## Dependencies\\nDepends on #95 (Audit Logging), #96 (Graceful Degradation), #97 (Versioned API), #98 (Structured Logs), #99 (E2E in CI)\\n\\n## Files\\n- scripts/sprav/ (existing framework)\\n- docs/templates/sprav_report.md (existing template)\\n- artifacts/validation_report.md (generated report)",
@@ -1112,7 +1112,7 @@
         "subtasks": []
       },
       {
-        "id": "101",
+        "id": 101,
         "title": "[CE] Alembic Migration Data Population",
         "description": "Create idempotent seed scripts for dev/demo data and ensure Docker Compose runs migration + seed automatically. The Alembic migration system was freshly implemented (March 27, 2026) with a single initial migration. No data seeding strategy exists.",
         "details": "## Why\\nFresh Alembic migration (March 27). No seed strategy.\\n\\n## Acceptance Criteria\\n1. Idempotent seed script exists for development/demo data\\n2. Seed script populates: sample properties, sample users, notification preferences\\n3. Docker Compose setup runs migration + seed automatically on first start\\n4. Seed script safe to run multiple times (idempotent)\\n5. Data population workflow documented\\n6. Seed data covers at least 2 cities with 20+ properties each\\n\\n## Files\\n- apps/api/alembic/seed.py (new)\\n- deploy/compose/docker-compose.yml (auto-seed on startup)\\n- docs/development/DATA_POPULATION.md (new)",
@@ -1124,7 +1124,7 @@
         "updatedAt": "2026-03-29T18:25:45.331Z"
       },
       {
-        "id": "102",
+        "id": 102,
         "title": "[CE] npm Vulnerability Ongoing Monitoring",
         "description": "Add ongoing npm vulnerability monitoring to CI. Task #89 fixed current vulnerabilities but no ongoing gate exists to prevent regression. High/critical vulnerabilities should block PRs.",
         "details": "## Why\\n#89 fixed current vulns but no ongoing gate.\\n\\n## Acceptance Criteria\\n1. `npm audit` CI step fails on high/critical vulnerabilities\\n2. Dependabot or Renovate configured for automatic dependency update PRs\\n3. Weekly audit schedule documented\\n4. Audit exceptions documented in .nsprc or npm audit config\\n\\n## Files\\n- .github/workflows/ci.yml (add npm audit step)\\n- .github/dependabot.yml (new)\\n- apps/web/package.json (audit config)",
@@ -1138,7 +1138,7 @@
         "updatedAt": "2026-03-29T18:46:01.962Z"
       },
       {
-        "id": "103",
+        "id": 103,
         "title": "[CE] Community Contribution Guidelines Enhancement",
         "description": "Enhance CONTRIBUTING.md with Community Edition-specific sections, PR templates, DCO/CLA requirements, and curated \"good first issue\" labels. This enables community contributions and is required for the CE public launch.",
         "details": "## Why\\nCE public launch requires contribution guidelines. Depends on license decision (#90).\\n\\n## Acceptance Criteria\\n1. CONTRIBUTING.md updated with CE-specific sections (code of conduct, PR process, review SLA)\\n2. PR template includes checklist for CE compliance (license header, tests, docs)\\n3. At least 5 issues labeled `good first issue` created\\n4. DCO (Developer Certificate of Origin) requirement documented\\n5. Code review turnaround SLA stated (e.g., 48 hours for community PRs)\\n6. SECURITY.md with responsible disclosure process\\n\\n## Files\\n- CONTRIBUTING.md (enhance)\\n- .github/PULL_REQUEST_TEMPLATE.md (new)\\n- .github/ISSUE_TEMPLATE/ (new templates)\\n- SECURITY.md (new)",
@@ -1152,7 +1152,7 @@
         "updatedAt": "2026-03-29T17:59:56.746Z"
       },
       {
-        "id": "104",
+        "id": 104,
         "title": "[CE] Community Metrics Dashboard",
         "description": "Create community health metrics tracking as called for by the Roadmap: \"Metrics: >=100 GitHub stars, first external PRs merged, doc site visits growth.\" No tracking infrastructure exists.",
         "details": "## Why\\nRoadmap defines community metrics but no tracking.\\n\\n## Acceptance Criteria\\n1. GitHub stars tracked weekly (manual or automated)\\n2. External PR tracking (time to first external PR merged)\\n3. Monthly community health report template in docs/community/\\n4. CONTRIBUTING.md references metrics goals\\n\\n## Files\\n- docs/community/METRICS.md (new)\\n- docs/community/monthly-report-template.md (new)",
@@ -1164,7 +1164,7 @@
         "updatedAt": "2026-03-29T18:31:12.315Z"
       },
       {
-        "id": "105",
+        "id": 105,
         "title": "[CE] API Reference Completeness Audit",
         "description": "Audit API reference documentation for completeness. The DoD requires \"OpenAPI and API reference drift checks pass.\" CI has drift checks for OpenAPI schema and API reference, but the reference may not cover all new endpoints added by tasks #64-#88 (MCP admin/audit, enrichment hooks, user profile, notification preferences, model preferences, data sources, bulk jobs, etc.).",
         "details": "## Why\\nDoD requires API reference drift checks. New endpoints may be undocumented.\\n\\n## Acceptance Criteria\\n1. All /api/v1/* endpoints documented in OpenAPI schema with request/response examples\\n2. API reference markdown (docs/api/) covers all endpoints\\n3. Drift checks pass for all endpoints (CI green)\\n4. Error response schemas documented for each endpoint\\n5. Authentication requirements documented per endpoint (API Key vs JWT)\\n\\n## Files\\n- apps/api/api/routers/*.py (docstrings for OpenAPI)\\n- docs/api/API_REFERENCE.md (audit and update)\\n- docs/api/openapi.json (regenerate)\\n- scripts/docs/export_openapi.py (verify drift check)",
@@ -1176,7 +1176,7 @@
         "updatedAt": "2026-03-29T18:40:27.310Z"
       },
       {
-        "id": "106",
+        "id": 106,
         "title": "[private] Success Metrics Tracking Infrastructure",
         "description": "[PRIVATE - DEFERRED] Build infrastructure to track the 4 PRD Success Metrics: engagement (avg session >3 min, 30% return users), relevance (>=80% match accuracy), conversion (>=15% chat-to-viewing), performance (p95 latency). This is Hosted Pro scope â€” not required for CE stabilization.",
         "details": "## Why\\nPRD defines 4 Success Metrics but measurement infrastructure is Pro/hosted scope.\\n\\n## Acceptance Criteria\\n1. Session duration tracking implemented (target: avg >3 min)\\n2. Return user tracking implemented (target: 30% return)\\n3. Search relevance rating mechanism (thumbs up/down on results)\\n4. Chat-to-viewing conversion funnel tracking (target: >=15%)\\n5. p95 latency metrics surfaced per endpoint\\n6. Admin metrics dashboard with real-time success metric KPIs\\n7. Automated alerts when metrics fall below PRD targets",
@@ -1191,7 +1191,7 @@
         "updatedAt": "2026-03-29T21:38:27.927Z"
       },
       {
-        "id": "107",
+        "id": 107,
         "title": "[private] Dynamic Pricing & Market Positioning",
         "description": "[PRIVATE - DEFERRED] Estimate fair rent/sale price per property based on location, area, rooms, and recent comparables. Highlight above/below market by percentage. Suggest price adjustment ranges. Extends existing Price History (#38) and CMA (#85) features. Pro feature with competitor benchmarks, dynamic market positioning matrix, real-time market data feeds, and offer strategy generator.",
         "details": "## Why\nFEATURE_IDEAS: Dynamic Pricing and Market Positioning — agent-facing Pro tool.\n\n## Scope\nPro feature (requires Pro subscription)\n\n## Acceptance Criteria\n1. Fair price estimation endpoint: POST /api/v1/tools/fair-price\n2. Above/Below Market indicator on property cards (percentage)\n3. Price adjustment suggestion ranges for agents\n4. Integration with existing comparable selector (#85)\n5. Unit tests for pricing model with known datasets\n6. Confidence score per estimate\n7. Pricing engine with competitor benchmarks (price/m² by region)\n8. Dynamic market positioning matrix (rental vs purchase comparison)\n9. Real-time pricing based on market data feeds\n10. Region-based price normalization\n11. Offer strategy generator with counter-offer templates for rental/purchase",
@@ -1206,7 +1206,7 @@
         "updatedAt": "2026-03-27T22:30:59.975Z"
       },
       {
-        "id": "108",
+        "id": 108,
         "title": "[private] Negotiation Helper",
         "description": "[PRIVATE - DEFERRED - PRO] Analyze market data for a specific property, suggest negotiation strategy, generate emails/messages to landlord/agency. Agent-facing tool with offer strategy generation, counter-offer templates, negotiation timeline tracking, and coaching suggestions. Depends on Dynamic Pricing (#107) for market analysis.",
         "details": "## Why\nFEATURE_IDEAS: Negotiation Helper — agent-facing tool. Pro feature.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. Offer strategy generator based on market data (aggressive, moderate, conservative) with data backing\n2. Counter-offer templates for rental and purchase agreements with configurable tone\n3. Negotiation timeline tracking with milestone management and status updates\n4. Market comparison data integration showing price bands and realistic negotiation range\n5. Agent-facing negotiation coaching suggestions with historical success rates where data available\n6. Negotiation analysis endpoint: POST /api/v1/tools/negotiation\n7. Email/message template generation for landlord/agency communication\n8. Price band visualization showing realistic negotiation range",
@@ -1221,7 +1221,7 @@
         "updatedAt": "2026-03-27T22:31:00.005Z"
       },
       {
-        "id": "109",
+        "id": 109,
         "title": "[private] Personalised Recommendations Engine",
         "description": "[PRIVATE - DEFERRED] Build a personalization engine where users describe budget/lifestyle/family situation and the system builds a persona, proposing suitable listings with explanations. Pro feature.",
         "details": "## Why\nFEATURE_IDEAS: Personalised Recommendations — Pro feature.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. User persona model (budget range, lifestyle tags, family size, location preferences)\n2. Recommendation endpoint: POST /api/v1/recommendations\n3. Explanation generation per recommendation\n4. Recommendation quality metric >= 70% user satisfaction\n5. Integration with existing search pipeline\n6. Persona evolves based on user behavior (favorites, searches, activity)\n7. Collaborative filtering based on user behavior signals (views, favorites, searches, time on page)\n8. Personalized property scoring per user profile — weighted scoring combining persona match, behavioral signals, and collaborative signals\n9. A/B testing framework for recommendation algorithms — ability to run multiple recommendation strategies in parallel and measure effectiveness\n10. Click-through and engagement tracking for recommendation quality — track impressions, clicks, saves, and conversions from recommendations\n11. Cold-start handling for new users — fallback to popularity-based and demographic-based recommendations until sufficient behavioral data is collected",
@@ -1236,7 +1236,7 @@
         "updatedAt": "2026-03-27T22:31:00.034Z"
       },
       {
-        "id": "110",
+        "id": 110,
         "title": "[private] Shared Shortlists",
         "description": "[PRIVATE - DEFERRED] Allow users to create shareable shortlists where family/friends can comment and vote on properties. Pro collaboration feature.",
         "details": "## Why\nFEATURE_IDEAS: Shared Shortlists — Pro collaboration feature.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. Share link generation for property shortlists\n2. Multi-user collaboration on shared lists\n3. Comment threads per property\n4. Permission levels (view/edit/admin)\n5. Email notifications for list changes",
@@ -1250,7 +1250,7 @@
         "updatedAt": "2026-03-27T22:31:00.060Z"
       },
       {
-        "id": "111",
+        "id": 111,
         "title": "[private] CRM Integration (HubSpot/Pipedrive)",
         "description": "[PRIVATE - DEFERRED - PRO] Two-way CRM sync with HubSpot and Pipedrive for leads and deals. Follows ExternalSourceAdapter pattern from FEATURE_IDEAS. Pro feature — available to Pro subscribers only.",
         "details": "## Why\nFEATURE_IDEAS: CRM Integration — Pro collaboration feature.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. Bi-directional sync with HubSpot and Pipedrive (leads from chat to CRM, CRM status back to app)\n2. Contact and deal mapping between platforms with field-level correspondence\n3. Webhook handlers for real-time CRM event notifications and status updates\n4. Lead activity sync including searches, favorites, and inquiries pushed to CRM\n5. Custom field mapping configuration UI for admin-defined field correspondence\n6. OAuth flow for CRM authorization per provider (HubSpot, Pipedrive)\n7. Rate limiting and retry logic per CRM API limits with exponential backoff\n8. Sync status dashboard in admin showing sync health and error logs\n9. Per-user CRM credential storage (encrypted)\n10. Adapter interface following ExternalSourceAdapter pattern for extensibility to additional CRMs",
@@ -1265,7 +1265,7 @@
         "updatedAt": "2026-03-27T22:31:00.086Z"
       },
       {
-        "id": "112",
+        "id": 112,
         "title": "[private] Calendar Integration for Viewings",
         "description": "[PRIVATE - DEFERRED - PRO] Schedule viewing appointments with Google Calendar and Outlook integration. Agent availability management, recurring scheduling, automated reminders, and calendar invite generation with property details. Pro feature — available to Pro subscribers only.",
         "details": "## Why\nFEATURE_IDEAS: Calendar Integration for Viewings — Pro feature.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. Google Calendar sync for property viewings (OAuth-based integration)\n2. Outlook calendar sync for property viewings (OAuth-based integration)\n3. Availability slot management for agents (working hours, blocked slots, custom availability windows)\n4. Automated reminder system — email + push notifications before viewings (24h and 1h before)\n5. Recurring viewing scheduling support (weekly, bi-weekly, custom intervals)\n6. Calendar invite generation (.ics file) with property details and map links embedded\n7. Viewing scheduling UI on property detail page\n8. Calendar sync endpoint: POST /api/v1/tools/schedule-viewing\n9. Reschedule and cancel flows with notification updates",
@@ -1277,7 +1277,7 @@
         "updatedAt": "2026-03-27T22:31:00.112Z"
       },
       {
-        "id": "113",
+        "id": 113,
         "title": "[private] BI Export Pipelines",
         "description": "[PRIVATE - DEFERRED] Scheduled exports to Power BI, Tableau, Metabase. CSV/JSON/XLSX exports for data teams with data warehouse integration (BigQuery, Redshift, Snowflake). Pro feature extending existing export API (#80).",
         "details": "## Why\nFEATURE_IDEAS: BI Export Pipelines — Pro feature for data teams.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. Scheduled exports (daily/weekly/monthly) in CSV, JSON, XLSX formats\n2. Data warehouse integration (BigQuery, Redshift, Snowflake)\n3. Custom export templates with column selection\n4. Email delivery of scheduled reports\n5. Export history and audit log\n6. Integration with existing export API (#80)\n7. Admin UI for managing scheduled exports",
@@ -1355,7 +1355,7 @@
         "updatedAt": "2026-03-27T22:31:00.138Z"
       },
       {
-        "id": "114",
+        "id": 114,
         "title": "[private] Portfolio Vacancy & Absorption Analytics",
         "description": "[PRIVATE - DEFERRED] Track vacancy rates, absorption rates, and identify \"white spots\" on map where demand exceeds supply. Flag underperforming properties with long exposure or low interest. Pro manager analytics. Pro feature — available to Pro subscribers only.",
         "details": "## Why\nFEATURE_IDEAS: Portfolio Vacancy & Absorption Analytics — Pro feature.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. Vacancy rate tracking by property, district, and city\n2. Market absorption curve visualization (time-on-market trends)\n3. Alerting on vacancy rate spikes above configurable thresholds\n4. Portfolio-level vacancy dashboard for managers\n5. Historical vacancy trend analysis with forecasting\n6. \"White spots\" identification (high demand, low supply areas) on map\n7. Underperforming property flagging (long exposure, low interest metrics)\n8. Integration with market trends dashboard (#84)\n9. Admin dashboard with portfolio health overview",
@@ -1370,7 +1370,7 @@
         "updatedAt": "2026-03-27T22:31:00.163Z"
       },
       {
-        "id": "115",
+        "id": 115,
         "title": "[private] Multi-Agent Orchestration Framework",
         "description": "[PRIVATE - DEFERRED - PRO] Build multi-agent orchestration framework for lead qualification, legal analysis, and complex workflows. PRD Hosted Pro scope: \"Multi-agent orchestration (lead qualification, legal analysis).\" Pro feature — available to Pro subscribers only.",
         "details": "## Why\nFEATURE_IDEAS: Multi-Agent Orchestration — Pro feature for complex agent workflows.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. Agent registry with configurable agent personas (Lead Qualifier, Legal Agent, Market Analyst)\n2. Task routing engine dispatching user queries to appropriate agents based on intent classification\n3. Inter-agent communication protocol for multi-step workflows with message passing and context sharing\n4. Task delegation and result aggregation across agents\n5. Agent orchestration dashboard showing active conversations and handoffs between agents\n6. Fallback handling when specialized agent unavailable (graceful degradation to general agent)\n7. Human-in-the-loop escalation for uncertain decisions\n8. Orchestration flow definition (DAG-based) for complex multi-agent pipelines\n9. Agent performance metrics per orchestration run",
@@ -1382,7 +1382,7 @@
         "updatedAt": "2026-03-27T22:31:00.190Z"
       },
       {
-        "id": "116",
+        "id": 116,
         "title": "[private] Voice Mode with Telephony",
         "description": "[PRIVATE - DEFERRED] Implement voice mode with telephony integration. PRD Hosted Pro scope: \"voice mode with telephony.\" Real-time voice conversation with transcription. Pro feature — available to Pro subscribers only.",
         "details": "## Why\nFEATURE_IDEAS: Voice Mode with Telephony — Pro feature for real-time voice conversations.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. Telephony provider integration (Twilio/Vonage) for inbound and outbound calls\n2. Speech-to-text (STT) pipeline for transcribing caller queries\n3. Text-to-speech (TTS) pipeline for AI responses to callers\n4. DTMF handling for menu navigation\n5. Call recording and transcription storage with retention policy\n6. Voice-to-chat handoff preserving conversation context\n7. Real-time voice conversation with <2s latency\n8. Multi-language voice support",
@@ -1394,7 +1394,7 @@
         "updatedAt": "2026-03-27T22:31:00.215Z"
       },
       {
-        "id": "117",
+        "id": 117,
         "title": "[private] Dialog Efficiency & Conversion Analytics",
         "description": "[PRIVATE - DEFERRED - PRO] Build analytics dashboard for dialog efficiency and conversion as specified in PRD Hosted Pro: \"Analytics dashboard for dialog efficiency and conversion.\" Pro feature — available to Pro subscribers only. Depends on Success Metrics infrastructure (#106).",
         "details": "## Why\nFEATURE_IDEAS: Dialog Efficiency & Conversion Analytics — Pro feature.\n\n## Scope\nPro feature — available to Pro subscribers only.\n\n## Acceptance Criteria\n1. Full funnel tracking: chat start → property view → agent contact → viewing → deal\n2. Drop-off analysis at each funnel stage with visual breakdown\n3. Conversion optimization suggestions based on historical patterns\n4. A/B testing framework for prompt, routing, and dialog strategy experiments\n5. Agent coaching insights from low-conversion dialogs\n6. Dashboard with daily/weekly/monthly conversion trends\n7. Conversation quality scoring (helpfulness, accuracy, completeness)\n8. Agent response time metrics (first token, full response, tool execution)\n9. Dialog pattern analysis (common questions, escalation triggers)\n10. ROI calculator: conversation cost vs. conversion value\n11. Export to BI tools pipeline",
@@ -1408,7 +1408,7 @@
         "updatedAt": "2026-03-27T22:31:00.241Z"
       },
       {
-        "id": "118",
+        "id": 118,
         "title": "Add user relevance rating to search results",
         "description": "Add thumbs-up/down feedback on search results. Aggregate match accuracy to measure ≥80% target. Store ratings anonymously. PRD Success Metrics requirement: Relevance: ≥80% user-rated match accuracy. Scope: CE. Priority: High. Estimate: 1 day. Acceptance: POST /api/v1/feedback/rating accepts search_id + rating (1-5); GET /api/v1/admin/metrics/relevance returns avg match accuracy; Frontend rating UI on search result cards; tests for rating submission and aggregation.",
         "details": "",
@@ -1420,7 +1420,7 @@
         "updatedAt": "2026-03-30T19:57:45.975Z"
       },
       {
-        "id": "119",
+        "id": 119,
         "title": "Track chat conversation to property viewing inquiry rate",
         "description": "Track when a chat conversation leads to a viewing inquiry (agent contact form, email, call request). Measure ≥15% target. PRD Success Metrics requirement: Conversion: ≥15% chat→viewing inquiry. Scope: CE. Priority: Medium. Estimate: 0.5 day. Acceptance: Funnel tracking: chat → property view → agent contact → inquiry; GET /api/v1/admin/metrics/conversion returns conversion rates; tests for funnel tracking.",
         "details": "",
@@ -1431,19 +1431,19 @@
         "subtasks": []
       },
       {
-        "id": "120",
+        "id": 120,
         "title": "Add real-time p95 latency monitoring for search and chat",
         "description": "Implement middleware to track p95 latency for search (<2s) and chat (<8s) endpoints. Expose in admin metrics endpoint with alerts for SLA breach. PRD NFR requirement: Performance: p95 < 2s retrieval; p95 < 8s complex answers. Scope: CE. Priority: High. Estimate: 1 day. Acceptance: p95 latency tracked per endpoint; GET /api/v1/admin/metrics/latency returns p95 values; alert when p95 exceeds SLA targets; tests.",
         "details": "",
         "testStrategy": "",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [],
         "priority": "high",
         "subtasks": [],
-        "updatedAt": "2026-03-30T20:03:01.939Z"
+        "updatedAt": "2026-03-30T20:18:02.088Z"
       },
       {
-        "id": "121",
+        "id": 121,
         "title": "Benchmark and validate search p95 < 2s",
         "description": "Run load tests against search endpoint with realistic data (1000+ properties). Validate p95 latency meets <2s SLA. Document bottlenecks if any. PRD NFR: p95 < 2s retrieval. Scope: CE. Priority: High. Estimate: 1 day. Dependencies: #120 (latency monitoring). Acceptance: Load test script in tests/performance/; p95 < 2s with 1000-property dataset; results documented in test report; CI gate for regression.",
         "details": "",
@@ -1456,7 +1456,7 @@
         "subtasks": []
       },
       {
-        "id": "122",
+        "id": 122,
         "title": "Benchmark and validate chat p95 < 8s",
         "description": "Run load tests against chat SSE endpoint. Validate p95 latency meets <8s SLA for complex queries. Test with multiple LLM providers. PRD NFR: p95 < 8s complex answers. Scope: CE. Priority: High. Estimate: 1 day. Dependencies: #120 (latency monitoring). Acceptance: Load test script in tests/performance/; p95 < 8s for complex queries with mock LLM; results documented.",
         "details": "",
@@ -1469,7 +1469,7 @@
         "subtasks": []
       },
       {
-        "id": "123",
+        "id": 123,
         "title": "Improve BM25 search weighting based on benchmarks",
         "description": "Follow-up from TM-SEARCH-001. Tune BM25 weights based on benchmark results and relevance feedback. Improve hybrid retrieval quality. Scope: CE. Priority: Medium. Estimate: 1 day. Dependencies: #121 (search benchmark). Acceptance: BM25 weights optimized based on benchmark data; Relevance feedback scores improve by ≥5%; No regression in search latency.",
         "details": "",
@@ -1482,18 +1482,21 @@
         "subtasks": []
       },
       {
-        "id": "124",
+        "id": 124,
         "title": "Resolve protobuf CVE-2026-0994 dependency vulnerability",
         "description": "Monitor for upstream protobuf patch and update dependency. Remove --ignore-vuln CVE-2026-0994 from CI once patched. Follow-up from TM-QA-012 validation. Scope: CE. Priority: Critical. Estimate: 0.5 day (blocked on upstream). Acceptance: Protobuf dependency updated to patched version; --ignore-vuln CVE-2026-0994 removed from scripts/ci/ci_parity.py; pip-audit passes clean.",
-        "details": "",
+        "details": "<info added on 2026-03-30T22:27:07.656Z>\nBlocker Analysis - CVE-2026-0994 (protobuf)\n\nCVE: CVE-2026-0994 (protobuf Any recursion depth bypass in Python json_format)\nFix available in: protobuf >= 6.33.5 (released Jan 29, 2026)\n\nWhy we cannot upgrade:\n\nThe fix requires protobuf>=6.33.5, but the project's dependency chain constrains protobuf<6:\n\n1. google-generativeai>=0.8.0 (deprecated, EOL Nov 30, 2025) depends on google-ai-generativelanguage>=0.6.9\n2. google-ai-generativelanguage constrains protobuf>=3.20.2,<6.0.0.dev0\n3. langchain-google-genai>=2.0.0,<3.0.0 also pulls in the old Google SDK\n\nMigration path (blocked):\n\nTo resolve, we must migrate to langchain-google-genai>=4.0.0 which uses the new google-genai SDK. However:\n- langchain-google-genai>=4.0.0 requires langchain-core>=1.1.2\n- Project has langchain>=0.3.0,<1.0.0 which means langchain-core>=0.3.x,<1.0.0\n- This requires upgrading langchain to v1.x, a major cross-cutting migration\n\nRequired prerequisite tasks:\n\n1. Upgrade langchain to >=1.0.0 - requires auditing all langchain imports, updating API usage across agents/, tools/, models/, and api/ directories\n2. Migrate google-generativeai to google-genai - new SDK has different API (genai.Client vs genai.configure)\n3. Update langchain-google-genai to >=4.0.0 - compatible with new google-genai SDK\n\nStatus: DEFERRED - blocked on langchain 1.x migration. The --ignore-vuln CVE-2026-0994 workarounds must remain in place until the langchain upgrade is complete.\n</info added on 2026-03-30T22:27:07.656Z>",
         "testStrategy": "",
-        "status": "pending",
-        "dependencies": [],
+        "status": "deferred",
+        "dependencies": [
+          "140"
+        ],
         "priority": "high",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-03-30T22:27:18.291Z"
       },
       {
-        "id": "125",
+        "id": 125,
         "title": "Add end-to-end chat flow test in frontend",
         "description": "Follow-up from TM-CHAT-001/002. Add Playwright e2e test covering full chat interaction: send message → receive streaming response → sources expander visible. Scope: CE. Priority: High. Estimate: 0.5 day. Acceptance: Playwright test for chat flow in apps/api/tests/e2e/; tests streaming response rendering; tests source expander visibility; passes in CI.",
         "details": "",
@@ -1504,7 +1507,7 @@
         "subtasks": []
       },
       {
-        "id": "126",
+        "id": 126,
         "title": "Make RuleEngine CI step a required branch protection check",
         "description": "Follow-up from TM-QA-004. Add RuleEngine CI step as required status check in GitHub branch protection rules. Scope: CE. Priority: Medium. Estimate: 0.25 day. Acceptance: RuleEngine step listed as required check in branch protection; PRs cannot merge without passing RuleEngine; documented in developer notes.",
         "details": "",
@@ -1515,7 +1518,7 @@
         "subtasks": []
       },
       {
-        "id": "127",
+        "id": 127,
         "title": "Enhance compose smoke test with authenticated health check",
         "description": "Follow-up from TM-DEPLOY-002/003. Ensure compose smoke test calls authenticated /api/v1/verify-auth as part of the health check flow. Scope: CE. Priority: Medium. Estimate: 0.25 day. Acceptance: Smoke test calls verify-auth endpoint; test passes with API_ACCESS_KEY set; test skips auth check gracefully when not set.",
         "details": "",
@@ -1526,7 +1529,7 @@
         "subtasks": []
       },
       {
-        "id": "128",
+        "id": 128,
         "title": "Add localization support for chat UI strings",
         "description": "Follow-up from TM-CHAT-002/005. Extract hardcoded chat UI strings to i18n keys. Support EN, PL, RU at minimum. Scope: CE. Priority: Medium. Estimate: 0.5 day. Acceptance: All chat UI strings use i18n keys; EN, PL, RU translations provided; existing tests remain green.",
         "details": "",
@@ -1537,7 +1540,7 @@
         "subtasks": []
       },
       {
-        "id": "129",
+        "id": 129,
         "title": "Generate full API documentation from OpenAPI schema in CI",
         "description": "Follow-up from TM-DOCS-005. Enhance OpenAPI-to-markdown generation to produce complete API docs automatically in CI. Scope: CE. Priority: Medium. Estimate: 0.5 day. Acceptance: CI step generates full API docs from openapi.json; no manual drift possible; generated docs published to docs/ directory.",
         "details": "",
@@ -1548,7 +1551,7 @@
         "subtasks": []
       },
       {
-        "id": "130",
+        "id": 130,
         "title": "Add delete/reset knowledge store UX controls",
         "description": "Follow-up from TM-RAG-005/006. Add UI controls for knowledge store management (delete individual files, reset all, view history). Scope: CE. Priority: Medium. Estimate: 0.5 day. Acceptance: Delete individual uploaded documents; reset all knowledge with confirmation dialog; upload history panel per user email; tests.",
         "details": "",
@@ -1559,7 +1562,7 @@
         "subtasks": []
       },
       {
-        "id": "131",
+        "id": 131,
         "title": "Add provider-specific deployment templates (Vercel + Render)",
         "description": "Add vercel.json and render.yaml templates optimized for the project stack. Include env var templates and build configurations. Scope: CE. Priority: Low. Estimate: 0.5 day. Acceptance: deploy/templates/vercel.json for frontend; deploy/templates/render.yaml for backend; .env.example references all required vars; documented in quickstart guide.",
         "details": "",
@@ -1570,7 +1573,7 @@
         "subtasks": []
       },
       {
-        "id": "132",
+        "id": 132,
         "title": "Expand critical module set for coverage gates",
         "description": "Follow-up from TM-QA-003. Add more modules to the critical coverage gate list to improve test enforcement. Scope: CE. Priority: Low. Estimate: 0.5 day. Acceptance: Critical module list expanded to cover all routers and services; coverage gate enforces ≥90% on critical modules; CI pipeline updated.",
         "details": "",
@@ -1581,7 +1584,7 @@
         "subtasks": []
       },
       {
-        "id": "133",
+        "id": 133,
         "title": "Add PDF/DOCX parsing as required CE dependency (remove optional)",
         "description": "Follow-up from TM-RAG-001. Make PDF/DOCX parsing a required dependency in CE rather than optional. Add pypdf and python-docx as standard dependencies. Scope: CE. Priority: Medium. Estimate: 0.5 day. Acceptance: pypdf and python-docx in pyproject.toml dependencies (not optional); RAG upload handles PDF/DOCX without graceful fallback; tests cover both file types.",
         "details": "",
@@ -1592,7 +1595,7 @@
         "subtasks": []
       },
       {
-        "id": "134",
+        "id": 134,
         "title": "Prepare CE for EU AI Act transparency requirements (Aug 2026)",
         "description": "From research findings (2026_market_and_compliance_summary.md). Add chatbot transparency labeling (You are talking to an AI), 6-month event logging, and data processing documentation. EU AI Act enforcement begins August 2026. Scope: CE. Priority: Medium. Estimate: 1 day. Acceptance: Chat UI shows AI Assistant label prominently; event log retention ≥ 6 months; data processing documentation page; terms of service reference AI usage.",
         "details": "",
@@ -1603,7 +1606,7 @@
         "subtasks": []
       },
       {
-        "id": "135",
+        "id": 135,
         "title": "Expand Critical Module Set for Coverage Gate Enforcement",
         "description": "Expand the critical module list to cover all routers and services, enforce ≥90% coverage gate on critical modules, and update CI pipeline configuration for improved test enforcement.",
         "details": "## Implementation Steps\n\n1. **Audit Current Critical Module List**\n   - Review existing critical module configuration (from Task #132 foundation)\n   - Identify all router modules (property routes, search routes, auth routes, agent routes, etc.)\n   - Identify all service modules (RAG service, search service, citation service, streaming service, etc.)\n\n2. **Update Coverage Configuration**\n   - Locate coverage config file (e.g., `.nycrc`, `jest.config.ts`, or `coverage-gate.yml`)\n   - Add all router modules to critical list: `src/routes/**/*.ts`\n   - Add all service modules to critical list: `src/services/**/*.ts`\n   - Ensure threshold is set to ≥90% for critical modules\n   - Maintain existing thresholds for non-critical modules\n\n3. **Update CI Pipeline**\n   - Modify CI configuration (e.g., `.github/workflows/test.yml` or equivalent)\n   - Add coverage gate step that fails build if critical modules below 90%\n   - Add coverage report artifact upload for visibility\n   - Configure coverage summary comment on PRs\n\n4. **Module Coverage Assessment**\n   - Run current test suite with coverage reporting\n   - Identify modules below 90% threshold\n   - Document gaps for follow-up task creation\n\n5. **Documentation**\n   - Update contributing guide with coverage requirements\n   - Document critical module list and rationale\n   - Add coverage badge to README\n\n## Technical Considerations\n- Ensure coverage collection doesn't significantly increase CI runtime\n- Consider using `--changedSince=main` flag for PR builds to focus on changed files\n- Coverage gate should block merge but not block local development\n- Exclude test utilities and mocks from coverage metrics",
@@ -1616,7 +1619,7 @@
         "subtasks": []
       },
       {
-        "id": "136",
+        "id": 136,
         "title": "Add PDF/DOCX parsing as required CE dependency",
         "description": "Make PDF/DOCX parsing a required dependency in Community Edition by adding pypdf and python-docx as standard (non-optional) dependencies in pyproject.toml, and update RAG upload handlers to process these file types without graceful fallback.",
         "details": "## Implementation Steps\n\n### 1. Update pyproject.toml\n- Move `pypdf` and `python-docx` from optional dependencies (extras) to the main `dependencies` section\n- Ensure version pins are appropriate (e.g., `pypdf>=3.9.0`, `python-docx>=0.8.11`)\n- Remove any conditional logic or extras group that previously made these optional\n\n### 2. Update RAG Upload Handler\n- Locate the file upload/parsing module in the RAG pipeline\n- Remove any try/except blocks that catch ImportError for pypdf/python-docx and fall back gracefully\n- Ensure PDF parsing uses pypdf directly without availability checks\n- Ensure DOCX parsing uses python-docx directly without availability checks\n- Remove any feature flags or configuration options related to PDF/DOCX support being optional\n\n### 3. Update Parser Registry\n- If there's a parser registry or factory pattern, ensure PDF and DOCX parsers are always registered\n- Remove any conditional registration based on package availability\n\n### 4. Documentation Updates\n- Update README or setup docs to reflect PDF/DOCX as standard supported formats\n- Remove any notes about optional dependencies for these file types\n\n### 5. Acceptance Criteria\n1. `pypdf` and `python-docx` appear in pyproject.toml `[project.dependencies]` (NOT in `[project.optional-dependencies]`)\n2. RAG upload endpoint successfully processes PDF files without fallback behavior\n3. RAG upload endpoint successfully processes DOCX files without fallback behavior\n4. No ImportError handling or graceful degradation for missing PDF/DOCX parsers\n5. Existing functionality remains intact\n6. All tests pass",
@@ -1629,7 +1632,7 @@
         "subtasks": []
       },
       {
-        "id": "137",
+        "id": 137,
         "title": "Add deployment configuration templates for Vercel, Render, and environment variables",
         "description": "Create optimized deployment templates for Vercel and Render platforms in deploy/templates/, including vercel.json, render.yaml, and .env.example files with all required environment variables documented and pre-configured for the project stack.",
         "details": "## Implementation Steps\n\n### 1. Create deploy/templates/ Directory Structure\n- Verify deploy/ directory exists (created in #25)\n- Create deploy/templates/ subdirectory for all deployment configuration templates\n- Add README.md in deploy/templates/ explaining template usage\n\n### 2. Create vercel.json Template (deploy/templates/vercel.json)\n- Configure build settings optimized for Next.js/React frontend\n- Set framework preset to nextjs\n- Define build command: `cd apps/web && npm run build`\n- Set output directory: `apps/web/.next`\n- Configure routing rewrites for API proxy to backend\n- Add environment variable references with placeholders\n- Configure function regions for optimal latency\n- Set node.js version to match project requirements\n- Add headers for security (CSP, CORS)\n- Example structure:\n```json\n{\n  \"version\": 2,\n  \"builds\": [\n    {\n      \"src\": \"apps/web/package.json\",\n      \"use\": \"@vercel/next\"\n    }\n  ],\n  \"routes\": [\n    { \"src\": \"/api/(.*)\", \"dest\": \"${BACKEND_URL}/api/$1\" }\n  ]\n}\n```\n\n### 3. Create render.yaml Template (deploy/templates/render.yaml)\n- Define backend web service (Python/FastAPI)\n  - Build command: `pip install -r requirements.txt`\n  - Start command: `python -m uvicorn api.main:app --host 0.0.0.0 --port $PORT`\n  - Environment: Python 3.11+\n  - Health check endpoint: /health\n- Define PostgreSQL database service\n- Define Redis service for caching/sessions\n- Set environment groups for shared variables\n- Configure auto-scaling parameters\n- Add disk storage for uploads if needed\n- Example structure:\n```yaml\nservices:\n  - type: web\n    name: backend\n    runtime: python\n    buildCommand: pip install -r requirements.txt\n    startCommand: python -m uvicorn api.main:app --host 0.0.0.0 --port $PORT\n    envVars:\n      - key: PYTHON_VERSION\n        value: \"3.11\"\n      - fromGroup: backend-env\n```\n\n### 4. Create .env.example Template (deploy/templates/.env.example)\n- Organize by category with clear comments:\n  - Application Settings (APP_NAME, APP_ENV, APP_URL, PORT)\n  - Database Configuration (DATABASE_URL, DB_POOL_SIZE)\n  - Redis Configuration (REDIS_URL)\n  - Authentication (JWT_SECRET, JWT_EXPIRY, AUTH_PROVIDER)\n  - LLM Provider Settings (OPENAI_API_KEY, ANTHROPIC_API_KEY, DEFAULT_MODEL)\n  - MCP Configuration (MCP_ALLOWLIST, MCP_TIMEOUT)\n  - Search/API Keys (GOOGLE_MAPS_API_KEY, etc.)\n  - File Upload (UPLOAD_DIR, MAX_UPLOAD_SIZE)\n  - CORS Settings (ALLOWED_ORIGINS)\n  - Optional: Ollama (OLLAMA_BASE_URL, OLLAMA_MODEL)\n- Mark required vs optional variables\n- Include sensible defaults where appropriate\n- Add inline documentation for each variable\n\n### 5. Update docs/quickstart.md\n- Add \"First Time Setup\" section referencing .env.example\n- Add deployment section with platform-specific instructions:\n  - Vercel deployment steps using template\n  - Render deployment steps using template\n  - Environment variable configuration guide\n- Include copy commands: `cp deploy/templates/.env.example .env`\n- Document how to customize templates for specific environments\n- Add troubleshooting section for common deployment issues\n\n### 6. Create deploy/templates/README.md\n- Explain purpose of each template file\n- Provide quick-start commands for copying templates\n- Link to full documentation in quickstart.md\n- Note which variables MUST be changed before deployment",
@@ -1643,7 +1646,7 @@
         "subtasks": []
       },
       {
-        "id": "138",
+        "id": 138,
         "title": "[CE] EU AI Act Compliance - Chatbot Transparency & Data Processing Documentation",
         "description": "Implement EU AI Act compliance measures including chatbot transparency labeling, 6-month event logging retention policy, data processing documentation page, and Terms of Service updates referencing AI usage. Target: EU AI Act effective August 2026.",
         "details": "## Context\nEU AI Act becomes effective August 2026. This task ensures CE scope compliance with transparency and data processing requirements for AI-powered chatbot features.\n\n## Implementation Steps\n\n### 1. Chatbot Transparency Labeling\n- Add prominent 'AI Assistant' label to chat UI header/badge\n- Include disclaimer: 'You are talking to an AI assistant' in chat window\n- Add visual indicator (icon/badge) distinguishing AI from human agents\n- Ensure label is visible before user sends first message\n- Files: `apps/web/components/chat/ChatHeader.tsx`, `apps/web/components/chat/ChatWindow.tsx`\n\n### 2. Event Logging Retention (6 months)\n- Extend existing audit logging system (Task 95) with retention policy\n- Configure log retention to minimum 6 months for all AI interaction events\n- Implement automated log archival/purge after retention period\n- Add retention configuration to admin settings\n- Files: `apps/api/services/audit.py`, `apps/api/config/settings.py`\n\n### 3. Data Processing Documentation Page\n- Create public-facing '/data-processing' page documenting:\n  - What data the AI chatbot collects\n  - How data is processed and stored\n  - Data retention periods\n  - User rights (access, deletion, correction)\n  - Third-party data sharing (if applicable)\n  - Contact information for data protection inquiries\n- Files: `apps/web/pages/data-processing.tsx`, `apps/api/docs/data-processing.md`\n\n### 4. Terms of Service Updates\n- Add section referencing AI usage in platform\n- Disclose automated decision-making where applicable\n- Link to data processing documentation\n- Files: `apps/web/pages/terms-of-service.tsx`\n\n### 5. Compliance Documentation\n- Document all compliance measures implemented\n- Create internal compliance checklist for EU AI Act\n- Files: `docs/compliance/eu-ai-act.md`",
@@ -1657,7 +1660,7 @@
         "subtasks": []
       },
       {
-        "id": "139",
+        "id": 139,
         "title": "Add PDF/DOCX parsing as required CE dependency",
         "description": "Follow-up from TM-RAG-001. Make PDF/DOCX parsing a required dependency in Community Edition rather than optional. Add pypdf and python-docx as standard (non-optional) dependencies in pyproject.toml and update RAG upload handlers to process these file types without graceful fallback.",
         "details": "## Implementation Steps\n\n### 1. Update pyproject.toml Dependencies\n- Move `pypdf` from optional extras to main `dependencies` section\n- Move `python-docx` from optional extras to main `dependencies` section\n- Use version pins: `pypdf>=3.9.0` and `python-docx>=0.8.11`\n- Remove any `[project.optional-dependencies]` groups related to document parsing\n- Verify no other optional groups reference these packages\n\n### 2. Update RAG Upload Handler\n- Locate the document upload/parsing module in the RAG pipeline\n- Remove try/except blocks that handle `ImportError` for pypdf and python-docx\n- Remove any conditional logic that checks for optional dependency availability\n- Ensure PDF parsing uses pypdf directly without fallback wrappers\n- Ensure DOCX parsing uses python-docx directly without fallback wrappers\n- Raise explicit errors if parsing fails rather than silently skipping\n\n### 3. Update Import Statements\n- Change conditional imports to direct imports throughout codebase\n- Remove `importlib.util.find_spec` checks for these libraries\n- Update type hints if any were using `Optional` due to conditional imports\n\n### 4. Documentation Updates\n- Update installation documentation to reflect required dependencies\n- Remove any notes about optional document parsing capabilities\n- Update README if it mentions optional PDF/DOCX support\n\n### 5. Docker/Container Updates\n- Ensure base Docker images include these dependencies\n- Verify no size regressions in container images\n- Update any docker-compose files if they had volume mounts for optional deps",
@@ -1669,16 +1672,30 @@
         ],
         "priority": "medium",
         "subtasks": []
+      },
+      {
+        "id": 140,
+        "title": "Upgrade langchain to 1.x to unblock protobuf CVE-2026-0994 fix (blocks Task #124)",
+        "description": "Upgrade langchain from 0.3.x to 1.x+ to unblock protobuf CVE-2026-0994 resolution (Task #124). This requires updating langchain, langchain-core, langchain-google-genai (to v4+), migrating from deprecated google-generativeai SDK to google-genai SDK. Scope: CE. Priority: High. Acceptance: All langchain imports work with new version; protobuf resolves to >=6.33.5; pip-audit passes clean; existing tests pass.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": []
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-30T20:03:01.939Z",
+      "lastModified": "2026-03-30T22:27:18.291Z",
       "taskCount": 115,
-      "completedCount": 82,
+      "completedCount": 83,
       "tags": [
         "master"
-      ]
+      ],
+      "created": "2026-03-30T22:27:32.875Z",
+      "description": "Tasks for master context",
+      "updated": "2026-03-30T22:27:32.876Z"
     }
   }
 }
