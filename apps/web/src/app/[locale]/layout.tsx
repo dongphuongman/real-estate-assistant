@@ -5,6 +5,8 @@ import { getMessages, setRequestLocale } from 'next-intl/server';
 import { MainNav } from '@/components/layout/main-nav';
 import { SkipNav } from '@/components/layout/SkipNav';
 import { Providers } from '@/components/providers';
+import { InstallPrompt } from '@/components/pwa/install-prompt';
+import { UpdateBanner } from '@/components/pwa/update-banner';
 import { locales, type Locale } from '@/i18n/config';
 
 const geistSans = Geist({
@@ -123,6 +125,7 @@ export default async function LocaleLayout({
       >
         <NextIntlClientProvider messages={messages}>
           <Providers>
+            <UpdateBanner />
             <SkipNav />
             <header className="border-b bg-background">
               <div className="relative flex h-16 items-center px-4 container mx-auto">
@@ -132,6 +135,7 @@ export default async function LocaleLayout({
             <main id="main-content" className="flex-1">
               {children}
             </main>
+            <InstallPrompt />
           </Providers>
         </NextIntlClientProvider>
       </body>
