@@ -1,0 +1,81 @@
+name: CodeQL
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+on:
+  push:
+    branches: [main, dev, ver4]
+    paths:
+      - 'apps/api/**'
+      - 'apps/web/**'
+  pull_request:
+    branches: [main, dev, ver4]
+    paths:
+      - 'apps/api/**'
+      - 'apps/web/**'
+  schedule:
+    - cron: '30 6 * * 1'
+  workflow_dispatch:
+
+jobs:
+  analyze:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'NestLab-Tech'
+    timeout-minutes: 30
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [python, javascript-typescript]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          queries: security-extended,security-and-quality
+          config: |
+            paths-ignore:
+              - '**/node_modules'
+              - '**/.next'
+              - '**/dist'
+              - '**/build'
+              - '**/coverage'
+              - '**/__pycache__'
+              - '**/venv'
+              - '**/.venv'
+              - '**/.venv_ci'
+              - '**/*.test.js'
+              - '**/*.test.ts'
+              - '**/*.test.tsx'
+              - '**/*.spec.js'
+              - '**/*.spec.ts'
+              - '**/*.spec.tsx'
+              - '**/tests/**'
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:${{ matrix.language }}'
+          upload: true
+        continue-on-error: true
+
+      - name: Upload CodeQL results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-results-${{ matrix.language }}
+          path: /home/runner/work/_temp/codeql_databases
+          retention-days: 7
