@@ -1,38 +1,41 @@
-"use client";
+'use client';
 
-import { useState, useRef, useEffect } from "react";
-import { Send, User, Bot, Loader2, Lightbulb, Sparkles, RefreshCw } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { streamChatMessage, ApiError } from "@/lib/api";
-import type { ChatResponse, EnhancedCitation, CitationStats } from "@/lib/types";
-import CitationDisplay from "@/components/CitationDisplay";
+import { useState, useRef, useEffect } from 'react';
+import { Send, User, Bot, Loader2, Lightbulb, Sparkles, RefreshCw, Info } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { streamChatMessage, ApiError } from '@/lib/api';
+import type { ChatResponse, EnhancedCitation, CitationStats } from '@/lib/types';
+import CitationDisplay from '@/components/CitationDisplay';
+import { useTranslations } from 'next-intl';
 
 interface Message {
-  role: "user" | "assistant";
+  role: 'user' | 'assistant';
   content: string;
-  sources?: ChatResponse["sources"];
+  sources?: ChatResponse['sources'];
   sourcesTruncated?: boolean;
   citationStats?: CitationStats | null;
-  intermediateSteps?: ChatResponse["intermediate_steps"];
+  intermediateSteps?: ChatResponse['intermediate_steps'];
   isError?: boolean;
   requestId?: string;
 }
 
 // Suggested prompts for empty state
 const SUGGESTED_PROMPTS = [
-  "Find 2-bedroom apartments under $400,000 in Madrid",
+  'Find 2-bedroom apartments under $400,000 in Madrid',
   "What's the average price per square meter in Krakow?",
-  "Compare properties in Warsaw city center",
-  "Calculate mortgage for a $500,000 property with 20% down payment",
-  "Show me houses with gardens in suburban areas",
+  'Compare properties in Warsaw city center',
+  'Calculate mortgage for a $500,000 property with 20% down payment',
+  'Show me houses with gardens in suburban areas',
 ];
 
 export default function ChatPage() {
+  const t = useTranslations('chat');
+
   // Track if user has sent any message (for empty state)
   const [hasStarted, setHasStarted] = useState(false);
 
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const [lastUserMessage, setLastUserMessage] = useState<string | undefined>(undefined);
@@ -41,11 +44,11 @@ export default function ChatPage() {
   const formRef = useRef<HTMLFormElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const applyStreamError = (error: unknown, isRetry: boolean = false) => {
-    let message = "Unknown error";
+    let message = 'Unknown error';
     let requestId: string | undefined = undefined;
 
     if (error instanceof ApiError) {
@@ -60,16 +63,16 @@ export default function ChatPage() {
       }
     }
 
-    setMessages(prev => {
+    setMessages((prev) => {
       const updated = [...prev];
       const lastIdx = updated.length - 1;
 
       if (isRetry) {
         // Replace the temporary loading message with error
-        if (lastIdx >= 0 && updated[lastIdx].role === "assistant" && !updated[lastIdx].content) {
+        if (lastIdx >= 0 && updated[lastIdx].role === 'assistant' && !updated[lastIdx].content) {
           updated[lastIdx] = {
             ...updated[lastIdx],
-            content: `I apologize, but I encountered an error: ${message}. Please try again.`,
+            content: t('errors.apology', { error: message }),
             isError: true,
             requestId,
           };
@@ -80,8 +83,8 @@ export default function ChatPage() {
       return [
         ...updated,
         {
-          role: "assistant",
-          content: `I apologize, but I encountered an error: ${message}. Please try again.`,
+          role: 'assistant',
+          content: t('errors.apology', { error: message }),
           isError: true,
           requestId,
         },
@@ -101,9 +104,9 @@ export default function ChatPage() {
   }, [messages]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
-    setDebugMode(params.get("debug") === "1");
+    setDebugMode(params.get('debug') === '1');
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,28 +114,30 @@ export default function ChatPage() {
     if (!input.trim() || isLoading) return;
 
     const userMessage = input.trim();
-    setInput("");
+    setInput('');
     setHasStarted(true);
-    setMessages(prev => [...prev, { role: "user", content: userMessage }]);
+    setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
     setLastUserMessage(userMessage);
 
     try {
-      const sid = sessionId ?? (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : undefined);
+      const sid =
+        sessionId ??
+        (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : undefined);
       if (sid && !sessionId) {
         setSessionId(sid);
       }
 
       // Add empty assistant message that will be filled with streamed content
-      setMessages(prev => [...prev, { role: "assistant", content: "" }]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
 
       await streamChatMessage(
         { message: userMessage, session_id: sid, include_intermediate_steps: debugMode },
         (chunk) => {
-          setMessages(prev => {
+          setMessages((prev) => {
             const updated = [...prev];
             const lastIdx = updated.length - 1;
-            if (lastIdx >= 0 && updated[lastIdx].role === "assistant") {
+            if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
               updated[lastIdx] = { ...updated[lastIdx], content: updated[lastIdx].content + chunk };
             }
             return updated;
@@ -143,22 +148,27 @@ export default function ChatPage() {
         },
         ({ sources, sourcesTruncated, sessionId: returnedSessionId, intermediateSteps }) => {
           if (returnedSessionId && !sessionId) setSessionId(returnedSessionId);
-          setMessages(prev => {
+          setMessages((prev) => {
             const updated = [...prev];
             const lastIdx = updated.length - 1;
-            if (lastIdx >= 0 && updated[lastIdx].role === "assistant") {
+            if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
               updated[lastIdx] = {
                 ...updated[lastIdx],
                 sources: sources && sources.length ? sources : updated[lastIdx].sources,
-                sourcesTruncated: typeof sourcesTruncated === "boolean" ? sourcesTruncated : updated[lastIdx].sourcesTruncated,
-                intermediateSteps: intermediateSteps && intermediateSteps.length ? intermediateSteps : updated[lastIdx].intermediateSteps,
+                sourcesTruncated:
+                  typeof sourcesTruncated === 'boolean'
+                    ? sourcesTruncated
+                    : updated[lastIdx].sourcesTruncated,
+                intermediateSteps:
+                  intermediateSteps && intermediateSteps.length
+                    ? intermediateSteps
+                    : updated[lastIdx].intermediateSteps,
               };
             }
             return updated;
           });
         }
       );
-
     } catch (error) {
       applyStreamError(error);
     } finally {
@@ -169,16 +179,16 @@ export default function ChatPage() {
   const handleRetry = async () => {
     if (!lastUserMessage || isLoading) return;
     setIsLoading(true);
-    setMessages(prev => [...prev, { role: "assistant", content: "" }]);
+    setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
 
     try {
       await streamChatMessage(
         { message: lastUserMessage, session_id: sessionId, include_intermediate_steps: debugMode },
         (chunk) => {
-          setMessages(prev => {
+          setMessages((prev) => {
             const updated = [...prev];
             const lastIdx = updated.length - 1;
-            if (lastIdx >= 0 && updated[lastIdx].role === "assistant") {
+            if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
               updated[lastIdx] = { ...updated[lastIdx], content: updated[lastIdx].content + chunk };
             }
             return updated;
@@ -188,15 +198,21 @@ export default function ChatPage() {
           // requestId is available but not currently displayed
         },
         ({ sources, sourcesTruncated, intermediateSteps }) => {
-          setMessages(prev => {
+          setMessages((prev) => {
             const updated = [...prev];
             const lastIdx = updated.length - 1;
-            if (lastIdx >= 0 && updated[lastIdx].role === "assistant") {
+            if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
               updated[lastIdx] = {
                 ...updated[lastIdx],
                 sources: sources && sources.length ? sources : updated[lastIdx].sources,
-                sourcesTruncated: typeof sourcesTruncated === "boolean" ? sourcesTruncated : updated[lastIdx].sourcesTruncated,
-                intermediateSteps: intermediateSteps && intermediateSteps.length ? intermediateSteps : updated[lastIdx].intermediateSteps,
+                sourcesTruncated:
+                  typeof sourcesTruncated === 'boolean'
+                    ? sourcesTruncated
+                    : updated[lastIdx].sourcesTruncated,
+                intermediateSteps:
+                  intermediateSteps && intermediateSteps.length
+                    ? intermediateSteps
+                    : updated[lastIdx].intermediateSteps,
               };
             }
             return updated;
@@ -224,15 +240,17 @@ export default function ChatPage() {
             <div className="p-4 rounded-full bg-primary/10 mb-4">
               <Sparkles className="h-12 w-12 text-primary" aria-hidden="true" />
             </div>
-            <h1 className="text-2xl font-bold mb-2">AI Real Estate Assistant</h1>
-            <p className="text-muted-foreground max-w-md mb-6">
-              Ask me anything about properties, market trends, investment advice, or calculations.
-              I can search listings, analyze prices, and help you make informed decisions.
-            </p>
+            <div className="flex items-center gap-2 mb-2">
+              <h1 className="text-2xl font-bold">{t('title')}</h1>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-medium border border-primary/20">
+                {t('aiLabel')}
+              </span>
+            </div>
+            <p className="text-muted-foreground max-w-md mb-6">{t('description')}</p>
             <div className="space-y-2 mb-6 text-left w-full max-w-md mx-auto">
               <p className="text-sm font-medium text-foreground flex items-center gap-2">
                 <Lightbulb className="h-4 w-4" aria-hidden="true" />
-                Try these examples:
+                {t('emptyState.suggestions')}
               </p>
               <div className="flex flex-col gap-2">
                 {SUGGESTED_PROMPTS.map((prompt, idx) => (
@@ -249,8 +267,8 @@ export default function ChatPage() {
               </div>
             </div>
             <div className="text-xs text-muted-foreground max-w-md">
-              <p className="font-medium mb-1">Powered by:</p>
-              <p>Multi-provider LLM routing with tool integrations for search, price analysis, and mortgage calculations.</p>
+              <p className="font-medium mb-1">{t('poweredBy.title')}</p>
+              <p>{t('poweredBy.description')}</p>
             </div>
           </div>
         )}
@@ -268,7 +286,7 @@ export default function ChatPage() {
             </div>
             <div className="flex-1 flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">Thinking...</span>
+              <span className="text-sm text-muted-foreground">{t('loading.thinking')}</span>
             </div>
           </div>
         )}
@@ -278,45 +296,57 @@ export default function ChatPage() {
           <div
             key={index}
             className={cn(
-              "flex w-full items-start gap-4 p-4 rounded-lg",
-              message.role === "user"
-                ? "bg-muted/50"
+              'flex w-full items-start gap-4 p-4 rounded-lg',
+              message.role === 'user'
+                ? 'bg-muted/50'
                 : message.isError
-                  ? "bg-destructive/10 border border-destructive/20"
-                  : "bg-background border"
+                  ? 'bg-destructive/10 border border-destructive/20'
+                  : 'bg-background border'
             )}
-            role={message.role === "assistant" && message.isError ? "alert" : undefined}
-            aria-live={message.isError ? "assertive" : "polite"}
+            role={message.role === 'assistant' && message.isError ? 'alert' : undefined}
+            aria-live={message.isError ? 'assertive' : 'polite'}
           >
-            <div className={cn(
-              "flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md border shadow",
-              message.role === "user" ? "bg-background" : "bg-primary text-primary-foreground"
-            )}>
-              {message.role === "user" ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+            <div
+              className={cn(
+                'flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md border shadow',
+                message.role === 'user' ? 'bg-background' : 'bg-primary text-primary-foreground'
+              )}
+            >
+              {message.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
             </div>
             <div className="flex-1 space-y-2 overflow-hidden">
+              {/* AI Disclosure Badge - shown for assistant messages (EU AI Act compliance) */}
+              {message.role === 'assistant' && message.content && !message.isError && (
+                <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                  <Info className="h-3 w-3 mt-0.5 flex-shrink-0" aria-hidden="true" />
+                  <p>{t('aiDisclaimer')}</p>
+                </div>
+              )}
+
               <div className="prose break-words dark:prose-invert text-sm leading-relaxed">
                 {!message.content ? (
-                  <span className="text-muted-foreground italic">Thinking...</span>
+                  <span className="text-muted-foreground italic">{t('loading.thinking')}</span>
                 ) : (
                   message.content
                 )}
               </div>
 
               {/* Sources display */}
-              {message.role === "assistant" && message.sources && message.sources.length > 0 && (
+              {message.role === 'assistant' && message.sources && message.sources.length > 0 && (
                 <CitationDisplay
-                  citations={message.sources.map((source, i): EnhancedCitation => {
+                  citations={message.sources.map((source): EnhancedCitation => {
                     const metadata = source.metadata || {};
                     // Check if already enhanced citation format
-                    if ("source_type" in metadata && "confidence" in metadata) {
+                    if ('source_type' in metadata && 'confidence' in metadata) {
                       return {
                         source: metadata.source as string | undefined,
                         chunk_index: metadata.chunk_index as number | undefined,
                         page_number: metadata.page_number as number | undefined,
                         paragraph_number: metadata.paragraph_number as number | undefined,
-                        source_type: (metadata.source_type as EnhancedCitation["source_type"]) || "unknown",
-                        confidence: (metadata.confidence as EnhancedCitation["confidence"]) || "medium",
+                        source_type:
+                          (metadata.source_type as EnhancedCitation['source_type']) || 'unknown',
+                        confidence:
+                          (metadata.confidence as EnhancedCitation['confidence']) || 'medium',
                         confidence_score: (metadata.confidence_score as number) || 0.5,
                         content_snippet: source.content || null,
                         source_url: metadata.source_url as string | undefined,
@@ -332,12 +362,14 @@ export default function ChatPage() {
                       chunk_index: metadata.chunk_index as number | undefined,
                       page_number: metadata.page_number as number | undefined,
                       paragraph_number: metadata.paragraph_number as number | undefined,
-                      source_type: "unknown",
-                      confidence: "medium",
+                      source_type: 'unknown',
+                      confidence: 'medium',
                       confidence_score: 0.5,
                       content_snippet: source.content || null,
                       source_url: undefined,
-                      source_title: metadata.title as string | undefined || metadata.source as string | undefined,
+                      source_title:
+                        (metadata.title as string | undefined) ||
+                        (metadata.source as string | undefined),
                       citation_hash: undefined,
                       is_duplicate: false,
                       validated: false,
@@ -349,23 +381,26 @@ export default function ChatPage() {
               )}
 
               {/* Intermediate steps (debug mode) */}
-              {debugMode && message.role === "assistant" && message.intermediateSteps && message.intermediateSteps.length > 0 && (
-                <details className="rounded-md border bg-muted/30 px-3 py-2 text-xs">
-                  <summary className="cursor-pointer select-none font-medium">
-                    Debug trace ({message.intermediateSteps.length})
-                  </summary>
-                  <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-[11px] leading-snug">
-                    {JSON.stringify(message.intermediateSteps, null, 2)}
-                  </pre>
-                </details>
-              )}
+              {debugMode &&
+                message.role === 'assistant' &&
+                message.intermediateSteps &&
+                message.intermediateSteps.length > 0 && (
+                  <details className="rounded-md border bg-muted/30 px-3 py-2 text-xs">
+                    <summary className="cursor-pointer select-none font-medium">
+                      {t('debug.trace', { count: message.intermediateSteps.length })}
+                    </summary>
+                    <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-[11px] leading-snug">
+                      {JSON.stringify(message.intermediateSteps, null, 2)}
+                    </pre>
+                  </details>
+                )}
 
               {/* Error retry button */}
               {message.isError && (
                 <div className="flex items-center gap-3">
                   {message.requestId && (
                     <div className="text-xs text-muted-foreground font-mono">
-                      request_id={message.requestId}
+                      {t('retry.requestId', { id: message.requestId })}
                     </div>
                   )}
                   <button
@@ -375,7 +410,7 @@ export default function ChatPage() {
                     className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
                   >
                     <RefreshCw className="h-3 w-3" />
-                    Retry
+                    {t('retry.button')}
                   </button>
                 </div>
               )}
@@ -390,19 +425,15 @@ export default function ChatPage() {
       <form ref={formRef} onSubmit={handleSubmit} className="flex gap-4">
         <input
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-          placeholder={
-            hasStarted
-              ? "Ask about properties, market trends, or investment advice..."
-              : "Type your question here to get started..."
-          }
+          placeholder={hasStarted ? t('input.placeholderStarted') : t('input.placeholderEmpty')}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={isLoading}
-          aria-label="Chat message input"
+          aria-label={t('input.ariaLabel')}
         />
         <button
           type="submit"
-          aria-label={isLoading ? "Sending..." : "Send message"}
+          aria-label={isLoading ? t('input.ariaLabelSending') : t('input.ariaLabelSend')}
           disabled={isLoading || !input.trim()}
           className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 w-12"
         >
