@@ -184,10 +184,6 @@ class SecurityScanner:
                 str(requirements_file),
                 "--format",
                 "json",
-                "--ignore-vuln",
-                "GHSA-7gcm-g887-7qv7",  # Known false positive
-                "--ignore-vuln",
-                "CVE-2026-0994",  # Known false positive
             ]
         )
 

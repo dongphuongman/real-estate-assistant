@@ -460,10 +460,6 @@ class SecurityLocalRunner:
             str(requirements_file),
             "--format",
             "json",
-            "--ignore-vuln",
-            "GHSA-7gcm-g887-7qv7",
-            "--ignore-vuln",
-            "CVE-2026-0994",
         ]
 
         rc, stdout, stderr = self._run_command(cmd)

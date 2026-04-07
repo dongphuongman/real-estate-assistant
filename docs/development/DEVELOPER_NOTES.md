@@ -212,8 +212,7 @@ in V4.
 - Security:
   - CI jobs: `security` (Bandit) and `audit` (pip-audit) in `.github/workflows/ci.yml`
   - Static analysis: Bandit (fail on high severity/high confidence): `python -m bandit -r api agents ai analytics config data i18n models notifications rules scripts tools utils vector_store workflows -lll -iii`
-  - Dependency audit: pip-audit (fail on vulnerabilities): `python -m pip_audit -r requirements.txt --ignore-vuln GHSA-7gcm-g887-7qv7 --ignore-vuln CVE-2026-0994`
-  - Temporary exception: `CVE-2026-0994` is ignored until an upstream protobuf patch is available within the `google-ai-generativelanguage` dependency constraint.
+  - Dependency audit: pip-audit (fail on vulnerabilities): `python -m pip_audit -r requirements.txt`
 
 ## Branch Protection
 - Protect `main` and `dev` branches with required CI checks:

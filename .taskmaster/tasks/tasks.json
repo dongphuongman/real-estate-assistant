@@ -5,7 +5,7 @@
         "id": "33",
         "title": "Deploy to Vercel environment (DEFERRED)",
         "description": "Verify CI changes, check application works locally, then deploy frontend to Vercel and backend to Render/Railway production environment. DEFERRED: Will be done after application is feature-complete.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "32"
         ],
@@ -13,7 +13,7 @@
         "details": "1. Review and verify recent CI changes:\n   - Check .github/workflows/ci.yml for any recent modifications\n   - Verify all security scripts are working correctly\n   - Confirm pre-commit hooks are functioning\n2. Local validation:\n   - Run backend locally: 'python -m uvicorn api.main:app --reload'\n   - Run frontend locally: 'cd apps/web && npm run dev'\n   - Test key functionality (chat API, property search)\n   - Run security scan: 'python scripts/security/local_scan.py'\n   - Run tests: 'npm run test'\n3. Prepare for Vercel deployment (FRONTEND):\n   - Update environment variables for Vercel\n   - Configure BACKEND_API_URL in Vercel dashboard\n   - Set up production API key\n4. Deploy frontend to Vercel:\n   - Connect GitHub repository to Vercel\n   - Configure build settings (root directory: apps/web, build command: npm run build)\n   - Set environment variables in Vercel dashboard\n   - Deploy and verify deployment is accessible\n5. Deploy backend to Render/Railway (BACKEND):\n   - Create new Web Service on Render or Railway\n   - Connect GitHub repository\n   - Configure build command: pip install -e .[dev]\n   - Configure start command: python -m uvicorn api.main:app --host 0.0.0.0 --port $PORT\n   - Set environment variables (API keys, CORS, etc.)\n   - Deploy and verify API health endpoint\n6. Post-deployment validation:\n   - Test live frontend at Vercel URL\n   - Test live backend at Render/Railway URL\n   - Monitor logs for errors\n   - Verify API connectivity from frontend",
         "testStrategy": "1. Backend runs on port 8000 without errors\n2. Frontend runs on port 3000 without errors\n3. Security scan passes (or acceptable warnings)\n4. Unit tests pass\n5. Application works locally end-to-end\n6. Vercel deployment completes successfully\n7. Render/Railway deployment completes successfully\n8. Live application is accessible and functional\n9. API endpoints respond correctly\n10. Frontend can communicate with backend",
         "subtasks": [],
-        "updatedAt": "2026-02-19T00:00:00.000Z"
+        "updatedAt": "2026-03-31T21:42:11.739Z"
       },
       {
         "id": "25",
@@ -254,12 +254,13 @@
         "description": "Implement a document management system where users can upload, store, and organize property-related documents such as contracts, inspection reports, and photos.",
         "details": "1. Backend - Document Model:\n   - Create Document model with user_id, property_id, filename, file_type, category, tags, expiry_date\n   - Support file types: PDF, DOC, DOCX, JPG, PNG\n\n2. Backend - Storage:\n   - Configure file storage (local S3-compatible or cloud storage)\n   - Implement secure file upload/download\n   - Add file size limits (10MB max)\n   - Add virus scanning (optional)\n\n3. Backend - API Endpoints:\n   - POST /documents - Upload document\n   - GET /documents - List documents\n   - GET /documents/{id} - Download document\n   - DELETE /documents/{id} - Delete document\n   - PATCH /documents/{id} - Update metadata\n\n4. Backend - OCR (optional):\n   - Extract text from PDFs/images\n   - Make documents searchable\n\n5. Frontend - UI:\n   - Document upload with drag-drop\n   - Document list with filters\n   - Document preview (PDF viewer)\n   - Expiry reminders",
         "testStrategy": "1. Unit tests for document model\n2. Integration tests for upload/download\n3. Test file type validation\n4. Test file size limits\n5. Test document categorization\n6. Verify secure file access",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "35"
         ],
         "priority": "low",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-04-01T14:52:45.181Z"
       },
       {
         "id": "44",
@@ -267,11 +268,11 @@
         "description": "Convert the web application into a Progressive Web App (PWA) to provide a mobile-friendly experience with offline capabilities.",
         "details": "1. PWA Configuration:\n   - Create manifest.json with app icons, name, theme colors\n   - Register service worker for caching\n   - Configure offline page fallbacks\n\n2. Offline Capabilities:\n   - Cache property search results\n   - Cache viewed property details\n   - Offline form submission (sync when online)\n   - Cache static assets\n\n3. Push Notifications:\n   - Configure push notification service\n   - Subscribe to price alerts\n   - Subscribe to new property alerts\n   - Notification preferences in settings\n\n4. Mobile Optimization:\n   - Add to home screen prompt\n   - Mobile-optimized navigation\n   - Touch-friendly UI improvements\n   - Responsive image loading\n\n5. Files to create:\n   - apps/web/public/manifest.json\n   - apps/web/public/sw.js (service worker)\n   - apps/web/src/lib/push-notifications.ts",
         "testStrategy": "1. Verify manifest.json is valid\n2. Test offline mode in Chrome DevTools\n3. Test add to home screen on mobile\n4. Verify push notification subscription\n5. Test cached content access offline\n6. Lighthouse PWA audit score > 90",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [],
         "priority": "low",
         "subtasks": [],
-        "updatedAt": "2026-03-31T16:10:26.256Z"
+        "updatedAt": "2026-03-31T16:16:42.659Z"
       },
       {
         "id": "45",
@@ -279,10 +280,11 @@
         "description": "Integrate real estate agent/broker functionality to connect users with professionals for property inquiries, viewing appointments, and listing management.",
         "details": "1. Backend - Agent Model:\n   - Create Agent model with name, email, phone, agency, rating, specialties, service_areas\n   - Create AgentListing model for agent's properties\n\n2. Backend - API Endpoints:\n   - GET /agents - List agents (with filters by area, specialty)\n   - GET /agents/{id} - Get agent details\n   - POST /agents/{id}/contact - Send inquiry to agent\n   - POST /agents/{id}/schedule-viewing - Request viewing appointment\n   - GET /agents/{id}/listings - Get agent's listings\n\n3. Backend - Agent Dashboard (optional):\n   - Agent registration/login\n   - Manage listings\n   - View inquiries\n   - Schedule management\n\n4. Frontend - UI:\n   - Agent directory page with search/filters\n   - Agent profile page with ratings/reviews\n   - Contact form on property pages\n   - Viewing appointment scheduler\n   - Commission calculator tool",
         "testStrategy": "1. Unit tests for agent model\n2. Integration tests for all endpoints\n3. Test contact form submission\n4. Test appointment scheduling\n5. Verify agent search/filtering\n6. E2E test for agent contact flow",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "low",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-03-31T19:33:07.493Z"
       },
       {
         "id": "46",
@@ -311,13 +313,97 @@
         "priority": "high",
         "subtasks": [],
         "updatedAt": "2026-02-20T18:45:08.275Z"
+      },
+      {
+        "id": "48",
+        "title": "CVE-2026-0994 Resolution — protobuf/langchain migration",
+        "description": "Resolve protobuf CVE-2026-0994 by migrating langchain dependencies to patched versions. This is a security blocker documented in commit d65d19a. May require updating langchain-core, langchain-community, and related packages in pyproject.toml.",
+        "details": "1. Audit current protobuf and langchain versions in apps/api/pyproject.toml\n2. Check CVE-2026-0994 details and affected versions\n3. Update protobuf to patched version (>= patched range)\n4. Update langchain packages to versions compatible with new protobuf\n5. Run apps/api test suite to verify no breaking changes\n6. Run make security to verify CVE is resolved\n7. Update .docs/prd.txt to mark #124 as done",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-04-07T21:58:54.442Z"
+      },
+      {
+        "id": "49",
+        "title": "RAG Response Streaming",
+        "description": "Add SSE streaming to the RAG /rag/qa endpoint. The chat endpoint already streams via SSE with heartbeats (utils/streaming.py). Wire the same infrastructure to RAG queries so users see results incrementally instead of waiting for full response.",
+        "details": "1. Study existing streaming in apps/api/api/routers/chat.py (StreamingResponse + agent.astream_query)\n2. Study SSE utilities in apps/api/utils/streaming.py (HeartbeatConfig, StreamMetrics, format_sse_event)\n3. Modify apps/api/api/routers/rag.py /rag/qa to support streaming mode\n4. Add stream=true query parameter to RAG endpoint\n5. Implement chunked streaming of document retrieval + LLM response\n6. Frontend: Add streamRagQuery function in apps/web/src/lib/api.ts using existing HeartbeatMonitor, StreamBuffer from lib/streaming.ts\n7. Update RAG chat UI to consume streaming responses\n8. Tests: Add streaming RAG test in apps/api/tests/",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          "48"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "50",
+        "title": "Search p95 Benchmark",
+        "description": "Create performance benchmark tests for search endpoints. The latency middleware (middleware/latency.py) and p95 monitoring already exist. Add benchmark tests that measure and report p95 latency for property search queries.",
+        "details": "1. Create apps/api/tests/performance/ directory (if not exists)\n2. Create test_search_p95.py with benchmark tests for:\n   - Simple text search queries\n   - Filtered searches (price range, location, rooms)\n   - Complex queries with sorting and pagination\n3. Use existing latency middleware for measurement\n4. Define p95 target: < 2s for search\n5. Add benchmark target to Makefile\n6. Add to CI as optional performance gate\n7. Generate report with min/max/mean/p95/p99 latencies",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "51",
+        "title": "Chat p95 Benchmark",
+        "description": "Create performance benchmark tests for chat endpoint. Builds on search benchmark patterns. Measure and report p95 latency for chat queries including streaming responses.",
+        "details": "1. Create test_chat_p95.py in apps/api/tests/performance/\n2. Benchmark chat queries at various complexity levels:\n   - Simple factual queries (RAG-only)\n   - Medium queries (Hybrid)\n   - Complex queries (Agent + Tools)\n   - Streaming vs non-streaming response times\n3. Define p95 target: < 8s for chat\n4. Reuse benchmark infrastructure from search p95 tests\n5. Add benchmark target to Makefile\n6. Generate report with min/max/mean/p95/p99 latencies",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          "50"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "52",
+        "title": "Chat Localization Strings",
+        "description": "Expand chat i18n coverage. Currently only 15 chat keys in en.json (681 total lines). Add comprehensive chat strings for all 3 languages (EN, PL, RU). Consolidates duplicate PRD tasks #135 and #139.",
+        "details": "1. Audit all user-facing chat strings in apps/web/src/ chat components\n2. Extract hardcoded strings to translation keys\n3. Add ~20 new chat keys to apps/web/messages/en.json:\n   - Error messages, loading states, empty states\n   - Streaming status indicators\n   - Suggested prompts/quick actions\n   - Citation/source labels\n4. Add matching translations to apps/web/messages/pl.json\n5. Add matching translations to apps/web/messages/ru.json\n6. Backend: Check if chat response templates in apps/api/ need i18n\n7. Verify all 3 languages render correctly in chat UI",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "53",
+        "title": "EU AI Act Compliance Prep",
+        "description": "Add \"AI Assistant\" disclosure labels and AI-generated content disclaimers per EU AI Act requirements. Subsumes PRD tasks #136 and #138. This is a regulatory requirement for EU market.",
+        "details": "1. Add \"AI Assistant\" label to chat page header (apps/web/src/app/[locale]/chat/page.tsx)\n2. Add AI-generated content disclaimer below chat responses\n3. Add disclosure notice in chat sidebar/about section\n4. Ensure label is visible and clear (not hidden in tooltip)\n5. Add i18n keys for all disclosure text (EN, PL, RU)\n6. Backend: Add X-AI-Generated header to chat API responses\n7. Document compliance measures in a compliance section of README or separate doc\n8. Tests: Verify label renders, header present",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          "52"
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "54",
+        "title": "API Docs from OpenAPI in CI",
+        "description": "Automate OpenAPI documentation generation in CI pipeline. The export routers (openapi_export.py, openapi_markdown.py) already exist. Wire them into CI to generate docs artifacts on every push to dev/main.",
+        "details": "1. Review existing apps/api/api/routers/openapi_export.py and openapi_markdown.py\n2. Add CI step in .github/workflows/ci.yml:\n   - Generate OpenAPI JSON spec\n   - Generate Markdown docs\n   - Upload as workflow artifact\n3. Add make docs target to Makefile for local generation\n4. Ensure docs reflect current API surface (all routers)\n5. Add docs validation (check for broken links, missing descriptions)\n6. Consider auto-committing docs to a docs/ branch (optional)",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": []
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-31T16:10:26.256Z",
-      "taskCount": 23,
-      "completedCount": 19,
+      "lastModified": "2026-04-07T21:58:54.443Z",
+      "taskCount": 30,
+      "completedCount": 24,
       "tags": [
         "master"
       ]

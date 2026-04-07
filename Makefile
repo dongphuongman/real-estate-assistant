@@ -25,7 +25,7 @@ RESET := \033[0m
 # Phony targets
 .PHONY: help security security-quick test test-api test-web lint lint-api lint-web format
 .PHONY: docker-up docker-down docker-logs docker-build
-.PHONY: ci ci-quick dev dev-api dev-web setup clean install
+.PHONY: ci ci-quick dev dev-api dev-web setup clean install docs
 .PHONY: sprav sprav-quick sprav-json
 
 # Default target
@@ -59,6 +59,7 @@ help: ## Show this help message
 	@echo ""
 	@echo "$(GREEN)CI/CD:$(RESET)"
 	@sed -n 's/^## ci/\tmake &/p' $(MAKEFILE_LIST)
+	@sed -n 's/^## docs/\tmake &/p' $(MAKEFILE_LIST)
 	@echo ""
 	@echo "$(GREEN)SPRAV (Pre-Release Validation):$(RESET)"
 	@sed -n 's/^## sprav/\tmake &/p' $(MAKEFILE_LIST)
@@ -169,6 +170,15 @@ docker-internet:
 ## ============================================================================
 ## CI/CD
 ## ============================================================================
+
+## docs: Generate OpenAPI documentation (Task #54)
+docs:
+	mkdir -p docs/api
+	$(PYTHON) scripts/docs/export_openapi.py --output docs/api/openapi.json
+	$(PYTHON) scripts/docs/generate_api_reference.py --schema docs/api/openapi.json --output docs/api/API_REFERENCE.generated.md
+	@echo "Documentation generated in docs/api/"
+	@echo "  - docs/api/openapi.json"
+	@echo "  - docs/api/API_REFERENCE.generated.md"
 
 ## ci: Run full CI pipeline locally
 ci:

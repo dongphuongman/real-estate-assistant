@@ -368,13 +368,6 @@ python -m bandit -r api agents ai analytics -x tests
 python -m pip_audit -r requirements.txt
 ```
 
-### Known Vulnerabilities
-
-**Ignored Vulnerability (temporary):**
-- `GHSA-7gcm-g887-7qv7` / `CVE-2026-0994` (protobuf)
-- Reason: Current Google SDK dependency requires protobuf `<6`
-- Action: Monitor for compatible fix from upstream
-
 ### Frontend Dependencies
 
 **Security Tools:**

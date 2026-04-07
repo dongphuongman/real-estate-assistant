@@ -260,6 +260,59 @@ jobs:
           name: frontend-coverage
           path: apps/web/coverage
 
+  docs:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'NestLab-Tech'
+    needs: [backend]
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v1
+        with:
+          version: 'latest'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system -r requirements.txt
+
+      - name: Generate OpenAPI documentation (Task #54)
+        run: |
+          mkdir -p docs/api
+          python ../../scripts/docs/export_openapi.py --output ../../docs/api/openapi.json
+          python ../../scripts/docs/generate_api_reference.py --schema ../../docs/api/openapi.json --output ../../docs/api/API_REFERENCE.generated.md
+
+      - name: Upload OpenAPI documentation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-docs
+          path: docs/api/
+
+      - name: Docs summary
+        if: always()
+        run: |
+          echo "### OpenAPI Documentation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Generated files:" >> $GITHUB_STEP_SUMMARY
+          echo "- OpenAPI JSON: docs/api/openapi.json" >> $GITHUB_STEP_SUMMARY
+          echo "- API Markdown: docs/api/API_REFERENCE.generated.md" >> $GITHUB_STEP_SUMMARY
+          if [ -f ../../docs/api/openapi.json ]; then
+            echo "- OpenAPI schema size: $(wc -c < ../../docs/api/openapi.json) bytes" >> $GITHUB_STEP_SUMMARY
+          fi
+
   lighthouse:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'NestLab-Tech'
@@ -538,7 +591,7 @@ jobs:
   pipeline_health:
     runs-on: ubuntu-latest
     if: always() && github.repository_owner == 'NestLab-Tech'
-    needs: [gitleaks, backend, frontend, security, audit, semgrep, trivy, compose_smoke, lighthouse, e2e]
+    needs: [gitleaks, backend, frontend, docs, security, audit, semgrep, trivy, compose_smoke, lighthouse, e2e]
     permissions:
       contents: read
     steps:
