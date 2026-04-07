@@ -274,6 +274,7 @@ async def chat_endpoint(
                     "Cache-Control": "no-cache",
                     "Connection": "keep-alive",
                     "X-Accel-Buffering": "no",  # Disable nginx buffering
+                    "X-AI-Generated": "true",  # EU AI Act compliance disclosure
                 },
             )
 
