@@ -359,6 +359,9 @@
     "description": "Zadawaj pytania o nieruchomości, dzielnice i trendy rynkowe.",
     "placeholder": "Wpisz swoją wiadomość...",
     "send": "Wyślij",
+    "aiLabel": "Asystent AI",
+    "aiDisclaimer": "Ta odpowiedź została wygenerowana przez AI. Zweryfikuj ważne informacje niezależnie.",
+    "aiDisclosureNotice": "Treść generowana przez AI może nie być zawsze dokładna. W przypadku ważnych decyzji skonsultuj się z profesjonalnym pośrednikiem lub doradcą nieruchomości.",
     "emptyState": {
       "title": "Rozpocznij rozmowę",
       "description": "Zapytaj mnie o wszystko związane z nieruchomościami.",
@@ -370,9 +373,93 @@
       "mortgage": "Jaka byłaby rata kredytu na 500 000 zł?",
       "investment": "Czy to dobra inwestycja w nieruchomość?"
     },
+    "loading": {
+      "thinking": "Mymślenie...",
+      "searching": "Wyszukiwanie nieruchomości...",
+      "analyzing": "Analizowanie danych rynkowych...",
+      "calculating": "Obliczanie...",
+      "generating": "Generowanie odpowiedzi...",
+      "connecting": "Łączenie z AI..."
+    },
+    "status": {
+      "streaming": "AI pisze...",
+      "processing": "Przetwarzanie zapytania...",
+      "retrieving": "Pobieranie informacji...",
+      "completing": "Prawie gotowe..."
+    },
     "errors": {
       "failed": "Nie udało się wysłać wiadomości",
-      "timeout": "Przekroczono czas żądania"
+      "timeout": "Przekroczono czas żądania",
+      "network": "Błąd sieci. Sprawdź swoje połączenie.",
+      "rateLimit": "Zbyt wiele zapytań. Poczekaj chwilę.",
+      "server": "Błąd serwera. Spróbuj ponownie później.",
+      "unauthorized": "Wymagane uwierzytelnienie. Zaloguj się.",
+      "forbidden": "Nie masz uprawnień do wykonania tej akcji.",
+      "notFound": "Nie znaleziono żądanego zasobu.",
+      "unknown": "Wystąpił nieznany błąd. Spróbuj ponownie.",
+      "apology": "Przepraszam, ale wystąpił błąd: {error}. Spróbuj ponownie."
+    },
+    "input": {
+      "placeholderStarted": "Zapytaj o nieruchomości, trendy rynkowe lub porady inwestycyjne...",
+      "placeholderEmpty": "Wpisz swoje pytanie, aby rozpocząć...",
+      "ariaLabel": "Wejście wiadomości czatu",
+      "ariaLabelSending": "Wysyłanie...",
+      "ariaLabelSend": "Wyślij wiadomość"
+    },
+    "sources": {
+      "title": "Cytaty",
+      "titleWithCount": "Cytaty ({count})",
+      "truncated": "(skrócone)",
+      "showSnippet": "Pokaż fragment",
+      "hideSnippet": "Ukryj fragment",
+      "snippetLength": "({chars} znaków)",
+      "source": "Źródło",
+      "validated": "Zweryfikowane",
+      "duplicate": "duplikat",
+      "confidence": "Pewność",
+      "confidenceScore": "Wynik pewności: {score}%",
+      "page": "s. {page}",
+      "chunk": "fragment {index}",
+      "summary": {
+        "total": "{count} ogółem",
+        "unique": "{count} unikalnych",
+        "duplicates": "{count} duplikatów",
+        "avgConfidence": "Śr. pewność: {score}%"
+      },
+      "types": {
+        "pdf": "PDF",
+        "docx": "DOCX",
+        "web": "Web",
+        "database": "Baza danych",
+        "api": "API",
+        "unknown": "Źródło"
+      }
+    },
+    "retry": {
+      "button": "Ponów",
+      "requestId": "request_id={id}"
+    },
+    "poweredBy": {
+      "title": "Obsługiwane przez:",
+      "description": "Routing wielu dostawców LLM z integracjami narzędzi do wyszukiwania, analizy cen i obliczeń kredytowych."
+    },
+    "debug": {
+      "trace": "Śledzenie debugowania ({count})",
+      "intermediateSteps": "Kroki pośrednie"
+    },
+    "emptyStates": {
+      "noHistory": {
+        "title": "Brak historii rozmów",
+        "description": "Rozpocznij nową rozmowę, zadając pytanie."
+      },
+      "noResults": {
+        "title": "Brak wyników",
+        "description": "Spróbuj sformułować pytanie inaczej lub dostosować kryteria wyszukiwania."
+      },
+      "noSources": {
+        "title": "Brak dostępnych źródeł",
+        "description": "AI nie znalazło odpowiednich źródeł dla tego zapytania."
+      }
     }
   },
   "favorites": {
