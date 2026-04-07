@@ -26,7 +26,7 @@ RESET := \033[0m
 .PHONY: help security security-quick test test-api test-web lint lint-api lint-web format
 .PHONY: docker-up docker-down docker-logs docker-build
 .PHONY: ci ci-quick dev dev-api dev-web setup clean install docs
-.PHONY: sprav sprav-quick sprav-json
+.PHONY: sprav sprav-quick sprav-json benchmark-search benchmark-chat
 
 # Default target
 .DEFAULT_GOAL := help
@@ -44,6 +44,7 @@ help: ## Show this help message
 	@echo ""
 	@echo "$(GREEN)Testing:$(RESET)"
 	@sed -n 's/^## test/\tmake &/p' $(MAKEFILE_LIST) | head -3
+	@sed -n 's/^## benchmark/\tmake &/p' $(MAKEFILE_LIST)
 	@echo ""
 	@echo "$(GREEN)Linting & Formatting:$(RESET)"
 	@sed -n 's/^## lint/\tmake &/p' $(MAKEFILE_LIST)
@@ -89,6 +90,14 @@ test: test-api test-web
 ## test-api: Run backend tests with coverage
 test-api:
 	cd apps/api && $(PYTHON) -m pytest tests/unit tests/integration --cov=. --cov-report=term -n auto
+
+## benchmark-search: Run search p95 benchmark tests (Task #50)
+benchmark-search:
+	cd apps/api && $(PYTHON) -m pytest tests/performance/test_search_p95.py -v -m benchmark
+
+## benchmark-chat: Run chat p95 benchmark tests (Task #51)
+benchmark-chat:
+	cd apps/api && $(PYTHON) -m pytest tests/performance/test_chat_p95.py -v -m benchmark
 
 ## test-web: Run frontend tests
 test-web:

@@ -332,12 +332,13 @@
         "description": "Add SSE streaming to the RAG /rag/qa endpoint. The chat endpoint already streams via SSE with heartbeats (utils/streaming.py). Wire the same infrastructure to RAG queries so users see results incrementally instead of waiting for full response.",
         "details": "1. Study existing streaming in apps/api/api/routers/chat.py (StreamingResponse + agent.astream_query)\n2. Study SSE utilities in apps/api/utils/streaming.py (HeartbeatConfig, StreamMetrics, format_sse_event)\n3. Modify apps/api/api/routers/rag.py /rag/qa to support streaming mode\n4. Add stream=true query parameter to RAG endpoint\n5. Implement chunked streaming of document retrieval + LLM response\n6. Frontend: Add streamRagQuery function in apps/web/src/lib/api.ts using existing HeartbeatMonitor, StreamBuffer from lib/streaming.ts\n7. Update RAG chat UI to consume streaming responses\n8. Tests: Add streaming RAG test in apps/api/tests/",
         "testStrategy": "",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "48"
         ],
         "priority": "high",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-04-07T22:07:12.629Z"
       },
       {
         "id": "50",
@@ -369,10 +370,11 @@
         "description": "Expand chat i18n coverage. Currently only 15 chat keys in en.json (681 total lines). Add comprehensive chat strings for all 3 languages (EN, PL, RU). Consolidates duplicate PRD tasks #135 and #139.",
         "details": "1. Audit all user-facing chat strings in apps/web/src/ chat components\n2. Extract hardcoded strings to translation keys\n3. Add ~20 new chat keys to apps/web/messages/en.json:\n   - Error messages, loading states, empty states\n   - Streaming status indicators\n   - Suggested prompts/quick actions\n   - Citation/source labels\n4. Add matching translations to apps/web/messages/pl.json\n5. Add matching translations to apps/web/messages/ru.json\n6. Backend: Check if chat response templates in apps/api/ need i18n\n7. Verify all 3 languages render correctly in chat UI",
         "testStrategy": "",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "medium",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-04-07T22:02:36.247Z"
       },
       {
         "id": "53",
@@ -380,12 +382,13 @@
         "description": "Add \"AI Assistant\" disclosure labels and AI-generated content disclaimers per EU AI Act requirements. Subsumes PRD tasks #136 and #138. This is a regulatory requirement for EU market.",
         "details": "1. Add \"AI Assistant\" label to chat page header (apps/web/src/app/[locale]/chat/page.tsx)\n2. Add AI-generated content disclaimer below chat responses\n3. Add disclosure notice in chat sidebar/about section\n4. Ensure label is visible and clear (not hidden in tooltip)\n5. Add i18n keys for all disclosure text (EN, PL, RU)\n6. Backend: Add X-AI-Generated header to chat API responses\n7. Document compliance measures in a compliance section of README or separate doc\n8. Tests: Verify label renders, header present",
         "testStrategy": "",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "52"
         ],
         "priority": "medium",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-04-07T22:04:09.442Z"
       },
       {
         "id": "54",
@@ -393,17 +396,18 @@
         "description": "Automate OpenAPI documentation generation in CI pipeline. The export routers (openapi_export.py, openapi_markdown.py) already exist. Wire them into CI to generate docs artifacts on every push to dev/main.",
         "details": "1. Review existing apps/api/api/routers/openapi_export.py and openapi_markdown.py\n2. Add CI step in .github/workflows/ci.yml:\n   - Generate OpenAPI JSON spec\n   - Generate Markdown docs\n   - Upload as workflow artifact\n3. Add make docs target to Makefile for local generation\n4. Ensure docs reflect current API surface (all routers)\n5. Add docs validation (check for broken links, missing descriptions)\n6. Consider auto-committing docs to a docs/ branch (optional)",
         "testStrategy": "",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "medium",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-04-07T22:02:36.231Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-04-07T21:58:54.443Z",
+      "lastModified": "2026-04-07T22:07:12.629Z",
       "taskCount": 30,
-      "completedCount": 24,
+      "completedCount": 28,
       "tags": [
         "master"
       ]

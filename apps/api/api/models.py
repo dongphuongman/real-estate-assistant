@@ -244,6 +244,9 @@ class RagQaRequest(BaseModel):
     citation_format: str = Field(
         default="inline", description="Citation format style: inline, footnote, or endnote"
     )
+    stream: bool = Field(
+        default=False, description="Enable SSE streaming of response chunks"
+    )
 
 
 class RagQaResponse(BaseModel):

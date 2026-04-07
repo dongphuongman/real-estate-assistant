@@ -1,7 +1,11 @@
+import json
 import logging
+import time
+import uuid
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, status
+from fastapi.responses import StreamingResponse
 from langchain_core.language_models import BaseChatModel
 
 from api.dependencies import get_knowledge_store, get_rag_qa_llm_details, parse_rag_qa_request
@@ -13,6 +17,13 @@ from utils.document_text_extractor import (
     OptionalDependencyMissingError,
     UnsupportedDocumentTypeError,
     extract_text_segments_from_upload,
+)
+from utils.streaming import (
+    HeartbeatConfig,
+    StreamMetrics,
+    format_sse_event,
+    format_sse_heartbeat,
+    should_send_heartbeat,
 )
 from vector_store.knowledge_store import KnowledgeStore
 
@@ -154,6 +165,7 @@ async def reset_rag_knowledge(
 @router.post("/rag/qa", tags=["RAG"], response_model=RagQaResponse)
 async def rag_qa(
     rag_request: Annotated[RagQaRequest, Depends(parse_rag_qa_request)],
+    req: Request,
     store: Annotated[Optional[KnowledgeStore], Depends(get_knowledge_store)],
     llm_details: Annotated[
         tuple[Optional[BaseChatModel], Optional[str], Optional[str]],
@@ -163,7 +175,11 @@ async def rag_qa(
     """
     Simple QA over uploaded knowledge with citations.
     If LLM is unavailable, returns concatenated context as answer.
+    Supports SSE streaming when stream=true.
     """
+    # Get request_id from middleware for correlation
+    request_id = getattr(req.state, "request_id", None) or str(uuid.uuid4())
+
     if not store:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -171,13 +187,14 @@ async def rag_qa(
         )
 
     llm, effective_provider, effective_model = llm_details
+    settings = get_settings()
 
     results = store.similarity_search_with_score(rag_request.question, k=rag_request.top_k)
     docs = [d for d, _s in results]
     scores = [s for _d, s in results]
 
     if not docs:
-        return {
+        empty_response = {
             "answer": "",
             "citations": [],
             "citation_format": rag_request.citation_format,
@@ -186,6 +203,23 @@ async def rag_qa(
             "provider": effective_provider,
             "model": effective_model,
         }
+        if rag_request.stream:
+            async def empty_stream():
+                yield "event: meta\n"
+                yield f"data: {json.dumps(empty_response)}\n\n"
+                yield "data: [DONE]\n\n"
+            return StreamingResponse(
+                empty_stream(),
+                media_type="text/event-stream",
+                headers={
+                    "X-Heartbeat-Interval": str(settings.stream_heartbeat_interval_seconds),
+                    "X-Stream-Timeout": str(settings.stream_timeout_seconds),
+                    "Cache-Control": "no-cache",
+                    "Connection": "keep-alive",
+                    "X-Accel-Buffering": "no",
+                },
+            )
+        return empty_response
 
     context = "\n\n".join([doc.page_content for doc in docs])
 
@@ -199,6 +233,107 @@ async def rag_qa(
     )
     citation_stats = citation_service.calculate_citation_stats(enhanced_citations)
 
+    # Prepare response data
+    base_response = {
+        "citations": enhanced_citations,
+        "citation_format": rag_request.citation_format,
+        "citation_stats": citation_stats,
+        "provider": effective_provider,
+        "model": effective_model,
+    }
+
+    if rag_request.stream:
+        async def streaming_response():
+            # Initialize streaming configuration
+            heartbeat_config = HeartbeatConfig(
+                interval_seconds=settings.stream_heartbeat_interval_seconds,
+                timeout_seconds=settings.stream_timeout_seconds,
+            )
+            stream_metrics = StreamMetrics(
+                session_id=str(uuid.uuid4()),
+                request_id=request_id,
+            )
+            last_heartbeat = time.time()
+
+            try:
+                # Send retrieval progress event
+                retrieval_event = {
+                    "type": "retrieval",
+                    "docs_retrieved": len(docs),
+                    "question": rag_request.question,
+                }
+                yield format_sse_event("progress", json.dumps(retrieval_event, default=str))
+
+                if llm:
+                    # Stream LLM response
+                    prompt = (
+                        "Answer the question based only on the following context.\n\n"
+                        f"{context}\n\nQuestion: {rag_request.question}\n\n"
+                        "If the answer cannot be found in the context, say you don't know."
+                    )
+
+                    # Check if LLM supports streaming
+                    if hasattr(llm, "astream"):
+                        stream_chunks = llm.astream(prompt)
+                        async for chunk in stream_chunks:
+                            # Check if heartbeat needed
+                            if should_send_heartbeat(last_heartbeat, heartbeat_config):
+                                yield format_sse_heartbeat()
+                                last_heartbeat = time.time()
+
+                            chunk_text = chunk.content if hasattr(chunk, "content") else str(chunk)
+                            chunk_bytes = len(chunk_text.encode("utf-8"))
+                            stream_metrics.record_chunk(chunk_bytes)
+                            yield f"data: {json.dumps({'content': chunk_text}, ensure_ascii=False)}\n\n"
+                    else:
+                        # Fallback to non-streaming invoke
+                        msg = llm.invoke(prompt)
+                        content = getattr(msg, "content", str(msg))
+                        yield f"data: {json.dumps({'content': content}, ensure_ascii=False)}\n\n"
+                        stream_metrics.record_chunk(len(content.encode("utf-8")))
+
+                    base_response["llm_used"] = True
+                else:
+                    # No LLM available, stream context snippet
+                    snippet = context[:500]
+                    yield f"data: {json.dumps({'content': snippet}, ensure_ascii=False)}\n\n"
+                    stream_metrics.record_chunk(len(snippet.encode("utf-8")))
+                    base_response["llm_used"] = False
+
+                # Mark stream as completed
+                stream_metrics.complete()
+
+                # Send meta event with full response
+                yield "event: meta\n"
+                yield f"data: {json.dumps(base_response, default=str)}\n\n"
+
+                # Send metrics event if enabled
+                if settings.stream_metrics_enabled:
+                    yield format_sse_event("metrics", json.dumps(stream_metrics.to_dict()))
+
+                yield "data: [DONE]\n\n"
+
+            except Exception as e:
+                stream_metrics.record_error()
+                logger.error(f"RAG stream error (request_id={request_id}): {e}")
+                error_payload = {"error": str(e), "request_id": request_id}
+                yield "event: error\n"
+                yield f"data: {json.dumps(error_payload)}\n\n"
+                yield "data: [DONE]\n\n"
+
+        return StreamingResponse(
+            streaming_response(),
+            media_type="text/event-stream",
+            headers={
+                "X-Heartbeat-Interval": str(settings.stream_heartbeat_interval_seconds),
+                "X-Stream-Timeout": str(settings.stream_timeout_seconds),
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "X-Accel-Buffering": "no",
+            },
+        )
+
+    # Non-streaming path
     if llm:
         try:
             prompt = (
@@ -208,26 +343,14 @@ async def rag_qa(
             )
             msg = llm.invoke(prompt)
             content = getattr(msg, "content", str(msg))
-            return {
-                "answer": content,
-                "citations": enhanced_citations,
-                "citation_format": rag_request.citation_format,
-                "citation_stats": citation_stats,
-                "llm_used": True,
-                "provider": effective_provider,
-                "model": effective_model,
-            }
+            base_response["answer"] = content
+            base_response["llm_used"] = True
+            return base_response
         except Exception as e:
             logger.warning("LLM invocation failed: %s", e)
 
     # Fallback: return context snippet
     snippet = context[:500]
-    return {
-        "answer": snippet,
-        "citations": enhanced_citations,
-        "citation_format": rag_request.citation_format,
-        "citation_stats": citation_stats,
-        "llm_used": False,
-        "provider": effective_provider,
-        "model": effective_model,
-    }
+    base_response["answer"] = snippet
+    base_response["llm_used"] = False
+    return base_response
