@@ -1,0 +1,34 @@
+'use client';
+
+import React from 'react';
+import { Bot, RefreshCw } from 'lucide-react';
+
+interface ChatErrorFallbackProps {
+  error?: Error | null;
+  onRetry?: () => void;
+}
+
+/**
+ * Chat-specific error fallback component (Task #68).
+ * Shows a friendly error message with retry option for chat failures.
+ */
+export function ChatErrorFallback({ error, onRetry }: ChatErrorFallbackProps) {
+  return (
+    <div className="flex flex-col items-center justify-center p-8 text-center border rounded-lg bg-muted/50">
+      <Bot className="h-10 w-10 text-muted-foreground mb-3" />
+      <h3 className="text-base font-semibold mb-1">Chat unavailable</h3>
+      <p className="text-sm text-muted-foreground mb-4 max-w-sm">
+        {error?.message || 'The AI assistant encountered an error. Please try again.'}
+      </p>
+      {onRetry && (
+        <button
+          onClick={onRetry}
+          className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+        >
+          <RefreshCw className="h-4 w-4" />
+          Retry
+        </button>
+      )}
+    </div>
+  );
+}

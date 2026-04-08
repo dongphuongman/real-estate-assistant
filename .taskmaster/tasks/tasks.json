@@ -560,11 +560,11 @@
         "description": "Create JSON admin dashboard endpoint aggregating health, cache, latency, and system stats for frontend admin panel.",
         "details": "1. Create api/routers/admin_dashboard.py with GET /admin/dashboard\n2. Aggregate: health status, cache stats, latency p95, vector store docs, uptime, memory\n3. Return JSON response for frontend consumption\n4. Protected by API key auth (same as other admin endpoints)\n5. Tests: endpoint returns all expected fields\n6. DoD: curl /admin/dashboard returns complete JSON with all metrics",
         "testStrategy": "1. GET /admin/dashboard returns 200 with JSON\n2. Response contains: health, cache, latency, vector_store, uptime, memory fields",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [],
         "priority": "low",
         "subtasks": [],
-        "updatedAt": "2026-04-08T21:05:29.853Z"
+        "updatedAt": "2026-04-08T21:10:52.627Z"
       },
       {
         "id": "68",
@@ -572,10 +572,11 @@
         "description": "Add React Error Boundaries and Next.js error pages. Currently a component crash shows white screen. Need graceful fallbacks.",
         "details": "1. Create components/ErrorBoundary.tsx — generic class component error boundary\n2. Create components/ChatErrorFallback.tsx — chat-specific retry UI\n3. Wrap chat, search, and map components with ErrorBoundary\n4. Add app/error.tsx (Next.js App Router error boundary)\n5. Add app/not-found.tsx (custom 404 page)\n6. DoD: Component crash shows fallback UI, not white screen",
         "testStrategy": "1. Trigger error in chat component — fallback renders\n2. Navigate to /nonexistent — 404 page shows\n3. No white screen on any error",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [],
         "priority": "low",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-04-08T21:10:52.647Z"
       },
       {
         "id": "69",
@@ -593,9 +594,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-04-08T21:05:29.853Z",
+      "lastModified": "2026-04-08T21:10:52.648Z",
       "taskCount": 45,
-      "completedCount": 42,
+      "completedCount": 43,
       "tags": [
         "master"
       ]

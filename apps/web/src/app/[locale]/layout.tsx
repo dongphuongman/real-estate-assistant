@@ -7,6 +7,7 @@ import { SkipNav } from '@/components/layout/SkipNav';
 import { Providers } from '@/components/providers';
 import { InstallPrompt } from '@/components/pwa/install-prompt';
 import { UpdateBanner } from '@/components/pwa/update-banner';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { locales, type Locale } from '@/i18n/config';
 
 const geistSans = Geist({
@@ -167,7 +168,7 @@ export default async function LocaleLayout({
               </div>
             </header>
             <main id="main-content" className="flex-1">
-              {children}
+              <ErrorBoundary>{children}</ErrorBoundary>
             </main>
             <InstallPrompt />
           </Providers>
