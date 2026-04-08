@@ -112,6 +112,11 @@ add_request_size_limits(app)
 add_csrf_middleware(app)
 add_error_handlers(app)
 
+# Rate limiting (Task #62)
+from api.middleware.rate_limit import add_rate_limit_middleware
+
+add_rate_limit_middleware(app)
+
 # Audit middleware (Task #95) — conditionally enabled with JWT auth
 if settings.auth_jwt_enabled:
     from api.middleware.audit import add_audit_middleware
