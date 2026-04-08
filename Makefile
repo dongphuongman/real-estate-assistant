@@ -23,7 +23,7 @@ GREEN := \033[32m
 RESET := \033[0m
 
 # Phony targets
-.PHONY: help security security-quick test test-api test-web lint lint-api lint-web format
+.PHONY: help security security-quick test test-api test-web e2e lint lint-api lint-web format
 .PHONY: docker-up docker-down docker-logs docker-build
 .PHONY: ci ci-quick dev dev-api dev-web setup clean install docs
 .PHONY: sprav sprav-quick sprav-json benchmark-search benchmark-chat
@@ -102,6 +102,10 @@ benchmark-chat:
 ## test-web: Run frontend tests
 test-web:
 	cd apps/web && npm test
+
+## e2e: Run backend E2E tests
+e2e:
+	cd apps/api && $(PYTHON) -m pytest tests/e2e_backend -v
 
 ## ============================================================================
 ## LINTING & FORMATTING
