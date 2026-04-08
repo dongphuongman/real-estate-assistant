@@ -265,6 +265,11 @@ async def list_documents(
     session: AsyncSession = Depends(get_db),
 ) -> DocumentListResponse:
     """List documents for the current user."""
+    # Validate sort_by to prevent attribute access on unexpected ORM fields
+    _allowed_doc_sort = {"created_at", "updated_at", "filename", "file_size", "category"}
+    if sort_by not in _allowed_doc_sort:
+        raise HTTPException(status_code=400, detail=f"Invalid sort field: {sort_by}")
+
     repo = DocumentRepository(session)
 
     offset = (page - 1) * page_size

@@ -622,7 +622,9 @@ async def resend_verification(
     # Send verification email
     settings = get_settings()
     if settings.environment.lower() == "development":
-        logger.info(f"Verification token for {email}: {verification_token}")
+        logger.info(
+            f"Verification token generated for {email} (prefix: {verification_token[:4]}...)"
+        )
 
     # Send email using email service
     email_service = get_email_service()
@@ -686,7 +688,7 @@ async def forgot_password(
     # Send reset email
     settings = get_settings()
     if settings.environment.lower() == "development":
-        logger.info(f"Password reset token for {email}: {reset_token}")
+        logger.info(f"Password reset token generated for {email} (prefix: {reset_token[:4]}...)")
 
     # Send email using email service
     email_service = get_email_service()

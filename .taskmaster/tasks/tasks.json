@@ -432,7 +432,7 @@
         "id": "57",
         "title": "Production Monitoring Dashboard",
         "description": "Create Prometheus-compatible /metrics endpoint and Grafana dashboard templates. Configure alerting rules for p95 latency targets. Depends on APM task.",
-        "status": "in-progress",
+        "status": "done",
         "priority": "medium",
         "dependencies": [
           "56"
@@ -440,7 +440,7 @@
         "details": "1. Enhance apps/api/api/routers/metrics.py for Prometheus scraping\n2. Add counters: search_requests, chat_requests, cache_hits, cache_misses\n3. Add histograms: search_latency, chat_latency, rag_latency\n4. Add gauges: active_sessions, vector_store_size\n5. Create deploy/monitoring/grafana/ dashboard JSON templates\n6. Create deploy/monitoring/alerts/ with Prometheus alert rules\n7. Add LLM provider cost tracking metrics\n8. Documentation in docs/ on how to deploy monitoring stack",
         "testStrategy": "1. Verify /metrics returns Prometheus format\n2. Verify counters increment on requests\n3. Verify histogram buckets populated\n4. Validate Grafana dashboard JSON imports correctly",
         "subtasks": [],
-        "updatedAt": "2026-04-08T18:22:14.167Z"
+        "updatedAt": "2026-04-08T18:31:25.088Z"
       },
       {
         "id": "58",
@@ -472,7 +472,7 @@
         "id": "60",
         "title": "Security Audit — Production Gate",
         "description": "PRD Phase 2 gate. Run full security scan, fix findings, verify OWASP top 10 compliance.",
-        "status": "pending",
+        "status": "in-progress",
         "priority": "medium",
         "dependencies": [
           "58"
@@ -480,7 +480,7 @@
         "details": "1. Run make security (Gitleaks, Semgrep, Bandit, pip-audit)\n2. Run npm audit for frontend\n3. Fix all critical and high findings\n4. OWASP Top 10 verification: injection, auth, XSS, SSRF, secrets\n5. Run Trivy container scan\n6. Verify security headers (CSP, HSTS, X-Frame-Options)\n7. Test rate limiting on auth endpoints\n8. DoD: Zero critical/high findings, all medium documented",
         "testStrategy": "1. make security passes with zero critical/high\n2. npm audit shows no critical vulnerabilities\n3. Security headers present in all responses",
         "subtasks": [],
-        "updatedAt": "2026-04-08T11:55:00.000Z"
+        "updatedAt": "2026-04-08T18:31:35.852Z"
       },
       {
         "id": "61",
@@ -497,9 +497,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-04-08T18:22:14.167Z",
+      "lastModified": "2026-04-08T18:31:35.852Z",
       "taskCount": 37,
-      "completedCount": 35,
+      "completedCount": 36,
       "tags": [
         "master"
       ]

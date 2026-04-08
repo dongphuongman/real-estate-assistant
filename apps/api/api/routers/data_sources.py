@@ -388,11 +388,28 @@ def _validate_config(source_type: str, config: dict[str, Any]) -> None:
             raise ValueError("File upload source requires 'filename' in config")
 
 
+def _validate_url_no_ssrf(url: str) -> None:
+    """Validate that a URL does not target internal/private networks (SSRF protection)."""
+    from urllib.parse import urlparse
+
+    from utils.web_fetch import _hostname_resolves_to_public_ip
+
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"}:
+        raise ValueError("Only http and https URLs are allowed")
+    hostname = parsed.hostname
+    if not hostname:
+        raise ValueError("Invalid URL: no hostname")
+    if not _hostname_resolves_to_public_ip(hostname):
+        raise ValueError("URL hostname resolves to a private/internal address — not allowed")
+
+
 async def _test_url_source(config: dict[str, Any]) -> DataSourceTestResponse:
     """Test a URL-based data source."""
     import httpx
 
     url = config.get("url", "")
+    _validate_url_no_ssrf(url)
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.head(url)

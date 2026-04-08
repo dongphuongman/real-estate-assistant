@@ -71,7 +71,7 @@
     "cross-spawn": "7.0.5",
     "glob": "10.5.0",
     "tar": "7.5.4",
-    "flatted": "3.3.4",
+    "flatted": "3.4.2",
     "serialize-javascript": ">=7.0.3",
     "pify": "5.0.0",
     "globby": "11.1.0"

@@ -11,14 +11,19 @@ from config.settings import get_settings
 
 def get_jwt_secret() -> str:
     """Get JWT secret key from settings."""
+    import logging
+
     settings = get_settings()
     secret = settings.jwt_secret_key
     if not secret:
-        # Generate a random secret for development (not for production!)
         if settings.environment.lower() == "production":
             raise ValueError("JWT_SECRET_KEY must be set in production")
-        # Use a deterministic secret for development to allow token persistence across restarts
-        secret = "dev-jwt-secret-key-change-in-production"
+        # Generate a random secret for development (tokens won't persist across restarts)
+        secret = secrets.token_hex(32)
+        logging.getLogger(__name__).warning(
+            "JWT_SECRET_KEY not set — using generated secret. "
+            "Tokens will not persist across restarts."
+        )
     return secret
 
 

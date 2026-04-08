@@ -107,6 +107,20 @@ async def list_agents(
     session: AsyncSession = Depends(get_db),
 ) -> AgentProfileListResponse:
     """List agents with pagination and filters."""
+    # Validate sort_by to prevent attribute access on unexpected ORM fields
+    _allowed_agent_sort = {
+        "rating",
+        "listings",
+        "reviews",
+        "created",
+        "created_at",
+        "average_rating",
+        "total_sales",
+        "total_reviews",
+    }
+    if sort_by not in _allowed_agent_sort:
+        raise HTTPException(status_code=400, detail=f"Invalid sort field: {sort_by}")
+
     agent_repo = AgentProfileRepository(session)
 
     offset = (page - 1) * page_size
