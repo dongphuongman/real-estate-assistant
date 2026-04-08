@@ -73,6 +73,14 @@ def _create_llm_with_resolved_model_id(
                 raise RuntimeError(f"No models available for provider '{provider_name}'")
             resolved_model_id = models[0].id
 
+    # Add Sentry breadcrumb for LLM creation (Task #56)
+    try:
+        from api.sentry_init import add_llm_breadcrumb
+
+        add_llm_breadcrumb(provider=provider_name, model=resolved_model_id)
+    except Exception:
+        pass
+
     llm = factory_provider.create_model(
         model_id=resolved_model_id,
         temperature=settings.default_temperature,
@@ -191,9 +199,7 @@ async def get_llm_for_task(
     # 2. Fall back to legacy global preferences
     if not primary_provider and x_user_email and x_user_email.strip():
         try:
-            prefs = user_model_preferences.MODEL_PREFS_MANAGER.get_preferences(
-                x_user_email.strip()
-            )
+            prefs = user_model_preferences.MODEL_PREFS_MANAGER.get_preferences(x_user_email.strip())
             if prefs.preferred_provider:
                 primary_provider = prefs.preferred_provider
                 primary_model = prefs.preferred_model

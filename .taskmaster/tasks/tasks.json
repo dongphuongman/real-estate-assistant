@@ -420,13 +420,13 @@
         "id": "56",
         "title": "APM & Error Tracking (Sentry)",
         "description": "Integrate Sentry SDK for error tracking and performance monitoring. Add custom metrics for search/chat latency. Configure source maps for frontend.",
-        "status": "pending",
+        "status": "in-progress",
         "priority": "medium",
         "dependencies": [],
         "details": "1. Backend: pip install sentry-sdk[fastapi]\n2. Initialize Sentry in apps/api/api/main.py with DSN from env\n3. Add performance monitoring (transactions for search, chat, RAG)\n4. Add custom breadcrumbs for LLM provider calls\n5. Filter PII from error reports (redact user emails, queries)\n6. Frontend: npm install @sentry/nextjs\n7. Configure Sentry in apps/web/next.config.ts\n8. Add source map upload on build\n9. Add SENTRY_DSN to .env.example\n10. Configure sampling rates (errors 100%, transactions 20%)",
         "testStrategy": "1. Verify Sentry captures a test exception on backend\n2. Verify Sentry captures a frontend error\n3. Check PII redaction works\n4. Verify performance transactions appear in Sentry dashboard",
         "subtasks": [],
-        "updatedAt": "2026-04-08T11:55:00.000Z"
+        "updatedAt": "2026-04-08T18:08:07.135Z"
       },
       {
         "id": "57",
@@ -458,7 +458,7 @@
         "id": "59",
         "title": "E2E Validation Suite",
         "description": "PRD Phase 2 gate. Create comprehensive end-to-end tests for all critical user flows: search, chat, auth, favorites, leads, documents.",
-        "status": "in-progress",
+        "status": "done",
         "priority": "high",
         "dependencies": [
           "58"
@@ -466,7 +466,7 @@
         "details": "1. Set up E2E framework: apps/api/tests/e2e/ (pytest + httpx)\n2. Create test fixtures for full app lifecycle\n3. Critical flow tests: search, chat, RAG, auth, favorites, leads\n4. Frontend E2E (optional): Playwright for critical pages\n5. Add make e2e target\n6. DoD: All E2E tests pass consistently",
         "testStrategy": "1. All E2E tests pass against running app\n2. Tests are deterministic (no flaky tests)\n3. Tests cover all critical user flows",
         "subtasks": [],
-        "updatedAt": "2026-04-08T17:56:02.148Z"
+        "updatedAt": "2026-04-08T18:07:42.160Z"
       },
       {
         "id": "60",
@@ -497,9 +497,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-04-08T17:56:02.148Z",
+      "lastModified": "2026-04-08T18:08:07.135Z",
       "taskCount": 37,
-      "completedCount": 32,
+      "completedCount": 33,
       "tags": [
         "master"
       ]

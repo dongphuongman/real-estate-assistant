@@ -40,6 +40,8 @@ dependencies = [
     "lxml>=4.9.0",
     # Response caching (Task #55)
     "redis>=5.0.0",
+    # Error tracking & APM (Task #56)
+    "sentry-sdk[fastapi]>=2.0.0",
 ]
 
 [project.optional-dependencies]

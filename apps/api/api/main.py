@@ -89,6 +89,11 @@ logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
+# Initialize Sentry error tracking (Task #56)
+from api.sentry_init import init_sentry
+
+init_sentry()
+
 app = FastAPI(
     title=settings.app_title,
     version=settings.version,

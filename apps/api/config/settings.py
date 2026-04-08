@@ -401,6 +401,17 @@ class AppSettings(BaseModel):
         default_factory=lambda: int(os.getenv("DB_POOL_RECYCLE_SECONDS", "3600"))
     )
 
+    # Sentry Error Tracking & APM (Task #56)
+    sentry_dsn: Optional[str] = Field(default_factory=lambda: os.getenv("SENTRY_DSN"))
+    sentry_traces_sample_rate: float = Field(
+        default_factory=lambda: float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.2"))
+    )
+    sentry_environment: str = Field(
+        default_factory=lambda: os.getenv(
+            "SENTRY_ENVIRONMENT", os.getenv("ENVIRONMENT", "development")
+        )
+    )
+
     # Data Loading
     max_properties: int = 2000
     batch_size: int = 100
