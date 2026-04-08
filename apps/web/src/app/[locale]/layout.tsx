@@ -68,6 +68,22 @@ export async function generateMetadata({
         ru: '/ru',
       },
     },
+    openGraph: {
+      title: titles[locale as Locale] || titles.en,
+      description: descriptions[locale as Locale] || descriptions.en,
+      siteName: 'AI Real Estate Assistant',
+      locale: locale === 'pl' ? 'pl_PL' : locale === 'ru' ? 'ru_RU' : 'en_US',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: titles[locale as Locale] || titles.en,
+      description: descriptions[locale as Locale] || descriptions.en,
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
     manifest: '/manifest.json',
     themeColor: '#2563eb',
     appleWebApp: {
@@ -101,6 +117,24 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebApplication',
+              name: 'AI Real Estate Assistant',
+              description: 'Next-gen real estate search and analytics',
+              applicationCategory: 'BusinessApplication',
+              operatingSystem: 'Web',
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'EUR',
+              },
+            }),
+          }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `

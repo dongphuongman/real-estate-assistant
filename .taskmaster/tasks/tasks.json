@@ -536,11 +536,11 @@
         "description": "Create concurrent load tests with baseline benchmarks. Existing performance tests are mock-based. Need real concurrent request simulation.",
         "details": "1. Create tests/performance/test_load_concurrent.py — asyncio-based concurrent requests\n2. Test 50 concurrent search requests, assert p95 < 2000ms SLA\n3. Test 20 concurrent chat requests, assert p95 < 8000ms SLA\n4. Document baseline numbers in docs/performance_baselines.md\n5. Add make load-test target to Makefile\n6. DoD: Load tests pass, baselines documented",
         "testStrategy": "1. make load-test passes\n2. p95 latencies within SLA targets\n3. docs/performance_baselines.md exists with numbers",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [],
         "priority": "medium",
         "subtasks": [],
-        "updatedAt": "2026-04-08T20:54:42.298Z"
+        "updatedAt": "2026-04-08T21:01:56.650Z"
       },
       {
         "id": "66",
@@ -548,10 +548,11 @@
         "description": "Add SEO fundamentals: Open Graph meta tags, sitemap.xml, robots.txt, JSON-LD structured data for property listings.",
         "details": "1. Add metadata with Open Graph tags to app/layout.tsx (title, description, og:image)\n2. Create public/robots.txt (allow all, reference sitemap)\n3. Create app/sitemap.ts (Next.js App Router dynamic sitemap)\n4. Add JSON-LD structured data for property listings\n5. DoD: Lighthouse SEO score > 90, meta tags render correctly",
         "testStrategy": "1. View page source — og:title, og:description present\n2. /sitemap.xml returns valid XML\n3. /robots.txt returns allow all",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [],
         "priority": "low",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-04-08T21:02:25.520Z"
       },
       {
         "id": "67",
@@ -591,9 +592,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-04-08T20:54:42.298Z",
+      "lastModified": "2026-04-08T21:02:25.520Z",
       "taskCount": 45,
-      "completedCount": 40,
+      "completedCount": 41,
       "tags": [
         "master"
       ]
