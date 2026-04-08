@@ -500,11 +500,11 @@
         "description": "Implement IP-based sliding window rate limiting middleware. Docker-compose already has API_RATE_LIMIT_ENABLED and API_RATE_LIMIT_RPM env vars but no actual middleware. Need working rate limiter that returns 429 with Retry-After header.",
         "details": "1. Create api/middleware/rate_limit.py with in-memory sliding window rate limiter\n2. Global default rate limit from settings (API_RATE_LIMIT_RPM, default 600)\n3. Stricter limits on auth endpoints (20 RPM for login, register, password reset)\n4. Return 429 Too Many Requests with Retry-After header when exceeded\n5. Wire in main.py startup: create RateLimiter, store on app.state.rate_limiter\n6. Add rate_limit middleware to main.py middleware stack\n7. Add tests: rate limit triggers, auth endpoints stricter, Retry-After header present\n8. DoD: All tests pass, rate limiting enforced, metrics show rate_limiter stats",
         "testStrategy": "1. Send 600+ requests in 1 minute — expect 429 on request 601\n2. Send 20+ auth requests — expect 429 on request 21\n3. Verify Retry-After header present in 429 response\n4. Verify metrics endpoint shows rate_limiter_enabled=1",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [],
         "priority": "high",
         "subtasks": [],
-        "updatedAt": "2026-04-08T20:42:35.217Z"
+        "updatedAt": "2026-04-08T20:46:17.246Z"
       },
       {
         "id": "63",
@@ -512,10 +512,11 @@
         "description": "Add Alembic migration validation to CI pipeline. Ensure migrations are consistent and can upgrade/downgrade cleanly.",
         "details": "1. Add make migrate-check target (runs alembic check)\n2. Add alembic upgrade head + alembic downgrade base to CI workflow as a new job\n3. Generate requirements.txt from pyproject.toml for Docker reproducibility\n4. Ensure the existing initial migration is valid\n5. DoD: CI validates migrations on every push, make migrate-check works locally",
         "testStrategy": "1. make migrate-check succeeds\n2. CI migration job passes\n3. alembic upgrade head && alembic downgrade base cycle works",
-        "status": "pending",
+        "status": "done",
         "dependencies": [],
         "priority": "medium",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-04-08T20:50:19.141Z"
       },
       {
         "id": "64",
@@ -523,10 +524,11 @@
         "description": "Harden Docker configuration for production: non-root user, resource limits, .dockerignore optimization.",
         "details": "1. Add non-root USER app to Dockerfile.backend (create user, chown files)\n2. Add deploy.resources.limits to backend/frontend in docker-compose.yml (memory: 512MB backend, 256MB frontend)\n3. Create/update .dockerignore for backend and frontend\n4. DoD: Docker build succeeds, containers run as non-root, resource limits set",
         "testStrategy": "1. docker compose build succeeds\n2. docker compose up — health checks pass\n3. Verify backend runs as non-root user (docker exec whoami)",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [],
         "priority": "medium",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-04-08T20:50:19.165Z"
       },
       {
         "id": "65",
@@ -588,9 +590,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-04-08T20:42:35.217Z",
+      "lastModified": "2026-04-08T20:50:19.165Z",
       "taskCount": 45,
-      "completedCount": 37,
+      "completedCount": 39,
       "tags": [
         "master"
       ]
