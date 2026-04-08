@@ -408,13 +408,13 @@
         "id": "55",
         "title": "Redis Response Caching",
         "description": "Implement Redis-backed response caching for search and RAG endpoints. Redis URL config already exists in settings.py (line 367). Wire into dependencies.py and routers. Add cache invalidation on data changes. Configure TTL per endpoint type.",
-        "status": "in-progress",
+        "status": "done",
         "priority": "high",
         "dependencies": [],
         "details": "1. Create apps/api/core/cache.py with RedisCacheManager class\n2. Implement response caching for search (TTL 5min), RAG (TTL 10min), property detail (TTL 15min)\n3. Wire into apps/api/api/dependencies.py via Depends()\n4. Add cache invalidation in admin router (on data reload)\n5. Add CACHE_ENABLED, CACHE_DEFAULT_TTL settings\n6. Graceful fallback when Redis unavailable (in-memory TTL cache)\n7. Add cache hit/miss metrics to observability\n8. Tests: unit tests for cache manager, integration tests with mock Redis",
         "testStrategy": "1. Unit tests for RedisCacheManager (set/get/invalidate)\n2. Integration tests verify cached responses are returned\n3. Test cache invalidation on admin data reload\n4. Test graceful fallback when Redis is down\n5. Verify cache headers in response (X-Cache: HIT/MISS)",
         "subtasks": [],
-        "updatedAt": "2026-04-08T16:54:50.936Z"
+        "updatedAt": "2026-04-08T17:16:47.651Z"
       },
       {
         "id": "56",
@@ -446,13 +446,13 @@
         "id": "58",
         "title": "Test Coverage Gate — 90%+ Coverage",
         "description": "PRD Phase 2 gate. Audit current test coverage, add missing tests, configure coverage gates in CI pipeline.",
-        "status": "pending",
+        "status": "in-progress",
         "priority": "high",
         "dependencies": [],
         "details": "1. Run coverage report: cd apps/api && pytest --cov=. --cov-report=html\n2. Run frontend coverage: cd apps/web && npm run test:ci\n3. Identify modules below 90% coverage\n4. Priority areas: api/routers/, services/, agents/, tools/\n5. Add missing tests in tests/unit/ and tests/integration/\n6. Configure coverage gate in CI: backend 90%, frontend 80%\n7. Add coverage badge to README\n8. DoD: All CI gates pass with 90%+ backend, 80%+ frontend coverage",
         "testStrategy": "1. Backend: pytest --cov=. --cov-fail-under=90 passes\n2. Frontend: npm run test:ci with 80%+ coverage\n3. CI pipeline green with coverage gates active",
         "subtasks": [],
-        "updatedAt": "2026-04-08T11:55:00.000Z"
+        "updatedAt": "2026-04-08T17:17:24.477Z"
       },
       {
         "id": "59",
@@ -497,9 +497,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-04-08T16:54:50.937Z",
+      "lastModified": "2026-04-08T17:17:24.477Z",
       "taskCount": 37,
-      "completedCount": 30,
+      "completedCount": 31,
       "tags": [
         "master"
       ]
