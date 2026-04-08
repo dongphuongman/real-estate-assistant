@@ -38,6 +38,15 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Admin"])
 
+
+async def _invalidate_response_cache(request: Request) -> None:
+    """Clear response cache after data mutations (Task #55)."""
+    cache = getattr(request.app.state, "response_cache", None)
+    if cache:
+        await cache.clear_all()
+        logger.info("Response cache invalidated after data mutation")
+
+
 # File upload constants
 _READ_CHUNK_BYTES = 1024 * 1024  # 1MB chunks
 _MAX_UPLOAD_FILE_BYTES = 25 * 1024 * 1024  # 25MB max file size
@@ -71,7 +80,7 @@ async def admin_version_info() -> AdminVersionInfo:
 
 
 @router.post("/admin/ingest", response_model=IngestResponse)
-async def ingest_data(request: IngestRequest):
+async def ingest_data(request: IngestRequest, http_request: Request):
     """
     Trigger data ingestion from URLs.
     Downloads CSV/Excel files, processes them, and saves to local cache.
@@ -187,6 +196,8 @@ async def ingest_data(request: IngestRequest):
     except Exception as e:
         logger.error(f"Ingestion failed: {e}")
         raise HTTPException(status_code=500, detail=str(e)) from e
+    finally:
+        await _invalidate_response_cache(http_request)
 
 
 @router.post("/admin/excel/sheets", response_model=ExcelSheetsResponse)
@@ -317,6 +328,7 @@ async def get_excel_sheets_upload(
 
 @router.post("/admin/ingest/upload", response_model=IngestResponse)
 async def ingest_file_upload(
+    http_request: Request,
     file: UploadFile = File(..., description="Excel or CSV file to ingest"),
     sheet_name: Optional[str] = Form(None, description="Sheet name for Excel files"),
     header_row: int = Form(0, ge=0, description="Header row (0-indexed)"),
@@ -433,11 +445,13 @@ async def ingest_file_upload(
     finally:
         # Clean up temp file
         Path(tmp_path).unlink(missing_ok=True)
+        await _invalidate_response_cache(http_request)
 
 
 @router.post("/admin/reindex", response_model=ReindexResponse)
 async def reindex_data(
     request: ReindexRequest,
+    http_request: Request,
     store: Annotated[ChromaPropertyStore, Depends(get_vector_store)],
 ):
     """
@@ -468,6 +482,8 @@ async def reindex_data(
     except Exception as e:
         logger.error(f"Reindexing failed: {e}")
         raise HTTPException(status_code=500, detail=str(e)) from e
+    finally:
+        await _invalidate_response_cache(http_request)
 
 
 @router.get("/admin/health", response_model=HealthCheck)
@@ -606,7 +622,7 @@ async def list_portals():
 
 
 @router.post("/admin/portals/fetch", response_model=PortalIngestResponse)
-async def fetch_from_portal(request: PortalFiltersRequest):
+async def fetch_from_portal(request: PortalFiltersRequest, http_request: Request):
     """
     Fetch property data from an external portal.
 
@@ -729,6 +745,8 @@ async def fetch_from_portal(request: PortalFiltersRequest):
     except Exception as e:
         logger.error(f"Portal fetch failed: {e}")
         raise HTTPException(status_code=500, detail=str(e)) from e
+    finally:
+        await _invalidate_response_cache(http_request)
 
 
 def _get_available_portal_names() -> list[str]:

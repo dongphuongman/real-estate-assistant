@@ -1,8 +1,11 @@
+import hashlib
+import json
 import logging
 import math
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.responses import JSONResponse
 
 from api.dependencies import get_vector_store
 from api.models import (
@@ -99,12 +102,28 @@ def _convert_explanation_to_response(
 
 @router.post("/search", response_model=SearchResponse, tags=["Search"])
 async def search_properties(
-    request: SearchRequest,
+    request_body: SearchRequest,
+    http_request: Request,
     store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
 ):
     """
     Search for properties using semantic search and metadata filters.
+    Results are cached for 5 minutes (TTL 300s).
     """
+    # Check response cache (Task #55)
+    cache = getattr(http_request.app.state, "response_cache", None)
+    if cache:
+        body_hash = hashlib.sha256(
+            json.dumps(request_body.model_dump(), sort_keys=True, default=str).encode()
+        ).hexdigest()[:16]
+        cached = await cache.get(http_request, body_hash=body_hash)
+        if cached:
+            response_data = cached.data
+            if isinstance(response_data, dict) and "results" in response_data:
+                resp = JSONResponse(content=response_data)
+                resp.headers["X-Cache"] = "HIT"
+                return resp
+
     if not store:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -116,7 +135,7 @@ async def search_properties(
 
     # Sanitize search query to prevent injection attacks
     try:
-        sanitized_query = sanitize_search_query(request.query)
+        sanitized_query = sanitize_search_query(request_body.query)
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -124,8 +143,8 @@ async def search_properties(
         ) from None
 
     # Validate polygon if provided
-    if request.polygon:
-        polygon_error = _validate_polygon(request.polygon)
+    if request_body.polygon:
+        polygon_error = _validate_polygon(request_body.polygon)
         if polygon_error:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -137,19 +156,19 @@ async def search_properties(
         async def _do_search():
             return store.hybrid_search(
                 query=sanitized_query,
-                k=request.limit,
-                filters=request.filters,
-                alpha=request.alpha,
-                lat=request.lat,
-                lon=request.lon,
-                radius_km=request.radius_km,
-                min_lat=request.min_lat,
-                max_lat=request.max_lat,
-                min_lon=request.min_lon,
-                max_lon=request.max_lon,
-                polygon=request.polygon,
-                sort_by=request.sort_by.value if request.sort_by else None,
-                sort_order=request.sort_order.value if request.sort_order else None,
+                k=request_body.limit,
+                filters=request_body.filters,
+                alpha=request_body.alpha,
+                lat=request_body.lat,
+                lon=request_body.lon,
+                radius_km=request_body.radius_km,
+                min_lat=request_body.min_lat,
+                max_lat=request_body.max_lat,
+                min_lon=request_body.min_lon,
+                max_lon=request_body.max_lon,
+                polygon=request_body.polygon,
+                sort_by=request_body.sort_by.value if request_body.sort_by else None,
+                sort_order=request_body.sort_order.value if request_body.sort_order else None,
             )
 
         try:
@@ -162,12 +181,12 @@ async def search_properties(
 
         # Generate explanations if requested
         explanations = []
-        if request.include_explanation:
+        if request_body.include_explanation:
             explainer = create_ranking_explainer()
             explanations = explainer.explain_results(
                 results=results,
                 query=sanitized_query,
-                user_criteria=request.filters,
+                user_criteria=request_body.filters,
             )
 
         items = []
@@ -191,7 +210,7 @@ async def search_properties(
 
                 # Include explanation if available
                 explanation_model = None
-                if request.include_explanation and idx < len(explanations):
+                if request_body.include_explanation and idx < len(explanations):
                     explanation_model = _convert_explanation_to_response(explanations[idx])
 
                 items.append(
@@ -205,7 +224,18 @@ async def search_properties(
                 logger.warning(f"Failed to parse property from search result: {e}")
                 continue
 
-        return SearchResponse(results=items, count=len(items))
+        response = SearchResponse(results=items, count=len(items))
+
+        # Store in cache (Task #55)
+        if cache:
+            await cache.set(
+                http_request,
+                data=response.model_dump(),
+                status_code=200,
+                body_hash=body_hash,
+            )
+
+        return response
 
     except Exception as e:
         logger.error(f"Search failed: {e}")

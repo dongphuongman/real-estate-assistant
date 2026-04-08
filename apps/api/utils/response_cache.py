@@ -273,6 +273,8 @@ class ResponseCache:
     ) -> None:
         self._config = config
         self._backend: Optional[RedisCache | InMemoryCache] = None
+        self._hits: int = 0
+        self._misses: int = 0
 
         if redis_url and config.enabled:
             self._backend = RedisCache(
@@ -324,6 +326,7 @@ class ResponseCache:
         entry = self._backend.get(key)
 
         if entry:
+            self._hits += 1
             logger.debug(
                 "Cache HIT: %s %s (age: %.1fs)",
                 request.method,
@@ -332,6 +335,7 @@ class ResponseCache:
             )
             return entry
 
+        self._misses += 1
         logger.debug("Cache MISS: %s %s", request.method, request.url.path)
         return None
 
@@ -400,6 +404,11 @@ class ResponseCache:
             "backend": "redis" if isinstance(self._backend, RedisCache) else "memory",
             "size": self._backend.size(),
             "ttl_seconds": self._config.ttl_seconds,
+            "hits": self._hits,
+            "misses": self._misses,
+            "hit_rate": self._hits / (self._hits + self._misses)
+            if (self._hits + self._misses) > 0
+            else 0.0,
         }
 
 

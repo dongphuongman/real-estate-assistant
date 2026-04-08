@@ -132,6 +132,30 @@ async def get_metrics(request: Request) -> Response:
                 help_text="Cache TTL in seconds",
             )
         )
+        metrics_lines.append(
+            format_prometheus_metric(
+                "cache_hits_total",
+                cache_stats.get("hits", 0),
+                metric_type="counter",
+                help_text="Total cache hits",
+            )
+        )
+        metrics_lines.append(
+            format_prometheus_metric(
+                "cache_misses_total",
+                cache_stats.get("misses", 0),
+                metric_type="counter",
+                help_text="Total cache misses",
+            )
+        )
+        metrics_lines.append(
+            format_prometheus_metric(
+                "cache_hit_rate",
+                cache_stats.get("hit_rate", 0.0),
+                metric_type="gauge",
+                help_text="Cache hit rate (0.0 to 1.0)",
+            )
+        )
 
     # Connection pool stats
     try:

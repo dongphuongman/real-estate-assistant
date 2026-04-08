@@ -430,3 +430,103 @@ class TestCachedResponseDecorator:
 
         result = await test_endpoint(mock_request)
         assert result == "string_result"
+
+
+class TestCacheHitMissCounters:
+    """Tests for cache hit/miss counters (Task #55)."""
+
+    @pytest.fixture
+    def mock_request(self):
+        """Create a mock FastAPI Request."""
+        request = MagicMock()
+        request.method = "GET"
+        request.url.path = "/api/v1/search"
+        request.query_params = {}
+        return request
+
+    @pytest.mark.asyncio
+    async def test_miss_counter_increments_on_miss(self, mock_request):
+        """Test that miss counter increments when cache misses."""
+        config = CacheConfig(enabled=True)
+        cache = ResponseCache(config=config, redis_url=None)
+
+        # First get should be a miss
+        result = await cache.get(mock_request)
+        assert result is None
+        assert cache._misses == 1
+        assert cache._hits == 0
+
+    @pytest.mark.asyncio
+    async def test_hit_counter_increments_on_hit(self, mock_request):
+        """Test that hit counter increments when cache hits."""
+        config = CacheConfig(enabled=True)
+        cache = ResponseCache(config=config, redis_url=None)
+
+        # Set then get
+        await cache.set(mock_request, data={"result": "cached"}, status_code=200)
+        result = await cache.get(mock_request)
+        assert result is not None
+        assert cache._hits == 1
+        assert cache._misses == 0
+
+    @pytest.mark.asyncio
+    async def test_counters_accumulate_across_calls(self, mock_request):
+        """Test that counters accumulate across multiple calls."""
+        config = CacheConfig(enabled=True)
+        cache = ResponseCache(config=config, redis_url=None)
+
+        # Miss
+        await cache.get(mock_request)
+        assert cache._misses == 1
+
+        # Set
+        await cache.set(mock_request, data={"result": "cached"}, status_code=200)
+
+        # Hit
+        await cache.get(mock_request)
+        assert cache._hits == 1
+        assert cache._misses == 1
+
+        # Another hit
+        await cache.get(mock_request)
+        assert cache._hits == 2
+        assert cache._misses == 1
+
+    @pytest.mark.asyncio
+    async def test_get_stats_includes_hit_miss_fields(self, mock_request):
+        """Test that get_stats returns hits, misses, and hit_rate."""
+        config = CacheConfig(enabled=True)
+        cache = ResponseCache(config=config, redis_url=None)
+
+        # Generate 1 miss and 1 hit
+        await cache.get(mock_request)  # miss
+        await cache.set(mock_request, data={"x": 1}, status_code=200)
+        await cache.get(mock_request)  # hit
+
+        stats = cache.get_stats()
+        assert stats["hits"] == 1
+        assert stats["misses"] == 1
+        assert stats["hit_rate"] == 0.5
+
+    @pytest.mark.asyncio
+    async def test_get_stats_hit_rate_zero_when_no_requests(self):
+        """Test that hit_rate is 0.0 when no requests have been made."""
+        config = CacheConfig(enabled=True)
+        cache = ResponseCache(config=config, redis_url=None)
+
+        stats = cache.get_stats()
+        assert stats["hit_rate"] == 0.0
+        assert stats["hits"] == 0
+        assert stats["misses"] == 0
+
+    @pytest.mark.asyncio
+    async def test_counters_disabled_cache_no_increment(self, mock_request):
+        """Test that counters don't increment when cache is disabled."""
+        config = CacheConfig(enabled=False)
+        cache = ResponseCache(config=config, redis_url=None)
+
+        await cache.get(mock_request)
+        assert cache._hits == 0
+        assert cache._misses == 0
+        stats = cache.get_stats()
+        assert stats["enabled"] is False

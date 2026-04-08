@@ -1,3 +1,4 @@
+import hashlib
 import json
 import logging
 import time
@@ -180,6 +181,19 @@ async def rag_qa(
     # Get request_id from middleware for correlation
     request_id = getattr(req.state, "request_id", None) or str(uuid.uuid4())
 
+    # Check response cache for non-streaming requests (Task #55)
+    cache = getattr(req.app.state, "response_cache", None)
+    if cache and not rag_request.stream:
+        body_hash = hashlib.sha256(
+            json.dumps(
+                {"question": rag_request.question, "top_k": rag_request.top_k},
+                sort_keys=True,
+            ).encode()
+        ).hexdigest()[:16]
+        cached = await cache.get(req, body_hash=body_hash)
+        if cached and isinstance(cached.data, dict) and "answer" in cached.data:
+            return cached.data
+
     if not store:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -204,10 +218,12 @@ async def rag_qa(
             "model": effective_model,
         }
         if rag_request.stream:
+
             async def empty_stream():
                 yield "event: meta\n"
                 yield f"data: {json.dumps(empty_response)}\n\n"
                 yield "data: [DONE]\n\n"
+
             return StreamingResponse(
                 empty_stream(),
                 media_type="text/event-stream",
@@ -243,6 +259,7 @@ async def rag_qa(
     }
 
     if rag_request.stream:
+
         async def streaming_response():
             # Initialize streaming configuration
             heartbeat_config = HeartbeatConfig(
@@ -345,6 +362,9 @@ async def rag_qa(
             content = getattr(msg, "content", str(msg))
             base_response["answer"] = content
             base_response["llm_used"] = True
+            # Cache non-streaming RAG response (Task #55)
+            if cache:
+                await cache.set(req, data=base_response, status_code=200, body_hash=body_hash)
             return base_response
         except Exception as e:
             logger.warning("LLM invocation failed: %s", e)
@@ -353,4 +373,7 @@ async def rag_qa(
     snippet = context[:500]
     base_response["answer"] = snippet
     base_response["llm_used"] = False
+    # Cache non-streaming fallback response (Task #55)
+    if cache:
+        await cache.set(req, data=base_response, status_code=200, body_hash=body_hash)
     return base_response
