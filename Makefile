@@ -27,6 +27,7 @@ RESET := \033[0m
 .PHONY: docker-up docker-down docker-logs docker-build
 .PHONY: ci ci-quick dev dev-api dev-web setup clean install docs
 .PHONY: sprav sprav-quick sprav-json benchmark-search benchmark-chat
+.PHONY: migrate-check migrate-up migrate-down
 
 # Default target
 .DEFAULT_GOAL := help
@@ -106,6 +107,18 @@ test-web:
 ## e2e: Run backend E2E tests
 e2e:
 	cd apps/api && $(PYTHON) -m pytest tests/e2e_backend -v
+
+## migrate-check: Validate Alembic migrations are consistent (Task #63)
+migrate-check:
+	cd apps/api && $(PYTHON) -m alembic check
+
+## migrate-up: Apply all pending migrations
+migrate-up:
+	cd apps/api && $(PYTHON) -m alembic upgrade head
+
+## migrate-down: Rollback last migration
+migrate-down:
+	cd apps/api && $(PYTHON) -m alembic downgrade -1
 
 ## ============================================================================
 ## LINTING & FORMATTING
