@@ -572,11 +572,11 @@
         "description": "Add React Error Boundaries and Next.js error pages. Currently a component crash shows white screen. Need graceful fallbacks.",
         "details": "1. Create components/ErrorBoundary.tsx — generic class component error boundary\n2. Create components/ChatErrorFallback.tsx — chat-specific retry UI\n3. Wrap chat, search, and map components with ErrorBoundary\n4. Add app/error.tsx (Next.js App Router error boundary)\n5. Add app/not-found.tsx (custom 404 page)\n6. DoD: Component crash shows fallback UI, not white screen",
         "testStrategy": "1. Trigger error in chat component — fallback renders\n2. Navigate to /nonexistent — 404 page shows\n3. No white screen on any error",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [],
         "priority": "low",
         "subtasks": [],
-        "updatedAt": "2026-04-08T21:10:52.647Z"
+        "updatedAt": "2026-04-08T21:14:34.422Z"
       },
       {
         "id": "69",
@@ -584,19 +584,20 @@
         "description": "Create automated smoke test script for post-deployment validation. Checks health, search, chat, security headers, CORS.",
         "details": "",
         "testStrategy": "1. ./scripts/smoke_test.sh against running instance — exit 0\n2. Run against broken instance — exit 1\n3. make smoke-test works",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [
           "64"
         ],
         "priority": "medium",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-04-08T21:14:34.442Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-04-08T21:10:52.648Z",
+      "lastModified": "2026-04-08T21:14:34.442Z",
       "taskCount": 45,
-      "completedCount": 43,
+      "completedCount": 44,
       "tags": [
         "master"
       ]

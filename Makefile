@@ -27,7 +27,7 @@ RESET := \033[0m
 .PHONY: docker-up docker-down docker-logs docker-build
 .PHONY: ci ci-quick dev dev-api dev-web setup clean install docs
 .PHONY: sprav sprav-quick sprav-json benchmark-search benchmark-chat load-test
-.PHONY: migrate-check migrate-up migrate-down
+.PHONY: migrate-check migrate-up migrate-down smoke-test
 
 # Default target
 .DEFAULT_GOAL := help
@@ -68,6 +68,7 @@ help: ## Show this help message
 	@echo ""
 	@echo "$(GREEN)Maintenance:$(RESET)"
 	@sed -n 's/^## clean/\tmake &/p' $(MAKEFILE_LIST)
+	@sed -n 's/^## smoke-test/\tmake &/p' $(MAKEFILE_LIST)
 
 ## ============================================================================
 ## SECURITY
@@ -251,3 +252,7 @@ clean-all: clean
 	rm -rf apps/web/node_modules
 	rm -rf node_modules
 	rm -rf .venv venv .venv_ci
+
+## smoke-test: Run deployment smoke tests against a running instance (Task #69)
+smoke-test:
+	bash scripts/smoke_test.sh
