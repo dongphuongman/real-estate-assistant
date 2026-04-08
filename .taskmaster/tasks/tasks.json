@@ -548,11 +548,11 @@
         "description": "Add SEO fundamentals: Open Graph meta tags, sitemap.xml, robots.txt, JSON-LD structured data for property listings.",
         "details": "1. Add metadata with Open Graph tags to app/layout.tsx (title, description, og:image)\n2. Create public/robots.txt (allow all, reference sitemap)\n3. Create app/sitemap.ts (Next.js App Router dynamic sitemap)\n4. Add JSON-LD structured data for property listings\n5. DoD: Lighthouse SEO score > 90, meta tags render correctly",
         "testStrategy": "1. View page source — og:title, og:description present\n2. /sitemap.xml returns valid XML\n3. /robots.txt returns allow all",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [],
         "priority": "low",
         "subtasks": [],
-        "updatedAt": "2026-04-08T21:02:25.520Z"
+        "updatedAt": "2026-04-08T21:05:29.837Z"
       },
       {
         "id": "67",
@@ -560,10 +560,11 @@
         "description": "Create JSON admin dashboard endpoint aggregating health, cache, latency, and system stats for frontend admin panel.",
         "details": "1. Create api/routers/admin_dashboard.py with GET /admin/dashboard\n2. Aggregate: health status, cache stats, latency p95, vector store docs, uptime, memory\n3. Return JSON response for frontend consumption\n4. Protected by API key auth (same as other admin endpoints)\n5. Tests: endpoint returns all expected fields\n6. DoD: curl /admin/dashboard returns complete JSON with all metrics",
         "testStrategy": "1. GET /admin/dashboard returns 200 with JSON\n2. Response contains: health, cache, latency, vector_store, uptime, memory fields",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [],
         "priority": "low",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-04-08T21:05:29.853Z"
       },
       {
         "id": "68",
@@ -592,9 +593,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-04-08T21:02:25.520Z",
+      "lastModified": "2026-04-08T21:05:29.853Z",
       "taskCount": 45,
-      "completedCount": 41,
+      "completedCount": 42,
       "tags": [
         "master"
       ]

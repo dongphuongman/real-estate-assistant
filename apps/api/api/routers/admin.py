@@ -557,6 +557,81 @@ async def admin_latency_metrics(request: Request):
     return tracker.get_stats()
 
 
+@router.get("/admin/dashboard", response_model=dict)
+async def admin_dashboard(request: Request):
+    """
+    Aggregated admin dashboard endpoint (Task #67).
+
+    Combines health, cache, latency, vector store, and system stats
+    into a single JSON response for frontend admin panel consumption.
+    """
+    try:
+        import psutil
+
+        _has_psutil = True
+    except ImportError:
+        _has_psutil = False
+
+    # --- Health status ---
+    try:
+        from api.health import get_health_status
+
+        health = await get_health_status(include_dependencies=True)
+        health_data = {
+            "status": health.status.value,
+            "version": health.version,
+            "uptime_seconds": health.uptime_seconds,
+            "dependencies": {
+                name: {"status": dep.status.value, "latency_ms": dep.latency_ms}
+                for name, dep in (health.dependencies or {}).items()
+            },
+        }
+    except Exception:
+        health_data = {"status": "unknown", "error": "health check unavailable"}
+
+    # --- Cache stats ---
+    response_cache = getattr(request.app.state, "response_cache", None)
+    cache_data = response_cache.get_stats() if response_cache else {"enabled": False}
+
+    # --- Latency p95 ---
+    tracker = getattr(request.app.state, "latency_tracker", None)
+    latency_data = tracker.get_stats() if tracker else {"available": False}
+
+    # --- Vector store stats ---
+    vector_store = getattr(request.app.state, "vector_store", None)
+    vs_data = vector_store.get_stats() if vector_store else {"available": False}
+
+    # --- Rate limiter stats ---
+    rate_limiter = getattr(request.app.state, "rate_limiter", None)
+    rate_limit_data = rate_limiter.get_stats() if rate_limiter else {"enabled": False}
+
+    # --- System resources ---
+    if _has_psutil:
+        try:
+            mem = psutil.virtual_memory()
+            system_data = {
+                "memory_total_mb": round(mem.total / 1024 / 1024),
+                "memory_used_mb": round(mem.used / 1024 / 1024),
+                "memory_percent": mem.percent,
+                "cpu_percent": psutil.cpu_percent(interval=0.1),
+                "disk_usage_percent": psutil.disk_usage("/").percent,
+            }
+        except Exception:
+            system_data = {"available": False}
+    else:
+        system_data = {"available": False, "reason": "psutil not installed"}
+
+    return {
+        "health": health_data,
+        "cache": cache_data,
+        "latency": latency_data,
+        "vector_store": vs_data,
+        "rate_limiter": rate_limit_data,
+        "system": system_data,
+        "timestamp": time(),
+    }
+
+
 @router.get("/admin/notifications-stats", response_model=NotificationsAdminStats)
 async def admin_notifications_stats(request: Request):
     try:
