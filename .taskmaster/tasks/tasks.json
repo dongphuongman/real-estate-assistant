@@ -432,7 +432,7 @@
         "id": "57",
         "title": "Production Monitoring Dashboard",
         "description": "Create Prometheus-compatible /metrics endpoint and Grafana dashboard templates. Configure alerting rules for p95 latency targets. Depends on APM task.",
-        "status": "pending",
+        "status": "in-progress",
         "priority": "medium",
         "dependencies": [
           "56"
@@ -440,7 +440,7 @@
         "details": "1. Enhance apps/api/api/routers/metrics.py for Prometheus scraping\n2. Add counters: search_requests, chat_requests, cache_hits, cache_misses\n3. Add histograms: search_latency, chat_latency, rag_latency\n4. Add gauges: active_sessions, vector_store_size\n5. Create deploy/monitoring/grafana/ dashboard JSON templates\n6. Create deploy/monitoring/alerts/ with Prometheus alert rules\n7. Add LLM provider cost tracking metrics\n8. Documentation in docs/ on how to deploy monitoring stack",
         "testStrategy": "1. Verify /metrics returns Prometheus format\n2. Verify counters increment on requests\n3. Verify histogram buckets populated\n4. Validate Grafana dashboard JSON imports correctly",
         "subtasks": [],
-        "updatedAt": "2026-04-08T11:55:00.000Z"
+        "updatedAt": "2026-04-08T18:22:14.167Z"
       },
       {
         "id": "58",
@@ -486,20 +486,20 @@
         "id": "61",
         "title": "Accessibility Audit (WCAG 2.1 AA)",
         "description": "PRD acceptance criteria requires WCAG 2.1 AA compliance. Audit all interactive controls, fix focus management, labels, and error feedback.",
-        "status": "in-progress",
+        "status": "done",
         "priority": "medium",
         "dependencies": [],
         "details": "1. Run Lighthouse accessibility audit on all pages\n2. Manual audit: form labels, focus management, error announcements, color contrast 4.5:1\n3. Keyboard navigation: Tab reachable, Escape closes modals, focus trap in dialogs\n4. Screen reader: ARIA labels, live regions for chat, alt text\n5. Add jest-axe for automated a11y testing\n6. DoD: Lighthouse a11y score >= 90 on all pages",
         "testStrategy": "1. Lighthouse accessibility score >= 90\n2. jest-axe tests pass for all components\n3. Keyboard-only navigation works end-to-end",
         "subtasks": [],
-        "updatedAt": "2026-04-08T18:17:53.787Z"
+        "updatedAt": "2026-04-08T18:21:34.221Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-04-08T18:17:53.788Z",
+      "lastModified": "2026-04-08T18:22:14.167Z",
       "taskCount": 37,
-      "completedCount": 34,
+      "completedCount": 35,
       "tags": [
         "master"
       ]

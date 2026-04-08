@@ -247,6 +247,66 @@ async def get_metrics(request: Request) -> Response:
     except Exception as e:
         logger.debug("Could not get health metrics: %s", e)
 
+    # Latency metrics from p95 tracker (Task #57)
+    latency_tracker = getattr(request.app.state, "latency_tracker", None)
+    if latency_tracker:
+        latency_stats = latency_tracker.get_stats()
+        for group, stats in latency_stats.get("endpoints", {}).items():
+            if stats.get("p95_ms") is not None:
+                metrics_lines.append(
+                    format_prometheus_metric(
+                        "request_latency_p95_ms",
+                        stats["p95_ms"],
+                        metric_type="gauge",
+                        labels={"endpoint_group": group},
+                        help_text="P95 request latency in milliseconds",
+                    )
+                )
+            metrics_lines.append(
+                format_prometheus_metric(
+                    "request_latency_sla_target_ms",
+                    stats.get("sla_target_ms", 0),
+                    metric_type="gauge",
+                    labels={"endpoint_group": group},
+                    help_text="SLA target latency in milliseconds",
+                )
+            )
+            metrics_lines.append(
+                format_prometheus_metric(
+                    "request_latency_sla_breached",
+                    1 if stats.get("sla_breached") else 0,
+                    metric_type="gauge",
+                    labels={"endpoint_group": group},
+                    help_text="SLA breach flag (1=breached)",
+                )
+            )
+            metrics_lines.append(
+                format_prometheus_metric(
+                    "request_latency_sample_count",
+                    stats.get("sample_count", 0),
+                    metric_type="gauge",
+                    labels={"endpoint_group": group},
+                    help_text="Number of latency samples in window",
+                )
+            )
+
+    # Vector store size (Task #57)
+    vector_store = getattr(request.app.state, "vector_store", None)
+    if vector_store and hasattr(vector_store, "get_stats"):
+        try:
+            vs_stats = vector_store.get_stats()
+            metrics_lines.append(
+                format_prometheus_metric(
+                    "vector_store_documents",
+                    vs_stats.get("documents", 0),
+                    metric_type="gauge",
+                    labels={"store_type": "chroma"},
+                    help_text="Number of documents in vector store",
+                )
+            )
+        except Exception as e:
+            logger.debug("Could not get vector store stats: %s", e)
+
     # Process metrics (if psutil available)
     try:
         import psutil

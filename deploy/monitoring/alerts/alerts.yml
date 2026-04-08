@@ -1,0 +1,92 @@
+# Prometheus alerting rules for AI Real Estate Assistant
+# Deploy alongside Prometheus server
+
+groups:
+  - name: ai_real_estate_sla
+    rules:
+      # Search SLA: p95 < 2000ms
+      - alert: SearchLatencySLABreach
+        expr: request_latency_p95_ms{endpoint_group="search"} > 2000
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Search p95 latency exceeds SLA"
+          description: "Search endpoint p95 latency is {{ $value }}ms (target: 2000ms)"
+
+      # Chat SLA: p95 < 8000ms
+      - alert: ChatLatencySLABreach
+        expr: request_latency_p95_ms{endpoint_group="chat"} > 8000
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Chat p95 latency exceeds SLA"
+          description: "Chat endpoint p95 latency is {{ $value }}ms (target: 8000ms)"
+
+      # Application health
+      - alert: ApplicationUnhealthy
+        expr: app_health_status == 0
+        for: 2m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Application is unhealthy"
+          description: "Health check is reporting unhealthy status"
+
+      - alert: ApplicationDegraded
+        expr: app_health_status == 1
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Application is degraded"
+          description: "Health check is reporting degraded status for 10+ minutes"
+
+      # Cache monitoring
+      - alert: CacheHitRateLow
+        expr: cache_hit_rate < 0.2
+        for: 15m
+        labels:
+          severity: info
+          team: backend
+        annotations:
+          summary: "Cache hit rate below 20%"
+          description: "Cache hit rate is {{ $value | humanizePercentage }}"
+
+      # Dependency health
+      - alert: DependencyUnhealthy
+        expr: dependency_health_status == 0
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Dependency {{ $labels.dependency }} is unhealthy"
+          description: "{{ $labels.dependency }} has been unhealthy for 5+ minutes"
+
+      # High memory
+      - alert: HighMemoryUsage
+        expr: process_memory_mb > 512
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Process memory exceeds 512MB"
+          description: "Process is using {{ $value }}MB of memory"
+
+      # SLA breach flag
+      - alert: SLABreachActive
+        expr: request_latency_sla_breached == 1
+        for: 3m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "SLA breach active for {{ $labels.endpoint_group }}"
+          description: "{{ $labels.endpoint_group }} endpoint has active SLA breaches"
