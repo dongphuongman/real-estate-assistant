@@ -420,13 +420,13 @@
         "id": "56",
         "title": "APM & Error Tracking (Sentry)",
         "description": "Integrate Sentry SDK for error tracking and performance monitoring. Add custom metrics for search/chat latency. Configure source maps for frontend.",
-        "status": "in-progress",
+        "status": "done",
         "priority": "medium",
         "dependencies": [],
         "details": "1. Backend: pip install sentry-sdk[fastapi]\n2. Initialize Sentry in apps/api/api/main.py with DSN from env\n3. Add performance monitoring (transactions for search, chat, RAG)\n4. Add custom breadcrumbs for LLM provider calls\n5. Filter PII from error reports (redact user emails, queries)\n6. Frontend: npm install @sentry/nextjs\n7. Configure Sentry in apps/web/next.config.ts\n8. Add source map upload on build\n9. Add SENTRY_DSN to .env.example\n10. Configure sampling rates (errors 100%, transactions 20%)",
         "testStrategy": "1. Verify Sentry captures a test exception on backend\n2. Verify Sentry captures a frontend error\n3. Check PII redaction works\n4. Verify performance transactions appear in Sentry dashboard",
         "subtasks": [],
-        "updatedAt": "2026-04-08T18:08:07.135Z"
+        "updatedAt": "2026-04-08T18:17:24.307Z"
       },
       {
         "id": "57",
@@ -486,20 +486,20 @@
         "id": "61",
         "title": "Accessibility Audit (WCAG 2.1 AA)",
         "description": "PRD acceptance criteria requires WCAG 2.1 AA compliance. Audit all interactive controls, fix focus management, labels, and error feedback.",
-        "status": "pending",
+        "status": "in-progress",
         "priority": "medium",
         "dependencies": [],
         "details": "1. Run Lighthouse accessibility audit on all pages\n2. Manual audit: form labels, focus management, error announcements, color contrast 4.5:1\n3. Keyboard navigation: Tab reachable, Escape closes modals, focus trap in dialogs\n4. Screen reader: ARIA labels, live regions for chat, alt text\n5. Add jest-axe for automated a11y testing\n6. DoD: Lighthouse a11y score >= 90 on all pages",
         "testStrategy": "1. Lighthouse accessibility score >= 90\n2. jest-axe tests pass for all components\n3. Keyboard-only navigation works end-to-end",
         "subtasks": [],
-        "updatedAt": "2026-04-08T11:55:00.000Z"
+        "updatedAt": "2026-04-08T18:17:53.787Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-04-08T18:08:07.135Z",
+      "lastModified": "2026-04-08T18:17:53.788Z",
       "taskCount": 37,
-      "completedCount": 33,
+      "completedCount": 34,
       "tags": [
         "master"
       ]
