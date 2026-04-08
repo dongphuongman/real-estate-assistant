@@ -26,7 +26,7 @@ RESET := \033[0m
 .PHONY: help security security-quick test test-api test-web e2e lint lint-api lint-web format
 .PHONY: docker-up docker-down docker-logs docker-build
 .PHONY: ci ci-quick dev dev-api dev-web setup clean install docs
-.PHONY: sprav sprav-quick sprav-json benchmark-search benchmark-chat
+.PHONY: sprav sprav-quick sprav-json benchmark-search benchmark-chat load-test
 .PHONY: migrate-check migrate-up migrate-down
 
 # Default target
@@ -99,6 +99,10 @@ benchmark-search:
 ## benchmark-chat: Run chat p95 benchmark tests (Task #51)
 benchmark-chat:
 	cd apps/api && $(PYTHON) -m pytest tests/performance/test_chat_p95.py -v -m benchmark
+
+## load-test: Run concurrent load tests with baseline benchmarks (Task #65)
+load-test:
+	cd apps/api && $(PYTHON) -m pytest tests/performance/test_load_concurrent.py -v -m load
 
 ## test-web: Run frontend tests
 test-web:

@@ -524,11 +524,11 @@
         "description": "Harden Docker configuration for production: non-root user, resource limits, .dockerignore optimization.",
         "details": "1. Add non-root USER app to Dockerfile.backend (create user, chown files)\n2. Add deploy.resources.limits to backend/frontend in docker-compose.yml (memory: 512MB backend, 256MB frontend)\n3. Create/update .dockerignore for backend and frontend\n4. DoD: Docker build succeeds, containers run as non-root, resource limits set",
         "testStrategy": "1. docker compose build succeeds\n2. docker compose up — health checks pass\n3. Verify backend runs as non-root user (docker exec whoami)",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [],
         "priority": "medium",
         "subtasks": [],
-        "updatedAt": "2026-04-08T20:50:19.165Z"
+        "updatedAt": "2026-04-08T20:54:33.034Z"
       },
       {
         "id": "65",
@@ -536,10 +536,11 @@
         "description": "Create concurrent load tests with baseline benchmarks. Existing performance tests are mock-based. Need real concurrent request simulation.",
         "details": "1. Create tests/performance/test_load_concurrent.py — asyncio-based concurrent requests\n2. Test 50 concurrent search requests, assert p95 < 2000ms SLA\n3. Test 20 concurrent chat requests, assert p95 < 8000ms SLA\n4. Document baseline numbers in docs/performance_baselines.md\n5. Add make load-test target to Makefile\n6. DoD: Load tests pass, baselines documented",
         "testStrategy": "1. make load-test passes\n2. p95 latencies within SLA targets\n3. docs/performance_baselines.md exists with numbers",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [],
         "priority": "medium",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-04-08T20:54:42.298Z"
       },
       {
         "id": "66",
@@ -590,9 +591,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-04-08T20:50:19.165Z",
+      "lastModified": "2026-04-08T20:54:42.298Z",
       "taskCount": 45,
-      "completedCount": 39,
+      "completedCount": 40,
       "tags": [
         "master"
       ]
