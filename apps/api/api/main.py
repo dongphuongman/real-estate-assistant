@@ -423,16 +423,14 @@ if settings.auth_jwt_enabled:
     # Task #43: Document Management System
     app.include_router(documents.router, prefix="/api/v1")
     # Task #57: E-Signature Integration
-    if settings.auth_jwt_enabled:
-        app.include_router(esignatures.router, prefix="/api/v1")
-        app.include_router(webhooks.esignatures.router, prefix="/api/v1")
+    app.include_router(esignatures.router, prefix="/api/v1")
+    app.include_router(webhooks.esignatures.router, prefix="/api/v1")
     # Task #82: User Activity Analytics
     app.include_router(user_activity.router, prefix="/api/v1")
     # Task #87: Model Preferences Per-Task
     app.include_router(model_preferences.router, prefix="/api/v1")
     # Task #88: User Profile Management
-    if settings.auth_jwt_enabled:
-        app.include_router(profile.router, prefix="/api/v1")
+    app.include_router(profile.router, prefix="/api/v1")
 
 # Task #76: Ranking Configuration
 app.include_router(ranking_config.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])

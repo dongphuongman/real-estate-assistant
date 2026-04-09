@@ -12,8 +12,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from analytics.comparable_selector import ComparableSelector
+from api.dependencies import get_vector_store
 from api.deps.auth import get_current_active_user
-from data.schemas import Property
+from data.schemas import Property, PropertyCollection
 from db.database import get_db
 from db.models import User
 from db.repositories import CMAReportRepository
@@ -24,10 +26,46 @@ from db.schemas import (
     CMAReportResponse,
     CMAValuationResponse,
 )
+from vector_store.chroma_store import ChromaPropertyStore
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+def _document_to_property(doc: Any) -> Property:
+    """Convert a ChromaDB Document to a Property object."""
+    metadata = doc.metadata or {}
+    return Property(
+        id=str(metadata.get("id", "")),
+        title=metadata.get("title"),
+        description=doc.page_content,
+        property_type=metadata.get("property_type"),
+        listing_type=metadata.get("listing_type"),
+        price=metadata.get("price"),
+        area_sqm=metadata.get("area_sqm"),
+        rooms=metadata.get("rooms"),
+        bedrooms=metadata.get("bedrooms"),
+        bathrooms=metadata.get("bathrooms"),
+        city=metadata.get("city"),
+        district=metadata.get("district"),
+        neighborhood=metadata.get("neighborhood"),
+        street=metadata.get("street"),
+        latitude=metadata.get("latitude"),
+        longitude=metadata.get("longitude"),
+        year_built=metadata.get("year_built"),
+        floor=metadata.get("floor"),
+        total_floors=metadata.get("total_floors"),
+        energy_rating=metadata.get("energy_rating"),
+        has_parking=metadata.get("has_parking"),
+        has_garden=metadata.get("has_garden"),
+        has_elevator=metadata.get("has_elevator"),
+        has_balcony=metadata.get("has_balcony"),
+        is_furnished=metadata.get("is_furnished"),
+        has_pool=metadata.get("has_pool"),
+        has_garage=metadata.get("has_garage"),
+        pets_allowed=metadata.get("pets_allowed"),
+    )
 
 
 # ============================================================================
@@ -168,12 +206,43 @@ async def find_comparables(
 
     Returns list of comparable properties with similarity scores.
     """
-    # TODO: In production, fetch subject property from database
-    # For now, this is a placeholder that would be replaced with actual DB lookup
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Property lookup not yet implemented. Use /cma/generate with full property data.",
+    # Fetch subject property from vector store
+    store: ChromaPropertyStore = get_vector_store()
+    docs = store.get_properties_by_ids([property_id])
+    if not docs:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Property {property_id} not found",
+        )
+
+    # Convert document to Property
+    subject = _document_to_property(docs[0])
+
+    # Get all properties for comparison
+    all_docs = store.search_by_metadata(k=500)
+    all_properties = [_document_to_property(d) for d in all_docs]
+    collection = PropertyCollection(properties=all_properties)
+
+    # Find comparables using multi-factor scoring
+    selector = ComparableSelector(collection)
+    scores = selector.find_comparables(
+        subject=subject,
+        max_distance_km=max_distance_km,
+        min_score=min_score,
+        max_results=max_results,
     )
+
+    return [
+        CMAComparableResponse(
+            property_id=s.property_id,
+            similarity_score=s.total_score,
+            price=s.price,
+            price_per_sqm=s.price_per_sqm,
+            distance_km=s.distance_km,
+            score_breakdown=s.score_breakdown,
+        )
+        for s in scores
+    ]
 
 
 @router.post(
@@ -198,87 +267,90 @@ async def generate_cma_report(
     The report is saved and can be retrieved later or exported as PDF.
     """
     try:
-        # TODO: Fetch subject property from database by ID
-        # For now, create a mock property for demonstration
-        # In production, this would be:
-        # subject = await property_repo.get_by_id(request.subject_property_id)
+        # Fetch subject property from vector store
+        store: ChromaPropertyStore = get_vector_store()
+        docs = store.get_properties_by_ids([request.subject_property_id])
+        if not docs:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Subject property {request.subject_property_id} not found",
+            )
 
-        # Placeholder: would need actual property lookup
-        raise HTTPException(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail="CMA report generation requires property database integration.",
+        subject = _document_to_property(docs[0])
+
+        # Get all properties for comparison
+        all_docs = store.search_by_metadata(k=500)
+        all_properties = [_document_to_property(d) for d in all_docs]
+        collection = PropertyCollection(properties=all_properties)
+
+        # Find comparables
+        selector = ComparableSelector(collection)
+        scores = selector.find_comparables(
+            subject=subject,
+            max_distance_km=request.max_distance_km,
+            min_score=50.0,
+            max_results=request.max_comparables,
         )
 
-        # The following would be the actual implementation:
+        # Filter by specific IDs if provided
+        if request.comparable_ids:
+            scores = [s for s in scores if s.property_id in request.comparable_ids]
 
-        # # Get all properties for comparison
-        # all_properties = await property_repo.get_all()
-        # collection = PropertyCollection(properties=all_properties)
-        #
-        # # Find comparables
-        # selector = ComparableSelector(collection)
-        # scores = selector.find_comparables(
-        #     subject=subject,
-        #     max_distance_km=request.max_distance_km,
-        #     min_score=50.0,
-        #     max_results=request.max_comparables,
-        # )
-        #
-        # # Filter by specific IDs if provided
-        # if request.comparable_ids:
-        #     scores = [s for s in scores if s.property_id in request.comparable_ids]
-        #
-        # # Ensure minimum comparables
-        # if len(scores) < request.min_comparables:
-        #     raise HTTPException(
-        #         status_code=status.HTTP_400_BAD_REQUEST,
-        #         detail=f"Found only {len(scores)} comparables, need at least {request.min_comparables}",
-        #     )
-        #
-        # # Calculate adjustments for each comparable
-        # calculator = CMAAdjustmentCalculator()
-        # adjusted_comparables = []
-        #
-        # for score in scores:
-        #     comp = next((p for p in all_properties if p.id == score.property_id), None)
-        #     if not comp:
-        #         continue
-        #
-        #     adjustments = calculator.calculate_adjustments(subject, comp, score.price)
-        #     adjusted = calculator.apply_adjustments(score.price, adjustments)
-        #     adjusted.property_id = score.property_id
-        #
-        #     adjusted_comparables.append({
-        #         "property_id": score.property_id,
-        #         "similarity_score": score.total_score,
-        #         "adjustments": [a.to_dict() for a in adjustments],
-        #         "adjusted_price": adjusted.adjusted_price,
-        #     })
-        #
-        # # Calculate final valuation
-        # valuation = _calculate_valuation(subject, adjusted_comparables)
-        #
-        # # Store report
-        # repo = CMAReportRepository(session)
-        # report = await repo.create(
-        #     user_id=user.id,
-        #     subject_property_id=request.subject_property_id,
-        #     subject_data=_property_to_dict(subject),
-        #     comparables=adjusted_comparables,
-        #     valuation=valuation.model_dump(),
-        #     status="completed",
-        # )
-        #
-        # return CMAReportResponse(
-        #     id=report.id,
-        #     user_id=report.user_id,
-        #     status=report.status,
-        #     subject_property=_property_to_dict(subject),
-        #     comparables=[CMAComparableResponse(**c) for c in adjusted_comparables],
-        #     valuation=valuation,
-        #     created_at=report.created_at,
-        #     expires_at=report.expires_at,
-        # )
+        # Ensure minimum comparables
+        if len(scores) < request.min_comparables:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Found only {len(scores)} comparables, need at least {request.min_comparables}",
+            )
+
+        # Calculate adjustments for each comparable
+        from analytics.cma_adjustments import CMAAdjustmentCalculator
+
+        calculator = CMAAdjustmentCalculator()
+        adjusted_comparables = []
+
+        for score in scores:
+            comp = next((p for p in all_properties if p.id == score.property_id), None)
+            if not comp:
+                continue
+
+            adjustments = calculator.calculate_adjustments(subject, comp, score.price)
+            adjusted = calculator.apply_adjustments(score.price, adjustments)
+            adjusted.property_id = score.property_id
+
+            adjusted_comparables.append(
+                {
+                    "property_id": score.property_id,
+                    "similarity_score": score.total_score,
+                    "adjustments": [a.to_dict() for a in adjustments],
+                    "adjusted_price": adjusted.adjusted_price,
+                }
+            )
+
+        # Calculate final valuation
+        valuation = _calculate_valuation(subject, adjusted_comparables)
+
+        # Store report
+        repo = CMAReportRepository(session)
+        report = await repo.create(
+            user_id=user.id,
+            subject_property_id=request.subject_property_id,
+            subject_data=_property_to_dict(subject),
+            comparables=adjusted_comparables,
+            valuation=valuation.model_dump(),
+            status="completed",
+        )
+
+        return CMAReportResponse(
+            id=report.id,
+            user_id=report.user_id,
+            status=report.status,
+            subject_property=_property_to_dict(subject),
+            comparables=[CMAComparableResponse(**c) for c in adjusted_comparables],
+            valuation=valuation,
+            created_at=report.created_at,
+            expires_at=report.expires_at,
+        )
 
     except HTTPException:
         raise

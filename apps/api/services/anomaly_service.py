@@ -144,21 +144,44 @@ class AnomalyService:
         return []
 
     async def _send_anomaly_alerts(self, anomalies: list[dict[str, Any]]) -> int:
-        """Send alerts for high/critical anomalies."""
+        """Send alerts for high/critical anomalies via AlertManager."""
         if not self.alert_manager:
             return 0
+
+        from notifications.alert_manager import Alert, AlertType
 
         alerts_sent = 0
         for anomaly in anomalies:
             # Only send alerts for high/critical severity
-            if anomaly.get("severity") in ["high", "critical"]:
-                try:
-                    # TODO: Implement actual alert sending
-                    # For now, just mark as sent
-                    await self.anomaly_repo.mark_alert_sent(anomaly["id"])
-                    alerts_sent += 1
-                except Exception as e:
-                    logger.error(f"Error sending alert for anomaly {anomaly['id']}: {e}")
+            if anomaly.get("severity") not in ("high", "critical"):
+                continue
+
+            try:
+                anomaly_id = anomaly.get("id", "unknown")
+                anomaly_type = anomaly.get("type", "unknown")
+                severity = anomaly.get("severity", "unknown")
+                scope_id = anomaly.get("scope_id", "unknown")
+
+                alert = Alert(
+                    alert_type=AlertType.ANOMALY,
+                    user_email="",  # AlertManager queues for broadcast; consumers handle routing
+                    subject=f"Market Anomaly Detected: {anomaly_type} ({severity})",
+                    message=f"A {severity} {anomaly_type} anomaly was detected for {scope_id}. "
+                    f"Anomaly ID: {anomaly_id}",
+                    data={
+                        "anomaly_id": anomaly_id,
+                        "anomaly_type": anomaly_type,
+                        "severity": severity,
+                        "scope_id": scope_id,
+                    },
+                    priority=1 if severity == "critical" else 2,
+                )
+                self.alert_manager.queue_alert(alert)
+
+                await self.anomaly_repo.mark_alert_sent(anomaly_id)
+                alerts_sent += 1
+            except Exception as e:
+                logger.error(f"Error sending alert for anomaly {anomaly.get('id', '?')}: {e}")
 
         return alerts_sent
 

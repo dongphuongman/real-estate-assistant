@@ -6,9 +6,9 @@ This module provides centralized configuration management for the application.
 
 import os
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field, model_validator
 
 from config.port_config import get_frontend_url_for_settings
 
@@ -37,7 +37,7 @@ class AppSettings(BaseModel):
     # Application
     app_title: str = "AI Real Estate Assistant - Modern"
     app_icon: str = "🏠"
-    version: str = "3.0.0"
+    version: str = "4.0.0"
     environment: str = Field(default_factory=lambda: os.getenv("ENVIRONMENT", "development"))
 
     # Paths
@@ -638,17 +638,15 @@ class AppSettings(BaseModel):
         env_file_encoding = "utf-8"
         case_sensitive = False
 
-    @root_validator(skip_on_failure=True)
-    def _normalize_api_access_keys(
-        cls: type["AppSettings"], values: dict[str, Any]
-    ) -> dict[str, Any]:
-        raw_primary = values.get("api_access_key")
+    @model_validator(mode="after")
+    def _normalize_api_access_keys(self) -> "AppSettings":
+        raw_primary = self.api_access_key
         primary = raw_primary.strip() if isinstance(raw_primary, str) else None
         if not primary:
             primary = None
 
         normalized_keys: list[str] = []
-        for raw_key in values.get("api_access_keys") or []:
+        for raw_key in self.api_access_keys or []:
             if not isinstance(raw_key, str):
                 continue
             key = raw_key.strip()
@@ -657,7 +655,7 @@ class AppSettings(BaseModel):
             normalized_keys.append(key)
 
         # Include secondary key for rotation support
-        raw_secondary = values.get("api_access_key_secondary")
+        raw_secondary = self.api_access_key_secondary
         secondary = raw_secondary.strip() if isinstance(raw_secondary, str) else None
         if secondary:
             normalized_keys.append(secondary)
@@ -675,14 +673,12 @@ class AppSettings(BaseModel):
 
         # SECURITY: No default API key fallback. All environments require explicit key.
         # This prevents accidental deployment without proper authentication.
-        values["api_access_keys"] = keys
-        values["api_access_key"] = keys[0] if keys else None
-        return values
+        self.api_access_keys = keys
+        self.api_access_key = keys[0] if keys else None
+        return self
 
-    @root_validator(skip_on_failure=True)
-    def _validate_cors_production_safety(
-        cls: type["AppSettings"], values: dict[str, Any]
-    ) -> dict[str, Any]:
+    @model_validator(mode="after")
+    def _validate_cors_production_safety(self) -> "AppSettings":
         """
         Validate CORS configuration for production safety.
 
@@ -692,8 +688,8 @@ class AppSettings(BaseModel):
 
         This prevents accidental deployment with overly permissive CORS configuration.
         """
-        environment = (values.get("environment") or "development").strip().lower()
-        cors_origins = values.get("cors_allow_origins") or []
+        environment = (self.environment or "development").strip().lower()
+        cors_origins = self.cors_allow_origins or []
 
         if environment == "production":
             # Reject wildcard in production
@@ -709,7 +705,7 @@ class AppSettings(BaseModel):
                     "Set specific origins (e.g., 'CORS_ALLOW_ORIGINS=https://yourapp.com')."
                 )
 
-        return values
+        return self
 
 
 # Global settings instance
