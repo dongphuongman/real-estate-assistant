@@ -275,6 +275,8 @@ class ResponseCache:
         self._backend: Optional[RedisCache | InMemoryCache] = None
         self._hits: int = 0
         self._misses: int = 0
+        # Secondary index: path prefix -> set of cache keys for targeted invalidation
+        self._prefix_index: dict[str, set[str]] = {}
 
         if redis_url and config.enabled:
             self._backend = RedisCache(
@@ -312,6 +314,13 @@ class ResponseCache:
         if isinstance(body, str):
             body = body.encode("utf-8")
         return hashlib.sha256(body).hexdigest()[:16]
+
+    @staticmethod
+    def _path_prefix(path: str) -> str:
+        """Extract path prefix for index grouping (e.g., /api/v1/search from /api/v1/search?x=1)."""
+        # Group by first 3 path segments: /api/v1/<resource>
+        parts = path.strip("/").split("/")
+        return "/" + "/".join(parts[:3]) if len(parts) >= 3 else path
 
     async def get(
         self,
@@ -360,6 +369,12 @@ class ResponseCache:
         )
 
         self._backend.set(key, entry)
+
+        # Track key by path prefix for targeted invalidation
+        prefix = self._path_prefix(request.url.path)
+        if prefix not in self._prefix_index:
+            self._prefix_index[prefix] = set()
+        self._prefix_index[prefix].add(key)
         logger.debug(
             "Cached response for %s %s (TTL: %ds)", request.method, request.url.path, entry.ttl
         )
@@ -376,23 +391,34 @@ class ResponseCache:
         """Clear all cached responses."""
         if self._backend:
             self._backend.clear()
+            self._prefix_index.clear()
             logger.info("Cleared all cached responses")
 
     def invalidate_by_prefix(self, path_prefix: str) -> int:
         """
         Invalidate all cache entries for paths starting with a prefix.
 
-        Note: This is a simplified implementation that clears the entire cache.
-        A production implementation would use Redis SCAN to find and delete specific keys.
+        Uses the secondary index for targeted invalidation — only removes entries
+        matching the given path prefix, leaving other cached data intact.
         """
         if not self._backend:
             return 0
 
-        # For simplicity, clear all cache
-        # In production, implement key-based invalidation
-        self._backend.clear()
-        logger.info("Invalidated cache for path prefix: %s", path_prefix)
-        return 1
+        deleted = 0
+        # Find all indexed prefixes that start with the given path_prefix
+        keys_to_delete: set[str] = set()
+        for prefix, keys in list(self._prefix_index.items()):
+            if prefix.startswith(path_prefix) or path_prefix.startswith(prefix):
+                keys_to_delete.update(keys)
+                if prefix.startswith(path_prefix):
+                    del self._prefix_index[prefix]
+
+        for key in keys_to_delete:
+            if self._backend.delete(key):
+                deleted += 1
+
+        logger.info("Invalidated %d cache entries for path prefix: %s", deleted, path_prefix)
+        return deleted
 
     def get_stats(self) -> dict[str, Any]:
         """Get cache statistics."""

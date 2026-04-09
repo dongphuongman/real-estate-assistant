@@ -762,4 +762,9 @@ def update_api_key(provider: str, api_key: str) -> None:
     from models.provider_factory import ModelProviderFactory
 
     ModelProviderFactory.clear_cache()
+
+    # Clear LLM instance cache so new keys take effect
+    from api.dependencies import _create_llm_with_resolved_model_id
+
+    _create_llm_with_resolved_model_id.cache_clear()
     return None

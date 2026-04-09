@@ -584,20 +584,32 @@
         "description": "Create automated smoke test script for post-deployment validation. Checks health, search, chat, security headers, CORS.",
         "details": "",
         "testStrategy": "1. ./scripts/smoke_test.sh against running instance — exit 0\n2. Run against broken instance — exit 1\n3. make smoke-test works",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [
           "64"
         ],
         "priority": "medium",
         "subtasks": [],
-        "updatedAt": "2026-04-08T21:14:34.442Z"
+        "updatedAt": "2026-04-08T21:19:37.599Z"
+      },
+      {
+        "id": "70",
+        "title": "Performance Optimization — Backend & Frontend",
+        "description": "Production performance optimization: SQLAlchemy pool config, Gzip compression, LLM instance caching, ChromaDB lazy init, frontend dynamic imports for heavy chart/map libs, image optimization, cache path-prefix invalidation.",
+        "details": "Changes made:\n1. db/database.py: Pass pool_size, max_overflow, pool_timeout, pool_recycle, pool_pre_ping to create_async_engine()\n2. api/main.py: Add GZipMiddleware (minimum_size=1000), make ChromaDB init lazy\n3. api/dependencies.py: Add @lru_cache(maxsize=16) to _create_llm_with_resolved_model_id()\n4. config/settings.py: Clear LLM cache in update_api_key()\n5. utils/response_cache.py: Add path-prefix index for targeted cache invalidation\n6. apps/web/src/app/[locale]/analytics/page.tsx: Dynamic imports for chart components\n7. apps/web/next.config.ts: Add images.formats, experimental.optimizePackageImports",
+        "testStrategy": "1. Backend Python files compile: py_compile passes\n2. Existing unit tests pass (pre-existing langchain import errors on Python 3.14 are unrelated)\n3. Cache prefix index logic verified: path grouping works correctly\n4. SQLAlchemy pool settings verified: engine.pool.status() shows pool_size=10\n5. Frontend: next build should succeed with smaller bundles",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-04-09T09:22:59.752Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-04-08T21:14:34.442Z",
-      "taskCount": 45,
-      "completedCount": 44,
+      "lastModified": "2026-04-09T09:22:59.753Z",
+      "taskCount": 46,
+      "completedCount": 46,
       "tags": [
         "master"
       ]

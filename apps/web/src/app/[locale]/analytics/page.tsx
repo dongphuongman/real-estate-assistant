@@ -1,9 +1,41 @@
 import { BarChart3, TrendingUp, Calculator, PieChart, Scale } from 'lucide-react';
-import { MortgageCalculator } from '@/components/analytics/mortgage-calculator';
-import { InvestmentAnalyzer } from '@/components/analytics/investment-analyzer';
-import { AdvancedInvestmentAnalyzer } from '@/components/analytics/advanced-investment-analyzer';
-import { PortfolioAnalyzer } from '@/components/analytics/portfolio-analyzer';
-import { RentVsBuyCalculator } from '@/components/analytics/rent-vs-buy-calculator';
+import dynamic from 'next/dynamic';
+
+const MortgageCalculator = dynamic(
+  () =>
+    import('@/components/analytics/mortgage-calculator').then((m) => ({
+      default: m.MortgageCalculator,
+    })),
+  { ssr: false, loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" /> }
+);
+const InvestmentAnalyzer = dynamic(
+  () =>
+    import('@/components/analytics/investment-analyzer').then((m) => ({
+      default: m.InvestmentAnalyzer,
+    })),
+  { ssr: false, loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" /> }
+);
+const AdvancedInvestmentAnalyzer = dynamic(
+  () =>
+    import('@/components/analytics/advanced-investment-analyzer').then((m) => ({
+      default: m.AdvancedInvestmentAnalyzer,
+    })),
+  { ssr: false, loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" /> }
+);
+const PortfolioAnalyzer = dynamic(
+  () =>
+    import('@/components/analytics/portfolio-analyzer').then((m) => ({
+      default: m.PortfolioAnalyzer,
+    })),
+  { ssr: false, loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" /> }
+);
+const RentVsBuyCalculator = dynamic(
+  () =>
+    import('@/components/analytics/rent-vs-buy-calculator').then((m) => ({
+      default: m.RentVsBuyCalculator,
+    })),
+  { ssr: false, loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" /> }
+);
 
 export default function AnalyticsPage() {
   return (

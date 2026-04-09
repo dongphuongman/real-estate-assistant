@@ -58,6 +58,7 @@ def _create_llm(provider_name: str, model_id: Optional[str]) -> BaseChatModel:
     return llm
 
 
+@lru_cache(maxsize=16)
 def _create_llm_with_resolved_model_id(
     provider_name: str, model_id: Optional[str]
 ) -> tuple[BaseChatModel, str]:

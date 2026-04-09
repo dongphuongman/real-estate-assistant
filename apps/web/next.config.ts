@@ -21,6 +21,13 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: turbopackRoot,
   },
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 828, 1080, 1200, 1920],
+  },
+  experimental: {
+    optimizePackageImports: ['recharts', 'lucide-react', 'date-fns'],
+  },
   async headers() {
     const isProduction = process.env.NODE_ENV === 'production';
 

@@ -53,6 +53,7 @@ def get_engine():
     global _engine
     if _engine is None:
         db_url = get_database_url()
+        settings = get_settings()
         # SQLite-specific settings
         connect_args = {}
         if db_url.startswith("sqlite"):
@@ -62,6 +63,11 @@ def get_engine():
             db_url,
             echo=False,  # Set to True for SQL debugging
             connect_args=connect_args,
+            pool_size=settings.db_pool_size,
+            max_overflow=settings.db_max_overflow,
+            pool_timeout=settings.db_pool_timeout_seconds,
+            pool_recycle=settings.db_pool_recycle_seconds,
+            pool_pre_ping=True,
         )
     return _engine
 

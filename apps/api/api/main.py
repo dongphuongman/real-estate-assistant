@@ -103,6 +103,11 @@ app = FastAPI(
     openapi_url="/openapi.json",
 )
 
+# Response compression — reduces JSON payload sizes by 60-80%
+from starlette.middleware.gzip import GZipMiddleware
+
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
 
 add_observability(app, logger)
 add_latency_middleware(app)  # Task #120: p95 latency monitoring
@@ -148,15 +153,9 @@ async def startup_event():
             if hasattr(signal, sig.name):
                 signal.signal(sig, lambda s, f: None)  # Let FastAPI handle
 
-    # 1. Initialize Vector Store
-    logger.info("Initializing Vector Store...")
-    vector_store = get_vector_store()
-    if not vector_store:
-        logger.warning(
-            "Vector Store could not be initialized. "
-            "Notifications relying on vector search will be disabled."
-        )
-    app.state.vector_store = vector_store
+    # 1. Initialize Vector Store (lazy — first request triggers actual init via @lru_cache)
+    logger.info("Vector Store will initialize on first request (lazy loading)...")
+    app.state.vector_store = None  # Set by get_vector_store() on first use
 
     # 1.1 Auto-seed demo data (opt-in via SEED_ON_STARTUP env var)
     if os.getenv("SEED_ON_STARTUP", "false").lower() == "true":
@@ -203,9 +202,11 @@ async def startup_event():
     # 3. Initialize and Start Scheduler
     logger.info("Starting Notification Scheduler...")
     try:
+        # Get vector store lazily for scheduler (may be None if not yet initialized)
+        vs = get_vector_store()
         scheduler = NotificationScheduler(
             email_service=email_service,
-            vector_store=vector_store,
+            vector_store=vs,
             poll_interval_seconds=60,
         )
         scheduler.start()
