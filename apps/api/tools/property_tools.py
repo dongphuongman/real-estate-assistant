@@ -11,7 +11,7 @@ import statistics
 from datetime import datetime
 from typing import Any, ClassVar, Dict, List, Optional, Tuple
 
-from langchain.tools import BaseTool
+from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field, PrivateAttr
 
 # Import AI listing generator tools (TASK-023)

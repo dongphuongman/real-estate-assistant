@@ -19,14 +19,22 @@ import time
 from datetime import datetime
 from typing import Any, AsyncIterator, Dict, List, Optional, cast
 
-from langchain.agents import AgentExecutor, create_openai_tools_agent
-from langchain.chains import ConversationalRetrievalChain
-from langchain.memory import ConversationBufferMemory
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.tools import BaseTool
 from langchain_core.documents import Document
 from langchain_core.language_models import BaseChatModel
 from langchain_core.retrievers import BaseRetriever
+
+# LangChain 1.2 moved chains/memory/agents to langchain-classic
+try:
+    from langchain_classic.agents import AgentExecutor, create_openai_tools_agent
+    from langchain_classic.chains import ConversationalRetrievalChain
+    from langchain_classic.memory import ConversationBufferMemory
+except ImportError:
+    from langchain.agents import AgentExecutor, create_openai_tools_agent
+    from langchain.chains import ConversationalRetrievalChain
+    from langchain.memory import ConversationBufferMemory
+
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.tools import BaseTool
 
 from agents.classification_metrics import (
     ClassificationMetrics,
@@ -195,6 +203,8 @@ Context from property database will be provided when relevant."""
         )
 
         try:
+            if create_openai_tools_agent is None:
+                raise ImportError("create_openai_tools_agent not available")
             agent = create_openai_tools_agent(llm=self.llm, tools=self.tools, prompt=prompt)
             return AgentExecutor(
                 agent=agent,
@@ -204,10 +214,13 @@ Context from property database will be provided when relevant."""
                 return_intermediate_steps=True,
             )
         except Exception:
-            # Fallback for older LangChain versions
-            from langchain.agents import create_react_agent
-            from langchain.prompts import PromptTemplate
-            from langchain_core.agents import AgentExecutor as _AgentExecutor
+            # Fallback for older LangChain versions or missing function
+            from langchain_core.prompts import PromptTemplate
+
+            try:
+                from langchain_classic.agents import create_react_agent
+            except ImportError:
+                from langchain.agents import create_react_agent
 
             prompt = PromptTemplate.from_template(
                 """You are a specialized Real Estate Assistant.
@@ -273,7 +286,7 @@ Thought: {agent_scratchpad}"""
             )
 
             agent = create_react_agent(llm=self.llm, tools=self.tools, prompt=prompt)
-            return _AgentExecutor(
+            return AgentExecutor(
                 agent=agent,
                 tools=self.tools,
                 memory=self.memory,

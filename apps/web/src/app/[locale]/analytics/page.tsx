@@ -1,3 +1,5 @@
+'use client';
+
 import { BarChart3, TrendingUp, Calculator, PieChart, Scale } from 'lucide-react';
 import dynamic from 'next/dynamic';
 

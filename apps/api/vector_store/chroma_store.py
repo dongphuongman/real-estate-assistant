@@ -16,11 +16,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Union, cast
 
 import pandas as pd
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_core.retrievers import BaseRetriever
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 try:
     from langchain_chroma import Chroma

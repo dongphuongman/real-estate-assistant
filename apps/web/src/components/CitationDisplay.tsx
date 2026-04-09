@@ -45,7 +45,7 @@ function ConfidenceBadge({
 }: {
   confidence: CitationConfidence;
   score: number;
-  t: (key: string, params?: Record<string, unknown>) => string;
+  t: (key: string, params?: Record<string, string | number | Date>) => string;
 }) {
   const colorClass = CONFIDENCE_COLORS[confidence] || CONFIDENCE_COLORS.medium;
   return (

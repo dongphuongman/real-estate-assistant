@@ -8,8 +8,8 @@ and social media content using LLMs.
 import logging
 from typing import Any, Dict, List
 
-from langchain.tools import BaseTool
 from langchain_core.language_models import BaseChatModel
+from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field, PrivateAttr
 
 from config.settings import settings

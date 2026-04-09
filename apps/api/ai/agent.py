@@ -2,7 +2,7 @@ import os
 from typing import Any, Callable, Dict, List, Sequence
 
 import pandas as pd
-from langchain.agents.agent_types import AgentType
+from langchain_classic.agents.agent_types import AgentType
 from langchain_openai import ChatOpenAI
 
 try:

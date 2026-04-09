@@ -1,7 +1,7 @@
 import json
 from typing import Any, Optional
 
-from langchain.tools import BaseTool
+from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field, PrivateAttr
 
 from utils.web_fetch import duckduckgo_html_search, fetch_url_text, searxng_search

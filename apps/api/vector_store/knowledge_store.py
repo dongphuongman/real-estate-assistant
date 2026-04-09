@@ -3,9 +3,9 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from config.settings import settings as app_settings
 

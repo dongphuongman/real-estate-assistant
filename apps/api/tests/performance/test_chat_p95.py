@@ -350,9 +350,7 @@ class TestStreamingBenchmark:
             import time
 
             start = time.perf_counter()
-            response = await authed_perf_client.post(
-                "/api/v1/chat", json={**query, "stream": True}
-            )
+            response = await authed_perf_client.post("/api/v1/chat", json={**query, "stream": True})
             # Consume the full stream
             content = b""
             async for chunk in response.aiter_bytes():
@@ -374,15 +372,21 @@ class TestStreamingBenchmark:
         )
 
         # Print comparison
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("Streaming vs Non-Streaming Comparison")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"{'Metric':<15} | {'Non-Streaming':<15} | {'Streaming':<15}")
-        print(f"{'-'*60}")
-        print(f"{'Avg (ms)':<15} | {non_streaming_stats.avg_ms:<15.0f} | {streaming_stats.avg_ms:<15.0f}")
-        print(f"{'P95 (ms)':<15} | {non_streaming_stats.p95_ms:<15.0f} | {streaming_stats.p95_ms:<15.0f}")
-        print(f"{'P99 (ms)':<15} | {non_streaming_stats.p99_ms:<15.0f} | {streaming_stats.p99_ms:<15.0f}")
-        print(f"{'='*60}\n")
+        print(f"{'-' * 60}")
+        print(
+            f"{'Avg (ms)':<15} | {non_streaming_stats.avg_ms:<15.0f} | {streaming_stats.avg_ms:<15.0f}"
+        )
+        print(
+            f"{'P95 (ms)':<15} | {non_streaming_stats.p95_ms:<15.0f} | {streaming_stats.p95_ms:<15.0f}"
+        )
+        print(
+            f"{'P99 (ms)':<15} | {non_streaming_stats.p99_ms:<15.0f} | {streaming_stats.p99_ms:<15.0f}"
+        )
+        print(f"{'=' * 60}\n")
 
     async def test_streaming_first_chunk_latency(
         self,
@@ -416,11 +420,9 @@ class TestStreamingBenchmark:
         stats = ChatBenchmarkStats(measurements)
 
         # First chunk should be fast (time to first token)
-        assert stats.p95_ms < 2000.0, (
-            f"TTFT p95 ({stats.p95_ms:.0f}ms) exceeds 2s target"
-        )
+        assert stats.p95_ms < 2000.0, f"TTFT p95 ({stats.p95_ms:.0f}ms) exceeds 2s target"
 
-        print(f"\nTime to First Token (TTFT):")
+        print("\nTime to First Token (TTFT):")
         print(f"  Avg: {stats.avg_ms:.0f}ms")
         print(f"  P95: {stats.p95_ms:.0f}ms")
         print(f"  P99: {stats.p99_ms:.0f}ms\n")
@@ -444,9 +446,15 @@ class TestChatBenchmarkSummary:
 
         test_queries = [
             ("greeting", {"message": "Hello", "stream": False}),
-            ("property_search", {"message": "What apartments are available in Berlin?", "stream": False}),
+            (
+                "property_search",
+                {"message": "What apartments are available in Berlin?", "stream": False},
+            ),
             ("filtered", {"message": "2-bedroom apartments under 500k", "stream": False}),
-            ("complex", {"message": "Compare property markets in Berlin vs Munich", "stream": False}),
+            (
+                "complex",
+                {"message": "Compare property markets in Berlin vs Munich", "stream": False},
+            ),
         ]
 
         for name, query in test_queries:
@@ -480,15 +488,17 @@ class TestChatBenchmarkSummary:
         }
 
         # Print report for visibility
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("Chat Benchmark Report")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"Target p95: {P95_TARGET_MS:.0f}ms")
         print(f"Target avg: {AVG_TARGET_MS:.0f}ms")
-        print(f"{'-'*60}")
+        print(f"{'-' * 60}")
         for name, stats in report["queries"].items():
             status = "PASS" if stats["passes_p95"] else "FAIL"
-            print(f"{name:20s} | p95: {stats['p95_ms']:6.0f}ms | avg: {stats['avg_ms']:6.0f}ms | {status}")
-        print(f"{'='*60}\n")
+            print(
+                f"{name:20s} | p95: {stats['p95_ms']:6.0f}ms | avg: {stats['avg_ms']:6.0f}ms | {status}"
+            )
+        print(f"{'=' * 60}\n")
 
         assert all_pass_p95, "Some chat queries did not meet p95 target"

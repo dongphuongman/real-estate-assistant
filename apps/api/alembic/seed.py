@@ -16,7 +16,7 @@ import uuid
 
 from sqlalchemy import select
 
-from data.schemas import ListingType, Property, PropertyType
+from data.schemas import Property
 from db.database import get_session_factory
 from db.models import (
     NotificationPreferenceDB,
@@ -709,9 +709,7 @@ async def seed_all(clear: bool = False) -> None:
                     await session.execute(delete(table))
                 # Delete seed users only (preserve real users)
                 await session.execute(
-                    delete(User).where(
-                        User.id.in_(["user-seed-001", "user-seed-002"])
-                    )
+                    delete(User).where(User.id.in_(["user-seed-001", "user-seed-002"]))
                 )
                 await session.commit()
                 logger.info("Relational data cleared.")
@@ -719,9 +717,7 @@ async def seed_all(clear: bool = False) -> None:
             user_ids = await _seed_users(session)
             await session.flush()
 
-            users_result = await session.execute(
-                select(User).where(User.id.in_(user_ids))
-            )
+            users_result = await session.execute(select(User).where(User.id.in_(user_ids)))
             users = list(users_result.scalars().all())
 
             await _seed_saved_searches(session, users)

@@ -1,5 +1,5 @@
 import langchain.agents as lc_agents
-from langchain.memory import ConversationBufferMemory
+from langchain_classic.memory import ConversationBufferMemory
 
 import agents.hybrid_agent as hybrid_agent
 

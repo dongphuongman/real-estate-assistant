@@ -635,7 +635,7 @@ class SPRAVOrchestrator:
         self._log("  Checking user journey test coverage...")
         journey_markers = [
             ("Registration", "test_register", "tests/"),
-            ("Login", "test_login", "tests/"),
+            ("Login", "test_verify_for_login", "tests/"),
             ("Property Search", "test_search", "tests/"),
             ("Chat Interaction", "test_chat", "tests/"),
         ]
@@ -666,9 +666,13 @@ class SPRAVOrchestrator:
         # 2. Business rules enforcement check
         self._log("  Checking business rule enforcement...")
         rules_to_check = [
-            ("Rate limiting", "600", "api/middleware/"),
-            ("JWT access expiry", "ACCESS_TOKEN_EXPIRE", "core/jwt.py"),
-            ("Lockout after failures", "MAX_LOGIN_ATTEMPTS", "api/routers/auth_jwt.py"),
+            ("Rate limiting", "api_rate_limit", "config/settings.py"),
+            ("JWT access expiry", "access_token_expire", "core/jwt.py"),
+            (
+                "Lockout after failures",
+                "failed_login_attempts",
+                "api/routers/auth_jwt.py",
+            ),
         ]
         rules_found = 0
         rules_missing: list[str] = []

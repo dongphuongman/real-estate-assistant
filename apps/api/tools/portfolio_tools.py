@@ -9,7 +9,7 @@ This module provides tools for:
 
 from typing import Any, Dict, List, Optional
 
-from langchain.tools import BaseTool
+from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field
 
 from analytics.portfolio_analytics import (

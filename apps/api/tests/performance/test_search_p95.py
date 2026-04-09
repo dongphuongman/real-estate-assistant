@@ -14,8 +14,6 @@ from typing import Any
 import pytest
 from httpx import AsyncClient
 
-from tests.performance.conftest import PerformanceMetrics
-
 # Test configuration
 WARMUP_REQUESTS = 5
 BENCHMARK_REQUESTS = 50  # Number of requests for p95 calculation
@@ -464,9 +462,22 @@ class TestSearchBenchmarkSummary:
 
         test_queries = [
             ("simple", {"query": "apartments in Berlin", "limit": 10}),
-            ("price_filtered", {"query": "apartments", "filters": {"price_min": 100000, "price_max": 500000}, "limit": 10}),
-            ("location_filtered", {"query": "apartments", "filters": {"city": "Munich"}, "limit": 10}),
-            ("sorted", {"query": "apartments", "sort_by": "price", "sort_order": "asc", "limit": 10}),
+            (
+                "price_filtered",
+                {
+                    "query": "apartments",
+                    "filters": {"price_min": 100000, "price_max": 500000},
+                    "limit": 10,
+                },
+            ),
+            (
+                "location_filtered",
+                {"query": "apartments", "filters": {"city": "Munich"}, "limit": 10},
+            ),
+            (
+                "sorted",
+                {"query": "apartments", "sort_by": "price", "sort_order": "asc", "limit": 10},
+            ),
         ]
 
         for name, query in test_queries:
@@ -500,15 +511,17 @@ class TestSearchBenchmarkSummary:
         }
 
         # Print report for visibility
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("Search Benchmark Report")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"Target p95: {P95_TARGET_MS:.0f}ms")
         print(f"Target avg: {AVG_TARGET_MS:.0f}ms")
-        print(f"{'-'*60}")
+        print(f"{'-' * 60}")
         for name, stats in report["queries"].items():
             status = "PASS" if stats["passes_p95"] else "FAIL"
-            print(f"{name:20s} | p95: {stats['p95_ms']:6.0f}ms | avg: {stats['avg_ms']:6.0f}ms | {status}")
-        print(f"{'='*60}\n")
+            print(
+                f"{name:20s} | p95: {stats['p95_ms']:6.0f}ms | avg: {stats['avg_ms']:6.0f}ms | {status}"
+            )
+        print(f"{'=' * 60}\n")
 
         assert all_pass_p95, "Some search queries did not meet p95 target"
