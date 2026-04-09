@@ -42,6 +42,8 @@ dependencies = [
     "redis>=5.0.0",
     # Error tracking & APM (Task #56)
     "sentry-sdk[fastapi]>=2.0.0",
+    # Retry logic for data adapters
+    "backoff>=2.0.0",
 ]
 
 [project.optional-dependencies]
