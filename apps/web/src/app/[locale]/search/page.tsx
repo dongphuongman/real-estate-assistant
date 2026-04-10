@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { searchProperties, exportPropertiesBySearch, ApiError } from '@/lib/api';
 import { SearchResultItem } from '@/lib/types';
+import { info, warn } from '@/lib/logger';
 import { extractMapPoints, type PropertyMapPoint } from '@/components/search/property-map-utils';
 import type { PolygonCoordinates } from '@/components/search/geo-draw-control';
 import {
@@ -92,7 +93,7 @@ function SearchPageContent() {
       // Validate polygon
       const validation = validatePolygon(coordinates);
       if (!validation.valid) {
-        console.warn('Invalid polygon:', validation.error);
+        warn('Invalid polygon', { error: validation.error });
         // Still set the polygon but log the issue
         // In production, you might want to show a toast notification
       }
@@ -139,7 +140,7 @@ function SearchPageContent() {
   // Handle property marker click on map
   const handlePropertyClick = (point: PropertyMapPoint) => {
     // For now, just log the click. Future enhancement: scroll to property in list
-    console.log('Property clicked:', point);
+    info('Property clicked', { id: point.id, title: point.title });
   };
 
   const mapPoints = useMemo(() => extractMapPoints(results), [results]);

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import type { MarketAnomaly } from '@/lib/types';
 import { getApiUrl } from '@/lib/api';
 import { ReconnectingEventSource } from '@/lib/streaming';
+import { info } from '@/lib/logger';
 
 interface UseAnomalyStreamResult {
   anomalies: MarketAnomaly[];
@@ -78,13 +79,13 @@ export function useAnomalyStream(
       initialDelay: 1000,
       maxDelay: 30000,
     });
-    eventSourceRef.current = eventSource
+    eventSourceRef.current = eventSource;
 
     eventSource.onopen = () => {
       setConnected(true);
       setError(null);
       setReconnectAttempts(0);
-      console.log('[SSE] Connected to anomaly stream');
+      info('SSE connected to anomaly stream');
     };
 
     eventSource.onmessage = (event: MessageEvent) => {
@@ -93,45 +94,45 @@ export function useAnomalyStream(
 
         // Handle connection status messages
         if (data.type === 'connected') {
-          return
+          return;
         }
         if (data.type === 'disconnected') {
-          setConnected(false)
-          return
+          setConnected(false);
+          return;
         }
         if (data.type === 'error') {
-          setError(data.message || 'Stream error')
-          return
+          setError(data.message || 'Stream error');
+          return;
         }
 
         // Handle anomaly data
         if (data.id && data.property_id) {
-          handleNewAnomaly(data as MarketAnomaly)
+          handleNewAnomaly(data as MarketAnomaly);
         }
       } catch (err) {
-        console.error('[SSE] Failed to parse anomaly:', err)
+        console.error('[SSE] Failed to parse anomaly:', err);
       }
-    }
+    };
 
     eventSource.onerror = () => {
-      setConnected(false)
-      setError('Connection lost. Reconnecting...')
-    }
+      setConnected(false);
+      setError('Connection lost. Reconnecting...');
+    };
 
     // Listen for reconnecting events from ReconnectingEventSource (Task #74)
     eventSource.addEventListener('reconnecting', ((event: Event) => {
-      const customEvent = event as CustomEvent<{ attempt: number }>
-      setReconnectAttempts(customEvent.detail?.attempt || 0)
-      console.log(`[SSE] Reconnecting (attempt ${customEvent.detail?.attempt || 0})...`)
-    }) as EventListener)
+      const customEvent = event as CustomEvent<{ attempt: number }>;
+      setReconnectAttempts(customEvent.detail?.attempt || 0);
+      info('SSE reconnecting', { attempt: customEvent.detail?.attempt || 0 });
+    }) as EventListener);
 
     return () => {
       if (eventSourceRef.current) {
-        eventSourceRef.current.close()
-        eventSourceRef.current = null
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
       }
-      setConnected(false)
-    }
+      setConnected(false);
+    };
   }, [enabled, handleNewAnomaly]);
 
   /**

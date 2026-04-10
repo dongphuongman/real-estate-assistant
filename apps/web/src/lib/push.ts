@@ -8,6 +8,8 @@
  * subscription storage need to be implemented separately.
  */
 
+import { info, warn } from '@/lib/logger';
+
 /**
  * Convert a base64 string to Uint8Array for VAPID key
  */
@@ -53,13 +55,13 @@ export function areNotificationsEnabled(): boolean {
  */
 export async function requestNotificationPermission(): Promise<NotificationPermission> {
   if (!isPushSupported()) {
-    console.warn('[Push] Push notifications are not supported');
+    warn('Push notifications are not supported');
     return 'denied';
   }
 
   try {
     const permission = await Notification.requestPermission();
-    console.log('[Push] Permission status:', permission);
+    info('Push permission status', { permission });
     return permission;
   } catch (error) {
     console.error('[Push] Error requesting permission:', error);
@@ -100,14 +102,14 @@ export async function isSubscribedToPush(): Promise<boolean> {
  */
 export async function subscribeToPush(vapidPublicKey: string): Promise<PushSubscription | null> {
   if (!isPushSupported()) {
-    console.warn('[Push] Push notifications are not supported');
+    warn('Push notifications are not supported');
     return null;
   }
 
   // Request permission first
   const permission = await requestNotificationPermission();
   if (permission !== 'granted') {
-    console.warn('[Push] Notification permission not granted');
+    warn('Push notification permission not granted');
     return null;
   }
 
@@ -117,7 +119,7 @@ export async function subscribeToPush(vapidPublicKey: string): Promise<PushSubsc
     // Check for existing subscription
     const existingSubscription = await registration.pushManager.getSubscription();
     if (existingSubscription) {
-      console.log('[Push] Already subscribed');
+      info('Push already subscribed');
       return existingSubscription;
     }
 
@@ -127,7 +129,7 @@ export async function subscribeToPush(vapidPublicKey: string): Promise<PushSubsc
       applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as unknown as BufferSource,
     });
 
-    console.log('[Push] Successfully subscribed');
+    info('Push successfully subscribed');
     return subscription;
   } catch (error) {
     console.error('[Push] Error subscribing:', error);
@@ -143,14 +145,14 @@ export async function unsubscribeFromPush(): Promise<boolean> {
   const subscription = await getPushSubscription();
 
   if (!subscription) {
-    console.log('[Push] No active subscription to unsubscribe');
+    info('Push no active subscription to unsubscribe');
     return true;
   }
 
   try {
     const success = await subscription.unsubscribe();
     if (success) {
-      console.log('[Push] Successfully unsubscribed');
+      info('Push successfully unsubscribed');
     }
     return success;
   } catch (error) {
@@ -199,7 +201,7 @@ export async function showLocalNotification(
 
   const permission = getNotificationPermission();
   if (permission !== 'granted') {
-    console.warn('[Push] No permission to show notifications');
+    warn('Push no permission to show notifications');
     return;
   }
 

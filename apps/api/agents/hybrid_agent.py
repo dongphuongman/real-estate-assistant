@@ -213,8 +213,9 @@ Context from property database will be provided when relevant."""
                 verbose=self.verbose,
                 return_intermediate_steps=True,
             )
-        except Exception:
+        except Exception as e:
             # Fallback for older LangChain versions or missing function
+            logger.warning("openai_tools_agent not available, falling back to react_agent: %s", e)
             from langchain_core.prompts import PromptTemplate
 
             try:
@@ -344,8 +345,8 @@ Thought: {agent_scratchpad}"""
             )
             try:
                 self.memory.save_context({"input": q}, {"answer": answer})
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning("Failed to save capabilities response to memory: %s", e)
             return {
                 "answer": answer,
                 "source_documents": [],
@@ -373,8 +374,8 @@ Thought: {agent_scratchpad}"""
             )
             try:
                 self.memory.save_context({"input": q}, {"answer": answer})
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning("Failed to save out-of-domain response to memory: %s", e)
             return {
                 "answer": answer,
                 "source_documents": [],
@@ -710,8 +711,8 @@ Thought: {agent_scratchpad}"""
 
         try:
             self.memory.save_context({"input": query}, {"answer": content})
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Failed to save web search response to memory: %s", e)
 
         return {
             "answer": content,
@@ -806,8 +807,9 @@ Thought: {agent_scratchpad}"""
                 "intent": analysis.intent.value,
             }
 
-        except Exception:
+        except Exception as e:
             # Fallback to RAG-only
+            logger.warning("Hybrid processing failed, falling back to RAG-only: %s", e)
             return self._process_with_rag(query, analysis)
 
     async def astream_query(self, query: str) -> AsyncIterator[str]:
@@ -957,7 +959,8 @@ class SimpleRAGAgent:
     def get_sources_for_query(self, query: str, k: int = 5) -> List[Document]:
         try:
             return self.retriever.get_relevant_documents(query)[:k]
-        except Exception:
+        except Exception as e:
+            logger.warning("SimpleRAGAgent retrieval failed: %s", e)
             return []
 
     def clear_memory(self) -> None:

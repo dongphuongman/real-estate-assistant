@@ -11,7 +11,14 @@ import {
   type PropertyMapPoint,
   type HeatmapMode,
 } from './property-map-utils';
-import { clusterMapPoints, type ClusteredMapItem, type ClusterOptions, PROPERTY_TYPE_COLORS, getClusterColor } from './property-map-clustering';
+import {
+  clusterMapPoints,
+  type ClusteredMapItem,
+  type ClusterOptions,
+  PROPERTY_TYPE_COLORS,
+  getClusterColor,
+} from './property-map-clustering';
+import { warn } from '@/lib/logger';
 import HeatmapLegend from './heatmap-legend';
 import GeoDrawControl, { type PolygonCoordinates } from './geo-draw-control';
 import { generatePopupHTML } from './property-map-popup';
@@ -201,7 +208,7 @@ export default function PropertyMapboxMap({
     if (!mapContainer.current || map.current) return;
 
     if (!mapboxToken) {
-      console.warn('Mapbox token not provided. Using fallback styling.');
+      warn('Mapbox token not provided, using fallback styling');
     }
 
     mapboxgl.accessToken = mapboxToken || '';
@@ -334,7 +341,10 @@ export default function PropertyMapboxMap({
         // Cluster with property type styling
         const cluster = item as Extract<ClusteredMapItem, { kind: 'cluster' }>;
         const clusterColor = getClusterColor(cluster.dominantType, cluster.isMixed);
-        const displayCount = cluster.count >= 1000 ? `${Math.floor(cluster.count / 1000)}K+` : cluster.count.toString();
+        const displayCount =
+          cluster.count >= 1000
+            ? `${Math.floor(cluster.count / 1000)}K+`
+            : cluster.count.toString();
         const clusterSize = cluster.count >= 100 ? 40 : cluster.count >= 50 ? 35 : 30;
 
         const el = document.createElement('div');
@@ -384,29 +394,34 @@ export default function PropertyMapboxMap({
         };
 
         // Build type summary
-        const typeSummary = cluster.isMixed && cluster.typeDistribution.size > 1
-          ? Array.from(cluster.typeDistribution.entries())
-              .sort((a, b) => b[1] - a[1])
-              .slice(0, 3)
-              .map(([type, percentage]) => {
-                const color = PROPERTY_TYPE_COLORS[type] || PROPERTY_TYPE_COLORS.other;
-                return `<span style="color:${color}">${type}</span>: ${percentage.toFixed(0)}%`;
-              })
-              .join(' • ')
-          : cluster.dominantType
-            ? `<span style="color:${clusterColor}">${cluster.dominantType}</span> dominant`
-            : '';
+        const typeSummary =
+          cluster.isMixed && cluster.typeDistribution.size > 1
+            ? Array.from(cluster.typeDistribution.entries())
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 3)
+                .map(([type, percentage]) => {
+                  const color = PROPERTY_TYPE_COLORS[type] || PROPERTY_TYPE_COLORS.other;
+                  return `<span style="color:${color}">${type}</span>: ${percentage.toFixed(0)}%`;
+                })
+                .join(' • ')
+            : cluster.dominantType
+              ? `<span style="color:${clusterColor}">${cluster.dominantType}</span> dominant`
+              : '';
 
         const clusterPopupHTML = `
           <div style="min-width:180px;font-family:system-ui,-apple-system,sans-serif;">
             <div style="font-weight:600;font-size:14px;margin-bottom:8px;">
               ${cluster.count} properties in this area
             </div>
-            ${typeSummary ? `
+            ${
+              typeSummary
+                ? `
               <div style="font-size:11px;color:#6b7280;margin-bottom:6px;">
                 ${typeSummary}
               </div>
-            ` : ''}
+            `
+                : ''
+            }
             ${
               minPrice !== null && maxPrice !== null
                 ? `

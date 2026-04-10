@@ -5,6 +5,8 @@
  * Handles PWA installation and service worker lifecycle
  */
 
+import { info, warn } from '@/lib/logger';
+
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
   readonly userChoice: Promise<{
@@ -31,7 +33,7 @@ export function registerServiceWorker(): void {
         scope: '/',
       });
 
-      console.log('[SW] Service Worker registered with scope:', registration.scope);
+      info('SW registered', { scope: registration.scope });
 
       // Check for updates
       registration.addEventListener('updatefound', () => {
@@ -40,7 +42,7 @@ export function registerServiceWorker(): void {
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               // New content is available, notify the user
-              console.log('[SW] New content available, please refresh.');
+              info('SW new content available');
               window.dispatchEvent(new CustomEvent('sw-update-available'));
             }
           });
@@ -60,7 +62,7 @@ export function registerServiceWorker(): void {
 
   // Listen for successful installation
   window.addEventListener('appinstalled', () => {
-    console.log('[PWA] App installed successfully');
+    info('PWA app installed');
     deferredInstallPrompt = null;
     window.dispatchEvent(new CustomEvent('pwa-installed'));
   });
@@ -79,7 +81,7 @@ export function canInstallPWA(): boolean {
  */
 export async function promptPWAInstall(): Promise<boolean> {
   if (!deferredInstallPrompt) {
-    console.warn('[PWA] Install prompt not available');
+    warn('PWA install prompt not available');
     return false;
   }
 
@@ -88,10 +90,10 @@ export async function promptPWAInstall(): Promise<boolean> {
     const { outcome } = await deferredInstallPrompt.userChoice;
 
     if (outcome === 'accepted') {
-      console.log('[PWA] User accepted the install prompt');
+      info('PWA user accepted install prompt');
       return true;
     } else {
-      console.log('[PWA] User dismissed the install prompt');
+      info('PWA user dismissed install prompt');
       return false;
     }
   } catch (error) {
@@ -142,7 +144,7 @@ export async function unregisterServiceWorker(): Promise<boolean> {
   if (registration) {
     const success = await registration.unregister();
     if (success) {
-      console.log('[SW] Service Worker unregistered');
+      info('SW unregistered');
     }
     return success;
   }

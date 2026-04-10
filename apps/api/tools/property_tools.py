@@ -2125,8 +2125,9 @@ class NeighborhoodQualityIndexTool(BaseTool):
 
             return round(score, 1)
 
-        except Exception:
+        except Exception as e:
             # Fallback to mock on error
+            logger.warning("Schools score calculation failed, using mock: %s", e)
             import hashlib
 
             seed = f"{latitude:.4f},{longitude:.4f}".encode()
@@ -2134,8 +2135,9 @@ class NeighborhoodQualityIndexTool(BaseTool):
             score = 50 + (hash_val % 51)  # 50-100 range
             return float(score)
 
-    @staticmethod
-    def _calculate_amenities_score(latitude: Optional[float], longitude: Optional[float]) -> float:
+    def calculate_amenities_score(
+        self, latitude: Optional[float], longitude: Optional[float]
+    ) -> float:
         """
         Calculate amenities score based on nearby POI count.
 
@@ -2166,8 +2168,9 @@ class NeighborhoodQualityIndexTool(BaseTool):
 
             return round(score, 1)
 
-        except Exception:
+        except Exception as e:
             # Fallback to mock on error
+            logger.warning("Amenities score calculation failed, using mock: %s", e)
             import hashlib
 
             seed = f"amenities:{latitude:.4f},{longitude:.4f}".encode()
@@ -2196,8 +2199,9 @@ class NeighborhoodQualityIndexTool(BaseTool):
 
             return round(score, 1)
 
-        except Exception:
+        except Exception as e:
             # Fallback to mock on error
+            logger.warning("Walkability score calculation failed, using mock: %s", e)
             import hashlib
 
             seed = f"walk:{latitude:.4f},{longitude:.4f}".encode()
@@ -2239,8 +2243,9 @@ class NeighborhoodQualityIndexTool(BaseTool):
 
             return round(score, 1)
 
-        except Exception:
+        except Exception as e:
             # Fallback to mock on error
+            logger.warning("Green space score calculation failed, using mock: %s", e)
             import hashlib
 
             seed = f"green:{latitude:.4f},{longitude:.4f}".encode()

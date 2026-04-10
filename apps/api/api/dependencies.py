@@ -23,12 +23,14 @@ logger = logging.getLogger(__name__)
 
 try:
     from vector_store.chroma_store import ChromaPropertyStore  # type: ignore
-except Exception:
+except Exception as e:
+    logger.warning("ChromaPropertyStore not available, vector search disabled: %s", e)
     ChromaPropertyStore = None  # type: ignore
 
 try:
     from vector_store.knowledge_store import KnowledgeStore  # type: ignore
-except Exception:
+except Exception as e:
+    logger.warning("KnowledgeStore not available, knowledge RAG disabled: %s", e)
     KnowledgeStore = None  # type: ignore
 
 
@@ -47,7 +49,8 @@ def get_vector_store() -> Optional["ChromaPropertyStore"]:
             embedding_model=settings.embedding_model,
         )
         return store
-    except Exception:
+    except Exception as e:
+        logger.warning("Vector store initialization failed: %s", e)
         return None
 
 
@@ -79,8 +82,8 @@ def _create_llm_with_resolved_model_id(
         from api.sentry_init import add_llm_breadcrumb
 
         add_llm_breadcrumb(provider=provider_name, model=resolved_model_id)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Sentry breadcrumb skipped: %s", e)
 
     llm = factory_provider.create_model(
         model_id=resolved_model_id,
@@ -119,16 +122,16 @@ def get_llm(
         if preferred_provider or preferred_model:
             try:
                 return _create_llm(default_provider_name, default_model_id)
-            except Exception:
-                pass
+            except Exception as fallback_err:
+                logger.warning("Default provider fallback also failed: %s", fallback_err)
         if primary_provider != "ollama":
             try:
                 ollama_provider = ModelProviderFactory.get_provider("ollama")
                 runtime_ok, _runtime_error = ollama_provider.validate_connection()
                 if runtime_ok:
                     return _create_llm("ollama", settings.ollama_default_model)
-            except Exception:
-                pass
+            except Exception as ollama_err:
+                logger.warning("Ollama fallback failed: %s", ollama_err)
         raise RuntimeError(
             f"Could not initialize LLM with provider '{primary_provider}': {e}"
         ) from e
@@ -238,8 +241,10 @@ async def get_llm_for_task(
         if primary_provider != settings.default_provider:
             try:
                 return _create_llm(settings.default_provider, settings.default_model)
-            except Exception:
-                pass
+            except Exception as fallback_err:
+                logger.warning(
+                    "Default provider fallback for task %s failed: %s", task_type, fallback_err
+                )
 
         # 5. Fallback to Ollama if configured
         if primary_provider != "ollama":
@@ -249,8 +254,8 @@ async def get_llm_for_task(
                 if runtime_ok:
                     logger.info("Falling back to Ollama for task %s", task_type)
                     return _create_llm("ollama", settings.ollama_default_model)
-            except Exception:
-                pass
+            except Exception as ollama_err:
+                logger.warning("Ollama fallback for task %s failed: %s", task_type, ollama_err)
 
         raise RuntimeError(
             f"Could not initialize LLM for task '{task_type}' with provider '{primary_provider}': {e}"
@@ -328,8 +333,8 @@ def get_optional_llm_with_details(
                     default_model_id,
                 )
                 return llm, default_provider_name, resolved_model_id
-            except Exception:
-                pass
+            except Exception as fallback_err:
+                logger.warning("Default provider fallback failed: %s", fallback_err)
         if primary_provider != "ollama":
             try:
                 ollama_provider = ModelProviderFactory.get_provider("ollama")
@@ -340,8 +345,8 @@ def get_optional_llm_with_details(
                         settings.ollama_default_model,
                     )
                     return llm, "ollama", resolved_model_id
-            except Exception:
-                pass
+            except Exception as ollama_err:
+                logger.warning("Ollama fallback failed: %s", ollama_err)
 
         logger.warning("LLM unavailable: %s", e)
         return None, primary_provider, primary_model
@@ -408,7 +413,8 @@ def get_knowledge_store() -> Optional["KnowledgeStore"]:
             collection_name="knowledge",
         )
         return store
-    except Exception:
+    except Exception as e:
+        logger.warning("Knowledge store initialization failed: %s", e)
         return None
 
 
