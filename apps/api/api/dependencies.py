@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import logging
 from functools import lru_cache
-from typing import Annotated, Any, Optional
+from typing import TYPE_CHECKING, Annotated, Any, Optional
 
 from fastapi import Body, Depends, Header, HTTPException, Query, status
 from langchain_core.language_models import BaseChatModel
@@ -8,7 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import models.user_model_preferences as user_model_preferences
-from agents.hybrid_agent import create_hybrid_agent
+from agents.hybrid_agent import HybridPropertyAgent, SimpleRAGAgent, create_hybrid_agent
 from agents.services.crm_connector import CRMConnector, WebhookCRMConnector
 from agents.services.data_enrichment import BasicDataEnrichmentService, DataEnrichmentService
 from agents.services.legal_check import BasicLegalCheckService, LegalCheckService
@@ -18,6 +20,13 @@ from config.settings import settings
 from db.models import User
 from models.provider_factory import ModelProviderFactory
 from services.model_preference_service import SYSTEM_DEFAULTS, ModelPreferenceService
+
+if TYPE_CHECKING:
+    from data.enrichment.pipeline import EnrichmentPipeline
+    from services.esignature_service import ESignatureService
+    from services.template_service import TemplateService
+    from vector_store.chroma_store import ChromaPropertyStore
+    from vector_store.knowledge_store import KnowledgeStore
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +44,7 @@ except Exception as e:
 
 
 @lru_cache()
-def get_vector_store() -> Optional["ChromaPropertyStore"]:
+def get_vector_store() -> Optional[ChromaPropertyStore]:
     """
     Get cached vector store instance for API.
     Returns None if embeddings are not available.
@@ -400,7 +409,7 @@ def get_crm_connector() -> Optional[CRMConnector]:
 
 
 @lru_cache()
-def get_knowledge_store() -> Optional["KnowledgeStore"]:
+def get_knowledge_store() -> Optional[KnowledgeStore]:
     """
     Get cached knowledge store instance for RAG uploads (CE-safe).
     Returns None if embeddings are not available.
@@ -428,10 +437,10 @@ def get_data_enrichment_service() -> Optional[DataEnrichmentService]:
 # Property Enrichment Dependencies (Task #78)
 # =============================================================================
 
-_enrichment_pipeline: Optional[Any] = None
+_enrichment_pipeline: Optional[EnrichmentPipeline] = None
 
 
-def get_enrichment_pipeline() -> Optional[Any]:
+def get_enrichment_pipeline() -> Optional[EnrichmentPipeline]:
     """
     Get enrichment pipeline instance.
 
@@ -480,11 +489,11 @@ def get_legal_check_service() -> Optional[LegalCheckService]:
 # E-Signature Dependencies
 # =============================================================================
 
-_esignature_service: Optional[Any] = None
-_template_service: Optional[Any] = None
+_esignature_service: Optional[ESignatureService] = None
+_template_service: Optional[TemplateService] = None
 
 
-def get_esignature_service() -> Optional[Any]:
+def get_esignature_service() -> Optional[ESignatureService]:
     """
     Get e-signature service instance.
 
@@ -495,7 +504,7 @@ def get_esignature_service() -> Optional[Any]:
     return _get_esignature_service_impl()
 
 
-def get_template_service() -> Optional[Any]:
+def get_template_service() -> Optional[TemplateService]:
     """
     Get template service instance.
 
@@ -507,9 +516,9 @@ def get_template_service() -> Optional[Any]:
 
 
 def get_agent(
-    store: Annotated[Optional["ChromaPropertyStore"], Depends(get_vector_store)],
+    store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
     llm: Annotated[BaseChatModel, Depends(get_llm)],
-) -> Any:
+) -> HybridPropertyAgent | SimpleRAGAgent:
     """
     Get initialized Hybrid Agent.
     """

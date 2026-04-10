@@ -980,7 +980,7 @@ def create_hybrid_agent(
     web_fetch_max_bytes: int = 300_000,
     web_allowlist_domains: Optional[List[str]] = None,
     verbose: bool = False,
-) -> Any:
+) -> HybridPropertyAgent | SimpleRAGAgent:
     """
     Factory function to create an agent.
 
