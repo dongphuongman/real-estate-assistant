@@ -1,16 +1,20 @@
-name: CI
+﻿name: CI
 
 permissions:
   contents: read
   pull-requests: read
 
 on:
-  push:
-    branches: [main, dev, ver4]
-  pull_request:
-    branches: [main, dev, ver4]
-  workflow_dispatch:
+  workflow_dispatch: {}
 
+  # CI_PAUSED -- original triggers preserved for re-enabling
+  # on:
+  #   push:
+  #     branches: [main, dev, ver4]
+  #   pull_request:
+  #     branches: [main, dev, ver4]
+  #   workflow_dispatch:
+  #
 jobs:
   gitleaks:
     runs-on: ubuntu-latest
