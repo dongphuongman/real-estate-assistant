@@ -194,7 +194,7 @@ def main() -> int:
     errors = diff_paths(baseline_paths, current_v1_paths)
 
     if errors:
-        print(f"\n❌ Found {len(errors)} breaking change(s):\n")
+        print(f"\n[FAIL] Found {len(errors)} breaking change(s):\n")
         for error in errors:
             print(f"  {error}")
         print(
@@ -206,12 +206,12 @@ def main() -> int:
     # Summary
     new_endpoints = set(current_v1_paths.keys()) - set(baseline_paths.keys())
     if new_endpoints:
-        print("\n✅ No breaking changes detected.")
-        print(f"ℹ️  New endpoints added (non-breaking): {len(new_endpoints)}")
+        print("\n[PASS] No breaking changes detected.")
+        print(f"[INFO] New endpoints added (non-breaking): {len(new_endpoints)}")
         for ep in sorted(new_endpoints):
             print(f"   + {ep}")
     else:
-        print("\n✅ No breaking changes detected. API contract is stable.")
+        print("\n[PASS] No breaking changes detected. API contract is stable.")
 
     return 0
 

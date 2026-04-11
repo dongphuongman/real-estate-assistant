@@ -28,6 +28,7 @@ RESET := \033[0m
 .PHONY: ci ci-quick dev dev-api dev-web setup clean install docs
 .PHONY: sprav sprav-quick sprav-json benchmark-search benchmark-chat load-test
 .PHONY: migrate-check migrate-up migrate-down smoke-test test-resilience quickstart
+.PHONY: api-diff api-diff-baseline
 
 # Default target
 .DEFAULT_GOAL := help
@@ -62,6 +63,7 @@ help: ## Show this help message
 	@echo "$(GREEN)CI/CD:$(RESET)"
 	@sed -n 's/^## ci/\tmake &/p' $(MAKEFILE_LIST)
 	@sed -n 's/^## docs/\tmake &/p' $(MAKEFILE_LIST)
+	@sed -n 's/^## api-diff/\tmake &/p' $(MAKEFILE_LIST)
 	@echo ""
 	@echo "$(GREEN)SPRAV (Pre-Release Validation):$(RESET)"
 	@sed -n 's/^## sprav/\tmake &/p' $(MAKEFILE_LIST)
@@ -210,6 +212,16 @@ docs:
 	@echo "Documentation generated in docs/api/"
 	@echo "  - docs/api/openapi.json"
 	@echo "  - docs/api/API_REFERENCE.generated.md"
+
+## api-diff: Check OpenAPI schema for breaking changes vs baseline (Task #70)
+api-diff:
+	$(PYTHON) scripts/openapi_diff.py --baseline docs/api-v1-baseline.json
+
+## api-diff-baseline: Regenerate the API baseline schema (run after intentional breaking changes)
+api-diff-baseline:
+	$(PYTHON) scripts/docs/export_openapi.py --output docs/api/openapi.json
+	$(PYTHON) -c "import json; schema=json.load(open('docs/api/openapi.json','r')); paths={k:v for k,v in schema.get('paths',{}).items() if k.startswith('/api/v1/')}; schema['paths']=paths; json.dump(schema, open('docs/api-v1-baseline.json','w'), indent=2)"
+	@echo "Baseline updated: docs/api-v1-baseline.json"
 
 ## ci: Run full CI pipeline locally
 ci:
