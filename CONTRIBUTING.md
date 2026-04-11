@@ -185,6 +185,8 @@ We track community health metrics to measure project growth. See [docs/community
 
 ## Architecture Overview
 
+For a detailed architecture reference, see [Developer Guide](docs/community/DEVELOPER_GUIDE.md).
+
 ```
 apps/
 ├── api/              # FastAPI backend (Python 3.12+)
