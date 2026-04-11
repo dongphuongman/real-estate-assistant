@@ -14,10 +14,13 @@ describe('i18n config', () => {
       expect(locales).toContain('pl');
       expect(locales).toContain('en');
       expect(locales).toContain('ru');
+      expect(locales).toContain('de');
+      expect(locales).toContain('es');
+      expect(locales).toContain('uk');
     });
 
-    it('should have exactly 3 locales', () => {
-      expect(locales).toHaveLength(3);
+    it('should have at least 9 locales', () => {
+      expect(locales.length).toBeGreaterThanOrEqual(9);
     });
 
     it('should be readonly array', () => {
@@ -68,11 +71,14 @@ describe('i18n config', () => {
       expect(isValidLocale('pl')).toBe(true);
       expect(isValidLocale('en')).toBe(true);
       expect(isValidLocale('ru')).toBe(true);
+      expect(isValidLocale('de')).toBe(true);
+      expect(isValidLocale('es')).toBe(true);
+      expect(isValidLocale('uk')).toBe(true);
     });
 
     it('should return false for invalid locales', () => {
-      expect(isValidLocale('de')).toBe(false);
       expect(isValidLocale('fr')).toBe(false);
+      expect(isValidLocale('zh')).toBe(false);
       expect(isValidLocale('')).toBe(false);
       expect(isValidLocale('PL')).toBe(false); // case-sensitive
     });
