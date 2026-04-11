@@ -27,7 +27,7 @@ RESET := \033[0m
 .PHONY: docker-up docker-down docker-logs docker-build
 .PHONY: ci ci-quick dev dev-api dev-web setup clean install docs
 .PHONY: sprav sprav-quick sprav-json benchmark-search benchmark-chat load-test
-.PHONY: migrate-check migrate-up migrate-down smoke-test
+.PHONY: migrate-check migrate-up migrate-down smoke-test test-resilience
 
 # Default target
 .DEFAULT_GOAL := help
@@ -256,3 +256,7 @@ clean-all: clean
 ## smoke-test: Run deployment smoke tests against a running instance (Task #69)
 smoke-test:
 	bash scripts/smoke_test.sh
+
+## test-resilience: Run graceful degradation and resilience tests (Task #69)
+test-resilience:
+	cd apps/api && $(PYTHON) -m pytest tests/resilience/ -v
