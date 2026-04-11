@@ -52,6 +52,12 @@ deploy/compose/data/audit/
 
 # Local research and private materials (do not commit)
 docs/research/
+docs/ADRs/
+docs/adr/
+docs/process/
+docs/releases/
+docs/specs/
+docs/templates/
 tmp/
 private/
 
