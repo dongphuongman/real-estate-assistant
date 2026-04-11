@@ -18,6 +18,8 @@ config/searxng/
 trae_config.yaml
 trae_config.yml
 .trae/
+.agent/
+.gemini/
 .history/
 .mcp.json
 
