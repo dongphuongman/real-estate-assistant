@@ -1,0 +1,94 @@
+# Quick Start Docker Compose — uses pre-built GHCR images
+# No build step required. Just configure and run.
+#
+# Usage:
+#   cp deploy/compose/.env.example deploy/compose/.env
+#   # Edit .env to add your LLM API key
+#   docker compose -f deploy/compose/docker-compose.quick.yml up -d
+#
+# Or use: make quickstart
+
+services:
+  backend:
+    image: ghcr.io/aleksnestu/ai-real-estate-assistant/backend:latest
+    container_name: ai-backend
+    ports:
+      - "8082:8000"
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - API_ACCESS_KEY=${API_ACCESS_KEY:-dev-secret-key}
+      - DEFAULT_PROVIDER=${DEFAULT_PROVIDER:-openai}
+      - CORS_ALLOW_ORIGINS=${CORS_ALLOW_ORIGINS:-*}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - CACHE_ENABLED=${CACHE_ENABLED:-true}
+      - CACHE_TTL_SECONDS=${CACHE_TTL_SECONDS:-300}
+      - CACHE_REDIS_URL=${CACHE_REDIS_URL:-redis://redis:6379}
+      - METRICS_ENABLED=${METRICS_ENABLED:-true}
+      - DB_POOL_SIZE=${DB_POOL_SIZE:-10}
+      - DB_MAX_OVERFLOW=${DB_MAX_OVERFLOW:-20}
+      - API_RATE_LIMIT_ENABLED=${API_RATE_LIMIT_ENABLED:-true}
+      - API_RATE_LIMIT_RPM=${API_RATE_LIMIT_RPM:-600}
+    volumes:
+      - chroma_data:/app/chroma_db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
+        reservations:
+          memory: 256M
+          cpus: "0.25"
+
+  frontend:
+    image: ghcr.io/aleksnestu/ai-real-estate-assistant/frontend:latest
+    container_name: ai-frontend
+    ports:
+      - "3082:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api/v1}
+      - BACKEND_API_URL=${BACKEND_API_URL:-http://backend:8000/api/v1}
+      - API_ACCESS_KEY=${API_ACCESS_KEY:-dev-secret-key}
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+        reservations:
+          memory: 128M
+          cpus: "0.1"
+
+  redis:
+    image: redis:7-alpine
+    container_name: ai-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  chroma_data:
+  redis_data:

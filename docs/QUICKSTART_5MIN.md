@@ -45,11 +45,27 @@ All other settings have sensible defaults. Skip them.
 
 ## Step 3 — Start
 
+**Option A — Pre-built images (fastest, recommended):**
+
+```bash
+docker compose -f deploy/compose/docker-compose.quick.yml up -d
+```
+
+Pulls pre-built images from GHCR — no build step needed.
+
+**Option B — Build from source:**
+
 ```bash
 docker compose -f deploy/compose/docker-compose.yml up --build -d
 ```
 
-This starts the backend, frontend, and Redis. First run builds images (~3-5 min). Subsequent starts are instant.
+Builds images locally (~3-5 min on first run).
+
+**Or use the Makefile shortcut:**
+
+```bash
+make quickstart
+```
 
 ## Step 4 — Verify
 

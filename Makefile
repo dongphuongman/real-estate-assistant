@@ -27,7 +27,7 @@ RESET := \033[0m
 .PHONY: docker-up docker-down docker-logs docker-build
 .PHONY: ci ci-quick dev dev-api dev-web setup clean install docs
 .PHONY: sprav sprav-quick sprav-json benchmark-search benchmark-chat load-test
-.PHONY: migrate-check migrate-up migrate-down smoke-test test-resilience
+.PHONY: migrate-check migrate-up migrate-down smoke-test test-resilience quickstart
 
 # Default target
 .DEFAULT_GOAL := help
@@ -260,3 +260,16 @@ smoke-test:
 ## test-resilience: Run graceful degradation and resilience tests (Task #69)
 test-resilience:
 	cd apps/api && $(PYTHON) -m pytest tests/resilience/ -v
+
+## quickstart: Start app with pre-built GHCR images (no build needed, Task #67)
+quickstart:
+	@test -f deploy/compose/.env || cp deploy/compose/.env.example deploy/compose/.env
+	@echo "Starting AI Real Estate Assistant with pre-built images..."
+	@echo "Edit deploy/compose/.env to add your LLM API key."
+	docker compose -f deploy/compose/docker-compose.quick.yml up -d
+	@echo ""
+	@echo "Waiting for services to start..."
+	@sleep 5
+	@echo "Frontend: http://localhost:3082"
+	@echo "Backend:  http://localhost:8082/docs"
+	@echo "Health:   http://localhost:8082/health"
