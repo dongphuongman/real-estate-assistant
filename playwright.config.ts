@@ -7,7 +7,7 @@ const startWeb =
   (process.env.PLAYWRIGHT_START_WEB || '').toLowerCase() === 'true';
 
 export default defineConfig({
-  testDir: './apps/api/tests/e2e',
+  testDir: ['./apps/api/tests/e2e', './e2e'],
   timeout: 60_000,
   // Retry failed tests in CI
   retries: isCI ? 2 : 0,
