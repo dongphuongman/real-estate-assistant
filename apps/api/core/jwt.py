@@ -8,22 +8,30 @@ import jwt
 
 from config.settings import get_settings
 
+# Cache the generated dev secret so tokens stay valid within a process
+_dev_jwt_secret: str | None = None
+
 
 def get_jwt_secret() -> str:
     """Get JWT secret key from settings."""
-    import logging
+    global _dev_jwt_secret
 
     settings = get_settings()
     secret = settings.jwt_secret_key
     if not secret:
         if settings.environment.lower() == "production":
             raise ValueError("JWT_SECRET_KEY must be set in production")
-        # Generate a random secret for development (tokens won't persist across restarts)
-        secret = secrets.token_hex(32)
-        logging.getLogger(__name__).warning(
-            "JWT_SECRET_KEY not set — using generated secret. "
-            "Tokens will not persist across restarts."
-        )
+        # Use a cached random secret for development so tokens remain
+        # valid within the same process (e.g., during test runs).
+        if _dev_jwt_secret is None:
+            _dev_jwt_secret = secrets.token_hex(32)
+            import logging
+
+            logging.getLogger(__name__).warning(
+                "JWT_SECRET_KEY not set — using generated secret. "
+                "Tokens will not persist across restarts."
+            )
+        secret = _dev_jwt_secret
     return secret
 
 

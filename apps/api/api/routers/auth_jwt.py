@@ -13,7 +13,6 @@ This module provides JWT-based authentication endpoints including:
 
 import logging
 import time
-from functools import wraps
 from typing import Optional
 
 from fastapi import (
@@ -95,35 +94,25 @@ def _get_client_ip(request: Request) -> str:
 
 
 def auth_rate_limit(max_requests: int, window_seconds: int = 60):
-    """Decorator for auth-specific rate limiting."""
+    """Dependency-based rate limiter for auth endpoints.
 
-    def decorator(func):
-        @wraps(func)
-        async def wrapper(*args, request: Request = None, **kwargs):
-            req = request
-            if req is None:
-                for arg in args:
-                    if isinstance(arg, Request):
-                        req = arg
-                        break
-            if req is None:
-                req = kwargs.get("request")
+    Returns a FastAPI dependency that checks rate limits before the
+    endpoint runs. This preserves the original endpoint signature so
+    that FastAPI's dependency injection continues to work correctly.
+    """
 
-            if req:
-                client_ip = _get_client_ip(req)
-                key = f"auth:{func.__name__}:{client_ip}"
-                allowed, retry_after = _check_auth_rate_limit(key, max_requests, window_seconds)
-                if not allowed:
-                    raise HTTPException(
-                        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                        detail=f"Too many requests. Try again in {retry_after}s.",
-                        headers={"Retry-After": str(retry_after)},
-                    )
-            return await func(*args, **kwargs)
+    async def _check(request: Request) -> None:
+        client_ip = _get_client_ip(request)
+        key = f"auth:{request.url.path}:{client_ip}"
+        allowed, retry_after = _check_auth_rate_limit(key, max_requests, window_seconds)
+        if not allowed:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"Too many requests. Try again in {retry_after}s.",
+                headers={"Retry-After": str(retry_after)},
+            )
 
-        return wrapper
-
-    return decorator
+    return Depends(_check)
 
 
 def _set_auth_cookies(
@@ -197,8 +186,8 @@ def _get_client_info(request: Request) -> tuple[Optional[str], Optional[str]]:
     status_code=status.HTTP_201_CREATED,
     summary="Register a new user",
     description="Create a new user account with email and password.",
+    dependencies=[auth_rate_limit(max_requests=3, window_seconds=60)],
 )
-@auth_rate_limit(max_requests=3, window_seconds=60)
 async def register(
     body: UserCreate,
     request: Request,
@@ -270,8 +259,8 @@ async def register(
     response_model=TokenResponse,
     summary="Login with email and password",
     description="Authenticate user and return tokens.",
+    dependencies=[auth_rate_limit(max_requests=5, window_seconds=60)],
 )
-@auth_rate_limit(max_requests=5, window_seconds=60)
 async def login(
     body: UserLogin,
     request: Request,
@@ -578,8 +567,8 @@ async def verify_email(
     response_model=MessageResponse,
     summary="Resend verification email",
     description="Request a new email verification token.",
+    dependencies=[auth_rate_limit(max_requests=3, window_seconds=60)],
 )
-@auth_rate_limit(max_requests=3, window_seconds=60)
 async def resend_verification(
     body: dict[str, str],
     request: Request,
@@ -648,8 +637,8 @@ async def resend_verification(
     response_model=MessageResponse,
     summary="Request password reset",
     description="Request a password reset email.",
+    dependencies=[auth_rate_limit(max_requests=3, window_seconds=60)],
 )
-@auth_rate_limit(max_requests=3, window_seconds=60)
 async def forgot_password(
     body: dict[str, str],
     request: Request,
