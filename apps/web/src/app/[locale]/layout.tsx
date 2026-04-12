@@ -41,12 +41,24 @@ export async function generateMetadata({
     pl: 'Asystent Nieruchomości AI',
     en: 'AI Real Estate Assistant',
     ru: 'AI Ассистент по Недвижимости',
+    de: 'KI-Immobilienassistent',
+    es: 'Asistente Inmobiliario IA',
+    it: 'Assistente Immobiliare IA',
+    pt: 'Assistente Imobiliário IA',
+    tr: 'Yapay Zeka Emlak Asistanı',
+    uk: 'AI Асистент з Нерухомості',
   };
 
   const descriptions: Record<Locale, string> = {
     pl: 'Nowoczesne wyszukiwanie nieruchomości i analityka rynkowa',
     en: 'Next-gen real estate search and analytics',
     ru: 'Современный поиск недвижимости и аналитика рынка',
+    de: 'Modernes Immobiliensuche und Marktanalyse',
+    es: 'Búsqueda inmobiliaria y análisis de mercado de nueva generación',
+    it: 'Ricerca immobiliare e analisi di mercato di nuova generazione',
+    pt: 'Pesquisa imobiliária e análise de mercado de última geração',
+    tr: 'Yeni nesil emlak arama ve pazar analizi',
+    uk: 'Сучасний пошук нерухомості та аналітика ринку',
   };
 
   return {

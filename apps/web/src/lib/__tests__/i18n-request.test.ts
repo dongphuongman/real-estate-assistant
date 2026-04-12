@@ -39,7 +39,7 @@ describe('i18n request configuration', () => {
     });
 
     it('should fallback to pl when locale is invalid', async () => {
-      const requestLocale = 'de';
+      const requestLocale = 'xx';
       let locale = requestLocale;
       if (!locale || !locales.includes(locale as Locale)) {
         locale = 'pl';
