@@ -4,6 +4,7 @@ Provides endpoints for investment property analysis including
 metrics calculation, cash flow projections, and report generation.
 """
 
+import json
 import logging
 from datetime import datetime
 from enum import Enum
@@ -55,9 +56,7 @@ class InvestmentReportRequest(BaseModel):
     property_price: float = Field(
         description="Purchase price of the property", gt=0, example=350000
     )
-    monthly_rent: float = Field(
-        description="Expected monthly rental income", gt=0, example=2800
-    )
+    monthly_rent: float = Field(description="Expected monthly rental income", gt=0, example=2800)
 
     # Purchase costs
     down_payment_percent: float = Field(
@@ -82,9 +81,7 @@ class InvestmentReportRequest(BaseModel):
         description="Annual interest rate as percentage (e.g., 4.5 for 4.5%)",
         ge=0,
     )
-    loan_years: int = Field(
-        default=30, description="Loan term in years", gt=0, le=50, example=30
-    )
+    loan_years: int = Field(default=30, description="Loan term in years", gt=0, le=50, example=30)
 
     # Operating expenses (monthly)
     property_tax_monthly: float = Field(
@@ -93,9 +90,7 @@ class InvestmentReportRequest(BaseModel):
     insurance_monthly: float = Field(
         default=0.0, description="Monthly home insurance", ge=0, example=150
     )
-    hoa_monthly: float = Field(
-        default=0.0, description="Monthly HOA/condo fees", ge=0, example=0
-    )
+    hoa_monthly: float = Field(default=0.0, description="Monthly HOA/condo fees", ge=0, example=0)
     maintenance_percent: float = Field(
         default=1.0,
         description="Annual maintenance as % of property value",
@@ -234,12 +229,8 @@ async def generate_investment_report(
         result_dict["maintenance_monthly"] = (
             request.property_price * request.maintenance_percent / 100 / 12
         )
-        result_dict["vacancy_monthly"] = (
-            request.monthly_rent * request.vacancy_rate / 100
-        )
-        result_dict["management_monthly"] = (
-            request.monthly_rent * request.management_percent / 100
-        )
+        result_dict["vacancy_monthly"] = request.monthly_rent * request.vacancy_rate / 100
+        result_dict["management_monthly"] = request.monthly_rent * request.management_percent / 100
 
         # Generate projection if requested
         projection = None
@@ -321,7 +312,7 @@ async def generate_investment_report(
 
             filename = f"investment_report_{timestamp}.json"
             return Response(
-                content=json_data,
+                content=json.dumps(json_data, default=str),
                 media_type="application/json",
                 headers={
                     "Content-Disposition": f'attachment; filename="{filename}"',
