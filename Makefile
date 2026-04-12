@@ -29,6 +29,7 @@ RESET := \033[0m
 .PHONY: sprav sprav-quick sprav-json benchmark-search benchmark-chat load-test
 .PHONY: migrate-check migrate-up migrate-down smoke-test test-resilience quickstart
 .PHONY: api-diff api-diff-baseline
+.PHONY: seed
 
 # Default target
 .DEFAULT_GOAL := help
@@ -171,6 +172,18 @@ setup:
 install:
 	cd apps/api && uv pip install -e .[dev]
 	cd apps/web && npm install
+
+## seed: Seed ChromaDB with sample property data (60 listings)
+seed:
+	cd apps/api && $(PYTHON) scripts/seed_properties.py
+
+## seed-force: Re-seed ChromaDB even if data already exists
+seed-force:
+	cd apps/api && $(PYTHON) scripts/seed_properties.py --force
+
+## seed-100: Seed ChromaDB with 100 property listings
+seed-100:
+	cd apps/api && $(PYTHON) scripts/seed_properties.py --count 100
 
 ## ============================================================================
 ## DOCKER
