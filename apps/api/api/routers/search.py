@@ -23,7 +23,7 @@ from vector_store.chroma_store import ChromaPropertyStore
 # Configure logger
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(tags=["Search"])
 
 # Polygon validation constants
 POLYGON_MAX_VERTICES = 100

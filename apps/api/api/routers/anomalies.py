@@ -41,7 +41,7 @@ from utils.streaming import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/anomalies", tags=["anomalies"])
+router = APIRouter(prefix="/anomalies", tags=["Anomalies"])
 
 
 def get_anomaly_service(db: AsyncSession) -> AnomalyService:

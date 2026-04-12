@@ -14,7 +14,7 @@ from api.models import (
     PromptTemplateVariableInfo,
 )
 
-router = APIRouter()
+router = APIRouter(tags=["Prompt Templates"])
 
 
 @router.get("/prompt-templates", response_model=List[PromptTemplateInfo], tags=["Prompt Templates"])

@@ -71,7 +71,7 @@ from tools.listing_generator_tools import (
 )
 from vector_store.chroma_store import ChromaPropertyStore
 
-router = APIRouter()
+router = APIRouter(tags=["Tools"])
 
 
 class ToolInfo(BaseModel):

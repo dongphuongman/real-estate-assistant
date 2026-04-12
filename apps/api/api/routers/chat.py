@@ -32,7 +32,7 @@ from utils.streaming import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(tags=["Chat"])
 
 
 @router.post("/chat", response_model=ChatResponse, tags=["Chat"])

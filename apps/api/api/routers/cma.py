@@ -30,7 +30,7 @@ from vector_store.chroma_store import ChromaPropertyStore
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(tags=["CMA"])
 
 
 def _document_to_property(doc: Any) -> Property:

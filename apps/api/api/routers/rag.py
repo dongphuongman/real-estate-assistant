@@ -29,7 +29,7 @@ from utils.streaming import (
 from vector_store.knowledge_store import KnowledgeStore
 
 logger = logging.getLogger(__name__)
-router = APIRouter()
+router = APIRouter(tags=["RAG"])
 
 _READ_CHUNK_BYTES = 1024 * 1024
 

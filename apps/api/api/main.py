@@ -94,13 +94,91 @@ from api.sentry_init import init_sentry
 
 init_sentry()
 
+API_DESCRIPTION = """\
+# AI Real Estate Assistant API
+
+Conversational AI platform for property search, market analysis, and investment tools.
+
+## Authentication
+
+- **API Key** — pass via `X-API-Key` header for general access
+- **JWT Bearer** — pass via `Authorization: Bearer <token>` for user-scoped features (favorites, saved searches, market data, etc.)
+
+## Base URL
+
+```
+/api/v1
+```
+
+All endpoints listed below are mounted under this prefix.
+"""
+
+OPENAPI_TAGS = [
+    # Core
+    {
+        "name": "Search",
+        "description": "Semantic property search with filters, ranking, and pagination",
+    },
+    {"name": "Chat", "description": "Conversational AI assistant for property queries"},
+    {"name": "RAG", "description": "Document upload and Q&A with citations"},
+    {
+        "name": "Tools",
+        "description": "Mortgage, TCO, investment, commute, valuation, and other calculators",
+    },
+    # Property management
+    {"name": "Favorites", "description": "Property favorites and watchlist"},
+    {"name": "Collections", "description": "Organize favorites into named collections"},
+    {"name": "Saved Searches", "description": "Save search queries with alert settings"},
+    {"name": "Filter Presets", "description": "Saved filter configurations"},
+    # Market & analysis
+    {
+        "name": "Market Analytics",
+        "description": "Price history, trends, indicators, and area insights",
+    },
+    {"name": "CMA", "description": "Comparative Market Analysis reports"},
+    {"name": "Anomalies", "description": "Market anomaly detection and management"},
+    {"name": "Lead Scoring", "description": "Property lead scoring system"},
+    {"name": "Investment", "description": "Investment property analysis and report generation"},
+    # Agents
+    {"name": "Agents", "description": "Real estate agent and broker management"},
+    {"name": "Agent Analytics", "description": "Agent performance metrics and coaching"},
+    # Documents & signatures
+    {"name": "Documents", "description": "Document upload, download, and management"},
+    {"name": "E-Signatures", "description": "Electronic signature request workflow"},
+    {"name": "Webhooks", "description": "Incoming webhook endpoints"},
+    # Data management
+    {"name": "Data Sources", "description": "External data source configuration and sync"},
+    {"name": "Bulk Jobs", "description": "Bulk import and export job management"},
+    {"name": "Export", "description": "Export properties to CSV, Excel, JSON"},
+    # Admin
+    {"name": "Admin", "description": "Data ingestion, reindexing, and system administration"},
+    {"name": "Audit", "description": "Audit log querying"},
+    {"name": "Settings", "description": "Application settings"},
+    {"name": "Profile", "description": "User profile management"},
+    {"name": "Feedback", "description": "Search relevance ratings and feedback metrics"},
+    # Auth
+    {"name": "Auth", "description": "API key authentication"},
+    {"name": "JWT Auth", "description": "JWT-based user authentication (register, login, refresh)"},
+    # Configuration
+    {"name": "Model Preferences", "description": "Per-task LLM model preferences"},
+    {"name": "Ranking Configuration", "description": "Property ranking algorithm configuration"},
+    {"name": "Prompt Templates", "description": "System prompt templates and rendering"},
+    {"name": "MCP Admin", "description": "MCP connector allowlist governance"},
+    {"name": "MCP Audit", "description": "MCP connector audit log management"},
+    # System
+    {"name": "Monitoring", "description": "Prometheus metrics and health checks"},
+    {"name": "Push Notifications", "description": "Web push notification subscriptions"},
+    {"name": "User Activity Analytics", "description": "User behavior and activity tracking"},
+]
+
 app = FastAPI(
     title=settings.app_title,
     version=settings.version,
-    description="AI Real Estate Assistant API V4",
+    description=API_DESCRIPTION,
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
+    openapi_tags=OPENAPI_TAGS,
 )
 
 # Response compression — reduces JSON payload sizes by 60-80%

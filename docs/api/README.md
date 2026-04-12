@@ -33,6 +33,14 @@ When the API is running, you can access:
 - **ReDoc**: `http://localhost:8000/redoc`
 - **OpenAPI Schema**: `http://localhost:8000/openapi.json`
 
+Endpoints are organized by tag in Swagger UI (Search, Chat, Tools, Market Analytics, etc.).
+
+To regenerate the static OpenAPI schema:
+
+```bash
+cd apps/api && python -m scripts.docs.export_openapi
+```
+
 ## Available Resources
 
 | Resource | Description | Auth Required |

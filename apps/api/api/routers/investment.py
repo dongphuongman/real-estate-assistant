@@ -28,7 +28,7 @@ from utils.investment_report_generator import InvestmentReportGenerator
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(tags=["Investment"])
 
 
 # ============================================================================

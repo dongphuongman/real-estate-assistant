@@ -22,7 +22,7 @@ from fastapi import APIRouter, Request, Response
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["monitoring"])
+router = APIRouter(tags=["Monitoring"])
 
 
 def format_prometheus_metric(
