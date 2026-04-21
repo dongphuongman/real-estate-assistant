@@ -119,7 +119,14 @@ class AppSettings(BaseModel):
         default_factory=lambda: (
             [o.strip() for o in os.getenv("CORS_ALLOW_ORIGINS", "").split(",") if o.strip()]
             if os.getenv("ENVIRONMENT", "development").strip().lower() == "production"
-            else ["*"]
+            else [
+                o.strip()
+                for o in os.getenv(
+                    "CORS_ALLOW_ORIGINS",
+                    "http://localhost:3000,http://localhost:3803",
+                ).split(",")
+                if o.strip()
+            ]
         )
     )
 

@@ -5,14 +5,17 @@ import pytest
 from config.settings import AppSettings
 
 
-def test_dev_env_allows_all_origins():
+def test_dev_env_defaults_to_localhost_origins():
     old_env = os.environ.get("ENVIRONMENT")
     try:
         os.environ["ENVIRONMENT"] = "development"
         if "CORS_ALLOW_ORIGINS" in os.environ:
             del os.environ["CORS_ALLOW_ORIGINS"]
         settings = AppSettings()
-        assert settings.cors_allow_origins == ["*"]
+        assert settings.cors_allow_origins == [
+            "http://localhost:3000",
+            "http://localhost:3803",
+        ]
     finally:
         if old_env is None:
             os.environ.pop("ENVIRONMENT", None)
