@@ -228,9 +228,8 @@ class NeighborhoodQualityIndexTool(BaseTool):
             score = 50 + (hash_val % 51)  # 50-100 range
             return float(score)
 
-    def calculate_amenities_score(
-        self, latitude: Optional[float], longitude: Optional[float]
-    ) -> float:
+    @staticmethod
+    def _calculate_amenities_score(latitude: Optional[float], longitude: Optional[float]) -> float:
         """
         Calculate amenities score based on nearby POI count.
 
