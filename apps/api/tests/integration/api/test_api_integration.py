@@ -6,7 +6,6 @@ from langchain_core.documents import Document
 from api.dependencies import get_vector_store
 from api.main import app
 from config.settings import get_settings
-from notifications.notification_preferences import NotificationPreferencesManager
 
 client = TestClient(app)
 
@@ -84,6 +83,24 @@ def test_request_id_is_present_on_error_responses():
     assert response.headers.get("x-request-id") == request_id
 
 
+def _get_observability_limiter():
+    """Retrieve the observability middleware's RateLimiter from its closure."""
+    from api.main import app as _app
+
+    for mw in _app.user_middleware:
+        func = mw.kwargs.get("dispatch")
+        if func is None:
+            continue
+        for cell in getattr(func, "__closure__", []) or []:
+            try:
+                obj = cell.cell_contents
+                if hasattr(obj, "check") and hasattr(obj, "reset") and hasattr(obj, "configure"):
+                    return obj
+            except (ValueError, AttributeError):
+                pass
+    return None
+
+
 def test_rate_limiting_blocks_after_threshold_and_includes_headers():
     settings = get_settings()
     key = settings.api_access_key
@@ -93,8 +110,16 @@ def test_rate_limiting_blocks_after_threshold_and_includes_headers():
     settings.api_rate_limit_enabled = True
     settings.api_rate_limit_rpm = 2
 
+    limiter = app.state.rate_limiter
+    old_limiter_rpm = limiter.default_rpm
+    limiter.default_rpm = 2
+
+    obs_limiter = _get_observability_limiter()
+
     try:
-        app.state.rate_limiter.reset()
+        limiter.reset()
+        if obs_limiter:
+            obs_limiter.reset()
 
         r1 = client.get("/api/v1/verify-auth", headers={"X-API-Key": key})
         r2 = client.get("/api/v1/verify-auth", headers={"X-API-Key": key})
@@ -111,7 +136,10 @@ def test_rate_limiting_blocks_after_threshold_and_includes_headers():
     finally:
         settings.api_rate_limit_enabled = old_enabled
         settings.api_rate_limit_rpm = old_rpm
-        app.state.rate_limiter.reset()
+        limiter.default_rpm = old_limiter_rpm
+        limiter.reset()
+        if obs_limiter:
+            obs_limiter.reset()
 
 
 def test_tools_auth_enforced():
@@ -153,21 +181,72 @@ def test_tools_compare_properties_happy_path_with_stub_store():
     app.dependency_overrides = {}
 
 
-def test_notification_settings_are_scoped_by_user_email(tmp_path):
+def _make_test_db_ctx():
+    """Create an in-memory test database and return a get_db_context replacement."""
+    import asyncio
+    from contextlib import asynccontextmanager
+
+    from sqlalchemy.ext.asyncio import (
+        AsyncSession,
+        async_sessionmaker,
+        create_async_engine,
+    )
+
+    from db.database import Base
+    from db.repositories import UserRepository
+
+    engine = create_async_engine(
+        "sqlite+aiosqlite:///:memory:",
+        echo=False,
+        connect_args={"check_same_thread": False},
+    )
+
+    async def _setup():
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        factory = async_sessionmaker(
+            bind=engine,
+            class_=AsyncSession,
+            expire_on_commit=False,
+            autocommit=False,
+            autoflush=False,
+        )
+        async with factory() as session:
+            user_repo = UserRepository(session)
+            await user_repo.create(email="user1@example.com")
+            await user_repo.create(email="user2@example.com")
+            await session.commit()
+        return factory
+
+    factory = asyncio.run(_setup())
+
+    @asynccontextmanager
+    async def _get_db_context():
+        async with factory() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
+
+    return _get_db_context, engine
+
+
+def test_notification_settings_are_scoped_by_user_email():
     settings = get_settings()
     key = settings.api_access_key
 
-    prefs_manager = NotificationPreferencesManager(storage_path=str(tmp_path))
+    test_ctx, engine = _make_test_db_ctx()
 
-    with patch("api.routers.settings.PREFS_MANAGER", prefs_manager):
+    with patch("api.routers.settings.get_db_context", test_ctx):
         user1_headers = {"X-API-Key": key, "X-User-Email": "user1@example.com"}
         user2_headers = {"X-API-Key": key, "X-User-Email": "user2@example.com"}
 
         r1 = client.put(
             "/api/v1/settings/notifications",
             json={
-                "email_digest": True,
-                "frequency": "daily",
+                "alert_frequency": "daily",
                 "expert_mode": True,
                 "marketing_emails": False,
             },
@@ -178,8 +257,7 @@ def test_notification_settings_are_scoped_by_user_email(tmp_path):
         r2 = client.put(
             "/api/v1/settings/notifications",
             json={
-                "email_digest": False,
-                "frequency": "weekly",
+                "alert_frequency": "weekly",
                 "expert_mode": False,
                 "marketing_emails": True,
             },
@@ -196,42 +274,41 @@ def test_notification_settings_are_scoped_by_user_email(tmp_path):
         d1 = g1.json()
         d2 = g2.json()
 
-        assert d1["frequency"] == "daily"
-        assert d1["email_digest"] is True
+        assert d1["alert_frequency"] == "daily"
         assert d1["expert_mode"] is True
         assert d1["marketing_emails"] is False
 
-        assert d2["frequency"] == "weekly"
-        assert d2["email_digest"] is False
+        assert d2["alert_frequency"] == "weekly"
         assert d2["expert_mode"] is False
         assert d2["marketing_emails"] is True
 
+    import asyncio
 
-def test_notification_settings_requires_user_email(tmp_path):
+    asyncio.run(engine.dispose())
+
+
+def test_notification_settings_requires_user_email():
     settings = get_settings()
     key = settings.api_access_key
 
-    prefs_manager = NotificationPreferencesManager(storage_path=str(tmp_path))
+    # _resolve_user_email runs before any DB access, so no DB mock needed
+    headers = {"X-API-Key": key}
 
-    with patch("api.routers.settings.PREFS_MANAGER", prefs_manager):
-        headers = {"X-API-Key": key}
+    r_get = client.get("/api/v1/settings/notifications", headers=headers)
+    assert r_get.status_code == 400
+    assert r_get.json()["detail"] == "Missing user email"
 
-        r_get = client.get("/api/v1/settings/notifications", headers=headers)
-        assert r_get.status_code == 400
-        assert r_get.json()["detail"] == "Missing user email"
-
-        r_put = client.put(
-            "/api/v1/settings/notifications",
-            json={
-                "email_digest": True,
-                "frequency": "weekly",
-                "expert_mode": False,
-                "marketing_emails": False,
-            },
-            headers=headers,
-        )
-        assert r_put.status_code == 400
-        assert r_put.json()["detail"] == "Missing user email"
+    r_put = client.put(
+        "/api/v1/settings/notifications",
+        json={
+            "alert_frequency": "weekly",
+            "expert_mode": False,
+            "marketing_emails": False,
+        },
+        headers=headers,
+    )
+    assert r_put.status_code == 400
+    assert r_put.json()["detail"] == "Missing user email"
 
 
 def test_model_catalog_lists_providers_and_models():

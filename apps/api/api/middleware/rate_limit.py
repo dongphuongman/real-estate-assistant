@@ -8,6 +8,7 @@ header when exceeded.
 
 import asyncio
 import time
+import uuid
 from collections import defaultdict
 from typing import Any
 
@@ -76,6 +77,10 @@ class SlidingWindowRateLimiter:
             for k in expired_keys:
                 del self._requests[k]
 
+    def reset(self) -> None:
+        """Clear all tracked request timestamps."""
+        self._requests.clear()
+
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     """Middleware that enforces rate limits per client IP."""
@@ -109,15 +114,23 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         allowed, retry_after = await self.limiter.is_allowed(client_ip, limit)
 
         if not allowed:
+            headers = {
+                "Retry-After": str(retry_after),
+                "Content-Type": "application/json",
+                "X-RateLimit-Limit": str(limit),
+                "X-RateLimit-Remaining": "0",
+                "X-RateLimit-Reset": str(retry_after),
+            }
+            request_id = (
+                request.headers.get("X-Request-ID")
+                or getattr(request.state, "request_id", None)
+                or uuid.uuid4().hex
+            )
+            headers["X-Request-ID"] = request_id
             return Response(
                 content=f'{{"detail":"Rate limit exceeded. Retry after {retry_after}s."}}',
                 status_code=429,
-                headers={
-                    "Retry-After": str(retry_after),
-                    "Content-Type": "application/json",
-                    "X-RateLimit-Limit": str(limit),
-                    "X-RateLimit-Remaining": "0",
-                },
+                headers=headers,
             )
 
         response = await call_next(request)
