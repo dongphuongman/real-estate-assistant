@@ -35,14 +35,15 @@ from tools.investment_tools import (  # noqa: E402
     InvestmentAnalysisResult,
 )
 
-_pt = types.ModuleType("tools.property_tools")
-_pt.InvestmentCalculatorTool = _inv_tools.InvestmentCalculatorTool
-_pt.InvestmentAnalysisResult = InvestmentAnalysisResult
-_pt.AdvancedInvestmentTool = _inv_tools.AdvancedInvestmentTool
-_pt.AdvancedInvestmentInput = AdvancedInvestmentInput
-_pt.AdvancedInvestmentResult = AdvancedInvestmentResult
-_pt.AdvancedInvestmentResult = AdvancedInvestmentResult
-sys.modules["tools.property_tools"] = _pt
+# Only create a stub if the real module isn't already loaded
+if "tools.property_tools" not in sys.modules:
+    _pt = types.ModuleType("tools.property_tools")
+    _pt.InvestmentCalculatorTool = _inv_tools.InvestmentCalculatorTool
+    _pt.InvestmentAnalysisResult = InvestmentAnalysisResult
+    _pt.AdvancedInvestmentTool = _inv_tools.AdvancedInvestmentTool
+    _pt.AdvancedInvestmentInput = AdvancedInvestmentInput
+    _pt.AdvancedInvestmentResult = AdvancedInvestmentResult
+    sys.modules["tools.property_tools"] = _pt
 
 from api.routers import investment  # noqa: E402
 

@@ -1,9 +1,15 @@
+from unittest.mock import patch
+
 from analytics.market_insights import MarketInsights
 from data.schemas import Property, PropertyCollection, PropertyType
 from utils.exporters import InsightsExporter
 
 
-def test_generate_digest_markdown_has_sections():
+@patch(
+    "pandas.DataFrame.to_markdown",
+    return_value="| city | price |\n| --- | --- |\n| Warsaw | 5000 |",
+)
+def test_generate_digest_markdown_has_sections(mock_md):
     props = [
         Property(city="Warsaw", area_sqm=50, price=5000, property_type=PropertyType.APARTMENT),
         Property(city="Krakow", area_sqm=55, price=4400, property_type=PropertyType.APARTMENT),

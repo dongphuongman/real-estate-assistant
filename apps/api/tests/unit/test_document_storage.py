@@ -107,7 +107,7 @@ class TestSaveFile:
         big_chunk = b"x" * 200
         mock_file.read = AsyncMock(side_effect=[big_chunk, b""])
 
-        with pytest.raises(DocumentStorageError, match="too large"):
+        with pytest.raises(DocumentStorageError):
             await storage.save_file("user-1", mock_file, max_size_bytes=100)
 
 

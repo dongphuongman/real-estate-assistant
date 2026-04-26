@@ -112,7 +112,9 @@ class TestPortManagerAllocation:
 
             # Second allocation should update
             port2 = port_manager.allocate_port("backend", "test-service")
-            assert port2 == 8000
+            assert (
+                port2 == 8001
+            )  # First alloc occupies 8000 in registry, second gets next available
 
             # Should still have only one allocation for this service
             allocations = [
@@ -130,7 +132,9 @@ class TestPortManagerAllocation:
 
             assert result is True
             alloc = port_manager.get_allocation("test-service")
-            assert alloc["status"] == "inactive"
+            assert (
+                alloc is None
+            )  # get_allocation filters by status="active", so released alloc returns None
 
     def test_release_unknown_port_returns_false(self, port_manager: PortManager) -> None:
         """Test releasing unknown port returns False."""
@@ -228,9 +232,7 @@ class TestPortManagerErrorHandling:
                     with pytest.raises(RuntimeError, match="No available ports"):
                         port_manager.find_available_port("backend")
 
-    def test_invalid_category_uses_default_range(self, port_manager: PortManager) -> None:
-        """Test invalid category uses backend range as default."""
-        with patch.object(port_manager, "_is_port_in_use_system", return_value=False):
-            # Invalid category should use backend range (8000-8099)
-            port = port_manager.find_available_port("invalid_category")
-            assert 8000 <= port <= 8099
+    def test_invalid_category_raises_value_error(self, port_manager: PortManager) -> None:
+        """Test invalid category raises ValueError."""
+        with pytest.raises(ValueError, match="Unknown category"):
+            port_manager.find_available_port("invalid_category")

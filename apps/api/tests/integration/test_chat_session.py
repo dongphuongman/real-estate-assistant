@@ -31,7 +31,7 @@ def mock_deps():
     app.dependency_overrides = {}
 
 
-@patch("api.routers.chat.get_session_history")
+@patch("ai.memory.get_session_history")
 @patch("api.routers.chat.create_hybrid_agent")
 def test_chat_session_persistence(mock_create_agent, mock_get_history, mock_deps):
     mock_llm, mock_store = mock_deps

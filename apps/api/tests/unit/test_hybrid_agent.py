@@ -380,18 +380,29 @@ class TestHybridPropertyAgent:
             extracted_filters={"city": "Warsaw"},
         )
 
+        # Mock the intent-specific agent so _get_tool_agent_for_intent returns it
+        intent_agent_mock = MagicMock()
+        intent_agent_mock.invoke.return_value = {"output": "Agent Answer"}
+
         # Spy on _retrieve_documents
-        with patch.object(
-            agent,
-            "_retrieve_documents",
-            return_value=[Document(page_content="Filtered Context", metadata={})],
-        ) as mock_retrieve:
+        with (
+            patch.object(
+                agent,
+                "_retrieve_documents",
+                return_value=[Document(page_content="Filtered Context", metadata={})],
+            ) as mock_retrieve,
+            patch.object(
+                agent,
+                "_get_tool_agent_for_intent",
+                return_value=intent_agent_mock,
+            ),
+        ):
             agent._process_with_agent(query, analysis)
 
             mock_retrieve.assert_called_once_with(query, analysis, k=3)
 
-            # Check if agent was invoked with context
-            args, _ = agent.tool_agent.invoke.call_args
+            # Check if intent-specific agent was invoked with context
+            args, _ = intent_agent_mock.invoke.call_args
             input_text = args[0]["input"]
             assert "Filtered Context" in input_text
 

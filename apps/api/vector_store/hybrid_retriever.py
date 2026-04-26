@@ -126,7 +126,7 @@ class HybridPropertyRetriever(BaseRetriever):
                 lambda_mult=self.lambda_mult,
                 filter=filters if filters else None,
             )
-            results = retriever.get_relevant_documents(query)
+            results = retriever.invoke(query)
             initial_scores = [1.0 - (i * 0.01) for i in range(len(results))]
 
         elif self.search_type == "similarity":
@@ -295,7 +295,7 @@ class AdvancedPropertyRetriever(HybridPropertyRetriever):
                 lambda_mult=self.lambda_mult,
                 filter=filters if filters else None,
             )
-            results = retriever.get_relevant_documents(query)
+            results = retriever.invoke(query)
             initial_scores = [1.0 - (i * 0.01) for i in range(len(results))]
         elif self.search_type == "similarity":
             results_with_scores = self.vector_store.search(

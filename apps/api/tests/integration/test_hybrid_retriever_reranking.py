@@ -47,7 +47,7 @@ def test_hybrid_retriever_with_reranker(mock_vector_store, mock_reranker):
         strategy="investor",
     )
 
-    results = retriever.get_relevant_documents("query")
+    results = retriever.invoke("query")
 
     # Verify reranker was called
     mock_reranker.rerank_with_strategy.assert_called_once()
@@ -91,7 +91,7 @@ def test_advanced_retriever_with_reranker_and_filters(mock_vector_store, mock_re
         reranker=mock_reranker,
     )
 
-    retriever.get_relevant_documents("query")
+    retriever.invoke("query")
 
     # Verify reranker called with only 2 docs (doc1, doc3)
     mock_reranker.rerank_with_strategy.assert_called_once()
@@ -124,7 +124,7 @@ def test_advanced_retriever_reranking_skipped_if_sort_by(mock_vector_store, mock
         reranker=mock_reranker,
     )
 
-    results = retriever.get_relevant_documents("query")
+    results = retriever.invoke("query")
 
     # Verify reranker NOT called
     mock_reranker.rerank_with_strategy.assert_not_called()

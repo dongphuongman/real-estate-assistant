@@ -20,7 +20,7 @@ def test_property_retriever_forced_listing_type_filters_results(tmp_path, monkey
     ]
 
     class FakeInnerRetriever:
-        def get_relevant_documents(self, query: str):
+        def invoke(self, query: str):
             return docs
 
     captured = {}
@@ -52,7 +52,7 @@ def test_property_retriever_forced_listing_type_filters_results(tmp_path, monkey
         listing_type_filter="Rent",
     )
 
-    results = retriever.get_relevant_documents("apartments")
+    results = retriever.invoke("apartments")
     assert len(results) == 2
     assert {doc.metadata.get("listing_type") for doc in results} == {"rent"}
     assert captured["filter"] == {"listing_type": "rent"}
@@ -126,7 +126,7 @@ def test_property_retriever_uses_fallback_while_indexing(tmp_path):
         radius_km=None,
         listing_type_filter=None,
     )
-    results = retriever.get_relevant_documents("garden balcony")
+    results = retriever.invoke("garden balcony")
     assert results and results[0].metadata.get("id") == "p1"
     assert fake_vector_store.as_retriever.call_count == 0
     assert fake_vector_store.similarity_search_with_score.call_count == 0
@@ -145,7 +145,7 @@ def test_property_retriever_geo_radius_filters_results(tmp_path, monkeypatch):
     ]
 
     class FakeInnerRetriever:
-        def get_relevant_documents(self, query: str):
+        def invoke(self, query: str):
             return docs
 
     def fake_get_retriever(**kwargs):
@@ -162,7 +162,7 @@ def test_property_retriever_geo_radius_filters_results(tmp_path, monkeypatch):
         listing_type_filter=None,
     )
 
-    results = retriever.get_relevant_documents("apartments")
+    results = retriever.invoke("apartments")
     assert [d.page_content for d in results] == ["near"]
 
 
@@ -177,7 +177,7 @@ def test_property_retriever_price_range_filters_results(tmp_path, monkeypatch):
     ]
 
     class FakeInnerRetriever:
-        def get_relevant_documents(self, query: str):
+        def invoke(self, query: str):
             return docs
 
     def fake_get_retriever(**kwargs):
@@ -196,7 +196,7 @@ def test_property_retriever_price_range_filters_results(tmp_path, monkeypatch):
         max_price=2000.0,
     )
 
-    results = retriever.get_relevant_documents("apartments")
+    results = retriever.invoke("apartments")
     assert [d.page_content for d in results] == ["mid"]
 
 
@@ -212,7 +212,7 @@ def test_property_retriever_year_built_and_energy_filters_results(tmp_path, monk
     ]
 
     class FakeInnerRetriever:
-        def get_relevant_documents(self, query: str):
+        def invoke(self, query: str):
             return docs
 
     def fake_get_retriever(**kwargs):
@@ -232,7 +232,7 @@ def test_property_retriever_year_built_and_energy_filters_results(tmp_path, monk
         energy_certs=["b"],
     )
 
-    results = retriever.get_relevant_documents("apartments")
+    results = retriever.invoke("apartments")
     assert [d.page_content for d in results] == ["good"]
 
 
@@ -247,7 +247,7 @@ def test_property_retriever_sorting_applies_after_retrieval(tmp_path, monkeypatc
     ]
 
     class FakeInnerRetriever:
-        def get_relevant_documents(self, query: str):
+        def invoke(self, query: str):
             return docs
 
     def fake_get_retriever(**kwargs):
@@ -266,7 +266,7 @@ def test_property_retriever_sorting_applies_after_retrieval(tmp_path, monkeypatc
         sort_ascending=True,
     )
 
-    results = retriever.get_relevant_documents("apartments")
+    results = retriever.invoke("apartments")
     assert [d.page_content for d in results] == ["b", "c", "a"]
 
 

@@ -133,7 +133,7 @@ async def test_check_llm_provider_healthy_with_configured_key(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_get_health_status_unhealthy_when_vector_store_unhealthy(monkeypatch):
-    settings = SimpleNamespace(version="9.9.9")
+    settings = SimpleNamespace(version="9.9.9", database_url=None)
     monkeypatch.setattr("api.health.get_settings", lambda: settings)
 
     async def _vector_store_unhealthy():

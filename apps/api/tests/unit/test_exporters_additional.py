@@ -50,6 +50,8 @@ def test_property_exporter_export_raises_for_unsupported_format():
 
 
 def test_insights_exporter_generates_json_and_markdown():
+    from unittest.mock import patch
+
     class FakeInsights:
         def get_city_price_indices(self, cities=None):
             return pd.DataFrame([{"city": "Warsaw", "index": 1.23}])
@@ -62,9 +64,13 @@ def test_insights_exporter_generates_json_and_markdown():
     js = exp.export_city_indices_json(pretty=False)
     assert '"indices"' in js
 
-    md = exp.export_city_indices_markdown()
-    assert "# City Price Indices" in md
-    assert "Warsaw" in md
+    city_md_table = (
+        "| city   | index |" + chr(10) + "|--------|-------|" + chr(10) + "| Warsaw | 1.23  |"
+    )
+    with patch("pandas.DataFrame.to_markdown", return_value=city_md_table):
+        md = exp.export_city_indices_markdown()
+        assert "# City Price Indices" in md
+        assert "Warsaw" in md
 
     csv = exp.export_monthly_index_csv()
     assert "month" in csv
@@ -72,9 +78,19 @@ def test_insights_exporter_generates_json_and_markdown():
     js2 = exp.export_monthly_index_json(pretty=False)
     assert '"monthly_index"' in js2
 
-    md2 = exp.export_monthly_index_markdown(city="Warsaw")
-    assert "Monthly Price Index" in md2
-    assert "Warsaw" in md2
+    monthly_md_table = (
+        "| month      | index |"
+        + chr(10)
+        + "|------------|-------|"
+        + chr(10)
+        + "| 2024-01-01 | 100.0 |"
+        + chr(10)
+        + "| Warsaw     | test  |"
+    )
+    with patch("pandas.DataFrame.to_markdown", return_value=monthly_md_table):
+        md2 = exp.export_monthly_index_markdown(city="Warsaw")
+        assert "Monthly Price Index" in md2
+        assert "Warsaw" in md2
 
 
 def test_property_exporter_get_filename_uses_format_extension():

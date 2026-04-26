@@ -115,7 +115,7 @@ def test_advanced_retriever_filters_and_slices_to_k(tmp_path, monkeypatch):
         sort_by="price",
         sort_ascending=True,
     )
-    results = retr.get_relevant_documents("apartments")
+    results = retr.invoke("apartments")
 
     assert len(results) == 1
     assert results[0].page_content == "mid"

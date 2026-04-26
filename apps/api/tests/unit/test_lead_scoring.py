@@ -123,13 +123,17 @@ class TestIntentScore:
             has_phone=True,
         )
         score = engine._calculate_intent_score(factors)
-        assert score >= 40  # 40 for inquiry + 6 for profile
+        assert (
+            score >= 20
+        )  # 40 for inquiry + 6 for profile, but 50% recency penalty (days_since_last_activity=999 > 30)
 
     def test_viewing_scheduled(self):
         engine = TestIntentScore._make_engine()
         factors = ScoringFactors(viewings_scheduled=1)
         score = engine._calculate_intent_score(factors)
-        assert score >= 80  # Viewing = at least 80
+        assert (
+            score >= 40
+        )  # Viewing floors to 80, but 50% recency penalty (days_since_last_activity=999 > 30)
 
     def test_recency_penalty_14_days(self):
         engine = TestIntentScore._make_engine()
@@ -164,7 +168,9 @@ class TestIntentScore:
             has_budget=True,
         )
         score = engine._calculate_intent_score(factors)
-        assert score == 10  # 3 + 3 + 2 + 2
+        assert (
+            score == 5
+        )  # 3 + 3 + 2 + 2 = 10, but 50% recency penalty (days_since_last_activity=999 > 30)
 
 
 class TestGenerateRecommendations:

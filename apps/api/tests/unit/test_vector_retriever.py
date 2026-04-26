@@ -33,5 +33,5 @@ def test_get_retriever_fallback_returns_docs(tmp_path):
     store.add_property_collection(coll)
 
     retr = store.get_retriever(search_type="mmr", k=1, fetch_k=2)
-    docs = retr.get_relevant_documents("balcony garden")
+    docs = retr.invoke("balcony garden")
     assert docs and docs[0].metadata.get("id") == "p1"
