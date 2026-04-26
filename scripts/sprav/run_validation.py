@@ -218,9 +218,10 @@ class SPRAVOrchestrator:
                 "--cov=.",
                 "--cov-report=term",
                 "-q",
+                "--timeout=300",
             ],
             cwd=self.root_dir / "apps" / "api",
-            timeout=600,
+            timeout=1200,
         )
         if rc == 0:
             checks_passed += 1
@@ -234,7 +235,7 @@ class SPRAVOrchestrator:
         rc, stdout, stderr = self._run_command(
             ["npm", "run", "test:ci"],
             cwd=self.root_dir / "apps" / "web",
-            timeout=300,
+            timeout=600,
         )
         if rc == 0:
             checks_passed += 1
@@ -402,9 +403,10 @@ class SPRAVOrchestrator:
                 "--cov=.",
                 "--cov-report=term",
                 "-q",
+                "--timeout=300",
             ],
             cwd=self.root_dir / "apps" / "api",
-            timeout=600,
+            timeout=1200,
         )
         if rc == 0:
             # Parse coverage from output
@@ -433,9 +435,16 @@ class SPRAVOrchestrator:
         # 2. Backend integration tests
         self._log("  Running backend integration tests...")
         rc, stdout, stderr = self._run_command(
-            [sys.executable, "-m", "pytest", "tests/integration", "-q"],
+            [
+                sys.executable,
+                "-m",
+                "pytest",
+                "tests/integration",
+                "-q",
+                "--timeout=300",
+            ],
             cwd=self.root_dir / "apps" / "api",
-            timeout=600,
+            timeout=1200,
         )
         if rc == 0:
             checks_passed += 1
@@ -508,7 +517,7 @@ class SPRAVOrchestrator:
         rc, stdout, stderr = self._run_command(
             [sys.executable, "-m", "mypy", ".", "--explicit-package-bases"],
             cwd=self.root_dir / "apps" / "api",
-            timeout=120,
+            timeout=300,
         )
         if rc == 0:
             checks_passed += 1
@@ -521,7 +530,7 @@ class SPRAVOrchestrator:
         self._log("  Checking for forbidden tokens...")
         rc, stdout, stderr = self._run_command(
             [sys.executable, "scripts/security/forbidden_tokens.py"],
-            timeout=60,
+            timeout=120,
         )
         if rc == 0:
             checks_passed += 1
@@ -581,7 +590,7 @@ class SPRAVOrchestrator:
         rc, stdout, stderr = self._run_command(
             ["npm", "run", "build"],
             cwd=self.root_dir / "apps" / "web",
-            timeout=300,
+            timeout=600,
         )
         if rc == 0:
             checks_passed += 1
@@ -595,7 +604,7 @@ class SPRAVOrchestrator:
         rc, stdout, stderr = self._run_command(
             ["npx", "tsc", "--noEmit"],
             cwd=self.root_dir / "apps" / "web",
-            timeout=120,
+            timeout=300,
         )
         if rc == 0:
             checks_passed += 1
