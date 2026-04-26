@@ -29,9 +29,12 @@ class FakeProvider:
 
 @pytest.fixture(autouse=True)
 def _clear_factory_cache():
-    ModelProviderFactory.clear_cache()
+    from api.dependencies import clear_llm_cache
+
+
+    clear_llm_cache()
     yield
-    ModelProviderFactory.clear_cache()
+    clear_llm_cache()
 
 
 def test_get_llm_uses_default_provider_and_first_model(monkeypatch):

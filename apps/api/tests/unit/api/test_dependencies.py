@@ -5,7 +5,6 @@ import pytest
 
 import api.dependencies as dep_mod
 from api.dependencies import get_agent, get_llm, get_vector_store
-from models.provider_factory import ModelProviderFactory
 
 
 class _StubDocRetriever:
@@ -20,9 +19,12 @@ class _StubStore:
 
 @pytest.fixture(autouse=True)
 def _clear_factory_cache():
-    ModelProviderFactory.clear_cache()
+    from api.dependencies import clear_llm_cache
+
+
+    clear_llm_cache()
     yield
-    ModelProviderFactory.clear_cache()
+    clear_llm_cache()
 
 
 def test_get_vector_store_returns_none_on_exception(monkeypatch):

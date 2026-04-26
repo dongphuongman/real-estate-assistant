@@ -156,6 +156,16 @@ def get_optional_llm(
         return None
 
 
+def clear_llm_cache() -> None:
+    """Clear LLM creation and provider factory caches.
+
+    Useful for testing to ensure fresh state between tests.
+    Clears both the LLM function cache and the ModelProviderFactory cache.
+    """
+    _create_llm_with_resolved_model_id.cache_clear()
+    ModelProviderFactory.clear_cache()
+
+
 # =============================================================================
 # Task-Specific Model Preferences (Task #87)
 # =============================================================================
