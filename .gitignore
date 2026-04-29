@@ -324,6 +324,15 @@ CLAUDE.local.md
 AGENTS.md
 WARP.md
 
+# Uploads (runtime)
+apps/api/uploads/
+
+# Coverage modules output
+apps/web/.coverage-api-modules/
+
+# SPRAV quick test reports (temporary)
+sprav-quick-test.md
+
 # Local test artifacts and snapshots
 artifacts/
 resp.html
