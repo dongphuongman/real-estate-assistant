@@ -18,7 +18,7 @@ env:
 jobs:
   publish-backend:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech'
+    if: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -58,7 +58,7 @@ jobs:
 
   publish-frontend:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech'
+    if: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4

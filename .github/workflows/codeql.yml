@@ -24,7 +24,7 @@ jobs:
   analyze:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech'
+    if: true
     timeout-minutes: 30
     permissions:
       security-events: write

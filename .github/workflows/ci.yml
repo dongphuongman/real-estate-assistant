@@ -18,7 +18,7 @@ concurrency:
 jobs:
   gitleaks:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech'
+    if: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,7 +32,7 @@ jobs:
 
   secret-validation:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech'
+    if: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -65,7 +65,7 @@ jobs:
 
   backend:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech'
+    if: true
     timeout-minutes: 20
     defaults:
       run:
@@ -223,7 +223,7 @@ jobs:
 
   frontend:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech'
+    if: true
     defaults:
       run:
         working-directory: apps/web
@@ -270,7 +270,7 @@ jobs:
 
   docs:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech'
+    if: true
     needs: [backend]
     timeout-minutes: 10
     defaults:
@@ -323,7 +323,7 @@ jobs:
 
   lighthouse:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     needs: [frontend]
     timeout-minutes: 15
     defaults:
@@ -380,7 +380,7 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech'
+    if: true
     needs: [frontend]
     timeout-minutes: 20
     continue-on-error: true
@@ -447,7 +447,7 @@ jobs:
 
   compose_smoke:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech'
+    if: true
     needs: [backend, frontend]
     timeout-minutes: 20
     steps:
@@ -475,7 +475,7 @@ jobs:
 
   security:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech'
+    if: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -506,7 +506,7 @@ jobs:
 
   audit:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech'
+    if: true
     defaults:
       run:
         working-directory: apps/api
@@ -541,7 +541,7 @@ jobs:
 
   semgrep:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech'
+    if: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -565,7 +565,7 @@ jobs:
 
   trivy:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -598,7 +598,7 @@ jobs:
 
   pipeline_health:
     runs-on: ubuntu-latest
-    if: always() && github.repository_owner == 'NestLab-Tech'
+    if: always()
     needs: [gitleaks, backend, frontend, docs, security, audit, semgrep, trivy, compose_smoke, lighthouse, e2e]
     permissions:
       contents: read

@@ -13,7 +13,7 @@ jobs:
   collect:
     name: Collect weekly metrics
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech'
+    if: true
 
     steps:
       - name: Checkout repository
