@@ -342,3 +342,12 @@ apps/api/data/audit/
 
 # Taskmaster review script (contains private backlog parsing logic)
 scripts/validation/taskmaster_review.py
+
+# Internal dev scripts (not for public repo)
+scripts/internal/
+
+# Secret detection baselines (internal tooling)
+.secrets.baseline
+
+# Release validation reports (internal)
+docs/releases/
