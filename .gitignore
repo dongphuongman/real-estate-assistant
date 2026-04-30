@@ -196,6 +196,7 @@ celerybeat.pid
 .env.ports
 .venv
 .venv_ci
+.venv312
 env/
 venv/
 ENV/

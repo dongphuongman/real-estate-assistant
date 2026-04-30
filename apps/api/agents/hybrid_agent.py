@@ -23,15 +23,14 @@ from langchain_core.documents import Document
 from langchain_core.language_models import BaseChatModel
 from langchain_core.retrievers import BaseRetriever
 
-# LangChain 1.2 moved chains/memory/agents to langchain-classic
 try:
-    from langchain_classic.agents import AgentExecutor, create_openai_tools_agent
-    from langchain_classic.chains import ConversationalRetrievalChain
-    from langchain_classic.memory import ConversationBufferMemory
-except ImportError:
     from langchain.agents import AgentExecutor, create_openai_tools_agent
     from langchain.chains import ConversationalRetrievalChain
     from langchain.memory import ConversationBufferMemory
+except ImportError:
+    from langchain_classic.agents import AgentExecutor, create_openai_tools_agent
+    from langchain_classic.chains import ConversationalRetrievalChain
+    from langchain_classic.memory import ConversationBufferMemory
 
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import BaseTool
@@ -219,9 +218,9 @@ Context from property database will be provided when relevant."""
             from langchain_core.prompts import PromptTemplate
 
             try:
-                from langchain_classic.agents import create_react_agent
-            except ImportError:
                 from langchain.agents import create_react_agent
+            except ImportError:
+                from langchain_classic.agents import create_react_agent
 
             prompt = PromptTemplate.from_template(
                 """You are a specialized Real Estate Assistant.

@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
-from langchain_classic.agents import AgentExecutor
-from langchain_classic.memory import ConversationBufferMemory
+from langchain.agents import AgentExecutor
+from langchain.memory import ConversationBufferMemory
 
 import agents.hybrid_agent as hybrid_agent
 
