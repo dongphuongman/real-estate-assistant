@@ -11,6 +11,7 @@ from httpx import ASGITransport, AsyncClient
 # Stub heavy dependencies before importing the router.
 # bulk_jobs imports api.dependencies which triggers agents→langchain→protobuf chain.
 # We stub the entire chain to avoid the protobuf TypeError.
+_stubbed_modules = {}
 for mod_name in [
     "agents",
     "agents.hybrid_agent",
@@ -19,7 +20,8 @@ for mod_name in [
     "data.adapters",
 ]:
     if mod_name not in sys.modules:
-        sys.modules[mod_name] = MagicMock()
+        _stubbed_modules[mod_name] = MagicMock()
+        sys.modules[mod_name] = _stubbed_modules[mod_name]
 
 # utils.exporters must provide a real ExportFormat enum (Pydantic uses it in models)
 import types as _types  # noqa: E402
@@ -35,11 +37,37 @@ class _ExportFormat(str, Enum):
 
 _exporters.ExportFormat = _ExportFormat
 _exporters.PropertyExporter = MagicMock()
+_exporters_original = sys.modules.get("utils.exporters")
 if "utils.exporters" not in sys.modules:
     sys.modules["utils.exporters"] = _exporters
 
 from api.routers import bulk_jobs  # noqa: E402
 from db.database import get_db  # noqa: E402
+
+# Restore original modules immediately after importing the router,
+# so that subsequent test modules see the real packages during collection.
+for mod_name in _stubbed_modules:
+    sys.modules.pop(mod_name, None)
+if _exporters_original is not None:
+    sys.modules["utils.exporters"] = _exporters_original
+elif "utils.exporters" in sys.modules and sys.modules["utils.exporters"] is _exporters:
+    sys.modules.pop("utils.exporters", None)
+
+
+@pytest.fixture(autouse=True)
+def _isolate_stubbed_modules():
+    """Re-install stubs during each test, restore after."""
+    _saved = {name: sys.modules.get(name) for name in _stubbed_modules}
+    _saved["utils.exporters"] = sys.modules.get("utils.exporters")
+    for name, stub in _stubbed_modules.items():
+        sys.modules[name] = stub
+    sys.modules["utils.exporters"] = _exporters
+    yield
+    for name in _saved:
+        if _saved[name] is not None:
+            sys.modules[name] = _saved[name]
+        else:
+            sys.modules.pop(name, None)
 
 
 @pytest.fixture

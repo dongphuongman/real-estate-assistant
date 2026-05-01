@@ -85,19 +85,27 @@ import sys  # noqa: E402
 _mcp_original = sys.modules.get("mcp")
 sys.modules["mcp"] = _mcp_stub
 
-
-@pytest.fixture(autouse=True)
-def _cleanup_mcp_stub():
-    """Restore original mcp module after tests to avoid polluting other test files."""
-    yield
-    if _mcp_original is not None:
-        sys.modules["mcp"] = _mcp_original
-    else:
-        sys.modules.pop("mcp", None)
-
-
 from api.auth import get_api_key  # noqa: E402
 from api.routers import mcp_admin  # noqa: E402
+
+# Restore original mcp module immediately after importing the router,
+# so that subsequent test modules see the real mcp package during collection.
+if _mcp_original is not None:
+    sys.modules["mcp"] = _mcp_original
+else:
+    sys.modules.pop("mcp", None)
+
+# Re-stub for each test function scope (restored in fixture below)
+@pytest.fixture(autouse=True)
+def _isolate_mcp_stub():
+    """Stub mcp during each test, restore after to avoid polluting other test files."""
+    _saved = sys.modules.get("mcp")
+    sys.modules["mcp"] = _mcp_stub
+    yield
+    if _saved is not None:
+        sys.modules["mcp"] = _saved
+    else:
+        sys.modules.pop("mcp", None)
 
 
 def _make_validator_mock():
