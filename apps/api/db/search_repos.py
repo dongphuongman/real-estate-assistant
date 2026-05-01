@@ -103,6 +103,7 @@ class SavedSearchRepository:
     async def delete(self, search: SavedSearchDB) -> None:
         """Delete a saved search."""
         await self.session.delete(search)
+        await self.session.flush()
 
     async def increment_usage(self, search: SavedSearchDB) -> None:
         """Increment usage count and update last_used_at."""
@@ -189,6 +190,7 @@ class CollectionRepository:
     async def delete(self, collection: CollectionDB) -> None:
         """Delete a collection (favorites will become uncategorized)."""
         await self.session.delete(collection)
+        await self.session.flush()
 
     async def count_favorites(self, collection_id: str) -> int:
         """Count favorites in a collection."""
@@ -285,6 +287,7 @@ class FavoriteRepository:
     async def delete(self, favorite: FavoriteDB) -> None:
         """Delete a favorite."""
         await self.session.delete(favorite)
+        await self.session.flush()
 
     async def delete_by_property(self, user_id: str, property_id: str) -> bool:
         """Delete favorite by property ID. Returns True if deleted."""

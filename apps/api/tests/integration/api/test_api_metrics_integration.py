@@ -11,7 +11,7 @@ def test_metrics_counts_increment():
 
     r0 = client.get("/api/v1/admin/metrics", headers=headers)
     assert r0.status_code == 200
-    baseline = r0.json().get("GET /api/v1/verify-auth", 0)
+    baseline = r0.json().get("requests", {}).get("GET /api/v1/verify-auth", 0)
 
     r1 = client.get("/api/v1/verify-auth", headers=headers)
     assert r1.status_code == 200
@@ -21,4 +21,4 @@ def test_metrics_counts_increment():
     r_metrics = client.get("/api/v1/admin/metrics", headers=headers)
     assert r_metrics.status_code == 200
     data = r_metrics.json()
-    assert data.get("GET /api/v1/verify-auth", 0) - baseline == 2
+    assert data.get("requests", {}).get("GET /api/v1/verify-auth", 0) - baseline == 2

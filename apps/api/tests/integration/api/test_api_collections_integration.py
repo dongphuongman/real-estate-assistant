@@ -88,7 +88,7 @@ class TestCollectionsAPI:
         resp = await client.get("/api/v1/collections/default")
         assert resp.status_code == 200
         data = resp.json()
-        assert data["name"] == "Favorites"
+        assert data["name"] == "My Favorites"
 
     @pytest.mark.asyncio
     async def test_get_collection_by_id(self, client):

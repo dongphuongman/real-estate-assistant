@@ -498,7 +498,7 @@ async def list_cma_reports(
     )
 
     return CMAReportListResponse(
-        reports=[
+        items=[
             CMAReportResponse(
                 id=r.id,
                 user_id=r.user_id,
@@ -515,6 +515,7 @@ async def list_cma_reports(
         total=total,
         page=page,
         page_size=page_size,
+        total_pages=(total + page_size - 1) // page_size if page_size else 0,
     )
 
 
