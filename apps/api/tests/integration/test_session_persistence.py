@@ -1,7 +1,11 @@
 import uuid
 
 import pytest
-from langchain.memory import ConversationBufferMemory
+
+try:
+    from langchain.memory import ConversationBufferMemory
+except ImportError:
+    from langchain_classic.memory import ConversationBufferMemory
 from langchain_core.messages import AIMessage, HumanMessage
 
 from ai.memory import get_session_history

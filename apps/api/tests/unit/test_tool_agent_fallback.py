@@ -1,7 +1,14 @@
 from unittest.mock import MagicMock
 
-from langchain.agents import AgentExecutor
-from langchain.memory import ConversationBufferMemory
+try:
+    from langchain.agents import AgentExecutor
+except ImportError:
+    from langchain_classic.agents import AgentExecutor
+
+try:
+    from langchain.memory import ConversationBufferMemory
+except ImportError:
+    from langchain_classic.memory import ConversationBufferMemory
 
 import agents.hybrid_agent as hybrid_agent
 
