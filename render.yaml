@@ -1,33 +1,50 @@
 services:
+  # Backend: FastAPI + SQLite + ChromaDB in-memory
   - type: web
-    name: ai-real-estate-assistant-backend
-    env: python
+    name: realestate-api
     plan: free
-    buildCommand: pip install -r apps/api/requirements.txt
-    startCommand: cd apps/api && uvicorn api.main:app --host 0.0.0.0 --port $PORT
-    healthCheckPath: /health
+    dockerfilePath: ./deploy/docker/Dockerfile.backend
+    dockerContext: .
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
+      - key: PORT
+        value: "10000"
       - key: ENVIRONMENT
         value: production
-      - key: API_ACCESS_KEYS
+      - key: DEFAULT_PROVIDER
+        value: zai
+      - key: DEFAULT_MODEL
+        value: glm-4.7-flash
+      - key: ZAI_API_KEY
+        sync: false
+      - key: API_ACCESS_KEY
         sync: false
       - key: CORS_ALLOW_ORIGINS
-        value: https://YOUR_FRONTEND_DOMAIN
-      - key: API_RATE_LIMIT_ENABLED
+        value: https://realestate-web.onrender.com
+      - key: AUTH_JWT_ENABLED
+        value: "false"
+      - key: INTERNET_ENABLED
+        value: "false"
+      - key: SEED_ON_STARTUP
         value: "true"
-      - key: API_RATE_LIMIT_RPM
-        value: "600"
-      - key: OPENAI_API_KEY
+      - key: CACHE_ENABLED
+        value: "true"
+      - key: METRICS_ENABLED
+        value: "false"
+      - key: API_RATE_LIMIT_ENABLED
+        value: "false"
+      - key: VECTOR_PERSIST_ENABLED
+        value: "false"
+
+  # Frontend: Next.js standalone
+  - type: web
+    name: realestate-web
+    plan: free
+    dockerfilePath: ./deploy/docker/Dockerfile.frontend
+    dockerContext: .
+    envVars:
+      - key: BACKEND_API_URL
+        value: https://realestate-api.onrender.com/api/v1
+      - key: API_ACCESS_KEY
         sync: false
-      - key: ANTHROPIC_API_KEY
-        sync: false
-      - key: GOOGLE_API_KEY
-        sync: false
-      - key: XAI_API_KEY
-        sync: false
-      - key: DEEPSEEK_API_KEY
-        sync: false
-      - key: OLLAMA_BASE_URL
-        value: ""
+      - key: NODE_ENV
+        value: production

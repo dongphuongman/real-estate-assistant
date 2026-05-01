@@ -19,7 +19,7 @@ from .base import (
     RemoteModelProvider,
 )
 
-ZAI_BASE_URL = "https://api.z.ai/api/paas/v4"
+ZAI_BASE_URL = os.getenv("ZAI_BASE_URL", "https://open.bigmodel.cn/api/paas/v4")
 
 
 class ZaiProvider(RemoteModelProvider):
