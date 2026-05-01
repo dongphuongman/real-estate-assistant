@@ -24,6 +24,9 @@ class FakeInnerRetriever:
     def get_relevant_documents(self, query: str):
         return list(self._docs)
 
+    def invoke(self, query: str):
+        return self.get_relevant_documents(query)
+
 
 def test_hybrid_retriever_filters_rent_vs_sale(tmp_path):
     with patch.object(ChromaPropertyStore, "_create_embeddings", return_value=None):

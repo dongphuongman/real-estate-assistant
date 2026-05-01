@@ -99,6 +99,9 @@ def test_advanced_retriever_filters_and_slices_to_k(tmp_path, monkeypatch):
         def get_relevant_documents(self, query: str):
             return docs
 
+        def invoke(self, query: str):
+            return self.get_relevant_documents(query)
+
     captured = {}
 
     def fake_get_retriever(**kwargs):

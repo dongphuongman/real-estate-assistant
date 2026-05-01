@@ -10,9 +10,9 @@ try:
 
     def test_cors_dev_environment_allows_all_origin_header():
         client = TestClient(app)
-        r = client.get("/health", headers={"Origin": "http://example.com"})
+        r = client.get("/health", headers={"Origin": "http://localhost:3000"})
         assert r.status_code == 200
-        assert r.headers.get("access-control-allow-origin") == "*"
+        assert r.headers.get("access-control-allow-origin") == "http://localhost:3000"
         exposed = (r.headers.get("access-control-expose-headers") or "").lower()
         assert "x-request-id" in exposed
 
