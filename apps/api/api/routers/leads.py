@@ -59,12 +59,12 @@ async def track_interaction(
     body: TrackInteractionRequest,
     request: Request,
     session: AsyncSession = Depends(get_db),
+    user: Optional = Depends(get_current_user_optional),
 ) -> None:
     """Track a visitor interaction."""
     tracking_service = LeadTrackingService(session)
 
     # Get optional user ID if logged in
-    user = await get_current_user_optional(request)
     user_id = user.id if user else None
 
     await tracking_service.track_interaction(
@@ -234,6 +234,96 @@ async def get_high_value_leads(
     )
 
     return [LeadWithScoreResponse(**lead) for lead in leads]
+
+
+# =============================================================================
+# Export Endpoint (admin only) — must be before /{lead_id} routes
+# =============================================================================
+
+
+@router.get(
+    "/export",
+    summary="Export leads",
+    description="Export leads to CSV. Admin only.",
+)
+async def export_leads(
+    lead_status: Optional[str] = Query(None, alias="status", description="Filter by status"),
+    score_min: Optional[int] = Query(None, description="Minimum score"),
+    user: User = Depends(get_current_active_user),
+    session: AsyncSession = Depends(get_db),
+) -> StreamingResponse:
+    """Export leads to CSV."""
+    if user.role not in ("admin", "superuser"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can export leads",
+        )
+
+    lead_repo = LeadRepository(session)
+
+    # Get all leads matching filters
+    leads = await lead_repo.get_list(
+        status=lead_status,
+        score_min=score_min,
+        limit=10000,  # Max export size
+    )
+
+    # Create CSV in memory
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Write header
+    writer.writerow(
+        [
+            "ID",
+            "Visitor ID",
+            "Email",
+            "Name",
+            "Phone",
+            "Status",
+            "Source",
+            "Current Score",
+            "First Seen",
+            "Last Activity",
+            "Created At",
+            "Consent Given",
+            "Budget Min",
+            "Budget Max",
+        ]
+    )
+
+    # Write data rows
+    for lead in leads:
+        writer.writerow(
+            [
+                lead.id,
+                lead.visitor_id,
+                lead.email or "",
+                lead.name or "",
+                lead.phone or "",
+                lead.status,
+                lead.source or "",
+                lead.current_score,
+                lead.first_seen_at.isoformat() if lead.first_seen_at else "",
+                lead.last_activity_at.isoformat() if lead.last_activity_at else "",
+                lead.created_at.isoformat() if lead.created_at else "",
+                lead.consent_given,
+                lead.budget_min or "",
+                lead.budget_max or "",
+            ]
+        )
+
+    output.seek(0)
+
+    # Generate filename with timestamp
+    timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
+    filename = f"leads_export_{timestamp}.csv"
+
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.get(
@@ -637,96 +727,6 @@ async def get_scoring_statistics(
 
     scoring_service = LeadScoringService(session)
     return await scoring_service.get_scoring_statistics()
-
-
-# =============================================================================
-# Export Endpoint (admin only)
-# =============================================================================
-
-
-@router.get(
-    "/export",
-    summary="Export leads",
-    description="Export leads to CSV. Admin only.",
-)
-async def export_leads(
-    lead_status: Optional[str] = Query(None, alias="status", description="Filter by status"),
-    score_min: Optional[int] = Query(None, description="Minimum score"),
-    user: User = Depends(get_current_active_user),
-    session: AsyncSession = Depends(get_db),
-) -> StreamingResponse:
-    """Export leads to CSV."""
-    if user.role not in ("admin", "superuser"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admins can export leads",
-        )
-
-    lead_repo = LeadRepository(session)
-
-    # Get all leads matching filters
-    leads = await lead_repo.get_list(
-        status=lead_status,
-        score_min=score_min,
-        limit=10000,  # Max export size
-    )
-
-    # Create CSV in memory
-    output = io.StringIO()
-    writer = csv.writer(output)
-
-    # Write header
-    writer.writerow(
-        [
-            "ID",
-            "Visitor ID",
-            "Email",
-            "Name",
-            "Phone",
-            "Status",
-            "Source",
-            "Current Score",
-            "First Seen",
-            "Last Activity",
-            "Created At",
-            "Consent Given",
-            "Budget Min",
-            "Budget Max",
-        ]
-    )
-
-    # Write data rows
-    for lead in leads:
-        writer.writerow(
-            [
-                lead.id,
-                lead.visitor_id,
-                lead.email or "",
-                lead.name or "",
-                lead.phone or "",
-                lead.status,
-                lead.source or "",
-                lead.current_score,
-                lead.first_seen_at.isoformat() if lead.first_seen_at else "",
-                lead.last_activity_at.isoformat() if lead.last_activity_at else "",
-                lead.created_at.isoformat() if lead.created_at else "",
-                lead.consent_given,
-                lead.budget_min or "",
-                lead.budget_max or "",
-            ]
-        )
-
-    output.seek(0)
-
-    # Generate filename with timestamp
-    timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
-    filename = f"leads_export_{timestamp}.csv"
-
-    return StreamingResponse(
-        iter([output.getvalue()]),
-        media_type="text/csv",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-    )
 
 
 # =============================================================================

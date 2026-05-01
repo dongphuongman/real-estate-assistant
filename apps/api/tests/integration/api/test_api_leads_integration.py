@@ -11,17 +11,18 @@ from httpx import ASGITransport, AsyncClient
 from api.deps.auth import get_current_active_user
 from api.routers import leads
 from db.database import get_db
-from db.schemas import UserResponse
 
 
 @pytest.fixture
 def admin_user():
-    return UserResponse(
-        id="admin-001",
-        email="admin@example.com",
-        roles=["admin"],
-        created_at="2024-01-01T00:00:00Z",
-    )
+    from unittest.mock import MagicMock
+
+    user = MagicMock()
+    user.id = "admin-001"
+    user.email = "admin@example.com"
+    user.role = "admin"
+    user.is_active = True
+    return user
 
 
 @pytest.fixture
