@@ -62,7 +62,7 @@ class PropertyRecommendationEngine:
         for doc in documents:
             # Calculate recommendation score
             score, explanation = self._score_property(
-                doc, user_preferences, viewed_properties, favorited_properties
+                doc, user_preferences, documents, viewed_properties, favorited_properties
             )
 
             scored_docs.append((doc, score, explanation))
@@ -77,8 +77,9 @@ class PropertyRecommendationEngine:
         self,
         doc: Document,
         user_preferences: Optional[UserPreferences],
-        viewed_properties: Optional[List[str]],
-        favorited_properties: Optional[List[str]],
+        documents: List[Document],
+        viewed_properties: Optional[List[str]] = None,
+        favorited_properties: Optional[List[str]] = None,
     ) -> Tuple[float, Dict[str, Any]]:
         """
         Score a property for recommendation.
@@ -103,7 +104,7 @@ class PropertyRecommendationEngine:
         implicit_score = 0.0
         if viewed_properties or favorited_properties:
             implicit_score = self._calculate_implicit_score(
-                metadata, viewed_properties, favorited_properties
+                metadata, documents, viewed_properties, favorited_properties
             )
             explanation["similar_to_favorites"] = implicit_score > 0.7
 
@@ -245,28 +246,122 @@ class PropertyRecommendationEngine:
         # Cap score at 1.0
         return float(min(score, 1.0))
 
+    def _extract_reference_properties(
+        self,
+        documents: List[Document],
+        property_ids: List[str],
+    ) -> List[Dict[str, Any]]:
+        """Extract metadata dicts from documents whose IDs match property_ids."""
+        id_set = {str(pid) for pid in property_ids}
+        return [
+            dict(doc.metadata) for doc in documents if str(doc.metadata.get("id", "")) in id_set
+        ]
+
+    # Amenity fields used for Jaccard similarity
+    _AMENITY_KEYS = [
+        "has_parking",
+        "has_garden",
+        "has_pool",
+        "has_garage",
+        "has_bike_room",
+        "has_elevator",
+        "has_balcony",
+    ]
+
+    def _calculate_feature_similarity(
+        self,
+        candidate: Dict[str, Any],
+        reference: Dict[str, Any],
+    ) -> float:
+        """Weighted feature match between candidate and a single reference property."""
+        # City (0.25) — exact match
+        city_score = (
+            1.0
+            if str(candidate.get("city", "")).lower() == str(reference.get("city", "")).lower()
+            else 0.0
+        )
+
+        # Rooms (0.20) — distance-based
+        c_rooms = candidate.get("rooms")
+        r_rooms = reference.get("rooms")
+        if isinstance(c_rooms, (int, float)) and isinstance(r_rooms, (int, float)):
+            max_range = 5.0
+            rooms_score = max(0.0, 1.0 - abs(float(c_rooms) - float(r_rooms)) / max_range)
+        else:
+            rooms_score = 0.5
+
+        # Price (0.20) — ratio-based
+        c_price = candidate.get("price")
+        r_price = reference.get("price")
+        if (
+            isinstance(c_price, (int, float))
+            and isinstance(r_price, (int, float))
+            and float(r_price) > 0
+        ):
+            price_score = max(0.0, 1.0 - abs(float(c_price) - float(r_price)) / float(r_price))
+        else:
+            price_score = 0.5
+
+        # Property type (0.15) — exact match
+        type_score = (
+            1.0
+            if str(candidate.get("property_type", "")) == str(reference.get("property_type", ""))
+            else 0.0
+        )
+
+        # Amenities (0.20) — Jaccard
+        c_amenities = {k for k in self._AMENITY_KEYS if bool(candidate.get(k, False))}
+        r_amenities = {k for k in self._AMENITY_KEYS if bool(reference.get(k, False))}
+        union = c_amenities | r_amenities
+        amenity_score = len(c_amenities & r_amenities) / len(union) if union else 1.0
+
+        return (
+            0.25 * city_score
+            + 0.20 * rooms_score
+            + 0.20 * price_score
+            + 0.15 * type_score
+            + 0.20 * amenity_score
+        )
+
     def _calculate_implicit_score(
         self,
         metadata: Dict[str, Any],
+        documents: List[Document],
         viewed_properties: Optional[List[str]],
         favorited_properties: Optional[List[str]],
     ) -> float:
         """
         Score based on similarity to viewed/favorited properties.
 
-        This is a simplified version - in production, would use
-        actual property features for similarity.
+        Uses weighted feature matching against reference properties
+        extracted from the candidate document pool by ID.
         """
-        # Placeholder implementation
-        # In real version, would compare features with viewed/favorited
-        score = 0.5
+        viewed_ids = viewed_properties or []
+        favorited_ids = favorited_properties or []
 
-        # Boost if in same city as favorited
-        if favorited_properties:
-            # Would check if property is similar to favorites
-            score = 0.7
+        if not viewed_ids and not favorited_ids:
+            return 0.5
 
-        return score
+        # Extract reference properties from candidate pool
+        viewed_refs = self._extract_reference_properties(documents, viewed_ids)
+        favorited_refs = self._extract_reference_properties(documents, favorited_ids)
+
+        if not viewed_refs and not favorited_refs:
+            return 0.5
+
+        # Compute weighted similarity scores (favorites 2x weight)
+        weighted_sum = 0.0
+        total_weight = 0
+
+        for ref in viewed_refs:
+            weighted_sum += self._calculate_feature_similarity(metadata, ref)
+            total_weight += 1
+
+        for ref in favorited_refs:
+            weighted_sum += 2.0 * self._calculate_feature_similarity(metadata, ref)
+            total_weight += 2
+
+        return weighted_sum / total_weight if total_weight > 0 else 0.5
 
     def _generate_recommendation_reason(
         self,
