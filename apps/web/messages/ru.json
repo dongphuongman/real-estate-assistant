@@ -69,6 +69,7 @@
       "forgotPassword": "Забыли пароль?",
       "noAccount": "Нет аккаунта?",
       "submit": "Войти",
+      "signUp": "Регистрация",
       "orContinueWith": "Или продолжить через"
     },
     "register": {

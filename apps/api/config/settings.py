@@ -714,6 +714,85 @@ class AppSettings(BaseModel):
 
         return self
 
+    @model_validator(mode="after")
+    def _validate_jwt_secret_production_safety(self) -> "AppSettings":
+        """
+        Validate JWT secret key configuration for production safety.
+
+        In production with JWT auth enabled, this validator:
+        - Requires JWT_SECRET_KEY to be set
+        - Rejects empty or whitespace-only secrets
+        - Rejects known weak/default values
+
+        This prevents accidental deployment with weak JWT signing keys that could
+        compromise authentication security.
+
+        Raises:
+            ValueError: If JWT auth is enabled in production without a proper secret
+        """
+        environment = (self.environment or "development").strip().lower()
+        jwt_enabled = self.auth_jwt_enabled
+        jwt_secret = self.jwt_secret_key
+
+        if jwt_enabled and environment == "production":
+            # Check if secret is None or empty
+            if jwt_secret is None:
+                raise ValueError(
+                    "JWT_SECRET_KEY must be set in production when JWT auth is enabled. "
+                    "Generate a strong random key: "
+                    "python -c 'import secrets; print(secrets.token_urlsafe(32))'"
+                )
+
+            # Check if secret is empty string
+            if jwt_secret == "":
+                raise ValueError(
+                    "JWT_SECRET_KEY cannot be empty string in production. "
+                    "Set a strong random key via JWT_SECRET_KEY environment variable."
+                )
+
+            # Check if secret is not just whitespace
+            jwt_secret_stripped = jwt_secret.strip()
+            if not jwt_secret_stripped:
+                raise ValueError(
+                    "JWT_SECRET_KEY cannot be whitespace-only in production. "
+                    "Set a strong random key via JWT_SECRET_KEY environment variable."
+                )
+
+            # Reject known weak/default values
+            weak_secrets = {
+                "secret",
+                "jwt-secret",
+                "jwtsecret",
+                "changeme",
+                "change-me",
+                "password",
+                "test",
+                "dev",
+                "development",
+                "default",
+                "123456",
+                "abcdef",
+            }
+
+            if jwt_secret_stripped.lower() in weak_secrets:
+                raise ValueError(
+                    f"JWT_SECRET_KEY cannot be a known weak value ('{jwt_secret_stripped}') in production. "
+                    "Generate a strong random key: "
+                    "python -c 'import secrets; print(secrets.token_urlsafe(32))'"
+                )
+
+            # Warn if secret is too short (less than 256 bits / 32 chars)
+            if len(jwt_secret_stripped) < 32:
+                import warnings
+
+                warnings.warn(
+                    f"JWT_SECRET_KEY is shorter than recommended (current: {len(jwt_secret_stripped)} chars, "
+                    "recommended: 32+ chars). Consider using a longer secret for better security.",
+                    stacklevel=1,
+                )
+
+        return self
+
 
 # Global settings instance
 settings = AppSettings()
