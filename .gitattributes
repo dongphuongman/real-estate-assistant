@@ -1,4 +1,4 @@
-# NestLab Standard — LF everywhere, CRLF only for Windows scripts
+# Standard EOL configuration — LF everywhere, CRLF only for Windows scripts
 * text=auto eol=lf
 
 # Windows-only: CRLF

@@ -49,7 +49,7 @@ gh api repos/AleksNeStu/ai-real-estate-assistant/contributors --jq '.[].login'
 
 ## External PR Tracking
 
-Track every external (non-NestLab) pull request:
+Track every community pull request:
 
 | Data Point | Description |
 |------------|-------------|
