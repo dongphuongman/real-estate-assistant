@@ -59,6 +59,32 @@ class AppSettings(BaseModel):
         default_factory=lambda: os.getenv("MOONSHOT_API_KEY"),
         description="Moonshot AI (Kimi) API key - Chinese LLM provider with long context",
     )
+
+    # Multi-Provider Failover Configuration
+    provider_api_keys: dict[str, list[str]] = Field(
+        default_factory=dict,
+        description='Multiple API keys per provider for failover. Format: {"openai": ["key1", "key2"]}',
+    )
+    key_rotation_strategy: str = Field(
+        default_factory=lambda: os.getenv("KEY_ROTATION_STRATEGY", "round-robin"),
+        description="Key rotation strategy: round-robin, random, or priority",
+    )
+    key_failure_threshold: int = Field(
+        default_factory=lambda: int(os.getenv("KEY_FAILURE_THRESHOLD", "5")),
+        description="Number of failures before switching to next key",
+    )
+    enable_multi_key_fallback: bool = Field(
+        default_factory=lambda: (
+            os.getenv("ENABLE_MULTI_KEY_FALLBACK", "false").strip().lower()
+            in {"1", "true", "yes", "on"}
+        ),
+        description="Enable multi-key and multi-provider failover",
+    )
+    provider_priority_order: list[str] = Field(
+        default_factory=lambda: _parse_csv_list(os.getenv("PROVIDER_PRIORITY_ORDER", "")),
+        description="Provider fallback order (e.g., openai,anthropic,google)",
+    )
+
     # Google Routes API for commute time analysis (TASK-021)
     google_routes_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("GOOGLE_ROUTES_API_KEY"),
@@ -682,6 +708,56 @@ class AppSettings(BaseModel):
         # This prevents accidental deployment without proper authentication.
         self.api_access_keys = keys
         self.api_access_key = keys[0] if keys else None
+        return self
+
+    @model_validator(mode="after")
+    def _parse_provider_api_keys(self) -> "AppSettings":
+        """
+        Parse multiple API keys per provider from environment variables.
+
+        Environment variables format (supports CSV):
+        - OPENAI_API_KEYS=sk-key1,sk-key2,sk-key3
+        - ANTHROPIC_API_KEYS=sk-ant-key1,sk-ant-key2
+
+        Also builds provider_api_keys dict from individual keys if multi-key not enabled.
+        """
+        provider_keys: dict[str, list[str]] = {}
+
+        # Provider name to env var mapping
+        provider_env_vars = {
+            "openai": "OPENAI_API_KEYS",
+            "anthropic": "ANTHROPIC_API_KEYS",
+            "google": "GOOGLE_API_KEYS",
+            "grok": "XAI_API_KEYS",
+            "deepseek": "DEEPSEEK_API_KEYS",
+            "zai": "ZAI_API_KEYS",
+            "moonshot": "MOONSHOT_API_KEYS",
+        }
+
+        # Parse multi-key env vars if provided
+        for provider, env_var in provider_env_vars.items():
+            raw_value = os.getenv(env_var, "")
+            if raw_value:
+                keys = [k.strip() for k in raw_value.split(",") if k.strip()]
+                if keys:
+                    provider_keys[provider] = _dedupe_preserve_order(keys)
+
+        # If no multi-key env vars, fall back to single keys as list of 1
+        if not provider_keys:
+            single_key_mapping = {
+                "openai": self.openai_api_key,
+                "anthropic": self.anthropic_api_key,
+                "google": self.google_api_key,
+                "grok": self.grok_api_key,
+                "deepseek": self.deepseek_api_key,
+                "zai": self.zai_api_key,
+                "moonshot": self.moonshot_api_key,
+            }
+            for provider, key in single_key_mapping.items():
+                if key:
+                    provider_keys[provider] = [key]
+
+        self.provider_api_keys = provider_keys
         return self
 
     @model_validator(mode="after")

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from functools import lru_cache
 from typing import TYPE_CHECKING, Annotated, Any, Optional
 
@@ -20,6 +21,7 @@ from config.settings import settings
 from db.models import User
 from models.provider_factory import ModelProviderFactory
 from services.model_preference_service import SYSTEM_DEFAULTS, ModelPreferenceService
+from utils.circuit import get_circuit_breaker_manager
 
 if TYPE_CHECKING:
     from data.enrichment.pipeline import EnrichmentPipeline
@@ -102,12 +104,195 @@ def _create_llm_with_resolved_model_id(
     return llm, resolved_model_id
 
 
+async def _create_llm_with_api_key(
+    provider_name: str,
+    model_id: Optional[str],
+    api_key: str,
+) -> tuple[BaseChatModel, str]:
+    """
+    Create LLM instance with specific API key (for multi-key failover).
+
+    This function is NOT cached and should be used when multi-key fallback is enabled.
+
+    Args:
+        provider_name: Provider name
+        model_id: Model ID (None for default)
+        api_key: API key to use
+
+    Returns:
+        Tuple of (LLM instance, resolved model ID)
+    """
+    # Temporarily set the API key in environment for the provider
+    old_key = _set_provider_api_key(provider_name, api_key)
+
+    try:
+        factory_provider = ModelProviderFactory.get_provider(provider_name)
+        resolved_model_id = model_id
+
+        if not resolved_model_id:
+            if provider_name == "ollama" and getattr(settings, "ollama_default_model", None):
+                resolved_model_id = settings.ollama_default_model
+            else:
+                models = factory_provider.list_models()
+                if not models:
+                    raise RuntimeError(f"No models available for provider '{provider_name}'")
+                resolved_model_id = models[0].id
+
+        # Add Sentry breadcrumb for LLM creation (Task #56)
+        try:
+            from api.sentry_init import add_llm_breadcrumb
+
+            add_llm_breadcrumb(provider=provider_name, model=resolved_model_id)
+        except Exception as e:
+            logger.debug("Sentry breadcrumb skipped: %s", e)
+
+        llm = factory_provider.create_model(
+            model_id=resolved_model_id,
+            temperature=settings.default_temperature,
+            max_tokens=settings.default_max_tokens,
+        )
+        return llm, resolved_model_id
+
+    finally:
+        # Restore original API key
+        _restore_provider_api_key(provider_name, old_key)
+
+
+def _set_provider_api_key(provider: str, api_key: str) -> Optional[str]:
+    """
+    Set provider API key in environment and return old value.
+
+    Args:
+        provider: Provider name
+        api_key: New API key value
+
+    Returns:
+        Previous API key value (or None if not set)
+    """
+    env_var_map = {
+        "openai": "OPENAI_API_KEY",
+        "anthropic": "ANTHROPIC_API_KEY",
+        "google": "GOOGLE_API_KEY",
+        "grok": "XAI_API_KEY",
+        "deepseek": "DEEPSEEK_API_KEY",
+        "zai": "ZAI_API_KEY",
+        "moonshot": "MOONSHOT_API_KEY",
+    }
+
+    env_var = env_var_map.get(provider)
+    if not env_var:
+        return None
+
+    old_key = os.environ.get(env_var)
+    os.environ[env_var] = api_key
+    return old_key
+
+
+def _restore_provider_api_key(provider: str, old_key: Optional[str]) -> None:
+    """
+    Restore provider API key to previous value.
+
+    Args:
+        provider: Provider name
+        old_key: Previous API key value (None to unset)
+    """
+    env_var_map = {
+        "openai": "OPENAI_API_KEY",
+        "anthropic": "ANTHROPIC_API_KEY",
+        "google": "GOOGLE_API_KEY",
+        "grok": "XAI_API_KEY",
+        "deepseek": "DEEPSEEK_API_KEY",
+        "zai": "ZAI_API_KEY",
+        "moonshot": "MOONSHOT_API_KEY",
+    }
+
+    env_var = env_var_map.get(provider)
+    if not env_var:
+        return None
+
+    if old_key is None:
+        os.environ.pop(env_var, None)
+    else:
+        os.environ[env_var] = old_key
+
+
+async def _create_llm_with_multi_key_fallback(
+    providers: list[str],
+    primary_model: Optional[str],
+) -> BaseChatModel:
+    """
+    Create LLM with automatic multi-key and multi-provider fallback.
+
+    Uses CircuitBreakerManager to:
+    1. Try each provider in order
+    2. For each provider, try each API key
+    3. Automatically switch on failure
+    4. Fall back to Ollama if all cloud providers fail
+
+    Args:
+        providers: Ordered list of providers to try
+        primary_model: Model ID (None for default)
+
+    Returns:
+        LLM instance
+
+    Raises:
+        RuntimeError: If all providers and keys fail
+    """
+    manager = get_circuit_breaker_manager()
+
+    # Build provider keys dict from settings
+    provider_keys = settings.provider_api_keys
+
+    # Filter to only include providers that have keys
+    available_providers = [p for p in providers if p in provider_keys and provider_keys[p]]
+
+    # Add Ollama as fallback if configured
+    try:
+        ollama_provider = ModelProviderFactory.get_provider("ollama")
+        runtime_ok, _runtime_error = ollama_provider.validate_connection()
+        if runtime_ok:
+            available_providers.append("ollama")
+            # Ollama doesn't use API keys
+            provider_keys = {**provider_keys, "ollama": [""]}
+    except Exception:
+        pass
+
+    if not available_providers:
+        raise RuntimeError("No providers with API keys available")
+
+    async def create_llm_with_key(
+        provider: str,
+        key_index: int,
+        api_key: str,
+    ) -> BaseChatModel:
+        """Helper function to create LLM with specific provider and key."""
+        llm, _resolved_model_id = await _create_llm_with_api_key(
+            provider_name=provider,
+            model_id=primary_model,
+            api_key=api_key,
+        )
+        return llm
+
+    try:
+        return await manager.call_with_fallback(
+            providers=available_providers,
+            provider_keys=provider_keys,
+            func=create_llm_with_key,
+        )
+    except RuntimeError as e:
+        raise RuntimeError(
+            f"Failed to create LLM with any provider/key. Tried: {available_providers}"
+        ) from e
+
+
 def get_llm(
     x_user_email: Annotated[str | None, Header(alias="X-User-Email")] = None,
 ) -> BaseChatModel:
     """
     Get Language Model instance.
     Uses settings to determine provider and model.
+    Supports multi-key and multi-provider fallback when enabled.
     """
     default_provider_name = settings.default_provider
     default_model_id = settings.default_model
@@ -125,6 +310,38 @@ def get_llm(
     primary_provider = preferred_provider or default_provider_name
     primary_model = preferred_model if preferred_provider else (preferred_model or default_model_id)
 
+    # Use multi-key fallback if enabled (async wrapper needed)
+    if settings.enable_multi_key_fallback:
+        import asyncio
+
+        try:
+            # Build provider priority list
+            providers = settings.provider_priority_order or [
+                primary_provider,
+                default_provider_name,
+            ]
+            # Remove duplicates while preserving order
+            seen = set()
+            unique_providers = []
+            for p in providers:
+                if p not in seen:
+                    seen.add(p)
+                    unique_providers.append(p)
+
+            # Ensure default provider is in the list
+            if default_provider_name not in seen:
+                unique_providers.append(default_provider_name)
+
+            # Run async function in sync context
+            loop = asyncio.get_event_loop()
+            return loop.run_until_complete(
+                _create_llm_with_multi_key_fallback(unique_providers, primary_model)
+            )
+        except Exception as e:
+            logger.error("Multi-key fallback failed, using legacy fallback: %s", e)
+            # Fall through to legacy behavior
+
+    # Legacy fallback behavior (single key per provider)
     try:
         return _create_llm(primary_provider, primary_model)
     except Exception as e:
