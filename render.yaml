@@ -1,10 +1,12 @@
 services:
   # Backend: FastAPI + SQLite + ChromaDB in-memory
+  # Public repository: AleksNeStu/ai-real-estate-assistant
   - type: web
     name: realestate-api
     plan: free
-    dockerfilePath: ./deploy/docker/Dockerfile.backend
+    dockerFilePath: ./deploy/docker/Dockerfile.backend
     dockerContext: .
+    repo: https://github.com/AleksNeStu/ai-real-estate-assistant
     envVars:
       - key: PORT
         value: "10000"
@@ -19,7 +21,7 @@ services:
       - key: API_ACCESS_KEY
         sync: false
       - key: CORS_ALLOW_ORIGINS
-        value: https://realestate-web.onrender.com
+        value: https://realestate-web.onrender.com,https://ai-real-estate-assistant.vercel.app
       - key: AUTH_JWT_ENABLED
         value: "false"
       - key: INTERNET_ENABLED
@@ -36,15 +38,19 @@ services:
         value: "false"
 
   # Frontend: Next.js standalone
+  # Public repository: AleksNeStu/ai-real-estate-assistant
   - type: web
     name: realestate-web
     plan: free
-    dockerfilePath: ./deploy/docker/Dockerfile.frontend
+    dockerFilePath: ./deploy/docker/Dockerfile.frontend
     dockerContext: .
+    repo: https://github.com/AleksNeStu/ai-real-estate-assistant
     envVars:
       - key: BACKEND_API_URL
         value: https://realestate-api.onrender.com/api/v1
       - key: API_ACCESS_KEY
         sync: false
+      - key: NEXT_PUBLIC_API_URL
+        value: /api/v1
       - key: NODE_ENV
         value: production

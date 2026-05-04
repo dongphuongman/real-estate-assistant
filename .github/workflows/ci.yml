@@ -18,7 +18,7 @@ concurrency:
 jobs:
   gitleaks:
     runs-on: ubuntu-latest
-    if: true
+    if: true  # Always run for public repo
     steps:
       - name: Checkout
         uses: actions/checkout@v4
