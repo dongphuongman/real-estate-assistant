@@ -13,9 +13,9 @@ services:
       - key: ENVIRONMENT
         value: production
       - key: DEFAULT_PROVIDER
-        value: zai
+        value: openai
       - key: DEFAULT_MODEL
-        value: glm-4.7-flash
+        value: gpt-4o-mini
       - key: ZAI_API_KEY
         sync: false
       - key: API_ACCESS_KEY
