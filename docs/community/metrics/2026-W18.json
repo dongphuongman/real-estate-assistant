@@ -1,0 +1,31 @@
+{
+  "collected_at": "2026-05-04T10:52:40.929015+00:00",
+  "repository": "dev-scaler/ai-real-estate-assistant",
+  "week": "2026-W18",
+  "repo_stats": {
+    "stars": 0,
+    "forks": 0,
+    "watchers": 0,
+    "open_issues": 15,
+    "license": "MIT",
+    "default_branch": "dev",
+    "language": "Python"
+  },
+  "issue_stats": {
+    "open_by_label": {
+      "bug": 0,
+      "enhancement": 0,
+      "good first issue": 0,
+      "help wanted": 0,
+      "question": 0
+    },
+    "total_open": 0
+  },
+  "pr_stats": {
+    "open_prs": 15,
+    "total_merged": 0
+  },
+  "contributors": {
+    "total": 1
+  }
+}
