@@ -39,7 +39,8 @@ jobs:
             echo "Latest snapshot: $LATEST"
           fi
 
-      - name: Commit metrics
+      - name: Commit metrics (DISABLED - causes conflicts)
+        if: false  # Disabled to prevent automatic commits causing merge conflicts
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
