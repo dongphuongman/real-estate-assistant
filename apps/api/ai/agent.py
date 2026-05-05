@@ -3,7 +3,6 @@ from typing import Any, Callable, Dict, List, Sequence
 
 import pandas as pd
 
-
 try:
     from langchain.agents.agent_types import AgentType
 except (ImportError, ModuleNotFoundError):
