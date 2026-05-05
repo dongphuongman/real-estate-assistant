@@ -74,6 +74,7 @@
     "flatted": "3.4.2",
     "serialize-javascript": ">=7.0.3",
     "pify": "5.0.0",
-    "globby": "11.1.0"
+    "globby": "11.1.0",
+    "eslint-plugin-react": "npm:eslint-plugin-react@7.37.2"
   }
 }
