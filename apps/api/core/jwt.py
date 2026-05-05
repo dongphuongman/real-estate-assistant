@@ -139,11 +139,11 @@ def verify_access_token(token: str) -> dict[str, Any]:
 def _decode_access_token_unsafe(token: str) -> Optional[dict[str, Any]]:
     """
     INTERNAL: Decode a JWT access token WITHOUT signature verification.
-    
+
     WARNING: This function does NOT verify the token signature.
     It only decodes the token payload. DO NOT use for authentication.
     This is intended for internal debugging only.
-    
+
     Args:
         token: Encoded JWT token string
 
@@ -151,9 +151,9 @@ def _decode_access_token_unsafe(token: str) -> Optional[dict[str, Any]]:
         Decoded token payload or None if invalid
     """
     import warnings
+
     warnings.warn(
-        "decode_access_token is deprecated and will be removed. "
-        "Use verify_access_token instead.",
+        "decode_access_token is deprecated and will be removed. Use verify_access_token instead.",
         DeprecationWarning,
         stacklevel=2,
     )
@@ -169,7 +169,8 @@ def _decode_access_token_unsafe(token: str) -> Optional[dict[str, Any]]:
 
 
 # Alias for backwards compatibility (triggers deprecation warning)
-import functools
+import functools  # noqa: E402 - intentional placement for backwards compatibility
+
 decode_access_token = functools.partial(_decode_access_token_unsafe)
 
 
