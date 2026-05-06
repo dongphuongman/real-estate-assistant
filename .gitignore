@@ -346,6 +346,7 @@ scripts/validation/taskmaster_review.py
 
 # Internal dev scripts (not for public repo)
 scripts/internal/
+scripts/ci/
 
 # Secret detection baselines (internal tooling)
 .secrets.baseline

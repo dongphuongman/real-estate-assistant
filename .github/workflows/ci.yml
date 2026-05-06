@@ -118,7 +118,8 @@ jobs:
 
       - name: OpenAPI breaking-change detection (Task #97)
         run: |
-          python ../../scripts/openapi_diff.py --baseline ../../docs/api-v1-baseline.json
+          cd $(git rev-parse --show-toplevel)
+          python scripts/openapi_diff.py --baseline docs/api-v1-baseline.json
 
       - name: OpenAPI schema drift check
         continue-on-error: true
