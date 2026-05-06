@@ -25,7 +25,7 @@ class MockEnricher(PropertyEnrichmentHook[str]):
     async def enrich(self, context: EnrichmentContext) -> EnrichmentResult[str]:
         return EnrichmentResult.success_result(
             source=self.name,
-            field=self.field,
+            enrichment_field=self.field,
             value="mock_value",
         )
 

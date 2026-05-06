@@ -162,9 +162,7 @@ class UserActivityService:
             )
         )
         if user_id_hash:
-            tool_uses_query = tool_uses_query.where(
-                UserActivityEvent.user_id_hash == user_id_hash
-            )
+            tool_uses_query = tool_uses_query.where(UserActivityEvent.user_id_hash == user_id_hash)
         result = await self.session.execute(tool_uses_query)
         total_tool_uses = result.scalar() or 0
 
@@ -177,9 +175,7 @@ class UserActivityService:
             )
         )
         if user_id_hash:
-            exports_query = exports_query.where(
-                UserActivityEvent.user_id_hash == user_id_hash
-            )
+            exports_query = exports_query.where(UserActivityEvent.user_id_hash == user_id_hash)
         result = await self.session.execute(exports_query)
         total_exports = result.scalar() or 0
 
@@ -192,9 +188,7 @@ class UserActivityService:
             )
         )
         if user_id_hash:
-            favorites_query = favorites_query.where(
-                UserActivityEvent.user_id_hash == user_id_hash
-            )
+            favorites_query = favorites_query.where(UserActivityEvent.user_id_hash == user_id_hash)
         result = await self.session.execute(favorites_query)
         total_favorites = result.scalar() or 0
 
@@ -205,9 +199,7 @@ class UserActivityService:
         top_search_cities = await self._get_top_search_cities(period_start, period_end)
 
         # Get event counts by day
-        event_counts_by_day = await self._get_event_counts_by_day(
-            period_start, period_end
-        )
+        event_counts_by_day = await self._get_event_counts_by_day(period_start, period_end)
 
         return UserActivitySummary(
             period_start=period_start,
@@ -349,7 +341,7 @@ class UserActivityService:
             search_count = 0
             for day_key, count_val in search_by_day.items():
                 if day_key and day_key.date() == current:
-                    search_count = int(count_val)
+                    search_count = int(count_val)  # type: ignore[call-overload]
                     break
 
             daily_counts.append(
@@ -476,12 +468,16 @@ class UserActivityService:
         )
 
         # Query events
-        query = select(UserActivityEvent).where(
-            and_(
-                UserActivityEvent.event_timestamp >= period_start,
-                UserActivityEvent.event_timestamp < period_end,
+        query = (
+            select(UserActivityEvent)
+            .where(
+                and_(
+                    UserActivityEvent.event_timestamp >= period_start,
+                    UserActivityEvent.event_timestamp < period_end,
+                )
             )
-        ).order_by(UserActivityEvent.event_timestamp)
+            .order_by(UserActivityEvent.event_timestamp)
+        )
 
         if user_id_hash:
             query = query.where(UserActivityEvent.user_id_hash == user_id_hash)
@@ -539,9 +535,7 @@ class UserActivityService:
         self.session.add(event)
         await self.session.flush()
 
-        user_display = (
-            f"{hashed_user_id[:8]}..." if hashed_user_id else "anonymous"
-        )
+        user_display = f"{hashed_user_id[:8]}..." if hashed_user_id else "anonymous"
         logger.info("Recorded activity event: %s for user %s", event_type, user_display)
 
         return event

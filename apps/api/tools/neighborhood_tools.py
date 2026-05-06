@@ -549,7 +549,7 @@ class NeighborhoodQualityIndexTool(BaseTool):
                         "longitude": s.longitude,
                         "distance_m": s.distance_m,
                     }
-                    for s in transport_result.stops[:20]  # Limit to 20
+                    for s in transport_result.stops[:20]  # type: ignore[attr-defined]  # Limit to 20
                 ],
                 "police_stations": [
                     {

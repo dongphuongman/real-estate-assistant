@@ -345,7 +345,8 @@ class ChromaPropertyStore:
         try:
             # Fetch from Chroma
             results = vector_store._collection.get(
-                ids=property_ids, include=["documents", "metadatas"]
+                ids=property_ids,
+                include=["documents", "metadatas"],  # type: ignore[list-item]
             )
 
             documents = []

@@ -87,7 +87,7 @@ def init_sentry() -> bool:
                 event_level=logging.ERROR,
             ),
         ],
-        before_send=_before_send,
+        before_send=_before_send,  # type: ignore[arg-type]
         send_default_pii=False,
         attach_stacktrace=True,
         max_breadcrumbs=50,

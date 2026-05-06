@@ -5,6 +5,7 @@ Uses a mock FastAPI app since langchain is incompatible with Python 3.14.
 """
 
 import time
+from typing import AsyncGenerator
 
 import pytest
 from fastapi import FastAPI
@@ -92,7 +93,7 @@ class MockRateLimiter:
 
 
 @pytest.fixture
-async def admin_client() -> AsyncClient:
+async def admin_client() -> AsyncGenerator[AsyncClient, None]:
     app = _create_dashboard_app()
     app.state.response_cache = MockCache()
     app.state.rate_limiter = MockRateLimiter()
