@@ -107,6 +107,7 @@ class TestMCPStubCallHistory:
         stub._record_call("op2", {}, {})
 
         last = stub.get_last_call()
+        assert last is not None
         assert last.operation == "op2"
 
     def test_get_last_call_empty(self) -> None:

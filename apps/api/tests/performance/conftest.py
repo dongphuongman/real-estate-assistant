@@ -201,7 +201,7 @@ async def concurrent_requests(
 ) -> list[tuple[float, int]]:
     """Execute concurrent requests and collect metrics."""
     tasks = [measure_request(client, method, url, metrics, **kwargs) for _ in range(num_requests)]
-    return await asyncio.gather(*tasks, return_exceptions=True)
+    return await asyncio.gather(*tasks, return_exceptions=True)  # type: ignore[return-value]
 
 
 @pytest.fixture

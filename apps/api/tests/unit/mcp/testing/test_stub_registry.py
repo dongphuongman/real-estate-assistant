@@ -126,7 +126,7 @@ class TestStubRegistryVerification:
         stub = registry.register(EchoStubConnector)
 
         # Simulate network call detection (shouldn't happen with real stubs)
-        stub._network_call_detected = True
+        stub._network_call_detected = True  # type: ignore[attr-defined]
 
         with pytest.raises(RuntimeError, match="network call"):
             registry.verify_no_network_calls()

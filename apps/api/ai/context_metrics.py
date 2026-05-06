@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import aiosqlite
+from aiosqlite import Row
 
 # Default path for context metrics database
 CONTEXT_METRICS_DB_PATH = Path("data/context_metrics.db")
@@ -239,11 +240,11 @@ async def get_usage_summary(
             (cutoff.isoformat(),),
         )
 
-        row = await cursor.fetchone()
+        opt_row: Row | None = await cursor.fetchone()
         optimization_stats = {
-            "total_compressions": row[0] or 0,
-            "total_summarizations": row[1] or 0,
-            "avg_messages_reduced": row[2] or 0.0,
+            "total_compressions": (opt_row[0] or 0) if opt_row else 0,  # type: ignore[index]
+            "total_summarizations": (opt_row[1] or 0) if opt_row else 0,  # type: ignore[index]
+            "avg_messages_reduced": (opt_row[2] or 0.0) if opt_row else 0.0,  # type: ignore[index]
         }
 
     return {

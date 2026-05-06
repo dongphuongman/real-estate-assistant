@@ -236,7 +236,7 @@ class AllowlistValidator:
 
             entry = AllowlistEntry(
                 name=name,
-                display_name=entry_data.get("display_name", name),
+                display_name=entry_data.get("display_name", name) or name,  # type: ignore[arg-type]
                 description=entry_data.get("description", ""),
                 enabled=entry_data.get("enabled", True),
                 edition=entry_edition,
@@ -264,7 +264,7 @@ class AllowlistValidator:
 
             entry = AllowlistEntry(
                 name=name,
-                display_name=entry_data.get("display_name", name),
+                display_name=entry_data.get("display_name", name) or name,  # type: ignore[arg-type]
                 description=entry_data.get("description", ""),
                 enabled=entry_data.get("enabled", True),
                 edition=entry_edition,

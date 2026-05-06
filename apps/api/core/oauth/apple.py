@@ -150,7 +150,7 @@ class AppleOAuthProvider(OAuthProvider):
         """Fetch Apple's public keys for token verification."""
         # Cache keys for 1 hour
         if self._cached_keys and time.time() - self._keys_cache_time < 3600:
-            return self._cached_keys
+            return self._cached_keys  # type: ignore[return-value]
 
         async with httpx.AsyncClient() as client:
             response = await client.get(APPLE_KEYS_URL)
@@ -159,9 +159,9 @@ class AppleOAuthProvider(OAuthProvider):
             raise OAuthError("Failed to fetch Apple public keys", self.name)
 
         data = response.json()
-        self._cached_keys = data.get("keys", [])
+        self._cached_keys = data.get("keys", [])  # type: ignore[assignment]
         self._keys_cache_time = time.time()
-        return self._cached_keys
+        return self._cached_keys  # type: ignore[return-value]
 
     async def _verify_id_token(self, id_token: str) -> dict:
         """Verify Apple ID token and return payload."""
@@ -194,12 +194,12 @@ class AppleOAuthProvider(OAuthProvider):
         try:
             payload = jwt.decode(
                 id_token,
-                public_key,
+                public_key,  # type: ignore[arg-type]
                 algorithms=["RS256"],
                 audience=self.client_id,
                 issuer="https://appleid.apple.com",
             )
-            return payload
+            return payload  # type: ignore[return-value]
         except jwt.ExpiredSignatureError as e:
             raise OAuthError("ID token has expired", self.name) from e
         except jwt.InvalidTokenError as e:

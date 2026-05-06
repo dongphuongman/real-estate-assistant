@@ -345,7 +345,7 @@ class MCPConnectorRegistry:
             List of violation records with timestamps and context
         """
         validator = _get_validator()
-        return validator.get_violations()
+        return validator.get_violations()  # type: ignore[no-any-return]
 
     @classmethod
     def clear_allowlist_violations(cls) -> None:

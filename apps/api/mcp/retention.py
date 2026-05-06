@@ -252,7 +252,7 @@ def get_retention_manager() -> MCPAuditRetention:
         return _retention_manager
 
 
-def run_cleanup(dry_run: bool = False) -> dict[str, Any]:
+def run_cleanup(dry_run: bool = False) -> CleanupResult:
     """
     Run a cleanup of expired MCP audit logs.
 

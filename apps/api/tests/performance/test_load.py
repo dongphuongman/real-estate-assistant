@@ -40,7 +40,7 @@ class UserSession:
 
     user_id: int
     requests_made: int = 0
-    errors: list[dict[str, Any]] = None
+    errors: list[dict[str, Any]] | None = None
 
     def __post_init__(self):
         if self.errors is None:
@@ -112,7 +112,8 @@ class HealthCheckScenario(LoadTestScenario):
             try:
                 await measure_request(self.client, "GET", "/health", self.metrics)
             except Exception as e:
-                self.sessions[user_id].errors.append({"error": str(e), "time": time.time()})
+                if self.sessions[user_id].errors is not None:
+                    self.sessions[user_id].errors.append({"error": str(e), "time": time.time()})
             await self.think_time()
 
 
@@ -148,13 +149,14 @@ class MixedEndpointScenario(LoadTestScenario):
                     if body:
                         kwargs["json"] = body
 
-                    await measure_request(self.client, method, endpoint, self.metrics, **kwargs)
+                    await measure_request(self.client, method, endpoint, self.metrics, **kwargs)  # type: ignore[arg-type]
                     self.sessions[user_id].requests_made += 1
 
             except Exception as e:
-                self.sessions[user_id].errors.append(
-                    {"endpoint": endpoint, "error": str(e), "time": time.time()}
-                )
+                if self.sessions[user_id].errors is not None:
+                    self.sessions[user_id].errors.append(
+                        {"endpoint": endpoint, "error": str(e), "time": time.time()}
+                    )
 
             await self.think_time()
 

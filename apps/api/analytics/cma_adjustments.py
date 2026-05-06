@@ -256,8 +256,8 @@ class CMAAdjustmentCalculator:
         subject_key = self._get_location_key(subject)
         comp_key = self._get_location_key(comp)
 
-        subject_index = self.location_price_indices.get(subject_key, 1.0)
-        comp_index = self.location_price_indices.get(comp_key, 1.0)
+        subject_index = self.location_price_indices.get(subject_key, 1.0)  # type: ignore[arg-type]
+        comp_index = self.location_price_indices.get(comp_key, 1.0)  # type: ignore[arg-type]
 
         if subject_index == comp_index:
             return None

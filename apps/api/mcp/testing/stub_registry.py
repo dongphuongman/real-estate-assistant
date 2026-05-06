@@ -100,7 +100,7 @@ class StubRegistry:
         """
         result = {}
         for name, stub in self._stubs.items():
-            result[name] = stub.get_call_history()
+            result[name] = stub.get_call_history()  # type: ignore[assignment]
         return result
 
     def verify_no_network_calls(self) -> bool:

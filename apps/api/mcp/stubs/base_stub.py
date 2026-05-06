@@ -257,7 +257,7 @@ class MCPStub(MCPConnector[T], Generic[T]):
 
         # No queued responses - return default
         return MCPConnectorResult.success_result(
-            data=None,
+            data=None,  # type: ignore[arg-type]
             connector_name=self.name,
             operation=operation,
             metadata={"stub": True, "default": True},

@@ -187,7 +187,9 @@ class WebScraperConnector(MCPConnector[Dict[str, Any]]):
                 max_redirects=5,
             )
             self._connected = True
-            logger.info(f"WebScraperConnector connected with {len(self._scraper_config.allowed_domains)} allowed domains")
+            logger.info(
+                f"WebScraperConnector connected with {len(self._scraper_config.allowed_domains)} allowed domains"
+            )
             return True
         except Exception as e:
             logger.error(f"Failed to initialize HTTP client: {e}")
@@ -400,10 +402,12 @@ class WebScraperConnector(MCPConnector[Dict[str, Any]]):
 
         async def scrape_one(url: str) -> Dict[str, Any]:
             async with semaphore:
-                result = await self._scrape({
-                    "url": url,
-                    "selectors": selectors,
-                })
+                result = await self._scrape(
+                    {
+                        "url": url,
+                        "selectors": selectors,
+                    }
+                )
                 return {
                     "url": url,
                     "success": result.success,
@@ -599,7 +603,9 @@ class WebScraperConnector(MCPConnector[Dict[str, Any]]):
                     return response.text
                 elif response.status_code == 429:
                     # Rate limited - wait and retry
-                    retry_after = float(response.headers.get("Retry-After", base_delay * (2 ** attempt)))
+                    retry_after = float(
+                        response.headers.get("Retry-After", base_delay * (2**attempt))
+                    )
                     logger.warning(f"Rate limited by {url}, waiting {retry_after}s")
                     await asyncio.sleep(retry_after)
                 elif response.status_code >= 500:
@@ -608,7 +614,7 @@ class WebScraperConnector(MCPConnector[Dict[str, Any]]):
                         f"Server error: HTTP {response.status_code}",
                         connector_name=self.name,
                     )
-                    delay = base_delay * (2 ** attempt)
+                    delay = base_delay * (2**attempt)
                     logger.warning(f"Server error from {url}, retrying in {delay}s")
                     await asyncio.sleep(delay)
                 elif response.status_code == 403:
@@ -636,7 +642,7 @@ class WebScraperConnector(MCPConnector[Dict[str, Any]]):
                     connector_name=self.name,
                 )
                 if attempt < max_retries - 1:
-                    delay = base_delay * (2 ** attempt)
+                    delay = base_delay * (2**attempt)
                     logger.warning(f"Timeout for {url}, retrying in {delay}s")
                     await asyncio.sleep(delay)
             except httpx.NetworkError as e:
@@ -645,7 +651,7 @@ class WebScraperConnector(MCPConnector[Dict[str, Any]]):
                     connector_name=self.name,
                 )
                 if attempt < max_retries - 1:
-                    delay = base_delay * (2 ** attempt)
+                    delay = base_delay * (2**attempt)
                     logger.warning(f"Network error for {url}, retrying in {delay}s")
                     await asyncio.sleep(delay)
 
@@ -669,7 +675,7 @@ class WebScraperConnector(MCPConnector[Dict[str, Any]]):
             Dictionary with extracted content
         """
         soup = BeautifulSoup(html, "lxml")
-        result = {}
+        result: dict[str, str | list[str] | None] = {}
 
         for field_name, selector in selectors.items():
             try:
