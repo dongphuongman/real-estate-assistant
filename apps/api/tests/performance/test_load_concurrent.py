@@ -13,7 +13,7 @@ SLA Targets (in-process, no network):
 
 import asyncio
 import time
-from typing import Any
+from typing import Any, AsyncGenerator
 
 import pytest
 import pytest_asyncio
@@ -178,7 +178,7 @@ def _create_load_test_app() -> FastAPI:
 
 
 @pytest_asyncio.fixture
-async def load_client() -> AsyncClient:
+async def load_client() -> AsyncGenerator[AsyncClient, None]:
     """In-process ASGI client backed by a mock app mirroring real endpoints."""
     test_app = _create_load_test_app()
     transport = ASGITransport(app=test_app)
@@ -374,8 +374,8 @@ class TestConcurrentChatLoad:
                 if isinstance(response, Exception):
                     all_metrics.add_error({"error": str(response)})
                     all_metrics.add_response(0, 0)
-                else:
-                    all_metrics.add_response(0, response.status_code)
+                elif hasattr(response, "status_code"):
+                    all_metrics.add_response(0, response.status_code)  # type: ignore[attr-defined]
 
         print(
             f"\nSustained chat (30 requests in 3 waves): "

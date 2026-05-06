@@ -329,7 +329,7 @@ class TestQueryComplexity:
         max_cost = 1000.0
 
         def is_reasonable_cost(plan: dict) -> bool:
-            return plan["Plan"]["Total Cost"] < max_cost
+            return plan["Plan"]["Total Cost"] < max_cost  # type: ignore[no-any-return]
 
         good_plan = {"Plan": {"Total Cost": 500.0}}
         bad_plan = {"Plan": {"Total Cost": 5000.0}}

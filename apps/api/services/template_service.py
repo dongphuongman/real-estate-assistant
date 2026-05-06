@@ -111,10 +111,12 @@ class TemplateService:
 
         # Extract variables used in template
         vars_used = set()
-        for node in template.environment.parse(template_content).body:
-            for found_node in template.environment.parse(template_content).find(node):  # type: ignore[arg-type]
-                if isinstance(found_node, tuple) and found_node[0] == "var":
-                    vars_used.add(found_node[1].name)
+        parsed = template.environment.parse(template_content)
+        if parsed is not None:
+            for node in parsed.body:  # type: ignore[attr-defined]
+                for found_node in parsed.find(node):  # type: ignore[arg-type]
+                    if isinstance(found_node, tuple) and found_node[0] == "var":
+                        vars_used.add(found_node[1].name)  # type: ignore[index]
 
         # Check required variables
         if required_variables:
@@ -139,7 +141,7 @@ class TemplateService:
             vars_used = set()
             ast = template.environment.parse(template_content)
 
-            for node in ast.find_all(ast.body):  # type: ignore[arg-type]
+            for node in ast.find_all(ast.body):  # type: ignore[arg-type,var-annotated]
                 if hasattr(node, "name") and isinstance(node.name, str):
                     vars_used.add(node.name)
 
