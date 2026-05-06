@@ -7,12 +7,12 @@ permissions:
 
 on:
   push:
-    branches: [main, dev, ver4]
+    branches: [main, ver4]
     paths:
       - 'apps/api/**'
       - 'apps/web/**'
   pull_request:
-    branches: [main, dev, ver4]
+    branches: [main, ver4]
     paths:
       - 'apps/api/**'
       - 'apps/web/**'
@@ -24,7 +24,9 @@ jobs:
   analyze:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
-    if: true
+    if: |
+      github.ref != 'refs/heads/dev' &&
+      (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
     timeout-minutes: 30
     permissions:
       security-events: write
