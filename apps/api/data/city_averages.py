@@ -18,7 +18,7 @@ from typing import Dict, Optional
 
 # City average scores for Poland (primary market) and other European cities
 # All scores are on 0-100 scale where higher is better
-CITY_AVERAGES: Dict[str, Dict[str, float]] = {
+CITY_AVERAGES: Dict[str, Dict[str, float | str]] = {
     # === POLAND ===
     "warsaw": {
         "safety": 75.0,
@@ -462,7 +462,9 @@ def get_supported_cities(country: Optional[str] = None) -> list[str]:
     return [
         city
         for city, data in CITY_AVERAGES.items()
-        if city != "default" and data.get("country", "").lower() == country.lower()
+        if city != "default"
+        and isinstance((country_value := data.get("country")), str)
+        and country_value.lower() == country.lower()
     ]
 
 

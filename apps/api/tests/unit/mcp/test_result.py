@@ -29,7 +29,7 @@ class TestMCPConnectorResult:
 
     def test_error_result_factory(self) -> None:
         """Test error_result factory method."""
-        result = MCPConnectorResult.error_result(
+        result: MCPConnectorResult = MCPConnectorResult.error_result(
             errors=["Error 1", "Error 2"],
             connector_name="test_connector",
             operation="query",
@@ -44,7 +44,7 @@ class TestMCPConnectorResult:
 
     def test_add_error(self) -> None:
         """Test add_error method updates success flag."""
-        result = MCPConnectorResult.success_result(
+        result: MCPConnectorResult = MCPConnectorResult.success_result(
             data={},
             connector_name="test",
             operation="test",
@@ -59,7 +59,7 @@ class TestMCPConnectorResult:
 
     def test_add_warning(self) -> None:
         """Test add_warning method."""
-        result = MCPConnectorResult.success_result(
+        result: MCPConnectorResult = MCPConnectorResult.success_result(
             data={},
             connector_name="test",
             operation="test",
@@ -90,7 +90,7 @@ class TestMCPConnectorResult:
 
     def test_default_values(self) -> None:
         """Test default values for optional fields."""
-        result = MCPConnectorResult(success=True)
+        result: MCPConnectorResult = MCPConnectorResult(success=True)
 
         assert result.data is None
         assert result.connector_name == ""

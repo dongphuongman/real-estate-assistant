@@ -274,6 +274,7 @@ class MCPStub(MCPConnector[T], Generic[T]):
         """
         import random
 
+        # nosemgrep: weak-random.random - acceptable for test stub randomness
         return random.random() < self._fail_rate
 
     async def _simulate_latency(self) -> None:

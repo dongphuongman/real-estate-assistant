@@ -300,7 +300,7 @@ class InvestmentAnalyticsCalculator:
         mortgage_interest_annual: float = 0.0,
         property_tax_annual: float = 0.0,
         marginal_tax_rate: float = 0.0,
-        depreciation_years: int = 27.5,
+        depreciation_years: int = 27,
     ) -> TaxImplications:
         """
         Calculate tax benefits including depreciation.
@@ -425,6 +425,10 @@ class InvestmentAnalyticsCalculator:
         """
         risk_factors: List[str] = []
         recommendations: List[str] = []
+
+        # Declare risk score variables with float type
+        debt_risk_score: float = 0.0
+        liquidity_score: float = 0.0
 
         # 1. Market Volatility Score (higher volatility = lower score)
         market_volatility_score = 100 * (1 - market_volatility)

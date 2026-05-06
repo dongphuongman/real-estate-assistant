@@ -22,7 +22,7 @@ def hash_password(password: str) -> str:
     Returns:
         Hashed password string
     """
-    return pwd_context.hash(password)
+    return pwd_context.hash(password)  # type: ignore[no-any-return]
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -36,7 +36,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         True if password matches, False otherwise
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    return pwd_context.verify(plain_password, hashed_password)  # type: ignore[no-any-return]
 
 
 def needs_rehash(hashed_password: str) -> bool:
@@ -52,7 +52,7 @@ def needs_rehash(hashed_password: str) -> bool:
     Returns:
         True if the hash should be updated
     """
-    return pwd_context.needs_update(hashed_password)
+    return pwd_context.needs_update(hashed_password)  # type: ignore[no-any-return]
 
 
 def validate_password_strength(password: str) -> tuple[bool, Optional[str]]:

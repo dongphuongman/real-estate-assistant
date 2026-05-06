@@ -84,41 +84,39 @@ class AirQualityEnricher(PropertyEnrichmentHook[Optional[int]]):
             self._adapter = self._create_adapter()
 
         # Check required location data
-        if not context.latitude or not context.longitude:
-            if not context.city:
-                return EnrichmentResult.skipped_result(
-                    source=self.name,
-                    field=self.field,
-                    reason="Missing location data (need lat/lon or city)",
-                )
+        if not context.city:
+            return EnrichmentResult.skipped_result(
+                source=self.name,
+                enrichment_field=self.field,
+                reason="Missing location data (need city or lat/lon)",
+            )
 
+        # Use adapter to fetch AQI (handles both lat/lon and city-only)
         try:
-            # Use adapter to fetch AQI
             result = self._adapter.get_aqi_score(
-                lat=context.latitude,
-                lon=context.longitude,
+                lat=context.latitude or 0.0,
+                lon=context.longitude or 0.0,
                 city=context.city or "Unknown",
             )
 
-            if result and result.aqi is not None:
+            if result and result.aqi_value is not None:
                 return EnrichmentResult.success_result(
                     source=self.name,
-                    field=self.field,
-                    value=result.aqi,
+                    enrichment_field=self.field,
+                    value=result.aqi_value,
                     ttl_seconds=self._config.ttl_seconds,
                 )
             else:
                 return EnrichmentResult.error_result(
                     source=self.name,
-                    field=self.field,
+                    enrichment_field=self.field,
                     error="No AQI data available",
                 )
-
         except Exception as e:
             logger.error(f"Air quality enrichment failed: {e}")
             return EnrichmentResult.error_result(
                 source=self.name,
-                field=self.field,
+                enrichment_field=self.field,
                 error=str(e),
             )
 

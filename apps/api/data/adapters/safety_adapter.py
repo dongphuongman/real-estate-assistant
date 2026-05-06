@@ -330,7 +330,7 @@ class SafetyAdapter:
         emergency_bonus = min(10, emergency_count * 3)
 
         # Diminishing returns
-        total = police_bonus + emergency_bonus
+        total: float = police_bonus + emergency_bonus
         if total > 15:
             total = 15 + (total - 15) * 0.3
 

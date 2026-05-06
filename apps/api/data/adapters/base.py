@@ -55,19 +55,19 @@ def with_retry(
             return requests.get("https://api.example.com")
     """
 
-    def _on_retry_handler(details: Dict[str, Any]) -> None:
+    def _on_retry_handler(details: Any) -> None:
         """Handle retry event logging."""
-        wait_time = details.get("wait", 0)
-        exception = details.get("exception")
-        attempt = details.get("tries", 0)
+        wait_time = getattr(details, "wait", 0)
+        exception = getattr(details, "exception", None)
+        attempt = getattr(details, "tries", 0)
 
         logger.warning(
             f"Retry attempt {attempt}/{max_tries} after {wait_time:.1f}s. "
-            f"Exception: {type(exception).__name__}: {exception}"
+            f"Exception: {type(exception).__name__ if exception else 'Unknown'}: {exception}"
         )
 
         if on_retry:
-            on_retry(attempt, wait_time, exception)
+            on_retry(attempt, wait_time, exception) if exception else None
 
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @backoff.on_exception(
@@ -102,15 +102,15 @@ def with_retry_async(
         Decorated async function with retry logic
     """
 
-    def _on_retry_handler(details: Dict[str, Any]) -> None:
-        """Handle retry event logging."""
-        wait_time = details.get("wait", 0)
-        exception = details.get("exception")
-        attempt = details.get("tries", 0)
+    def _on_retry_handler_async(details: Any) -> None:
+        """Handle retry event logging for async functions."""
+        wait_time = getattr(details, "wait", 0)
+        exception = getattr(details, "exception", None)
+        attempt = getattr(details, "tries", 0)
 
         logger.warning(
             f"Async retry attempt {attempt}/{max_tries} after {wait_time:.1f}s. "
-            f"Exception: {type(exception).__name__}: {exception}"
+            f"Exception: {type(exception).__name__ if exception else 'Unknown'}: {exception}"
         )
 
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
@@ -120,13 +120,13 @@ def with_retry_async(
             max_tries=max_tries,
             max_time=max_time,
             jitter=backoff.full_jitter,
-            on_backoff=_on_retry_handler,
+            on_backoff=_on_retry_handler_async,
         )
         @wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> T:
-            return await func(*args, **kwargs)
+            return await func(*args, **kwargs)  # type: ignore[misc,return-value,no-any-return]
 
-        return wrapper
+        return wrapper  # type: ignore[return-value]
 
     return decorator
 

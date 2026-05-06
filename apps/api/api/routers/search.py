@@ -30,7 +30,7 @@ POLYGON_MAX_VERTICES = 100
 POLYGON_MAX_AREA_SQKM = 10000  # ~100km radius max
 
 
-def _validate_polygon(polygon: list[list[float]]) -> Optional[str]:
+def _validate_polygon(polygon: list[list[list[float]]]) -> Optional[str]:
     """
     Validate polygon for search operations.
     Returns error message if invalid, None if valid.

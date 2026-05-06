@@ -110,7 +110,8 @@ class CurrencyConverter:
                 fetched_dt = datetime.fromisoformat(fetched)
                 age = (datetime.now(timezone.utc) - fetched_dt).total_seconds()
                 if age < CACHE_TTL_SECONDS:
-                    return cached.get("rates", {})
+                    rates: dict[str, float] = cached.get("rates", {})
+                    return rates
         except Exception:
             pass
 

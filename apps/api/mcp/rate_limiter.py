@@ -16,7 +16,7 @@ import logging
 import time
 from collections import deque
 from dataclasses import dataclass
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,9 @@ class MCPConnectorRateLimiter:
             default_rpm: Default requests per minute
             default_burst: Default burst size
         """
-        self._default_config = RateLimitConfig(requests_per_minute=default_rpm, burst_size=default_burst)
+        self._default_config = RateLimitConfig(
+            requests_per_minute=default_rpm, burst_size=default_burst
+        )
         self._connector_configs: Dict[str, RateLimitConfig] = {}
         self._request_times: Dict[str, deque] = {}
         self._locks: Dict[str, asyncio.Lock] = {}
@@ -115,7 +117,7 @@ class MCPConnectorRateLimiter:
         """
         return self._connector_configs.get(connector_name, self._default_config)
 
-    async def check_rate_limit(self, connector_name: str) -> tuple[bool, Dict[str, any]]:
+    async def check_rate_limit(self, connector_name: str) -> tuple[bool, Dict[str, Any]]:
         """
         Check if a request is allowed under rate limiting.
 
@@ -186,7 +188,7 @@ class MCPConnectorRateLimiter:
             headers["Retry-After"] = reset_at
             return False, headers
 
-    def get_status(self, connector_name: str) -> Optional[Dict[str, any]]:
+    def get_status(self, connector_name: str) -> Optional[Dict[str, Any]]:
         """
         Get rate limit status for a connector.
 

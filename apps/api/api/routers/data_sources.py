@@ -359,12 +359,13 @@ async def test_data_source(
             return DataSourceTestResponse(
                 success=False,
                 message=f"Unknown source type: {data.source_type}",
+                details=None,
             )
     except ValueError as e:
-        return DataSourceTestResponse(success=False, message=str(e))
+        return DataSourceTestResponse(success=False, message=str(e), details=None)
     except Exception as e:
         logger.exception("Error testing data source")
-        return DataSourceTestResponse(success=False, message=f"Test failed: {e}")
+        return DataSourceTestResponse(success=False, message=f"Test failed: {e}", details=None)
 
 
 @router.get("/{source_id}/history", response_model=SyncHistoryResponse)
@@ -493,7 +494,7 @@ async def _test_url_source(config: dict[str, Any]) -> DataSourceTestResponse:
             details={"url": url, "status_code": e.response.status_code},
         )
     except httpx.RequestError as e:
-        return DataSourceTestResponse(success=False, message=f"Connection error: {e}")
+        return DataSourceTestResponse(success=False, message=f"Connection error: {e}", details=None)
 
 
 async def _test_portal_source(config: dict[str, Any]) -> DataSourceTestResponse:
@@ -573,9 +574,9 @@ async def _test_json_source(config: dict[str, Any]) -> DataSourceTestResponse:
                 details={"type": "inline", "structure": type(data).__name__},
             )
         except json.JSONDecodeError as e:
-            return DataSourceTestResponse(success=False, message=f"Invalid JSON: {e}")
+            return DataSourceTestResponse(success=False, message=f"Invalid JSON: {e}", details=None)
 
     elif "url" in config:
         return await _test_url_source({"url": config["url"]})
 
-    return DataSourceTestResponse(success=False, message="No data or URL provided")
+    return DataSourceTestResponse(success=False, message="No data or URL provided", details=None)

@@ -163,6 +163,7 @@ def calculate_backoff(attempt: int, config: Optional[ReconnectionConfig] = None)
     capped_delay = min(base_delay, config.max_delay_ms)
 
     # Apply full jitter (random value between 0 and calculated delay)
+    # nosemgrep: weak-random.random - acceptable for retry jitter calculation
     jitter = capped_delay * config.jitter_factor * random.random()
     final_delay = capped_delay + jitter
 

@@ -196,7 +196,7 @@ def get_low_confidence_count(
 
     result = cursor.fetchone()[0]
     conn.close()
-    return result
+    return result  # type: ignore[no-any-return]
 
 
 def cleanup_old_metrics(

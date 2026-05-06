@@ -7,7 +7,7 @@ Implements double-submit cookie pattern for CSRF protection:
 """
 
 import logging
-from typing import Callable
+from typing import Awaitable, Callable
 
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -48,7 +48,7 @@ class CSRFMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self,
         request: Request,
-        call_next: Callable[[Request], Response],
+        call_next: Callable[[Request], Awaitable[Response]],
     ) -> Response:
         """Process request and validate CSRF token for state-changing requests."""
         import os

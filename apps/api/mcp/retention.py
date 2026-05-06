@@ -13,9 +13,19 @@ import os
 import threading
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional, TypedDict
 
 logger = logging.getLogger(__name__)
+
+
+class CleanupResult(TypedDict):
+    """Result of a cleanup operation."""
+
+    files_found: int
+    files_removed: int
+    bytes_freed: int
+    errors: list[str]
+    dry_run: bool
 
 
 class MCPAuditRetention:
@@ -47,9 +57,7 @@ class MCPAuditRetention:
         self._log_dir = Path(log_dir)
 
         # Get retention days from env or use default
-        self._retention_days = retention_days or int(
-            os.getenv("MCP_AUDIT_RETENTION_DAYS", "30")
-        )
+        self._retention_days = retention_days or int(os.getenv("MCP_AUDIT_RETENTION_DAYS", "30"))
 
         self._cleanup_thread: Optional[threading.Thread] = None
         self._cleanup_event = threading.Event()
@@ -110,7 +118,7 @@ class MCPAuditRetention:
 
         return expired
 
-    def cleanup(self, dry_run: bool = False) -> dict[str, any]:
+    def cleanup(self, dry_run: bool = False) -> CleanupResult:
         """
         Remove expired audit log files.
 
@@ -122,7 +130,7 @@ class MCPAuditRetention:
         """
         expired = self.get_expired_files()
 
-        result = {
+        result: CleanupResult = {
             "files_found": len(expired),
             "files_removed": 0,
             "bytes_freed": 0,
@@ -148,7 +156,7 @@ class MCPAuditRetention:
 
         return result
 
-    def get_storage_metrics(self) -> dict[str, any]:
+    def get_storage_metrics(self) -> dict[str, Any]:
         """
         Get storage metrics for audit logs.
 
@@ -244,7 +252,7 @@ def get_retention_manager() -> MCPAuditRetention:
         return _retention_manager
 
 
-def run_cleanup(dry_run: bool = False) -> dict[str, any]:
+def run_cleanup(dry_run: bool = False) -> dict[str, Any]:
     """
     Run a cleanup of expired MCP audit logs.
 
@@ -258,7 +266,7 @@ def run_cleanup(dry_run: bool = False) -> dict[str, any]:
     return manager.cleanup(dry_run=dry_run)
 
 
-def get_storage_info() -> dict[str, any]:
+def get_storage_info() -> dict[str, Any]:
     """
     Get storage information for MCP audit logs.
 

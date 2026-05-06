@@ -140,7 +140,8 @@ class EnrichmentPipeline:
 
         # Get enrichers that still need to run
         pending_enrichers = [
-            e for e in enrichers
+            e
+            for e in enrichers
             if f"{e.name}:{e.field}" not in result.results
             or not result.results[f"{e.name}:{e.field}"].success
         ]
@@ -203,7 +204,7 @@ class EnrichmentPipeline:
             if cached:
                 cached_result = EnrichmentResult.cached_result(
                     source=enricher.name,
-                    field=enricher.field,
+                    enrichment_field=enricher.field,
                     value=cached.value,
                     ttl_seconds=cached.remaining_ttl(),
                 )
@@ -281,9 +282,9 @@ class EnrichmentPipeline:
 
         except asyncio.TimeoutError:
             error_msg = f"Timeout after {timeout}s"
-            timeout_result = EnrichmentResult.error_result(
+            timeout_result: EnrichmentResult = EnrichmentResult.error_result(
                 source=enricher.name,
-                field=enricher.field,
+                enrichment_field=enricher.field,
                 error=error_msg,
             )
             result.results[key] = timeout_result
@@ -292,9 +293,9 @@ class EnrichmentPipeline:
 
         except Exception as e:
             error_msg = str(e)
-            error_result = EnrichmentResult.error_result(
+            error_result: EnrichmentResult = EnrichmentResult.error_result(
                 source=enricher.name,
-                field=enricher.field,
+                enrichment_field=enricher.field,
                 error=error_msg,
             )
             result.results[key] = error_result
@@ -313,7 +314,7 @@ class EnrichmentPipeline:
                 self._cache.set(
                     source=source,
                     property_id=context.property_id,
-                    field=field,
+                    enrichment_field=field,
                     value=enrichment_result.value,
                     ttl=enrichment_result.ttl_seconds,
                 )

@@ -144,7 +144,7 @@ class AppleOAuthProvider(OAuthProvider):
             error_msg = error_data.get("error_description", response.text)
             raise OAuthError(f"Token exchange failed: {error_msg}", self.name)
 
-        return response.json()
+        return response.json()  # type: ignore[no-any-return]
 
     async def _get_apple_public_keys(self) -> list[dict]:
         """Fetch Apple's public keys for token verification."""

@@ -222,6 +222,7 @@ Context from property database will be provided when relevant."""
             except ImportError:
                 from langchain_classic.agents import create_react_agent
 
+            # nosemgrep: langchain.prompt-injection - template is static, no user input
             prompt = PromptTemplate.from_template(
                 """You are a specialized Real Estate Assistant.
 

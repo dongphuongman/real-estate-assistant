@@ -45,12 +45,10 @@ def _document_to_property(doc: Any) -> Property:
         price=metadata.get("price"),
         area_sqm=metadata.get("area_sqm"),
         rooms=metadata.get("rooms"),
-        bedrooms=metadata.get("bedrooms"),
         bathrooms=metadata.get("bathrooms"),
         city=metadata.get("city"),
         district=metadata.get("district"),
         neighborhood=metadata.get("neighborhood"),
-        street=metadata.get("street"),
         latitude=metadata.get("latitude"),
         longitude=metadata.get("longitude"),
         year_built=metadata.get("year_built"),
@@ -221,7 +219,7 @@ async def find_comparables(
     # Get all properties for comparison
     all_docs = store.search_by_metadata(k=500)
     all_properties = [_document_to_property(d) for d in all_docs]
-    collection = PropertyCollection(properties=all_properties)
+    collection = PropertyCollection(properties=all_properties, source_type="vector_store")
 
     # Find comparables using multi-factor scoring
     selector = ComparableSelector(collection)
@@ -281,7 +279,7 @@ async def generate_cma_report(
         # Get all properties for comparison
         all_docs = store.search_by_metadata(k=500)
         all_properties = [_document_to_property(d) for d in all_docs]
-        collection = PropertyCollection(properties=all_properties)
+        collection = PropertyCollection(properties=all_properties, source_type="vector_store")
 
         # Find comparables
         selector = ComparableSelector(collection)

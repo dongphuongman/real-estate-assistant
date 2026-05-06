@@ -161,6 +161,7 @@ class TestMCPStubAsync:
         result = await stub.health_check()
 
         assert result.success is True
+        assert result.data is not None
         assert result.data["healthy"] is True
         assert result.data["stub_type"] == "ConcreteStub"
 

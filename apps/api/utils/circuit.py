@@ -133,7 +133,7 @@ def with_llm_retry(func: Callable[..., T], max_attempts: int = 3) -> Callable[..
 
         for attempt in range(max_attempts):
             try:
-                return await func(*args, **kwargs)
+                return await func(*args, **kwargs)  # type: ignore[misc,return-value,no-any-return]
             except Exception as e:
                 last_exception = e
                 exception_str = str(e).lower()
@@ -173,15 +173,12 @@ def with_llm_retry(func: Callable[..., T], max_attempts: int = 3) -> Callable[..
         # Should not reach here
         raise RuntimeError("Unexpected flow in retry logic")
 
-    return wrapper
+    return wrapper  # type: ignore[return-value]
 
 
 # =============================================================================
 # Circuit Breaker Implementation (Legacy - Single Provider)
 # =============================================================================
-
-
-T = TypeVar("T")
 
 
 class CircuitState(str, Enum):

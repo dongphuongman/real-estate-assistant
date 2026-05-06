@@ -29,7 +29,7 @@ class EnrichmentStatusEntry:
 
     property_id: str
     source: str
-    field: str
+    enrichment_field: str
     status: EnrichmentStatus
     value: Any = None
     error: Optional[str] = None
@@ -42,7 +42,7 @@ class EnrichmentStatusEntry:
         return {
             "property_id": self.property_id,
             "source": self.source,
-            "field": self.field,
+            "field": self.enrichment_field,
             "status": self.status.value,
             "value": self.value,
             "error": self.error,
@@ -83,7 +83,7 @@ class EnrichmentStatusTracker:
         entry = EnrichmentStatusEntry(
             property_id=property_id,
             source=result.source,
-            field=result.field,
+            enrichment_field=result.enrichment_field,
             status=result.status,
             value=result.value,
             error=result.error,
@@ -91,7 +91,7 @@ class EnrichmentStatusTracker:
         )
 
         with self._lock:
-            key = f"{result.source}:{result.field}"
+            key = f"{result.source}:{result.enrichment_field}"
             existing = self._status[property_id].get(key)
 
             if existing:
@@ -130,21 +130,15 @@ class EnrichmentStatusTracker:
                 return entry.to_dict() if entry else {}
 
             if source:
-                filtered = {
-                    k: v for k, v in property_status.items() if v.source == source
-                }
+                filtered = {k: v for k, v in property_status.items() if v.source == source}
             elif field:
-                filtered = {
-                    k: v for k, v in property_status.items() if v.field == field
-                }
+                filtered = {k: v for k, v in property_status.items() if v.enrichment_field == field}
             else:
                 filtered = property_status
 
             return {
                 "property_id": property_id,
-                "enrichments": {
-                    k: v.to_dict() for k, v in filtered.items()
-                },
+                "enrichments": {k: v.to_dict() for k, v in filtered.items()},
                 "summary": self._summarize(filtered),
             }
 
@@ -182,7 +176,7 @@ class EnrichmentStatusTracker:
         with self._lock:
             property_status = self._status.get(property_id, {})
             return [
-                f"{v.source}:{v.field}"
+                f"{v.source}:{v.enrichment_field}"
                 for v in property_status.values()
                 if v.status in {EnrichmentStatus.PENDING, EnrichmentStatus.IN_PROGRESS}
             ]
@@ -199,11 +193,7 @@ class EnrichmentStatusTracker:
         """
         with self._lock:
             property_status = self._status.get(property_id, {})
-            return [
-                v
-                for v in property_status.values()
-                if v.status == EnrichmentStatus.FAILED
-            ]
+            return [v for v in property_status.values() if v.status == EnrichmentStatus.FAILED]
 
     def clear_property(self, property_id: str) -> None:
         """Clear status for a property."""
@@ -291,9 +281,7 @@ class FallbackHandler:
             key = f"{source}:{field}"
             self._failure_counts[key] += 1
 
-        logger.warning(
-            f"Using fallback for {source}:{field} - error: {error}"
-        )
+        logger.warning(f"Using fallback for {source}:{field} - error: {error}")
 
         # Try custom handler first
         if field in self._custom_handlers:

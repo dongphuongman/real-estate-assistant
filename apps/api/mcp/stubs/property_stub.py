@@ -157,6 +157,7 @@ class PropertyListingStub(MCPStub[PropertyCollection]):
             properties=self._properties,
             total_count=len(self._properties),
             source="stub",
+            source_type="stub",
         )
 
     def _op_get_by_id(self, params: Dict[str, Any]) -> PropertyCollection:
@@ -171,12 +172,14 @@ class PropertyListingStub(MCPStub[PropertyCollection]):
                     properties=[prop],
                     total_count=1,
                     source="stub",
+                    source_type="stub",
                 )
 
         return PropertyCollection(
             properties=[],
             total_count=0,
             source="stub",
+            source_type="stub",
         )
 
     def _op_search(self, params: Dict[str, Any]) -> PropertyCollection:
@@ -191,6 +194,7 @@ class PropertyListingStub(MCPStub[PropertyCollection]):
             properties=results,
             total_count=len(results),
             source="stub",
+            source_type="stub",
         )
 
     def _op_count(self, params: Dict[str, Any]) -> PropertyCollection:
@@ -202,12 +206,14 @@ class PropertyListingStub(MCPStub[PropertyCollection]):
                 properties=[],
                 total_count=filtered.total_count,
                 source="stub",
+                source_type="stub",
             )
 
         return PropertyCollection(
             properties=[],
             total_count=len(self._properties),
             source="stub",
+            source_type="stub",
         )
 
     def _matches_criteria(self, prop: Property, criteria: Dict[str, Any]) -> bool:

@@ -15,8 +15,8 @@ The request ID flows from:
 """
 
 import uuid
-from contextvars import ContextVar
-from typing import Optional
+from contextvars import ContextVar, Token
+from typing import Any, Optional
 
 # Context variable for request ID propagation
 # This is async-safe and works across coroutine boundaries
@@ -107,11 +107,11 @@ class MCPRequestContext:
         """
         self._request_id = request_id or generate_request_id()
         self._client_id = client_id
-        self._token_request_id = None
-        self._token_client_id = None
+        self._token_request_id: Token[str] | None = None
+        self._token_client_id: Token[str] | None = None
 
     @classmethod
-    def from_request(cls, request: any) -> "MCPRequestContext":
+    def from_request(cls, request: Any) -> "MCPRequestContext":
         """
         Create context from FastAPI request object.
 
@@ -132,7 +132,7 @@ class MCPRequestContext:
             self._token_client_id = _client_id_ctx.set(self._client_id)
         return self
 
-    def __exit__(self, exc_type: any, exc_val: any, exc_tb: any) -> None:
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Exit context and reset request ID."""
         if self._token_request_id is not None:
             _request_id_ctx.reset(self._token_request_id)

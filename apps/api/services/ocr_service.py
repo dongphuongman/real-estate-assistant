@@ -204,7 +204,7 @@ class OCRService:
     def _image_to_text_sync(self, file_path: str) -> str:
         """Synchronous image to text conversion (runs in thread pool)."""
         image = Image.open(file_path)
-        return pytesseract.image_to_string(image, lang=self.language).strip()
+        return pytesseract.image_to_string(image, lang=self.language).strip()  # type: ignore[no-any-return]
 
     async def _extract_from_doc(self, file_path: str) -> tuple[Optional[str], Optional[str]]:
         """Extract text from a .doc file.

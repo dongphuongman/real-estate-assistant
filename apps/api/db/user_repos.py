@@ -7,6 +7,7 @@ and NotificationPreference models.
 """
 
 import hashlib
+import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Optional
 
@@ -40,7 +41,7 @@ class UserRepository:
     ) -> User:
         """Create a new user."""
         user = User(
-            id=str(__import__("uuid").uuid4()),
+            id=str(uuid.uuid4()),
             email=email.lower().strip(),
             hashed_password=hashed_password,
             full_name=full_name,

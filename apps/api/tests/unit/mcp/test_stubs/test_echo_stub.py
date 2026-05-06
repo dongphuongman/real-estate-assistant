@@ -56,6 +56,7 @@ class TestEchoStubConnectorAsync:
         result = await connector.health_check()
 
         assert result.success is True
+        assert result.data is not None
         assert result.data["healthy"] is True
         assert result.connector_name == "echo_stub"
 
@@ -70,6 +71,7 @@ class TestEchoStubConnectorAsync:
         )
 
         assert result.success is True
+        assert result.data is not None
         assert result.data["operation"] == "query"
         assert result.data["params"]["city"] == "Berlin"
         assert result.data["params"]["min_price"] == 1000
@@ -84,6 +86,7 @@ class TestEchoStubConnectorAsync:
         await connector.execute("op2")
         result = await connector.execute("op3")
 
+        assert result.data is not None
         assert result.data["call_count"] == 3
 
     @pytest.mark.asyncio

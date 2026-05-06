@@ -178,7 +178,7 @@ def get_cors_origins() -> list[str]:
     return ["*"]
 
 
-def get_all_port_config() -> dict[str, int | str]:
+def get_all_port_config() -> dict[str, int | str | list[str]]:
     """
     Get all port configuration as a dict.
 

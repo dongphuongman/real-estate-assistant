@@ -105,7 +105,7 @@ class GoogleOAuthProvider(OAuthProvider):
             error_msg = error_data.get("error_description", response.text)
             raise OAuthError(f"Token exchange failed: {error_msg}", self.name)
 
-        return response.json()
+        return response.json()  # type: ignore[no-any-return]
 
     async def get_user_info(self, access_token: str) -> OAuthUserInfo:
         """

@@ -26,7 +26,8 @@ class TestSensitiveDataScan:
         test_logger.info(message, extra=extra)
         output = stream.getvalue().strip()
         if output:
-            return json.loads(output)
+            result: dict = json.loads(output)
+            return result
         return {}
 
     def test_clean_message_passes(self):

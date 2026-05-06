@@ -100,7 +100,8 @@ class EnrichmentContext:
             extra={
                 k: v
                 for k, v in property_data.items()
-                if k not in {"id", "address", "city", "latitude", "longitude", "postal_code", "country"}
+                if k
+                not in {"id", "address", "city", "latitude", "longitude", "postal_code", "country"}
             },
         )
 
@@ -110,7 +111,7 @@ class EnrichmentResult(Generic[T]):
     """Result of an enrichment operation."""
 
     source: str
-    field: str
+    enrichment_field: str
     value: Optional[T] = None
     status: EnrichmentStatus = EnrichmentStatus.PENDING
     cached: bool = False
@@ -128,7 +129,7 @@ class EnrichmentResult(Generic[T]):
         """Convert result to dictionary."""
         return {
             "source": self.source,
-            "field": self.field,
+            "field": self.enrichment_field,
             "value": self.value,
             "status": self.status.value,
             "cached": self.cached,
@@ -142,7 +143,7 @@ class EnrichmentResult(Generic[T]):
     def success_result(
         cls,
         source: str,
-        field: str,
+        enrichment_field: str,
         value: T,
         ttl_seconds: int = 3600,
         cached: bool = False,
@@ -151,7 +152,7 @@ class EnrichmentResult(Generic[T]):
         """Create a successful result."""
         return cls(
             source=source,
-            field=field,
+            enrichment_field=enrichment_field,
             value=value,
             status=EnrichmentStatus.CACHED if cached else EnrichmentStatus.COMPLETED,
             cached=cached,
@@ -163,14 +164,14 @@ class EnrichmentResult(Generic[T]):
     def error_result(
         cls,
         source: str,
-        field: str,
+        enrichment_field: str,
         error: str,
         execution_time_ms: float = 0.0,
     ) -> "EnrichmentResult[T]":
         """Create an error result."""
         return cls(
             source=source,
-            field=field,
+            enrichment_field=enrichment_field,
             status=EnrichmentStatus.FAILED,
             error=error,
             execution_time_ms=execution_time_ms,
@@ -180,14 +181,14 @@ class EnrichmentResult(Generic[T]):
     def cached_result(
         cls,
         source: str,
-        field: str,
+        enrichment_field: str,
         value: T,
         ttl_seconds: int = 3600,
     ) -> "EnrichmentResult[T]":
         """Create a cached result."""
         return cls(
             source=source,
-            field=field,
+            enrichment_field=enrichment_field,
             value=value,
             status=EnrichmentStatus.CACHED,
             cached=True,
@@ -198,13 +199,13 @@ class EnrichmentResult(Generic[T]):
     def skipped_result(
         cls,
         source: str,
-        field: str,
+        enrichment_field: str,
         reason: str = "",
     ) -> "EnrichmentResult[T]":
         """Create a skipped result."""
         return cls(
             source=source,
-            field=field,
+            enrichment_field=enrichment_field,
             status=EnrichmentStatus.SKIPPED,
             metadata={"reason": reason},
         )
@@ -383,7 +384,7 @@ class PropertyEnrichmentHook(ABC, Generic[T]):
             logger.error(f"Enrichment failed for {self.name}: {e}")
             return EnrichmentResult.error_result(
                 source=self.name,
-                field=self.field,
+                enrichment_field=self.field,
                 error=str(e),
                 execution_time_ms=execution_time_ms,
             )

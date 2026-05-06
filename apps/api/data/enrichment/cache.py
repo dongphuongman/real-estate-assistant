@@ -28,7 +28,7 @@ class CacheEntry:
 
     value: Any
     source: str
-    field: str
+    enrichment_field: str
     cached_at: float
     ttl: int
     metadata: Dict[str, Any] = field(default_factory=dict)
@@ -56,7 +56,7 @@ class CacheEntry:
         return {
             "value": self.value,
             "source": self.source,
-            "field": self.field,
+            "field": self.enrichment_field,
             "cached_at": self.cached_at,
             "ttl": self.ttl,
             "metadata": self.metadata,
@@ -68,7 +68,7 @@ class CacheEntry:
         return cls(
             value=data["value"],
             source=data["source"],
-            field=data["field"],
+            enrichment_field=data["field"],
             cached_at=data["cached_at"],
             ttl=data["ttl"],
             metadata=data.get("metadata", {}),
@@ -193,15 +193,15 @@ class EnrichmentCache:
             if self._fallback_enabled:
                 self._fallback_cache = InMemoryEnrichmentCache()
 
-    def _make_key(self, source: str, property_id: str, field: str) -> str:
+    def _make_key(self, source: str, property_id: str, enrichment_field: str) -> str:
         """Generate cache key."""
-        return f"{self._prefix}:{source}:{property_id}:{field}"
+        return f"{self._prefix}:{source}:{property_id}:{enrichment_field}"
 
     def get(
         self,
         source: str,
         property_id: str,
-        field: str,
+        enrichment_field: str,
     ) -> Optional[CacheEntry]:
         """
         Get cached enrichment result.
@@ -209,12 +209,12 @@ class EnrichmentCache:
         Args:
             source: Enrichment source name
             property_id: Property identifier
-            field: Field name
+            enrichment_field: Field name
 
         Returns:
             CacheEntry if found and not expired, None otherwise
         """
-        key = self._make_key(source, property_id, field)
+        key = self._make_key(source, property_id, enrichment_field)
 
         # Try Redis first
         if self._redis_client:
@@ -240,7 +240,7 @@ class EnrichmentCache:
         self,
         source: str,
         property_id: str,
-        field: str,
+        enrichment_field: str,
         value: Any,
         ttl: int = 3600,
         metadata: Optional[Dict[str, Any]] = None,
@@ -251,7 +251,7 @@ class EnrichmentCache:
         Args:
             source: Enrichment source name
             property_id: Property identifier
-            field: Field name
+            enrichment_field: Field name
             value: Value to cache
             ttl: Time-to-live in seconds
             metadata: Optional metadata
@@ -259,11 +259,11 @@ class EnrichmentCache:
         Returns:
             True if cached successfully
         """
-        key = self._make_key(source, property_id, field)
+        key = self._make_key(source, property_id, enrichment_field)
         entry = CacheEntry(
             value=value,
             source=source,
-            field=field,
+            enrichment_field=enrichment_field,
             cached_at=time.time(),
             ttl=ttl,
             metadata=metadata or {},
@@ -292,7 +292,7 @@ class EnrichmentCache:
         self,
         source: str,
         property_id: str,
-        field: str,
+        enrichment_field: str,
     ) -> bool:
         """
         Delete cached enrichment result.
@@ -300,12 +300,12 @@ class EnrichmentCache:
         Args:
             source: Enrichment source name
             property_id: Property identifier
-            field: Field name
+            enrichment_field: Field name
 
         Returns:
             True if deleted
         """
-        key = self._make_key(source, property_id, field)
+        key = self._make_key(source, property_id, enrichment_field)
         deleted = False
 
         if self._redis_client:
@@ -344,9 +344,7 @@ class EnrichmentCache:
         if self._fallback_cache:
             with self._fallback_cache._lock:
                 keys_to_delete = [
-                    k
-                    for k in self._fallback_cache._cache.keys()
-                    if f":{property_id}:" in k
+                    k for k in self._fallback_cache._cache.keys() if f":{property_id}:" in k
                 ]
                 for key in keys_to_delete:
                     del self._fallback_cache._cache[key]

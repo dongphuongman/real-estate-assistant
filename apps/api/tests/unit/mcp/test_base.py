@@ -199,6 +199,7 @@ class TestMCPConnectorAsync:
         result = await connector.health_check()
 
         assert result.success is True
+        assert result.data is not None
         assert result.data["healthy"] is True
 
     @pytest.mark.asyncio

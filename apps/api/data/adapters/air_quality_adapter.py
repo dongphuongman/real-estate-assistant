@@ -140,7 +140,7 @@ class AirQualityAdapter:
             return None
 
         cache_key = f"station:{lat}:{lon}"
-        cached_result = self._get_from_cache(cache_key)
+        cached_result = self._get_station_from_cache(cache_key)
         if cached_result:
             return cached_result
 
@@ -226,7 +226,7 @@ class AirQualityAdapter:
             AirQualityResult if successful, None otherwise
         """
         cache_key = f"aqi:{lat}:{lon}"
-        cached_result = self._get_from_cache(cache_key)
+        cached_result = self._get_aqi_result_from_cache(cache_key)
         if cached_result:
             return cached_result
 
@@ -422,6 +422,48 @@ class AirQualityAdapter:
             value, timestamp = self._cache[key]
             if time.time() - timestamp < self._cache_ttl:
                 return value
+            else:
+                # Remove expired entry
+                del self._cache[key]
+        return None
+
+    def _get_station_from_cache(self, key: str) -> Optional[AirQualityStation]:
+        """
+        Get AirQualityStation from cache if not expired.
+
+        Args:
+            key: Cache key
+
+        Returns:
+            Cached AirQualityStation if valid, None otherwise
+        """
+        import time
+
+        if key in self._cache:
+            value, timestamp = self._cache[key]
+            if time.time() - timestamp < self._cache_ttl:
+                return value  # type: ignore[no-any-return]
+            else:
+                # Remove expired entry
+                del self._cache[key]
+        return None
+
+    def _get_aqi_result_from_cache(self, key: str) -> Optional[AirQualityResult]:
+        """
+        Get AirQualityResult from cache if not expired.
+
+        Args:
+            key: Cache key
+
+        Returns:
+            Cached AirQualityResult if valid, None otherwise
+        """
+        import time
+
+        if key in self._cache:
+            value, timestamp = self._cache[key]
+            if time.time() - timestamp < self._cache_ttl:
+                return value  # type: ignore[no-any-return]
             else:
                 # Remove expired entry
                 del self._cache[key]
