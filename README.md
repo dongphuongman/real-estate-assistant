@@ -30,7 +30,7 @@ Mapbox/Leaflet maps with property clustering, area comparisons, and city-overvie
 English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, and Ukrainian — with EU AI Act compliance labels.
 
 ### 🔒 Enterprise Security
-OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode auth (API Key + JWT). 5-layer security scanning in CI.
+OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode auth (API Key + JWT). Progressive 5-stage security pipeline with full scanning on all branches.
 
 <details>
 <summary><strong>📸 More Screenshots</strong></summary>
@@ -115,6 +115,7 @@ make ci                # Full CI pipeline locally
 | [User Guide](docs/user/USER_GUIDE.md) | How to use the assistant |
 | [Contributing](docs/development/CONTRIBUTING.md) | Development workflow |
 | [Testing Guide](docs/testing/TESTING_GUIDE.md) | Writing and running tests |
+| [CI/CD Pipeline](docs/guides/ci-cd.md) | Progressive security pipeline |
 | [Deployment](docs/deployment/DEPLOYMENT.md) | Production deployment |
 | [Troubleshooting](docs/development/TROUBLESHOOTING.md) | Common issues |
 | [Changelog](CHANGELOG.md) | Version history |
