@@ -252,7 +252,7 @@ class DocumentRepository:
             update(DocumentDB).where(DocumentDB.id.in_(document_ids)).values(ocr_status=status)
         )
         await self.session.flush()
-        return result.rowcount
+        return result.rowcount  # type: ignore[attr-defined,no-any-return]
 
 
 class DocumentTemplateRepository:

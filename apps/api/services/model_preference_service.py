@@ -323,7 +323,7 @@ class ModelPreferenceService:
 
         result = await self.session.execute(query)
 
-        if result.rowcount > 0:
+        if result.rowcount > 0:  # type: ignore[attr-defined]
             logger.info(
                 "Deleted model preference %s for user %s",
                 preference_id[:8],

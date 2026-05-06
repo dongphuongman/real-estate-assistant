@@ -128,7 +128,7 @@ class RankingWeights:
             weight_recency=DEFAULT_RANKING_CONFIG["weight_recency"],
             weight_price_match=DEFAULT_RANKING_CONFIG["weight_price_match"],
             weight_location=DEFAULT_RANKING_CONFIG["weight_location"],
-            personalization_enabled=DEFAULT_RANKING_CONFIG["personalization_enabled"],
+            personalization_enabled=bool(DEFAULT_RANKING_CONFIG["personalization_enabled"]),
             personalization_weight=DEFAULT_RANKING_CONFIG["personalization_weight"],
         )
 

@@ -275,7 +275,7 @@ async def _create_llm_with_multi_key_fallback(
         return llm
 
     try:
-        return await manager.call_with_fallback(
+        return await manager.call_with_fallback(  # type: ignore[arg-type]
             providers=available_providers,
             provider_keys=provider_keys,
             func=create_llm_with_key,

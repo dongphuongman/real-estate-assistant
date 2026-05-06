@@ -3,12 +3,12 @@ from unittest.mock import MagicMock
 try:
     from langchain.agents import AgentExecutor
 except ImportError:
-    from langchain_classic.agents import AgentExecutor
+    from langchain_classic.agents import AgentExecutor  # type: ignore[no-redef]
 
 try:
     from langchain.memory import ConversationBufferMemory
 except ImportError:
-    from langchain_classic.memory import ConversationBufferMemory
+    from langchain_classic.memory import ConversationBufferMemory  # type: ignore[no-redef]
 
 import agents.hybrid_agent as hybrid_agent
 
