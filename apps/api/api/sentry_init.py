@@ -7,11 +7,9 @@ and performance monitoring for search/chat/RAG transactions.
 
 import logging
 
-import sentry_sdk
-from sentry_sdk.integrations.fastapi import FastApiIntegration
-from sentry_sdk.integrations.logging import LoggingIntegration
-
 from config.settings import get_settings
+
+logger = logging.getLogger(__name__)
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +66,14 @@ def init_sentry() -> bool:
     Returns:
         True if Sentry was initialized, False otherwise.
     """
+    try:
+        import sentry_sdk  # type: ignore[import-untyped]
+        from sentry_sdk.integrations.fastapi import FastApiIntegration
+        from sentry_sdk.integrations.logging import LoggingIntegration
+    except ImportError:
+        logger.warning("sentry-sdk not installed — error tracking disabled")
+        return False
+
     settings = get_settings()
     dsn = settings.sentry_dsn
 
@@ -103,23 +109,32 @@ def init_sentry() -> bool:
 
 def add_llm_breadcrumb(provider: str, model: str, **kwargs) -> None:
     """Add a breadcrumb for LLM provider calls."""
-    sentry_sdk.add_breadcrumb(
-        category="llm",
-        message=f"LLM call: {provider}/{model}",
-        level="info",
-        data={"provider": provider, "model": model, **kwargs},
-    )
+    try:
+        import sentry_sdk  # type: ignore[import-untyped]
+        sentry_sdk.add_breadcrumb(
+            category="llm",
+            message=f"LLM call: {provider}/{model}",
+            level="info",
+            data={"provider": provider, "model": model, **kwargs},
+        )
+    except ImportError:
+        pass  # Sentry not available
 
 
 def set_user_context(user_id: str | None = None, email: str | None = None) -> None:
     """Set user context for Sentry events (email is hashed for privacy)."""
-    if user_id:
+    if not user_id:
+        return
+    try:
+        import hashlib
+
         sentry_sdk.set_user(
+        import sentry_sdk  # type: ignore[import-untyped]
             {
                 "id": user_id,
                 # Don't send raw email to Sentry
-                "email_hash": hash(email) if email else None,
+                "email_hash": hashlib.sha256(email.encode()).hexdigest() if email else None,
             }
         )
-    else:
-        sentry_sdk.set_user(None)
+    except (ImportError, AttributeError):
+        pass  # Sentry not available
