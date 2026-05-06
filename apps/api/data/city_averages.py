@@ -349,7 +349,7 @@ def get_city_average(city: str) -> Dict[str, float]:
     Returns:
         Dictionary with all factor scores for the city
     """
-    return CITY_AVERAGES.get(city.lower(), CITY_AVERAGES["default"]).copy()
+    return CITY_AVERAGES.get(city.lower(), CITY_AVERAGES["default"]).copy()  # type: ignore[return-value]
 
 
 def get_city_factor_score(city: str, factor: str) -> float:

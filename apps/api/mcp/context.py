@@ -127,17 +127,17 @@ class MCPRequestContext:
 
     def __enter__(self) -> "MCPRequestContext":
         """Enter context and set request ID."""
-        self._token_request_id = _request_id_ctx.set(self._request_id)
+        self._token_request_id = _request_id_ctx.set(self._request_id)  # type: ignore[assignment]
         if self._client_id is not None:
-            self._token_client_id = _client_id_ctx.set(self._client_id)
+            self._token_client_id = _client_id_ctx.set(self._client_id)  # type: ignore[assignment]
         return self
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Exit context and reset request ID."""
         if self._token_request_id is not None:
-            _request_id_ctx.reset(self._token_request_id)
+            _request_id_ctx.reset(self._token_request_id)  # type: ignore[arg-type]
         if self._token_client_id is not None:
-            _client_id_ctx.reset(self._token_client_id)
+            _client_id_ctx.reset(self._token_client_id)  # type: ignore[arg-type]
 
     @property
     def request_id(self) -> str:

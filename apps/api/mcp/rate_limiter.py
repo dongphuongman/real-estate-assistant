@@ -217,7 +217,7 @@ class MCPConnectorRateLimiter:
             "reset_at": int(list(request_times)[0] + 60 - now) if request_times else 60,
         }
 
-    def get_all_status(self) -> Dict[str, Dict[str, any]]:
+    def get_all_status(self) -> Dict[str, Dict[str, Any]]:
         """
         Get rate limit status for all configured connectors.
 
