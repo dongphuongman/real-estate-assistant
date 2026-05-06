@@ -112,8 +112,9 @@ class HealthCheckScenario(LoadTestScenario):
             try:
                 await measure_request(self.client, "GET", "/health", self.metrics)
             except Exception as e:
-                if self.sessions[user_id].errors is not None:
-                    self.sessions[user_id].errors.append({"error": str(e), "time": time.time()})
+                errors = self.sessions[user_id].errors
+                if errors is not None:
+                    errors.append({"error": str(e), "time": time.time()})
             await self.think_time()
 
 
@@ -153,10 +154,9 @@ class MixedEndpointScenario(LoadTestScenario):
                     self.sessions[user_id].requests_made += 1
 
             except Exception as e:
-                if self.sessions[user_id].errors is not None:
-                    self.sessions[user_id].errors.append(
-                        {"endpoint": endpoint, "error": str(e), "time": time.time()}
-                    )
+                errors = self.sessions[user_id].errors
+                if errors is not None:
+                    errors.append({"endpoint": endpoint, "error": str(e), "time": time.time()})
 
             await self.think_time()
 

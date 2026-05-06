@@ -109,7 +109,7 @@ class PropertyListingStub(MCPStub[PropertyCollection]):
         # Check for queued errors first
         if self._error_queue:
             error = self._error_queue.popleft()
-            result = MCPConnectorResult.error_result(
+            result: MCPConnectorResult[PropertyCollection] = MCPConnectorResult.error_result(
                 errors=[error],
                 connector_name=self.name,
                 operation=operation,

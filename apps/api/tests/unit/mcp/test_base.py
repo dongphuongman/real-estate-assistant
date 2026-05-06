@@ -61,12 +61,12 @@ class TestMCPConnector:
                 pass
 
             async def health_check(self) -> MCPConnectorResult[dict]:
-                pass  # type: ignore
+                raise NotImplementedError
 
             async def execute(
                 self, operation: str, params: dict | None = None, **kwargs
             ) -> MCPConnectorResult[dict]:
-                pass  # type: ignore
+                raise NotImplementedError
 
         with pytest.raises(ValueError, match="name"):
             NoNameConnector()
@@ -86,12 +86,12 @@ class TestMCPConnector:
                 pass
 
             async def health_check(self) -> MCPConnectorResult[dict]:
-                pass  # type: ignore
+                raise NotImplementedError
 
             async def execute(
                 self, operation: str, params: dict | None = None, **kwargs
             ) -> MCPConnectorResult[dict]:
-                pass  # type: ignore
+                raise NotImplementedError
 
         with pytest.raises(ValueError, match="API key"):
             RequiresKeyConnector()

@@ -599,7 +599,6 @@ class TCOComparisonTool(BaseTool):
                         property_value_estimate=property_value,
                         loan_balance=loan_amount,
                         annual_cost=annual_cost,
-                        monthly_cost_at_year=base_result.monthly_tco,
                     )
                 )
 

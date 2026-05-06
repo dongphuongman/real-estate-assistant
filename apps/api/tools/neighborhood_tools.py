@@ -516,7 +516,7 @@ class NeighborhoodQualityIndexTool(BaseTool):
             pois = neighborhood_adapter.fetch_pois_within_radius(latitude, longitude, radius_m=1000)
 
             # Get transport stops
-            transport_result = transport_adapter.calculate_accessibility_score(latitude, longitude)
+            transport_result = transport_adapter.calculate_accessibility_score(latitude, longitude)  # type: ignore[attr-defined]
 
             # Get safety POIs
             safety_pois = safety_adapter.get_police_stations(latitude, longitude, radius_m=2000)

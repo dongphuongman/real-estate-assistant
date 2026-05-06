@@ -125,33 +125,33 @@ class PropertySearchStub(MCPStub[SearchResult]):
         # Check for queued errors first
         if self._error_queue:
             error = self._error_queue.popleft()
-            result = MCPConnectorResult.error_result(
+            result: MCPConnectorResult[SearchResult] = MCPConnectorResult.error_result(  # type: ignore[call-arg]
                 errors=[error],
                 connector_name=self.name,
                 operation=operation,
             )
-            self._record_call(operation, params, kwargs, result=result)
-            return result
+            self._record_call(operation, params, kwargs, result=result)  # type: ignore[call-arg]
+            return result  # type: ignore[return-value]
 
         # Route to operation handler
         try:
             data = await self._handle_operation(operation, params or {})
-            result = MCPConnectorResult.success_result(
-                data=data,
+            result = MCPConnectorResult.success_result(  # type: ignore[call-arg]
+                data=data,  # type: ignore[arg-type]
                 connector_name=self.name,
                 operation=operation,
                 metadata={"stub": True},
             )
-            self._record_call(operation, params, kwargs, result=result)
-            return result
+            self._record_call(operation, params, kwargs, result=result)  # type: ignore[call-arg]
+            return result  # type: ignore[return-value]
         except Exception as e:
-            result = MCPConnectorResult.error_result(
+            result = MCPConnectorResult.error_result(  # type: ignore[call-arg]
                 errors=[str(e)],
                 connector_name=self.name,
                 operation=operation,
             )
             self._record_call(operation, params, kwargs, error=str(e))
-            return result
+            return result  # type: ignore[return-value]
 
     async def _handle_operation(self, operation: str, params: Dict[str, Any]) -> SearchResult:
         """Handle the operation."""

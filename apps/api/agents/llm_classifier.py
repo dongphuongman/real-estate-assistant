@@ -81,14 +81,14 @@ class LLMIntentClassifier:
 
             # Parse JSON response
             # Handle potential markdown code blocks
-            if "```" in content:
+            if isinstance(content, str) and "```" in content:
                 # Extract JSON from code block
-                content = content.split("```")[1]
+                content = content.split("```")[1]  # type: ignore[union-attr]
                 if content.startswith("json"):
                     content = content[4:]
                 content = content.strip()
 
-            result = json.loads(content)
+            result = json.loads(content)  # type: ignore[arg-type]
 
             # Map string to enum
             intent_map = {

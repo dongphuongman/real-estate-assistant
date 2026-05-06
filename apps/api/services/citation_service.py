@@ -411,6 +411,7 @@ class CitationService:
                 confidence=confidence,
                 confidence_score=confidence_score,
                 content_snippet=snippet,
+                citation_hash=None,  # type: ignore[call-arg]
                 source_url=metadata.get("url")
                 if self.extract_source_type(source) == SourceType.WEB
                 else None,
