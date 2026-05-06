@@ -275,10 +275,10 @@ async def _create_llm_with_multi_key_fallback(
         return llm
 
     try:
-        return await manager.call_with_fallback(  # type: ignore[arg-type]
+        return await manager.call_with_fallback(
             providers=available_providers,
             provider_keys=provider_keys,
-            func=create_llm_with_key,
+            func=create_llm_with_key,  # type: ignore[arg-type]
         )
     except RuntimeError as e:
         raise RuntimeError(

@@ -3,7 +3,7 @@ import json
 import logging
 import time
 import uuid
-from typing import Annotated, Optional
+from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, status
 from fastapi.responses import StreamingResponse
@@ -208,7 +208,7 @@ async def rag_qa(
     scores = [s for _d, s in results]
 
     if not docs:
-        empty_response = {
+        empty_response: dict[str, Any] = {
             "answer": "",
             "citations": [],
             "citation_format": rag_request.citation_format,

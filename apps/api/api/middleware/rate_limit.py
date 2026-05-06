@@ -92,12 +92,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Any) -> Response:
         settings = get_settings()
         if not settings.api_rate_limit_enabled:
-            return await call_next(request)
+            return await call_next(request)  # type: ignore[no-any-return]
 
         # Skip rate limiting for health and metrics endpoints
         path = request.url.path
         if path in ("/health", "/metrics", "/docs", "/openapi.json", "/redoc"):
-            return await call_next(request)
+            return await call_next(request)  # type: ignore[no-any-return]
 
         # Determine limit for this path
         limit = self._get_limit_for_path(path)
@@ -140,7 +140,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         remaining = max(0, limit - 1)  # Approximate
         response.headers["X-RateLimit-Remaining"] = str(remaining)
 
-        return response
+        return response  # type: ignore[no-any-return]
 
     def _get_limit_for_path(self, path: str) -> int:
         """Return the rate limit for a given path."""
