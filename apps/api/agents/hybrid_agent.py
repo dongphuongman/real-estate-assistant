@@ -28,9 +28,12 @@ try:
     from langchain.chains import ConversationalRetrievalChain
     from langchain.memory import ConversationBufferMemory
 except ImportError:
-    from langchain_classic.agents import AgentExecutor, create_openai_tools_agent
-    from langchain_classic.chains import ConversationalRetrievalChain
-    from langchain_classic.memory import ConversationBufferMemory
+    from langchain_classic.agents import (  # type: ignore[no-redef]
+        AgentExecutor,
+        create_openai_tools_agent,
+    )
+    from langchain_classic.chains import ConversationalRetrievalChain  # type: ignore[no-redef]
+    from langchain_classic.memory import ConversationBufferMemory  # type: ignore[no-redef]
 
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import BaseTool
@@ -220,10 +223,10 @@ Context from property database will be provided when relevant."""
             try:
                 from langchain.agents import create_react_agent
             except ImportError:
-                from langchain_classic.agents import create_react_agent
+                from langchain_classic.agents import create_react_agent  # type: ignore[no-redef]
 
             # nosemgrep: langchain.prompt-injection - template is static, no user input
-            prompt = PromptTemplate.from_template(
+            prompt = PromptTemplate.from_template(  # type: ignore[assignment]
                 """You are a specialized Real Estate Assistant.
 
 Scope:
@@ -600,8 +603,8 @@ Thought: {agent_scratchpad}"""
         # Fallback to standard retrieval
         if self.verbose:
             logger.info("Using standard retrieval")
-        docs = self.retriever.get_relevant_documents(query)
-        return docs[:k]
+        docs = self.retriever.get_relevant_documents(query)  # type: ignore[attr-defined]
+        return docs[:k]  # type: ignore[no-any-return]
 
     async def _aretrieve_documents(
         self, query: str, analysis: QueryAnalysis, k: int = 5
@@ -617,8 +620,8 @@ Thought: {agent_scratchpad}"""
 
         if self.verbose:
             logger.info("Using async standard retrieval")
-        docs = await self.retriever.aget_relevant_documents(query)
-        return docs[:k]
+        docs = await self.retriever.aget_relevant_documents(query)  # type: ignore[attr-defined]
+        return docs[:k]  # type: ignore[no-any-return]
 
     def _process_with_rag(self, query: str, analysis: QueryAnalysis) -> Dict[str, Any]:
         """Process simple query with RAG only."""
@@ -958,7 +961,7 @@ class SimpleRAGAgent:
 
     def get_sources_for_query(self, query: str, k: int = 5) -> List[Document]:
         try:
-            return self.retriever.get_relevant_documents(query)[:k]
+            return self.retriever.get_relevant_documents(query)[:k]  # type: ignore[attr-defined,no-any-return]
         except Exception as e:
             logger.warning("SimpleRAGAgent retrieval failed: %s", e)
             return []

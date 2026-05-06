@@ -110,7 +110,7 @@ class TemplateService:
             return errors
 
         # Extract variables used in template
-        vars_used = set()
+        vars_used: set[str] = set()
         parsed = template.environment.parse(template_content)
         if parsed is not None:
             for node in parsed.body:  # type: ignore[attr-defined]
