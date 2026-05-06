@@ -1,4 +1,4 @@
-﻿name: CI/CD AI Real Estate Assistant
+name: CI/CD AI Real Estate Assistant
 
 permissions:
   contents: read
@@ -6,16 +6,24 @@ permissions:
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main, dev, ver4]
   pull_request:
-    branches: [main, dev]
-  workflow_dispatch: {}
+    branches: [main, dev, ver4]
+  workflow_dispatch:
+    inputs:
+      enable_deep_analysis:
+        description: 'Enable Stage 4 deep analysis (CodeQL, Trivy, Lighthouse, E2E)'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  # ===== STAGE 1: Quick Checks =====
+
   gitleaks:
     runs-on: ubuntu-latest
     if: true  # Always run for public repo
@@ -63,9 +71,56 @@ jobs:
 
           exit $EXIT_CODE
 
-  backend:
+  backend-lint:
     runs-on: ubuntu-latest
-    if: true
+    needs: [gitleaks, secret-validation]
+    defaults:
+      run:
+        working-directory: apps/api
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v1
+        with:
+          version: 'latest'
+
+      - name: Cache uv
+        uses: actions/cache@v5
+        with:
+          path: ~/.local/share/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('apps/api/requirements.txt', 'apps/api/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system -r requirements.txt
+          uv pip install --system pytest ruff mypy
+
+      - name: Lint (ruff)
+        run: |
+          python -m ruff check .
+
+      - name: Type check (mypy)
+        run: |
+          python -m mypy . --explicit-package-bases
+        continue-on-error: true
+
+  # ===== STAGE 2: Build & Basic Tests =====
+
+  backend-tests:
+    runs-on: ubuntu-latest
+    needs: [backend-lint]
     timeout-minutes: 20
     defaults:
       run:
@@ -97,16 +152,7 @@ jobs:
       - name: Install dependencies
         run: |
           uv pip install --system -r requirements.txt
-          uv pip install --system pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout ruff mypy httpx types-requests
-
-      - name: Lint (ruff)
-        run: |
-          python -m ruff check .
-
-      - name: Type check (mypy)
-        run: |
-          python -m mypy . --explicit-package-bases
-        continue-on-error: true
+          uv pip install --system pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout ruff httpx types-requests
 
       - name: RuleEngine (custom rules)
         run: |
@@ -130,6 +176,7 @@ jobs:
         continue-on-error: true
         run: |
           python ../../scripts/docs/generate_api_reference.py --check
+
       - name: API reference (full) drift check
         continue-on-error: true
         run: |
@@ -142,6 +189,7 @@ jobs:
       - name: Run unit tests with coverage (pytest)
         run: |
           python -m pytest tests/unit --cov=. --cov-report=xml --cov-report=term -n auto --timeout=600 --maxfail=5
+
       - name: Unit coverage summary
         run: |
           python - <<'PY'
@@ -190,6 +238,7 @@ jobs:
             if [ $attempt -eq 2 ]; then exit 1; fi
             echo "Integration tests failed. Retrying..."
           done
+
       - name: Integration coverage summary
         run: |
           python - <<'PY'
@@ -222,9 +271,79 @@ jobs:
           name: backend-coverage-integration-xml
           path: coverage.xml
 
-  frontend:
+  frontend-build:
     runs-on: ubuntu-latest
-    if: true
+    needs: [gitleaks, secret-validation]
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache npm
+        uses: actions/cache@v5
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('apps/web/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+  security-sast:
+    runs-on: ubuntu-latest
+    needs: [backend-lint]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install bandit semgrep
+
+      - name: Run Bandit (exclude tests, fail on high severity)
+        continue-on-error: true
+        run: |
+          mkdir -p artifacts
+          python -m bandit -r apps/api -x tests,node_modules,.history,venv,venv/*,.venv,.venv/*,.venv_ci,.venv_ci/* --severity-level high --confidence-level high -f json -o artifacts/bandit.json
+
+      - name: Run Semgrep
+        continue-on-error: true
+        run: |
+          semgrep scan --config semgrep.yml --error
+
+      - name: Upload bandit report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: bandit-report
+          path: artifacts/bandit.json
+
+  # ===== STAGE 3: Quality Checks =====
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    needs: [frontend-build]
     defaults:
       run:
         working-directory: apps/web
@@ -254,11 +373,9 @@ jobs:
         run: npm audit --audit-level=high --omit=dev
         continue-on-error: true
 
-      - name: Lint
-        run: npm run lint
-
       - name: Run tests
         run: npm run test:ci
+
       - name: Frontend coverage summary
         run: |
           node -e 'const fs=require("fs"); const summary=JSON.parse(fs.readFileSync("coverage/coverage-summary.json","utf8")); const total=summary.total; const text=["### Frontend Coverage","","Lines: "+total.lines.pct+"%","Statements: "+total.statements.pct+"%","Functions: "+total.functions.pct+"%","Branches: "+total.branches.pct+"%",""].join("\n"); fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, text);'
@@ -269,10 +386,9 @@ jobs:
           name: frontend-coverage
           path: apps/web/coverage
 
-  docs:
+  docs-generation:
     runs-on: ubuntu-latest
-    if: true
-    needs: [backend]
+    needs: [backend-tests]
     timeout-minutes: 10
     defaults:
       run:
@@ -322,10 +438,185 @@ jobs:
             echo "- OpenAPI schema size: $(wc -c < ../../docs/api/openapi.json) bytes" >> $GITHUB_STEP_SUMMARY
           fi
 
+  security-deps:
+    runs-on: ubuntu-latest
+    needs: [backend-tests]
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pip-audit
+        run: |
+          uv pip install --system pip-audit
+
+      - name: Run pip-audit (fail on vulnerabilities)
+        continue-on-error: true
+        run: |
+          mkdir -p ../../artifacts
+          python -m pip_audit -r requirements.txt -f json -o ../../artifacts/pip-audit.json
+
+      - name: Upload pip-audit report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pip-audit-report
+          path: artifacts/pip-audit.json
+
+  # ===== STAGE 4: Deep Analysis (main/ver4 or manual) =====
+
+  codeql-python:
+    runs-on: ubuntu-latest
+    if: |
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4') ||
+      (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
+    needs: [security-deps]
+    timeout-minutes: 30
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          build-mode: none
+          queries: security-extended,security-and-quality
+          config: |
+            paths-ignore:
+              - '**/node_modules'
+              - '**/.next'
+              - '**/dist'
+              - '**/build'
+              - '**/coverage'
+              - '**/__pycache__'
+              - '**/venv'
+              - '**/.venv'
+              - '**/.venv_ci'
+              - '**/*.test.js'
+              - '**/*.test.ts'
+              - '**/*.test.tsx'
+              - '**/*.spec.js'
+              - '**/*.spec.ts'
+              - '**/*.spec.tsx'
+              - '**/tests/**'
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:python'
+          upload: true
+        continue-on-error: true
+
+  codeql-javascript:
+    runs-on: ubuntu-latest
+    if: |
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4') ||
+      (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
+    needs: [security-deps]
+    timeout-minutes: 30
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          build-mode: none
+          queries: security-extended,security-and-quality
+          config: |
+            paths-ignore:
+              - '**/node_modules'
+              - '**/.next'
+              - '**/dist'
+              - '**/build'
+              - '**/coverage'
+              - '**/__pycache__'
+              - '**/venv'
+              - '**/.venv'
+              - '**/.venv_ci'
+              - '**/*.test.js'
+              - '**/*.test.ts'
+              - '**/*.test.tsx'
+              - '**/*.spec.js'
+              - '**/*.spec.ts'
+              - '**/*.spec.tsx'
+              - '**/tests/**'
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:javascript-typescript'
+          upload: true
+        continue-on-error: true
+
+  container-scan:
+    runs-on: ubuntu-latest
+    if: |
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4') ||
+      (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
+    needs: [frontend-build]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build backend image
+        run: |
+          docker build -f deploy/docker/Dockerfile.backend -t ai-backend:ci .
+
+      - name: Build frontend image
+        run: |
+          docker build -f deploy/docker/Dockerfile.frontend -t ai-frontend:ci .
+
+      - name: Trivy scan (backend)
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: ai-backend:ci
+          format: table
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Trivy scan (frontend)
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: ai-frontend:ci
+          format: table
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
   lighthouse:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    needs: [frontend]
+    if: |
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4') ||
+      (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
+    needs: [frontend-tests]
     timeout-minutes: 15
     defaults:
       run:
@@ -381,8 +672,10 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    if: true
-    needs: [frontend]
+    if: |
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4') ||
+      (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
+    needs: [frontend-build]
     timeout-minutes: 20
     continue-on-error: true
     steps:
@@ -446,20 +739,23 @@ jobs:
             echo "No results.json found" >> $GITHUB_STEP_SUMMARY
           fi
 
+  # ===== STAGE 5: Integration =====
+
   compose_smoke:
     runs-on: ubuntu-latest
-    if: true
-    needs: [backend, frontend]
+    needs: [backend-tests, frontend-build]
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
       - name: Docker Compose smoke test (build + health checks)
         continue-on-error: true
         env:
@@ -474,133 +770,13 @@ jobs:
             echo "Compose smoke failed. Retrying..."
           done
 
-  security:
-    runs-on: ubuntu-latest
-    if: true
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v1
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install bandit
-        run: |
-          uv pip install --system bandit
-      - name: Run Bandit (exclude tests, fail on high severity)
-        continue-on-error: true
-        run: |
-          mkdir -p artifacts
-          python -m bandit -r apps/api -x tests,node_modules,.history,venv,venv/*,.venv,.venv/*,.venv_ci,.venv_ci/* --severity-level high --confidence-level high -f json -o artifacts/bandit.json
-      - name: Upload bandit report
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: bandit-report
-          path: artifacts/bandit.json
-
-  audit:
-    runs-on: ubuntu-latest
-    if: true
-    defaults:
-      run:
-        working-directory: apps/api
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v1
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install pip-audit
-        run: |
-          uv pip install --system pip-audit
-
-      - name: Run pip-audit (fail on vulnerabilities)
-        continue-on-error: true
-        run: |
-          mkdir -p ../../artifacts
-          python -m pip_audit -r requirements.txt -f json -o ../../artifacts/pip-audit.json
-      - name: Upload pip-audit report
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: pip-audit-report
-          path: artifacts/pip-audit.json
-
-  semgrep:
-    runs-on: ubuntu-latest
-    if: true
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install Semgrep
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install semgrep
-
-      - name: Run Semgrep
-        continue-on-error: true
-        run: |
-          semgrep scan --config semgrep.yml --error
-
-  trivy:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Build backend image
-        run: |
-          docker build -f deploy/docker/Dockerfile.backend -t ai-backend:ci .
-      - name: Build frontend image
-        run: |
-          docker build -f deploy/docker/Dockerfile.frontend -t ai-frontend:ci .
-      - name: Trivy scan (backend)
-        uses: aquasecurity/trivy-action@0.35.0
-        with:
-          image-ref: ai-backend:ci
-          format: table
-          exit-code: '0'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-      - name: Trivy scan (frontend)
-        uses: aquasecurity/trivy-action@0.35.0
-        with:
-          image-ref: ai-frontend:ci
-          format: table
-          exit-code: '0'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-
-  pipeline_health:
+  pipeline-health:
     runs-on: ubuntu-latest
     if: always()
-    needs: [gitleaks, backend, frontend, docs, security, audit, semgrep, trivy, compose_smoke, lighthouse, e2e]
+    needs: [gitleaks, secret-validation, backend-lint, backend-tests,
+            frontend-build, security-sast, frontend-tests, docs-generation,
+            security-deps, codeql-python, codeql-javascript, container-scan,
+            lighthouse, e2e, compose_smoke]
     permissions:
       contents: read
     steps:
