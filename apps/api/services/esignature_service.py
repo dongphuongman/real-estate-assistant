@@ -138,9 +138,6 @@ class ESignatureService(Protocol):
 class HelloSignService:
     """HelloSign (Dropbox Sign) e-signature provider implementation."""
 
-    BASE_URL = "https://api.hellosign.com/v3"
-    SANDBOX_URL = "https://api.sandbox.hellosign.com/v3"
-
     BASE_URL: str = "https://api.hellosign.com/v3"
     SANDBOX_URL: str = "https://api.sandbox.hellosign.com/v3"
 
@@ -470,7 +467,7 @@ def get_esignature_service() -> Optional[ESignatureService]:
 
     if _esignature_service is None:
         if settings.hellosign_api_key:
-            _esignature_service = HelloSignService(
+            _esignature_service = HelloSignService(  # type: ignore[assignment]
                 api_key=settings.hellosign_api_key,
                 test_mode=settings.environment == "development",
                 webhook_secret=settings.hellosign_webhook_secret,

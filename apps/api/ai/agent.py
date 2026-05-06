@@ -6,7 +6,7 @@ import pandas as pd
 try:
     from langchain.agents.agent_types import AgentType
 except (ImportError, ModuleNotFoundError):
-    from langchain_classic.agents.agent_types import AgentType
+    from langchain_classic.agents.agent_types import AgentType  # type: ignore[no-redef]
 from langchain_openai import ChatOpenAI
 
 try:

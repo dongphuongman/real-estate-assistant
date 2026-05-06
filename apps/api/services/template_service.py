@@ -114,9 +114,11 @@ class TemplateService:
         parsed = template.environment.parse(template_content)
         if parsed is not None:
             for node in parsed.body:  # type: ignore[attr-defined]
-                for found_node in parsed.find(node):  # type: ignore[arg-type]
-                    if isinstance(found_node, tuple) and found_node[0] == "var":
-                        vars_used.add(found_node[1].name)  # type: ignore[index]
+                found_nodes = parsed.find(node)  # type: ignore[arg-type]
+                if found_nodes is not None:
+                    for found_node in found_nodes:  # type: ignore[attr-defined]
+                        if isinstance(found_node, tuple) and found_node[0] == "var":
+                            vars_used.add(found_node[1].name)  # type: ignore[index]
 
         # Check required variables
         if required_variables:
