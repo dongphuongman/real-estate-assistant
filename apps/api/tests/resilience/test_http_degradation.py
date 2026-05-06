@@ -76,9 +76,12 @@ def _make_health_app():
         if overall_status == "unhealthy":
             status_code = 503
 
-        response = {"status": overall_status, "version": "test"}
+        response: dict[str, str | dict[str, dict[str, str]]] = {
+            "status": overall_status,
+            "version": "test",
+        }
         if dependencies:
-            response["dependencies"] = dependencies
+            response["dependencies"] = dependencies  # type: ignore[assignment]
 
         return JSONResponse(content=response, status_code=status_code)
 

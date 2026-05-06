@@ -130,7 +130,7 @@ def _create_load_test_app() -> FastAPI:
         }
 
     @app.post("/api/v1/properties/search", dependencies=[Depends(verify_api_key)])
-    async def search(request_body: dict[str, Any] = None) -> dict[str, Any]:
+    async def search(request_body: dict[str, Any] | None = None) -> dict[str, Any]:
         """Mirrors search endpoint — simulates vector store query latency."""
         # Simulate DB + vector search processing (5-50ms)
         await asyncio.sleep(0.005)
@@ -149,7 +149,7 @@ def _create_load_test_app() -> FastAPI:
         }
 
     @app.post("/api/v1/chat", dependencies=[Depends(verify_api_key)])
-    async def chat(request_body: dict[str, Any] = None) -> dict[str, Any]:
+    async def chat(request_body: dict[str, Any] | None = None) -> dict[str, Any]:
         """Mirrors chat endpoint — simulates LLM processing latency."""
         # Simulate LLM streaming response (100-500ms)
         await asyncio.sleep(0.1)

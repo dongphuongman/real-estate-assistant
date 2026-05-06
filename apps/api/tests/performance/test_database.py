@@ -304,8 +304,8 @@ class TestQueryComplexity:
             }
         }
 
-        def check_uses_index(plan: dict) -> bool:  # type: ignore[no-any-return]
-            return plan["Plan"]["Node Type"] != "Seq Scan"
+        def check_uses_index(plan: dict) -> bool:
+            return plan["Plan"]["Node Type"] != "Seq Scan"  # type: ignore[no-any-return]
 
         assert check_uses_index(good_plan), "Should detect index scan"
         assert not check_uses_index(bad_plan), "Should detect sequential scan"
@@ -315,10 +315,10 @@ class TestQueryComplexity:
         # Efficient join types
         efficient_joins = ["Hash Join", "Merge Join"]
 
-        def is_efficient_join(plan: dict) -> bool:  # type: ignore[no-any-return]
+        def is_efficient_join(plan: dict) -> bool:
             node_type = plan["Plan"]["Node Type"]
             if "Join" in node_type:
-                return node_type in efficient_joins
+                return node_type in efficient_joins  # type: ignore[no-any-return]
             return True  # Not a join, no issue
 
         good_plan = {"Plan": {"Node Type": "Hash Join"}}
@@ -385,10 +385,10 @@ class TestDatabaseMetrics:
         """Should calculate percentile metrics for queries."""
         query_times = [0.01, 0.02, 0.03, 0.05, 0.10, 0.15, 0.20]
 
-        def percentile(data: list, p: float) -> float:  # type: ignore[no-any-return]
+        def percentile(data: list, p: float) -> float:
             sorted_data = sorted(data)
             index = int(len(sorted_data) * p / 100)
-            return sorted_data[min(index, len(sorted_data) - 1)]
+            return sorted_data[min(index, len(sorted_data) - 1)]  # type: ignore[no-any-return]
 
         p50 = percentile(query_times, 50)
         p95 = percentile(query_times, 95)
