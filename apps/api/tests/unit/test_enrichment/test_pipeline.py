@@ -23,7 +23,7 @@ class SlowEnricher(PropertyEnrichmentHook):
 
     async def enrich(self, context):
         return EnrichmentResult.success_result(
-            source=self.name, field=self.field, value="slow_value"
+            source=self.name, enrichment_field=self.field, value="slow_value"
         )
 
     async def health_check(self):
@@ -39,7 +39,7 @@ class FastEnricher(PropertyEnrichmentHook):
 
     async def enrich(self, context):
         return EnrichmentResult.success_result(
-            source=self.name, field=self.field, value="fast_value"
+            source=self.name, enrichment_field=self.field, value="fast_value"
         )
 
     async def health_check(self):
@@ -54,7 +54,7 @@ class FailingEnricher(PropertyEnrichmentHook):
 
     async def enrich(self, context):
         return EnrichmentResult.error_result(
-            source=self.name, field=self.field, error="Intentional failure"
+            source=self.name, enrichment_field=self.field, error="Intentional failure"
         )
 
     async def health_check(self):
@@ -215,7 +215,7 @@ class TestEnrichmentPipeline:
         cache.set(
             source="fast_enricher",
             property_id="test",
-            field="fast_field",
+            enrichment_field="fast_field",
             value="cached_value",
             ttl=3600,
         )

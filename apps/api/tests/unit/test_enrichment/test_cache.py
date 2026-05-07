@@ -21,7 +21,7 @@ class TestCacheEntry:
         entry = CacheEntry(
             value="test",
             source="test_source",
-            field="test_field",
+            enrichment_field="test_field",
             cached_at=time.time() - 3600,  # 1 hour ago
             ttl=1800,  # 30 min TTL
         )
@@ -30,7 +30,7 @@ class TestCacheEntry:
         entry = CacheEntry(
             value="test",
             source="test_source",
-            field="test_field",
+            enrichment_field="test_field",
             cached_at=time.time(),
             ttl=3600,
         )
@@ -41,7 +41,7 @@ class TestCacheEntry:
         entry = CacheEntry(
             value="test",
             source="test_source",
-            field="test_field",
+            enrichment_field="test_field",
             cached_at=time.time() - 2900,  # ~80% of 3600
             ttl=3600,
         )
@@ -50,7 +50,7 @@ class TestCacheEntry:
         entry = CacheEntry(
             value="test",
             source="test_source",
-            field="test_field",
+            enrichment_field="test_field",
             cached_at=time.time() - 1000,
             ttl=3600,
         )
@@ -61,7 +61,7 @@ class TestCacheEntry:
         entry = CacheEntry(
             value="test",
             source="test_source",
-            field="test_field",
+            enrichment_field="test_field",
             cached_at=time.time() - 100,
             ttl=3600,
         )
@@ -72,7 +72,7 @@ class TestCacheEntry:
         entry = CacheEntry(
             value="test",
             source="test_source",
-            field="test_field",
+            enrichment_field="test_field",
             cached_at=time.time() - 1000,
             ttl=3600,
         )
@@ -84,7 +84,7 @@ class TestCacheEntry:
         entry = CacheEntry(
             value={"key": "value"},
             source="test_source",
-            field="test_field",
+            enrichment_field="test_field",
             cached_at=time.time(),
             ttl=3600,
             metadata={"extra": "data"},
@@ -94,7 +94,7 @@ class TestCacheEntry:
 
         assert restored.value == entry.value
         assert restored.source == entry.source
-        assert restored.field == entry.field
+        assert restored.enrichment_field == entry.enrichment_field
         assert restored.ttl == entry.ttl
         assert restored.metadata == entry.metadata
 
@@ -108,7 +108,7 @@ class TestInMemoryEnrichmentCache:
         entry = CacheEntry(
             value="test_value",
             source="test",
-            field="field",
+            enrichment_field="field",
             cached_at=time.time(),
             ttl=3600,
         )
@@ -124,7 +124,7 @@ class TestInMemoryEnrichmentCache:
         entry = CacheEntry(
             value="test_value",
             source="test",
-            field="field",
+            enrichment_field="field",
             cached_at=time.time() - 3600,
             ttl=1800,  # Already expired
         )
@@ -139,7 +139,7 @@ class TestInMemoryEnrichmentCache:
         entry = CacheEntry(
             value="test_value",
             source="test",
-            field="field",
+            enrichment_field="field",
             cached_at=time.time(),
             ttl=3600,
         )
@@ -155,7 +155,7 @@ class TestInMemoryEnrichmentCache:
         entry = CacheEntry(
             value="test",
             source="test",
-            field="field",
+            enrichment_field="field",
             cached_at=time.time(),
             ttl=3600,
         )
@@ -174,7 +174,7 @@ class TestInMemoryEnrichmentCache:
             entry = CacheEntry(
                 value=f"value_{i}",
                 source="test",
-                field="field",
+                enrichment_field="field",
                 cached_at=time.time() + i,  # Vary timestamp
                 ttl=3600,
             )
@@ -197,7 +197,7 @@ class TestEnrichmentCache:
         cache.set(
             source="test_source",
             property_id="prop_123",
-            field="test_field",
+            enrichment_field="test_field",
             value={"data": "value"},
             ttl=3600,
         )
@@ -205,7 +205,7 @@ class TestEnrichmentCache:
         entry = cache.get(
             source="test_source",
             property_id="prop_123",
-            field="test_field",
+            enrichment_field="test_field",
         )
 
         assert entry is not None

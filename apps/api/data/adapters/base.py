@@ -67,7 +67,15 @@ def with_retry(
         )
 
         if on_retry:
-            on_retry(attempt, wait_time, exception) if exception else None
+            if exception:
+                on_retry(attempt, wait_time, exception)
+            else:
+                # Exception might be stored differently in backoff's details dict
+                # Try accessing as dict instead of using getattr
+                if isinstance(details, dict):
+                    exception = details.get("exception")
+                    if exception:
+                        on_retry(attempt, wait_time, exception)
 
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @backoff.on_exception(

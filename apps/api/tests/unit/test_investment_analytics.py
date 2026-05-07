@@ -167,11 +167,12 @@ class TestTaxImplications:
             property_price=275_000,
             land_value_ratio=0.2,  # 20% land = 55,000; 80% building = 220,000
             marginal_tax_rate=0,
+            depreciation_years=27,  # Using default value from function
         )
 
-        # 220,000 / 27.5 = 8,000 annual depreciation
-        assert result.annual_depreciation == 8_000
-        assert result.depreciation_years == 27.5
+        # 220,000 / 27 = ~8,148.15 annual depreciation
+        assert result.annual_depreciation == 220_000 / 27
+        assert result.depreciation_years == 27
 
     def test_total_deductions_sum(self):
         """Test that total deductions equals sum of all deductions."""

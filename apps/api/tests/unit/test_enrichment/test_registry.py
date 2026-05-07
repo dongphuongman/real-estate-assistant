@@ -2,7 +2,6 @@
 Unit tests for Enrichment Registry (Task #78).
 """
 
-
 from data.enrichment.hooks import (
     EnrichmentConfig,
     EnrichmentPriority,
@@ -22,7 +21,7 @@ class TestEnricherA(PropertyEnrichmentHook):
 
     async def enrich(self, context):
         return EnrichmentResult.success_result(
-            source=self.name, field=self.field, value="a"
+            source=self.name, enrichment_field=self.field, value="a"
         )
 
     async def health_check(self):
@@ -39,7 +38,7 @@ class TestEnricherB(PropertyEnrichmentHook):
 
     async def enrich(self, context):
         return EnrichmentResult.success_result(
-            source=self.name, field=self.field, value="b"
+            source=self.name, enrichment_field=self.field, value="b"
         )
 
     async def health_check(self):
@@ -153,7 +152,7 @@ class TestEnrichmentRegistry:
 
             async def enrich(self, context):
                 return EnrichmentResult.success_result(
-                    source=self.name, field=self.field, value="decorated"
+                    source=self.name, enrichment_field=self.field, value="decorated"
                 )
 
             async def health_check(self):
@@ -171,7 +170,7 @@ class TestEnrichmentRegistry:
 
             async def enrich(self, context):
                 return EnrichmentResult.success_result(
-                    source=self.name, field=self.field, value="configured"
+                    source=self.name, enrichment_field=self.field, value="configured"
                 )
 
             async def health_check(self):

@@ -113,7 +113,7 @@ class TestEnrichmentResult:
         """Test creating a successful result."""
         result = EnrichmentResult.success_result(
             source="test",
-            field="value",
+            enrichment_field="value",
             value=42,
             ttl_seconds=3600,
         )
@@ -126,7 +126,7 @@ class TestEnrichmentResult:
         """Test creating a cached result."""
         result = EnrichmentResult.cached_result(
             source="test",
-            field="value",
+            enrichment_field="value",
             value=42,
         )
         assert result.success is True
@@ -137,7 +137,7 @@ class TestEnrichmentResult:
         """Test creating an error result."""
         result = EnrichmentResult.error_result(
             source="test",
-            field="value",
+            enrichment_field="value",
             error="Something went wrong",
         )
         assert result.success is False
@@ -148,7 +148,7 @@ class TestEnrichmentResult:
         """Test creating a skipped result."""
         result = EnrichmentResult.skipped_result(
             source="test",
-            field="value",
+            enrichment_field="value",
             reason="Missing data",
         )
         assert result.success is False
@@ -159,7 +159,7 @@ class TestEnrichmentResult:
         """Test serialization to dictionary."""
         result = EnrichmentResult.success_result(
             source="test",
-            field="value",
+            enrichment_field="value",
             value="data",
         )
         data = result.to_dict()
