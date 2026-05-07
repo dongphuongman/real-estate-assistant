@@ -171,7 +171,7 @@ class TestTaxImplications:
         )
 
         # 220,000 / 27 = ~8,148.15 annual depreciation
-        assert result.annual_depreciation == 220_000 / 27
+        assert result.annual_depreciation == pytest.approx(220_000 / 27)
         assert result.depreciation_years == 27
 
     def test_total_deductions_sum(self):
