@@ -107,11 +107,13 @@ class PriceSnapshotRepository:
         """Find properties with price drops exceeding threshold."""
         cutoff_date = datetime.now(UTC) - timedelta(days=days_back)
 
-        # Get recent snapshots ordered by property and date
+        # Get recent snapshots ordered by property and date (id as tiebreaker)
         result = await self.session.execute(
             select(PriceSnapshot)
             .where(PriceSnapshot.recorded_at >= cutoff_date)
-            .order_by(PriceSnapshot.property_id, PriceSnapshot.recorded_at.desc())
+            .order_by(
+                PriceSnapshot.property_id, PriceSnapshot.recorded_at.desc(), PriceSnapshot.id.desc()
+            )
         )
         snapshots = result.scalars().all()
 
