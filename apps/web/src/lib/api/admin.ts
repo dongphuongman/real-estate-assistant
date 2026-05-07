@@ -91,3 +91,95 @@ export async function fetchFromPortal(
   });
   return handleResponse<PortalIngestResponse>(response);
 }
+
+// Monitoring API functions for Task #57
+export interface HealthStatus {
+  status: 'healthy' | 'unhealthy' | 'degraded';
+  timestamp: string;
+  service: string;
+  uptime_seconds?: number;
+  version?: string;
+  git?: {
+    commit: string;
+    branch?: string;
+  };
+}
+
+export interface ReadinessStatus {
+  database: string;
+  database_latency_ms?: number;
+  redis: string;
+  llm: string;
+  overall: 'ready' | 'not_ready';
+  timestamp: string;
+}
+
+export interface MetricsData {
+  text: string;
+}
+
+export interface MonitoringOverview {
+  database: {
+    total_properties: number;
+    recent_properties_24h: number;
+    by_source: Record<string, number>;
+  };
+  cache: {
+    hits?: number;
+    misses?: number;
+    total_keys?: number;
+    hit_rate?: number;
+  };
+  knowledge_store: {
+    documents: number;
+    chunks: number;
+  };
+  llm: {
+    default_provider: string;
+    default_model: string;
+  };
+  environment: string;
+  timestamp: string;
+}
+
+export async function getHealthStatus(): Promise<HealthStatus> {
+  // Use direct API path (not getApiUrl()) because monitoring endpoints are proxied at /api/*
+  const response = await fetch('/api/health', {
+    method: 'GET',
+    headers: buildHeaders(),
+  });
+  return handleResponse<HealthStatus>(response);
+}
+
+export async function getReadinessStatus(): Promise<ReadinessStatus> {
+  const response = await fetch('/api/ready', {
+    method: 'GET',
+    headers: buildHeaders(),
+  });
+  return handleResponse<ReadinessStatus>(response);
+}
+
+export async function getMetrics(): Promise<string> {
+  const response = await fetch('/api/metrics', {
+    method: 'GET',
+    headers: buildHeaders(),
+  });
+  const text = await response.text();
+  return text;
+}
+
+export async function getMonitoringOverview(): Promise<MonitoringOverview> {
+  const response = await fetch('/api/monitoring/overview', {
+    method: 'GET',
+    headers: buildHeaders(),
+  });
+  return handleResponse<MonitoringOverview>(response);
+}
+
+export async function sendTestAlert(): Promise<{ status: string; message: string; timestamp: string }> {
+  const response = await fetch('/api/monitoring/test-alert', {
+    method: 'POST',
+    headers: buildHeaders(),
+  });
+  return handleResponse<{ status: string; message: string; timestamp: string }>(response);
+}

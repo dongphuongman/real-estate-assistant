@@ -51,6 +51,7 @@ from api.routers import (
     mcp_audit,  # Task #69: MCP Audit Logging
     metrics,  # Task #62: Production Monitoring
     model_preferences,  # Task #87: Model Preferences Per-Task
+    monitoring,  # Task #57: Production Monitoring Dashboard
     profile,  # Task #88: User Profile Management
     prompt_templates,
     push,  # Task #63: Push Notifications
@@ -476,6 +477,8 @@ app.include_router(exports.router, prefix="/api/v1", dependencies=[Depends(get_a
 app.include_router(auth.router, prefix="/api/v1")
 # Task #62: Prometheus metrics endpoint (no auth required for monitoring)
 app.include_router(metrics.router)
+# Task #57: Production Monitoring Dashboard (health, readiness, metrics, overview)
+app.include_router(monitoring.router)
 
 # JWT Auth Router (conditionally enabled)
 if settings.auth_jwt_enabled:
