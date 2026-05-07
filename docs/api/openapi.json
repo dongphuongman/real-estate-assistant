@@ -6600,6 +6600,74 @@
         "title": "FavoriteWithPropertyResponse",
         "type": "object"
       },
+      "FeedbackCreate": {
+        "description": "Schema for submitting a search result rating.",
+        "properties": {
+          "property_id": {
+            "description": "Rated property ID",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Property Id",
+            "type": "string"
+          },
+          "query": {
+            "description": "Search query that produced the result",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Query",
+            "type": "string"
+          },
+          "rating": {
+            "description": "Rating from 1 (poor) to 5 (excellent)",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Rating",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query",
+          "property_id",
+          "rating"
+        ],
+        "title": "FeedbackCreate",
+        "type": "object"
+      },
+      "FeedbackResponse": {
+        "description": "Schema for a submitted rating response.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "property_id": {
+            "title": "Property Id",
+            "type": "string"
+          },
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "rating": {
+            "title": "Rating",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "query",
+          "property_id",
+          "rating",
+          "created_at"
+        ],
+        "title": "FeedbackResponse",
+        "type": "object"
+      },
       "FilterPresetCreate": {
         "description": "Schema for creating a filter preset.",
         "properties": {
@@ -12596,6 +12664,12 @@
             "title": "Question",
             "type": "string"
           },
+          "stream": {
+            "default": false,
+            "description": "Enable SSE streaming of response chunks",
+            "title": "Stream",
+            "type": "boolean"
+          },
           "top_k": {
             "default": 5,
             "maximum": 50.0,
@@ -13316,6 +13390,41 @@
           "count"
         ],
         "title": "ReindexResponse",
+        "type": "object"
+      },
+      "RelevanceMetrics": {
+        "description": "Aggregated relevance metrics for admin dashboard.",
+        "properties": {
+          "avg_rating": {
+            "description": "Average rating across all feedback",
+            "title": "Avg Rating",
+            "type": "number"
+          },
+          "positive_pct": {
+            "description": "Percentage of ratings 4-5 (positive)",
+            "title": "Positive Pct",
+            "type": "number"
+          },
+          "ratings_by_score": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Count of ratings grouped by score (1-5)",
+            "title": "Ratings By Score",
+            "type": "object"
+          },
+          "total_ratings": {
+            "description": "Total number of ratings",
+            "title": "Total Ratings",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "avg_rating",
+          "total_ratings",
+          "positive_pct"
+        ],
+        "title": "RelevanceMetrics",
         "type": "object"
       },
       "RentVsBuyInput": {
@@ -16647,12 +16756,41 @@
     }
   },
   "info": {
-    "description": "AI Real Estate Assistant API V4",
+    "description": "# AI Real Estate Assistant API\n\nConversational AI platform for property search, market analysis, and investment tools.\n\n## Authentication\n\n- **API Key** — pass via `X-API-Key` header for general access\n- **JWT Bearer** — pass via `Authorization: Bearer <token>` for user-scoped features (favorites, saved searches, market data, etc.)\n\n## Base URL\n\n```\n/api/v1\n```\n\nAll endpoints listed below are mounted under this prefix.\n",
     "title": "AI Real Estate Assistant - Modern",
-    "version": "3.0.0"
+    "version": "4.0.0"
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/admin/dashboard": {
+      "get": {
+        "description": "Aggregated admin dashboard endpoint (Task #67).\n\nCombines health, cache, latency, vector store, and system stats\ninto a single JSON response for frontend admin panel consumption.",
+        "operationId": "admin_dashboard_api_v1_admin_dashboard_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Admin Dashboard Api V1 Admin Dashboard Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Admin Dashboard",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
     "/api/v1/admin/excel/sheets": {
       "post": {
         "description": "Get sheet names from an Excel file.\n\nReturns available sheets and their row counts for sheet selection UI.",
@@ -17040,7 +17178,7 @@
         ],
         "summary": "List Audit Entries",
         "tags": [
-          "mcp-audit"
+          "MCP Audit"
         ]
       }
     },
@@ -17087,7 +17225,7 @@
         ],
         "summary": "Run Cleanup",
         "tags": [
-          "mcp-audit"
+          "MCP Audit"
         ]
       }
     },
@@ -17158,7 +17296,7 @@
         ],
         "summary": "Get Entries By Connector",
         "tags": [
-          "mcp-audit"
+          "MCP Audit"
         ]
       }
     },
@@ -17211,7 +17349,7 @@
         ],
         "summary": "Get Entries By Request Id",
         "tags": [
-          "mcp-audit"
+          "MCP Audit"
         ]
       }
     },
@@ -17238,7 +17376,7 @@
         ],
         "summary": "Get Storage Metrics",
         "tags": [
-          "mcp-audit"
+          "MCP Audit"
         ]
       }
     },
@@ -17266,6 +17404,35 @@
           }
         ],
         "summary": "Admin Metrics",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/api/v1/admin/metrics/latency": {
+      "get": {
+        "description": "Return p95 latency metrics for search and chat endpoints (Task #120).\n\nSLA targets:\n  - search: p95 < 2000 ms\n  - chat:   p95 < 8000 ms",
+        "operationId": "admin_latency_metrics_api_v1_admin_metrics_latency_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Admin Latency Metrics Api V1 Admin Metrics Latency Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Admin Latency Metrics",
         "tags": [
           "Admin"
         ]
@@ -19429,7 +19596,7 @@
         ],
         "summary": "List Anomalies",
         "tags": [
-          "anomalies"
+          "Anomalies"
         ]
       }
     },
@@ -19484,7 +19651,7 @@
         ],
         "summary": "Get Anomaly Stats",
         "tags": [
-          "anomalies"
+          "Anomalies"
         ]
       }
     },
@@ -19537,7 +19704,7 @@
         ],
         "summary": "Stream Anomalies",
         "tags": [
-          "anomalies"
+          "Anomalies"
         ]
       }
     },
@@ -19601,7 +19768,7 @@
         ],
         "summary": "Get Anomaly",
         "tags": [
-          "anomalies"
+          "Anomalies"
         ]
       }
     },
@@ -19677,7 +19844,7 @@
         ],
         "summary": "Dismiss Anomaly",
         "tags": [
-          "anomalies"
+          "Anomalies"
         ]
       }
     },
@@ -21085,6 +21252,7 @@
         ],
         "summary": "Chat Endpoint",
         "tags": [
+          "Chat",
           "Chat"
         ]
       }
@@ -21179,6 +21347,7 @@
         ],
         "summary": "List Cma Reports",
         "tags": [
+          "CMA",
           "CMA"
         ]
       }
@@ -21283,6 +21452,7 @@
         ],
         "summary": "Find Comparables",
         "tags": [
+          "CMA",
           "CMA"
         ]
       }
@@ -21348,6 +21518,7 @@
         ],
         "summary": "Generate Cma Report",
         "tags": [
+          "CMA",
           "CMA"
         ]
       }
@@ -21405,6 +21576,7 @@
         ],
         "summary": "Delete Cma Report",
         "tags": [
+          "CMA",
           "CMA"
         ]
       },
@@ -21467,6 +21639,7 @@
         ],
         "summary": "Get Cma Report",
         "tags": [
+          "CMA",
           "CMA"
         ]
       }
@@ -21529,6 +21702,7 @@
         ],
         "summary": "Download Cma Pdf",
         "tags": [
+          "CMA",
           "CMA"
         ]
       }
@@ -23515,6 +23689,111 @@
         ]
       }
     },
+    "/api/v1/feedback/metrics/relevance": {
+      "get": {
+        "description": "Return aggregated search relevance metrics for admin monitoring.\nMeasures user-rated match accuracy against the ≥80% target.",
+        "operationId": "get_relevance_metrics_api_v1_feedback_metrics_relevance_get",
+        "parameters": [
+          {
+            "description": "ISO date to filter ratings from",
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO date to filter ratings from",
+              "title": "Since"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelevanceMetrics"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Get aggregated relevance metrics",
+        "tags": [
+          "Feedback",
+          "Admin"
+        ]
+      }
+    },
+    "/api/v1/feedback/rating": {
+      "post": {
+        "description": "Submit a thumbs-up/down rating for a search result.\nRatings are stored anonymously — no user authentication required.",
+        "operationId": "submit_rating_api_v1_feedback_rating_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedbackResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "summary": "Submit a relevance rating for a search result",
+        "tags": [
+          "Feedback"
+        ]
+      }
+    },
     "/api/v1/filter-presets": {
       "get": {
         "description": "Get all filter presets for the current authenticated user.",
@@ -24077,6 +24356,7 @@
         ],
         "summary": "Analyze Investment",
         "tags": [
+          "Investment",
           "Investment"
         ]
       }
@@ -24124,6 +24404,7 @@
         ],
         "summary": "Analyze Investment Advanced",
         "tags": [
+          "Investment",
           "Investment"
         ]
       }
@@ -24195,6 +24476,7 @@
         ],
         "summary": "Generate Investment Report",
         "tags": [
+          "Investment",
           "Investment"
         ]
       }
@@ -24838,6 +25120,24 @@
       "post": {
         "description": "Record a visitor interaction for lead scoring. Uses visitor_id cookie.",
         "operationId": "track_interaction_api_v1_leads_track_post",
+        "parameters": [
+          {
+            "in": "cookie",
+            "name": "access_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -24863,6 +25163,11 @@
             "description": "Validation Error"
           }
         },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "summary": "Track visitor interaction",
         "tags": [
           "Lead Scoring"
@@ -27009,6 +27314,7 @@
         ],
         "summary": "List Prompt Templates",
         "tags": [
+          "Prompt Templates",
           "Prompt Templates"
         ]
       }
@@ -27055,6 +27361,7 @@
         ],
         "summary": "Apply Prompt Template",
         "tags": [
+          "Prompt Templates",
           "Prompt Templates"
         ]
       }
@@ -27345,7 +27652,7 @@
     },
     "/api/v1/rag/qa": {
       "post": {
-        "description": "Simple QA over uploaded knowledge with citations.\nIf LLM is unavailable, returns concatenated context as answer.",
+        "description": "Simple QA over uploaded knowledge with citations.\nIf LLM is unavailable, returns concatenated context as answer.\nSupports SSE streaming when stream=true.",
         "operationId": "rag_qa_api_v1_rag_qa_post",
         "parameters": [
           {
@@ -27471,6 +27778,7 @@
         ],
         "summary": "Rag Qa",
         "tags": [
+          "RAG",
           "RAG"
         ]
       }
@@ -27498,6 +27806,7 @@
         ],
         "summary": "Reset Rag Knowledge",
         "tags": [
+          "RAG",
           "RAG"
         ]
       }
@@ -27543,6 +27852,7 @@
         ],
         "summary": "Upload Documents",
         "tags": [
+          "RAG",
           "RAG"
         ]
       }
@@ -28331,7 +28641,7 @@
     },
     "/api/v1/search": {
       "post": {
-        "description": "Search for properties using semantic search and metadata filters.",
+        "description": "Search for properties using semantic search and metadata filters.\nResults are cached for 5 minutes (TTL 300s).",
         "operationId": "search_properties_api_v1_search_post",
         "requestBody": {
           "content": {
@@ -28372,6 +28682,7 @@
         ],
         "summary": "Search Properties",
         "tags": [
+          "Search",
           "Search"
         ]
       }
@@ -29750,6 +30061,7 @@
         ],
         "summary": "List Tools",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -29797,6 +30109,7 @@
         ],
         "summary": "Calculate Advanced Investment",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -29844,6 +30157,7 @@
         ],
         "summary": "Commute Ranking",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -29891,6 +30205,7 @@
         ],
         "summary": "Commute Time Analysis",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -29937,6 +30252,7 @@
         ],
         "summary": "Compare Properties",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -29983,6 +30299,7 @@
         ],
         "summary": "Crm Sync Contact",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -30029,6 +30346,7 @@
         ],
         "summary": "Enrich Address",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -30076,6 +30394,7 @@
         ],
         "summary": "Generate Listing",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -30123,6 +30442,7 @@
         ],
         "summary": "Calculate Investment Analysis",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -30169,6 +30489,7 @@
         ],
         "summary": "Legal Check",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -30215,6 +30536,7 @@
         ],
         "summary": "Location Analysis",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -30262,6 +30584,7 @@
         ],
         "summary": "Calculate Mortgage",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -30309,6 +30632,7 @@
         ],
         "summary": "Neighborhood Quality",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -30356,6 +30680,7 @@
         ],
         "summary": "Analyze Portfolio",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -30402,6 +30727,7 @@
         ],
         "summary": "Price Analysis",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -30449,6 +30775,7 @@
         ],
         "summary": "Calculate Rent Vs Buy",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -30476,6 +30803,7 @@
         ],
         "summary": "List Tco Available Locations",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -30523,6 +30851,7 @@
         ],
         "summary": "Calculate Tco",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -30570,6 +30899,7 @@
         ],
         "summary": "Compare Tco",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -30634,6 +30964,7 @@
         ],
         "summary": "Get Tco Location Defaults",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -30680,6 +31011,7 @@
         ],
         "summary": "Valuation",
         "tags": [
+          "Tools",
           "Tools"
         ]
       }
@@ -31321,5 +31653,151 @@
         ]
       }
     }
-  }
+  },
+  "tags": [
+    {
+      "description": "Semantic property search with filters, ranking, and pagination",
+      "name": "Search"
+    },
+    {
+      "description": "Conversational AI assistant for property queries",
+      "name": "Chat"
+    },
+    {
+      "description": "Document upload and Q&A with citations",
+      "name": "RAG"
+    },
+    {
+      "description": "Mortgage, TCO, investment, commute, valuation, and other calculators",
+      "name": "Tools"
+    },
+    {
+      "description": "Property favorites and watchlist",
+      "name": "Favorites"
+    },
+    {
+      "description": "Organize favorites into named collections",
+      "name": "Collections"
+    },
+    {
+      "description": "Save search queries with alert settings",
+      "name": "Saved Searches"
+    },
+    {
+      "description": "Saved filter configurations",
+      "name": "Filter Presets"
+    },
+    {
+      "description": "Price history, trends, indicators, and area insights",
+      "name": "Market Analytics"
+    },
+    {
+      "description": "Comparative Market Analysis reports",
+      "name": "CMA"
+    },
+    {
+      "description": "Market anomaly detection and management",
+      "name": "Anomalies"
+    },
+    {
+      "description": "Property lead scoring system",
+      "name": "Lead Scoring"
+    },
+    {
+      "description": "Investment property analysis and report generation",
+      "name": "Investment"
+    },
+    {
+      "description": "Real estate agent and broker management",
+      "name": "Agents"
+    },
+    {
+      "description": "Agent performance metrics and coaching",
+      "name": "Agent Analytics"
+    },
+    {
+      "description": "Document upload, download, and management",
+      "name": "Documents"
+    },
+    {
+      "description": "Electronic signature request workflow",
+      "name": "E-Signatures"
+    },
+    {
+      "description": "Incoming webhook endpoints",
+      "name": "Webhooks"
+    },
+    {
+      "description": "External data source configuration and sync",
+      "name": "Data Sources"
+    },
+    {
+      "description": "Bulk import and export job management",
+      "name": "Bulk Jobs"
+    },
+    {
+      "description": "Export properties to CSV, Excel, JSON",
+      "name": "Export"
+    },
+    {
+      "description": "Data ingestion, reindexing, and system administration",
+      "name": "Admin"
+    },
+    {
+      "description": "Audit log querying",
+      "name": "Audit"
+    },
+    {
+      "description": "Application settings",
+      "name": "Settings"
+    },
+    {
+      "description": "User profile management",
+      "name": "Profile"
+    },
+    {
+      "description": "Search relevance ratings and feedback metrics",
+      "name": "Feedback"
+    },
+    {
+      "description": "API key authentication",
+      "name": "Auth"
+    },
+    {
+      "description": "JWT-based user authentication (register, login, refresh)",
+      "name": "JWT Auth"
+    },
+    {
+      "description": "Per-task LLM model preferences",
+      "name": "Model Preferences"
+    },
+    {
+      "description": "Property ranking algorithm configuration",
+      "name": "Ranking Configuration"
+    },
+    {
+      "description": "System prompt templates and rendering",
+      "name": "Prompt Templates"
+    },
+    {
+      "description": "MCP connector allowlist governance",
+      "name": "MCP Admin"
+    },
+    {
+      "description": "MCP connector audit log management",
+      "name": "MCP Audit"
+    },
+    {
+      "description": "Prometheus metrics and health checks",
+      "name": "Monitoring"
+    },
+    {
+      "description": "Web push notification subscriptions",
+      "name": "Push Notifications"
+    },
+    {
+      "description": "User behavior and activity tracking",
+      "name": "User Activity Analytics"
+    }
+  ]
 }
