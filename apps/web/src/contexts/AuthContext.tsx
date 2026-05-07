@@ -12,6 +12,8 @@ import React, {
 import { ApiError } from '@/lib/api';
 import * as authApi from '@/lib/auth';
 import type { User } from '@/lib/auth';
+import * as Sentry from '@sentry/nextjs';
+import { updateSentryUser } from '@/sentry.client';
 
 export interface AuthContextType {
   user: User | null;
@@ -81,6 +83,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     fetchUser();
   }, []);
+
+  // Update Sentry user context when user state changes
+  useEffect(() => {
+    updateSentryUser();
+  }, [user]);
 
   const login = useCallback(async (email: string, password: string) => {
     setError(null);

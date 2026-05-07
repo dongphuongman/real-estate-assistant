@@ -177,6 +177,15 @@ async def get_current_user(
         )
 
     user, _ = await _get_user_from_token(token, session)
+
+    # Set Sentry user context for error tracking
+    try:
+        from api.sentry_init import set_user_context
+
+        set_user_context(user_id=str(user.id), email=user.email)
+    except ImportError:
+        pass  # Sentry not available
+
     return user
 
 

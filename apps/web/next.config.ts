@@ -3,6 +3,7 @@ import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import createNextIntlPlugin from 'next-intl/plugin';
 import withPWAInit from '@ducanh2912/next-pwa';
+import * as Sentry from '@sentry/nextjs';
 
 const configDir = dirname(fileURLToPath(import.meta.url));
 const turbopackRoot = resolve(configDir, '..', '..');
@@ -49,6 +50,9 @@ const nextConfig: NextConfig = {
             'https://fcm.googleapis.com',
             'https://updates.push.services.mozilla.com',
             'https://*.push.apple.com',
+            // Sentry error tracking
+            'https://sentry.io',
+            'https://*.ingest.sentry.io',
           ],
           'frame-src': ["'none'"],
           'object-src': ["'none'"],
@@ -68,6 +72,9 @@ const nextConfig: NextConfig = {
             'http://localhost:*',
             'ws://localhost:*',
             'https://localhost:*',
+            // Sentry error tracking (development)
+            'https://sentry.io',
+            'https://*.ingest.sentry.io',
           ],
           'frame-src': ["'none'"],
           'object-src': ["'none'"],
@@ -121,4 +128,28 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPWA(withNextIntl(nextConfig));
+// Sentry configuration wrapper
+export default withSentryConfig(withPWA(withNextIntl(nextConfig)), {
+  // Silence the hidden source-map warnings
+  silent: true,
+  // Hide all source maps from Sentry client
+  hideSourceMaps: true,
+  // Organization and project settings
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  // Disable Sentry in development
+  disabled: process.env.NODE_ENV !== 'production',
+  // Session replay configuration
+  replayIntegration: {
+    // Capture sessions for all errors
+    onError: (event) => {
+      // Only capture replay for errors
+      return event.exception !== undefined;
+    },
+  },
+  // Performance monitoring
+  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0,
+  // Session replay sample rate
+  replaysSessionSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0,
+  replaysOnErrorSampleRate: 1.0,
+});

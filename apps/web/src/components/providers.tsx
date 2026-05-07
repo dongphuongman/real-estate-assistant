@@ -4,6 +4,7 @@ import { type ReactNode, useEffect } from 'react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { FavoritesProvider } from '@/contexts/FavoritesContext';
 import { registerServiceWorker } from '@/lib/sw';
+import { initSentry } from '@/sentry.client';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -14,8 +15,9 @@ interface ProvidersProps {
  * This is used in the root layout to provide auth context throughout the app.
  */
 export function Providers({ children }: ProvidersProps) {
-  // Register service worker on mount
+  // Initialize Sentry and register service worker on mount
   useEffect(() => {
+    initSentry();
     registerServiceWorker();
   }, []);
 

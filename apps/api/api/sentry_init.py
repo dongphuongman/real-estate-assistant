@@ -6,12 +6,25 @@ and performance monitoring for search/chat/RAG transactions.
 """
 
 import logging
+import subprocess
 
 from config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 
-logger = logging.getLogger(__name__)
+
+def _get_git_sha() -> str:
+    """Get the current git SHA for release tracking."""
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            cwd="E:\\nestlab-repo\\nest-solo\\products\\large\\ai-real-estate-assistant",
+            text=True,
+            timeout=5,
+        ).strip()
+    except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+        return "unknown"
+
 
 # PII fields to redact from Sentry events
 _PII_FIELDS = frozenset(
@@ -81,10 +94,12 @@ def init_sentry() -> bool:
         logger.info("Sentry DSN not configured — error tracking disabled")
         return False
 
+    git_sha = _get_git_sha()
+
     sentry_sdk.init(
         dsn=dsn,
         environment=settings.sentry_environment,
-        release=f"ai-real-estate-assistant@{settings.version}",
+        release=f"ai-real-estate-assistant@{git_sha}",
         traces_sample_rate=settings.sentry_traces_sample_rate,
         integrations=[
             FastApiIntegration(),
@@ -98,6 +113,15 @@ def init_sentry() -> bool:
         attach_stacktrace=True,
         max_breadcrumbs=50,
     )
+
+    # Set default tags for all events
+    try:
+        import sentry_sdk  # type: ignore[import-untyped]
+
+        sentry_sdk.set_tag("component", "backend")
+        sentry_sdk.set_tag("runtime", "fastapi")
+    except ImportError:
+        pass
 
     logger.info(
         "Sentry initialized: env=%s, traces_rate=%.1f%%",
