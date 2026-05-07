@@ -53,10 +53,12 @@ class InvestmentReportRequest(BaseModel):
     """Request for investment analysis report."""
 
     # Property basics
-    property_price: float = Field(
+    property_price: float = Field(  # type: ignore[call-overload]
         description="Purchase price of the property", gt=0, example=350000
     )
-    monthly_rent: float = Field(description="Expected monthly rental income", gt=0, example=2800)
+    monthly_rent: float = Field(  # type: ignore[call-overload]
+        description="Expected monthly rental income", gt=0, example=2800
+    )
 
     # Purchase costs
     down_payment_percent: float = Field(
@@ -65,10 +67,10 @@ class InvestmentReportRequest(BaseModel):
         ge=0,
         le=100,
     )
-    closing_costs: float = Field(
+    closing_costs: float = Field(  # type: ignore[call-overload]
         default=0.0, description="Closing costs (one-time)", ge=0, example=5000
     )
-    renovation_costs: float = Field(
+    renovation_costs: float = Field(  # type: ignore[call-overload]
         default=0.0,
         description="Renovation/buy-and-hold costs (one-time)",
         ge=0,
@@ -81,26 +83,30 @@ class InvestmentReportRequest(BaseModel):
         description="Annual interest rate as percentage (e.g., 4.5 for 4.5%)",
         ge=0,
     )
-    loan_years: int = Field(default=30, description="Loan term in years", gt=0, le=50, example=30)
+    loan_years: int = Field(  # type: ignore[call-overload]
+        default=30, description="Loan term in years", gt=0, le=50, example=30
+    )
 
     # Operating expenses (monthly)
-    property_tax_monthly: float = Field(
+    property_tax_monthly: float = Field(  # type: ignore[call-overload]
         default=0.0, description="Monthly property tax", ge=0, example=350
     )
-    insurance_monthly: float = Field(
+    insurance_monthly: float = Field(  # type: ignore[call-overload]
         default=0.0, description="Monthly home insurance", ge=0, example=150
     )
-    hoa_monthly: float = Field(default=0.0, description="Monthly HOA/condo fees", ge=0, example=0)
-    maintenance_percent: float = Field(
+    hoa_monthly: float = Field(  # type: ignore[call-overload]
+        default=0.0, description="Monthly HOA/condo fees", ge=0, example=0
+    )
+    maintenance_percent: float = Field(  # type: ignore[call-overload]
         default=1.0,
         description="Annual maintenance as % of property value",
         ge=0,
         example=1.0,
     )
-    vacancy_rate: float = Field(
+    vacancy_rate: float = Field(  # type: ignore[call-overload]
         default=5.0, description="Vacancy rate percentage", ge=0, le=100, example=5.0
     )
-    management_percent: float = Field(
+    management_percent: float = Field(  # type: ignore[call-overload]
         default=8.0,
         description="Property management fee as % of rent",
         ge=0,

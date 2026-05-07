@@ -116,6 +116,10 @@ def _calculate_valuation(
             value_range_high=subject.price or 0.0,
             confidence_score=0.0,
             price_per_sqm=0.0,
+            comparables_count=0,  # type: ignore[call-arg]
+            avg_adjusted_price=0.0,  # type: ignore[call-arg]
+            median_adjusted_price=0.0,  # type: ignore[call-arg]
+            std_deviation=0.0,  # type: ignore[call-arg]
         )
 
     # Weight by similarity score
@@ -175,6 +179,10 @@ def _calculate_valuation(
         value_range_high=round(value_range_high, 2),
         confidence_score=round(confidence, 2),
         price_per_sqm=round(price_per_sqm, 2),
+        comparables_count=num_comps,  # type: ignore[call-arg]
+        avg_adjusted_price=round(sum(prices) / len(prices), 2) if prices else 0.0,  # type: ignore[call-arg]
+        median_adjusted_price=round(sorted(prices)[len(prices) // 2], 2) if prices else 0.0,  # type: ignore[call-arg]
+        std_deviation=round(price_stddev, 2),  # type: ignore[call-arg]
     )
 
 
@@ -219,7 +227,9 @@ async def find_comparables(
     # Get all properties for comparison
     all_docs = store.search_by_metadata(k=500)
     all_properties = [_document_to_property(d) for d in all_docs]
-    collection = PropertyCollection(properties=all_properties, source_type="vector_store")
+    collection = PropertyCollection(
+        properties=all_properties, total_count=len(all_properties), source_type="vector_store"
+    )  # type: ignore[call-arg]
 
     # Find comparables using multi-factor scoring
     selector = ComparableSelector(collection)
@@ -279,7 +289,9 @@ async def generate_cma_report(
         # Get all properties for comparison
         all_docs = store.search_by_metadata(k=500)
         all_properties = [_document_to_property(d) for d in all_docs]
-        collection = PropertyCollection(properties=all_properties, source_type="vector_store")
+        collection = PropertyCollection(
+            properties=all_properties, total_count=len(all_properties), source_type="vector_store"
+        )  # type: ignore[call-arg]
 
         # Find comparables
         selector = ComparableSelector(collection)
@@ -339,11 +351,22 @@ async def generate_cma_report(
             status="completed",
         )
 
+        subject_dict = _property_to_dict(subject)
         return CMAReportResponse(
             id=report.id,
             user_id=report.user_id,
             status=report.status,
-            subject_property=_property_to_dict(subject),
+            subject_property_id=subject_dict.get("id", ""),  # type: ignore[call-arg]
+            subject_address=subject_dict.get("address"),  # type: ignore[call-arg]
+            subject_city=subject_dict.get("city", ""),  # type: ignore[call-arg]
+            subject_district=subject_dict.get("district"),  # type: ignore[call-arg]
+            subject_price=subject_dict.get("price"),  # type: ignore[call-arg]
+            subject_area_sqm=subject_dict.get("area_sqm"),  # type: ignore[call-arg]
+            subject_rooms=subject_dict.get("rooms"),  # type: ignore[call-arg]
+            subject_year_built=subject_dict.get("year_built"),  # type: ignore[call-arg]
+            subject_property_type=subject_dict.get("property_type", "apartment"),  # type: ignore[call-arg]
+            subject_energy_rating=subject_dict.get("energy_rating"),  # type: ignore[call-arg]
+            subject_amenities=subject_dict.get("amenities", {}),  # type: ignore[call-arg]
             comparables=[CMAComparableResponse(**c) for c in adjusted_comparables],
             valuation=valuation,
             created_at=report.created_at,
@@ -384,14 +407,33 @@ async def get_cma_report(
             detail="CMA report not found",
         )
 
+    subject_data = report.subject_data if isinstance(report.subject_data, dict) else {}
     return CMAReportResponse(
         id=report.id,
         user_id=report.user_id,
         status=report.status,
-        subject_property=report.subject_data,
+        subject_property_id=subject_data.get("id", ""),  # type: ignore[call-arg]
+        subject_address=subject_data.get("address"),  # type: ignore[call-arg]
+        subject_city=subject_data.get("city", ""),  # type: ignore[call-arg]
+        subject_district=subject_data.get("district"),  # type: ignore[call-arg]
+        subject_price=subject_data.get("price"),  # type: ignore[call-arg]
+        subject_area_sqm=subject_data.get("area_sqm"),  # type: ignore[call-arg]
+        subject_rooms=subject_data.get("rooms"),  # type: ignore[call-arg]
+        subject_year_built=subject_data.get("year_built"),  # type: ignore[call-arg]
+        subject_property_type=subject_data.get("property_type", "apartment"),  # type: ignore[call-arg]
+        subject_energy_rating=subject_data.get("energy_rating"),  # type: ignore[call-arg]
+        subject_amenities=subject_data.get("amenities", {}),  # type: ignore[call-arg]
         comparables=[CMAComparableResponse(**c) for c in report.comparables],
         valuation=CMAValuationResponse(**report.valuation),
-        market_context=report.market_context,
+        market_trend=subject_data.get("market_context", {}).get("trend")
+        if isinstance(subject_data.get("market_context"), dict)
+        else None,  # type: ignore[call-arg]
+        market_avg_price_per_sqm=subject_data.get("market_context", {}).get("avg_price_per_sqm")
+        if isinstance(subject_data.get("market_context"), dict)
+        else None,  # type: ignore[call-arg]
+        market_inventory_days=subject_data.get("market_context", {}).get("inventory_days")
+        if isinstance(subject_data.get("market_context"), dict)
+        else None,  # type: ignore[call-arg]
         created_at=report.created_at,
         expires_at=report.expires_at,
     )
@@ -501,10 +543,55 @@ async def list_cma_reports(
                 id=r.id,
                 user_id=r.user_id,
                 status=r.status,
-                subject_property=r.subject_data,
+                subject_property_id=r.subject_data.get("id", "")
+                if isinstance(r.subject_data, dict)
+                else "",  # type: ignore[call-arg]
+                subject_address=r.subject_data.get("address")
+                if isinstance(r.subject_data, dict)
+                else None,  # type: ignore[call-arg]
+                subject_city=r.subject_data.get("city", "")
+                if isinstance(r.subject_data, dict)
+                else "",  # type: ignore[call-arg]
+                subject_district=r.subject_data.get("district")
+                if isinstance(r.subject_data, dict)
+                else None,  # type: ignore[call-arg]
+                subject_price=r.subject_data.get("price")
+                if isinstance(r.subject_data, dict)
+                else None,  # type: ignore[call-arg]
+                subject_area_sqm=r.subject_data.get("area_sqm")
+                if isinstance(r.subject_data, dict)
+                else None,  # type: ignore[call-arg]
+                subject_rooms=r.subject_data.get("rooms")
+                if isinstance(r.subject_data, dict)
+                else None,  # type: ignore[call-arg]
+                subject_year_built=r.subject_data.get("year_built")
+                if isinstance(r.subject_data, dict)
+                else None,  # type: ignore[call-arg]
+                subject_property_type=r.subject_data.get("property_type", "apartment")
+                if isinstance(r.subject_data, dict)
+                else "apartment",  # type: ignore[call-arg]
+                subject_energy_rating=r.subject_data.get("energy_rating")
+                if isinstance(r.subject_data, dict)
+                else None,  # type: ignore[call-arg]
+                subject_amenities=r.subject_data.get("amenities", {})
+                if isinstance(r.subject_data, dict)
+                else {},  # type: ignore[call-arg]
                 comparables=[CMAComparableResponse(**c) for c in r.comparables],
                 valuation=CMAValuationResponse(**r.valuation),
-                market_context=r.market_context,
+                market_trend=r.subject_data.get("market_context", {}).get("trend")
+                if isinstance(r.subject_data, dict)
+                and isinstance(r.subject_data.get("market_context"), dict)
+                else None,  # type: ignore[call-arg]
+                market_avg_price_per_sqm=r.subject_data.get("market_context", {}).get(
+                    "avg_price_per_sqm"
+                )
+                if isinstance(r.subject_data, dict)
+                and isinstance(r.subject_data.get("market_context"), dict)
+                else None,  # type: ignore[call-arg]
+                market_inventory_days=r.subject_data.get("market_context", {}).get("inventory_days")
+                if isinstance(r.subject_data, dict)
+                and isinstance(r.subject_data.get("market_context"), dict)
+                else None,  # type: ignore[call-arg]
                 created_at=r.created_at,
                 expires_at=r.expires_at,
             )

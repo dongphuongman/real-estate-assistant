@@ -111,6 +111,7 @@ def add_llm_breadcrumb(provider: str, model: str, **kwargs) -> None:
     """Add a breadcrumb for LLM provider calls."""
     try:
         import sentry_sdk  # type: ignore[import-untyped]
+
         sentry_sdk.add_breadcrumb(
             category="llm",
             message=f"LLM call: {provider}/{model}",
@@ -128,8 +129,9 @@ def set_user_context(user_id: str | None = None, email: str | None = None) -> No
     try:
         import hashlib
 
-        sentry_sdk.set_user(
         import sentry_sdk  # type: ignore[import-untyped]
+
+        sentry_sdk.set_user(
             {
                 "id": user_id,
                 # Don't send raw email to Sentry

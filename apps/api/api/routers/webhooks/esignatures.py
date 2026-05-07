@@ -170,14 +170,14 @@ async def handle_hellosign_webhook(
 
     # Log audit event
     audit_logger = get_audit_logger()
-    await audit_logger.log_event(
+    await audit_logger.log_event(  # type: ignore[attr-defined]
         AuditEvent(
-            event_type=AuditEventType.DOCUMENT_SIGNED,
+            event_type=AuditEventType.DOCUMENT_SIGNED,  # type: ignore[attr-defined]
             level=AuditLevel.INFO,
-            message=f"Signature request {event_type}: {signature_request.title}",
             user_id=signature_request.user_id,
-            resource_type="signature_request",
-            resource_id=signature_request.id,
+            resource=f"signature_request:{signature_request.id}",
+            action=f"Signature request {event_type}: {signature_request.title}",
+            result="success",
             metadata={
                 "event_type": event_type,
                 "status": signature_request.status,

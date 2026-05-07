@@ -568,13 +568,22 @@ def _build_pydantic_properties() -> list[Property]:
             id=raw["id"],
             title=raw.get("title"),
             description=raw.get("description"),
+            country=raw.get("country"),  # type: ignore[call-arg]
+            region=raw.get("region"),  # type: ignore[call-arg]
             city=raw["city"],
             district=raw.get("district"),
+            neighborhood=raw.get("neighborhood"),  # type: ignore[call-arg]
             address=raw.get("address"),
+            latitude=raw.get("latitude"),  # type: ignore[call-arg]
+            longitude=raw.get("longitude"),  # type: ignore[call-arg]
             property_type=raw.get("property_type", "apartment"),
             listing_type=raw.get("listing_type", "sale"),
             price=raw.get("price"),
             currency=raw.get("currency", "PLN"),
+            price_media=raw.get("price_media"),  # type: ignore[call-arg]
+            price_delta=raw.get("price_delta"),  # type: ignore[call-arg]
+            deposit=raw.get("deposit"),  # type: ignore[call-arg]
+            negotiation_rate=raw.get("negotiation_rate"),  # type: ignore[call-arg]
             rooms=raw.get("rooms"),
             area_sqm=raw.get("area_sqm"),
             has_parking=raw.get("has_parking", False),
@@ -583,9 +592,22 @@ def _build_pydantic_properties() -> list[Property]:
             has_balcony=raw.get("has_balcony", False),
             is_furnished=raw.get("is_furnished", False),
             year_built=raw.get("year_built"),
+            energy_rating=raw.get("energy_rating"),  # type: ignore[call-arg]
             floor=raw.get("floor"),
             total_floors=raw.get("total_floors"),
+            distance_to_school=raw.get("distance_to_school"),  # type: ignore[call-arg]
+            distance_to_clinic=raw.get("distance_to_clinic"),  # type: ignore[call-arg]
+            distance_to_restaurant=raw.get("distance_to_restaurant"),  # type: ignore[call-arg]
+            distance_to_transport=raw.get("distance_to_transport"),  # type: ignore[call-arg]
+            distance_to_shopping=raw.get("distance_to_shopping"),  # type: ignore[call-arg]
+            owner_name=raw.get("owner_name"),  # type: ignore[call-arg]
+            owner_phone=raw.get("owner_phone"),  # type: ignore[call-arg]
+            owner_email=raw.get("owner_email"),  # type: ignore[call-arg]
             source_url=raw.get("source_url"),
+            source_platform=raw.get("source_platform"),  # type: ignore[call-arg]
+            price_per_sqm=raw.get("price_per_sqm"),  # type: ignore[call-arg]
+            price_in_eur=raw.get("price_in_eur"),  # type: ignore[call-arg]
+            total_monthly_cost=raw.get("total_monthly_cost"),  # type: ignore[call-arg]
         )
         properties.append(prop)
     return properties

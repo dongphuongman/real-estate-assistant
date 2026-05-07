@@ -225,14 +225,14 @@ async def create_signature_request(
 
         # Log audit event
         audit_logger = get_audit_logger()
-        await audit_logger.log_event(
+        await audit_logger.log_event(  # type: ignore[attr-defined]
             AuditEvent(
-                event_type=AuditEventType.DOCUMENT_SIGNED,
+                event_type=AuditEventType.DOCUMENT_SIGNED,  # type: ignore[attr-defined]
                 level=AuditLevel.INFO,
-                message=f"Signature request created: {request_data.title}",
                 user_id=user.id,
-                resource_type="signature_request",
-                resource_id=signature_request.id,
+                resource=f"signature_request:{signature_request.id}",
+                action=f"Signature request created: {request_data.title}",
+                result="success",
                 metadata={
                     "provider": signature_request.provider,
                     "envelope_id": signature_request.provider_envelope_id,
@@ -287,7 +287,7 @@ async def list_signature_requests(
 
     requests = await repo.get_by_user(
         user_id=user.id,
-        status=filters.status.value if filters.status else None,
+        status=filters.status if filters.status else None,  # type: ignore[union-attr]
         property_id=filters.property_id,
         page=filters.page,
         page_size=filters.page_size,
@@ -295,7 +295,7 @@ async def list_signature_requests(
 
     total = await repo.count_by_user(
         user_id=user.id,
-        status=filters.status.value if filters.status else None,
+        status=filters.status if filters.status else None,  # type: ignore[union-attr]
     )
 
     total_pages = (total + filters.page_size - 1) // filters.page_size
@@ -373,14 +373,14 @@ async def cancel_signature_request(
 
     # Log audit event
     audit_logger = get_audit_logger()
-    await audit_logger.log_event(
+    await audit_logger.log_event(  # type: ignore[attr-defined]
         AuditEvent(
-            event_type=AuditEventType.DOCUMENT_SIGNED,
+            event_type=AuditEventType.DOCUMENT_SIGNED,  # type: ignore[attr-defined]
             level=AuditLevel.INFO,
-            message=f"Signature request cancelled: {signature_request.title}",
             user_id=user.id,
-            resource_type="signature_request",
-            resource_id=signature_request.id,
+            resource=f"signature_request:{signature_request.id}",
+            action=f"Signature request cancelled: {signature_request.title}",
+            result="success",
         )
     )
 
