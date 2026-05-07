@@ -256,6 +256,19 @@ Example response:
 ```
 
 ### Endpoints
+## GET /api/v1/admin/dashboard
+
+**Summary**: Admin Dashboard
+
+**Tags**: Admin
+
+Aggregated admin dashboard endpoint (Task #67). Combines health, cache, latency, vector store, and system stats into a single JSON response for frontend admin panel consumption.
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | object |
 
 ## POST /api/v1/admin/excel/sheets
 
@@ -355,7 +368,7 @@ Upload and ingest property data from Excel/CSV files. Supports: .xlsx, .xls, .od
 
 **Summary**: List Audit Entries
 
-**Tags**: mcp-audit
+**Tags**: MCP Audit
 
 Query MCP audit logs with filters. Requires API key authentication. Returns paginated audit log entries matching the specified filters.
 
@@ -383,7 +396,7 @@ Query MCP audit logs with filters. Requires API key authentication. Returns pagi
 
 **Summary**: Run Cleanup
 
-**Tags**: mcp-audit
+**Tags**: MCP Audit
 
 Run cleanup of expired MCP audit logs. Requires API key authentication. By default, runs in dry-run mode (no files deleted). Set dry_run=false to actually delete files.
 
@@ -403,7 +416,7 @@ Run cleanup of expired MCP audit logs. Requires API key authentication. By defau
 
 **Summary**: Get Entries By Connector
 
-**Tags**: mcp-audit
+**Tags**: MCP Audit
 
 Get audit entries for a specific connector. Requires API key authentication. Returns paginated entries for the specified connector.
 
@@ -426,7 +439,7 @@ Get audit entries for a specific connector. Requires API key authentication. Ret
 
 **Summary**: Get Entries By Request Id
 
-**Tags**: mcp-audit
+**Tags**: MCP Audit
 
 Get all audit entries for a specific request ID. Requires API key authentication. Useful for tracing a request through multiple connector calls.
 
@@ -447,7 +460,7 @@ Get all audit entries for a specific request ID. Requires API key authentication
 
 **Summary**: Get Storage Metrics
 
-**Tags**: mcp-audit
+**Tags**: MCP Audit
 
 Get storage metrics for MCP audit logs. Requires API key authentication. Returns information about log file storage including: - Number of files - Total size - Date range - Expired files count
 
@@ -464,6 +477,20 @@ Get storage metrics for MCP audit logs. Requires API key authentication. Returns
 **Tags**: Admin
 
 Return comprehensive API metrics for monitoring dashboard.
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | object |
+
+## GET /api/v1/admin/metrics/latency
+
+**Summary**: Admin Latency Metrics
+
+**Tags**: Admin
+
+Return p95 latency metrics for search and chat endpoints (Task #120). SLA targets: - search: p95 < 2000 ms - chat: p95 < 8000 ms
 
 **Responses**
 
@@ -1113,7 +1140,7 @@ Request a property viewing appointment with an agent.
 
 **Summary**: List Anomalies
 
-**Tags**: anomalies
+**Tags**: Anomalies
 
 List market anomalies with optional filters.
 
@@ -1140,7 +1167,7 @@ List market anomalies with optional filters.
 
 **Summary**: Get Anomaly Stats
 
-**Tags**: anomalies
+**Tags**: Anomalies
 
 Get anomaly statistics summary.
 
@@ -1161,7 +1188,7 @@ Get anomaly statistics summary.
 
 **Summary**: Stream Anomalies
 
-**Tags**: anomalies
+**Tags**: Anomalies
 
 Stream real-time anomaly updates via Server-Sent Events. This endpoint establishes a long-lived connection for pushing real-time anomaly detections to connected clients.
 
@@ -1182,7 +1209,7 @@ Stream real-time anomaly updates via Server-Sent Events. This endpoint establish
 
 **Summary**: Get Anomaly
 
-**Tags**: anomalies
+**Tags**: Anomalies
 
 Get a specific anomaly by ID.
 
@@ -1204,7 +1231,7 @@ Get a specific anomaly by ID.
 
 **Summary**: Dismiss Anomaly
 
-**Tags**: anomalies
+**Tags**: Anomalies
 
 Dismiss an anomaly.
 
@@ -1744,7 +1771,7 @@ Cancel a running bulk job. Only jobs in 'pending' or 'running' status can be can
 
 **Summary**: Chat Endpoint
 
-**Tags**: Chat
+**Tags**: Chat, Chat
 
 Process a chat message using the hybrid agent with session persistence.
 
@@ -1770,7 +1797,7 @@ Process a chat message using the hybrid agent with session persistence.
 
 **Summary**: List Cma Reports
 
-**Tags**: CMA
+**Tags**: CMA, CMA
 
 List user's CMA reports. Supports pagination and filtering by status.
 
@@ -1794,7 +1821,7 @@ List user's CMA reports. Supports pagination and filtering by status.
 
 **Summary**: Find Comparables
 
-**Tags**: CMA
+**Tags**: CMA, CMA
 
 Find comparable properties for a subject property. Uses multi-factor scoring (location, type, size, rooms, recency, amenities) to identify the most similar properties. Returns list of comparable properties with similarity scores.
 
@@ -1819,7 +1846,7 @@ Find comparable properties for a subject property. Uses multi-factor scoring (lo
 
 **Summary**: Generate Cma Report
 
-**Tags**: CMA
+**Tags**: CMA, CMA
 
 Generate a Comparative Market Analysis (CMA) report. This endpoint: 1. Fetches the subject property 2. Finds comparable properties using multi-factor scoring 3. Calculates adjustments for differences 4. Produces a final valuation estimate The report is saved and can be retrieved later or exported as PDF.
 
@@ -1845,7 +1872,7 @@ Generate a Comparative Market Analysis (CMA) report. This endpoint: 1. Fetches t
 
 **Summary**: Get Cma Report
 
-**Tags**: CMA
+**Tags**: CMA, CMA
 
 Retrieve a saved CMA report by ID. Only the report owner can access the report.
 
@@ -1867,7 +1894,7 @@ Retrieve a saved CMA report by ID. Only the report owner can access the report.
 
 **Summary**: Delete Cma Report
 
-**Tags**: CMA
+**Tags**: CMA, CMA
 
 Delete a CMA report. Only the report owner can delete the report.
 
@@ -1889,7 +1916,7 @@ Delete a CMA report. Only the report owner can delete the report.
 
 **Summary**: Download Cma Pdf
 
-**Tags**: CMA
+**Tags**: CMA, CMA
 
 Download CMA report as PDF. Generates a professional PDF report with: - Executive summary - Subject property details - Comparables grid - Adjustments breakdown - Final valuation
 
@@ -2599,6 +2626,47 @@ Move a favorite to a different collection.
 | 200 | Successful Response | FavoriteResponse |
 | 422 | Validation Error | HTTPValidationError |
 
+## GET /api/v1/feedback/metrics/relevance
+
+**Summary**: Get aggregated relevance metrics
+
+**Tags**: Feedback, Admin
+
+Return aggregated search relevance metrics for admin monitoring. Measures user-rated match accuracy against the ≥80% target.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| since | query | string \| null | no | ISO date to filter ratings from |
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 200 | Successful Response | RelevanceMetrics |
+| 422 | Validation Error | HTTPValidationError |
+
+## POST /api/v1/feedback/rating
+
+**Summary**: Submit a relevance rating for a search result
+
+**Tags**: Feedback
+
+Submit a thumbs-up/down rating for a search result. Ratings are stored anonymously — no user authentication required.
+
+**Request Body**
+
+- Required: yes
+- application/json: FeedbackCreate
+
+**Responses**
+
+| Status | Description | Body (application/json) |
+|---|---|---|
+| 201 | Successful Response | FeedbackResponse |
+| 422 | Validation Error | HTTPValidationError |
+
 ## GET /api/v1/filter-presets
 
 **Summary**: List user's filter presets
@@ -2788,7 +2856,7 @@ Increment usage count when user applies a filter preset.
 
 **Summary**: Analyze Investment
 
-**Tags**: Investment
+**Tags**: Investment, Investment
 
 Calculate investment property metrics. Returns comprehensive investment analysis including: - Cash on Cash ROI - Capitalization Rate (Cap Rate) - Gross and Net Rental Yield - Monthly and Annual Cash Flow - Investment Score (0-100) This endpoint returns JSON only. For downloadable reports, use the `/investment/report` endpoint.
 
@@ -2808,7 +2876,7 @@ Calculate investment property metrics. Returns comprehensive investment analysis
 
 **Summary**: Analyze Investment Advanced
 
-**Tags**: Investment
+**Tags**: Investment, Investment
 
 Advanced investment analysis with multi-year projections. Provides: - Multi-year cash flow projections - Tax implications (depreciation, deductions) - Appreciation scenarios (pessimistic, realistic, optimistic) - Risk assessment scoring This is the same as the `/tools/advanced-investment-analysis` endpoint but grouped under the investment router for better organization.
 
@@ -2828,7 +2896,7 @@ Advanced investment analysis with multi-year projections. Provides: - Multi-year
 
 **Summary**: Generate Investment Report
 
-**Tags**: Investment
+**Tags**: Investment, Investment
 
 Generate downloadable investment analysis report. Provides comprehensive investment analysis including: - Key metrics (ROI, cap rate, cash flow, rental yield) - Monthly/annual breakdown of income and expenses - Investment score with category breakdown - Optional multi-year projection with cash flow forecasts **Report Formats:** - **PDF**: Professional formatted document with tables and visualizations - **Markdown**: Plain text report for easy viewing and archiving - **JSON**: Structured data for programmatic access **Example Request:** ```json { "property_price": 350000, "monthly_rent": 2800, "down_payment_percent": 20, "interest_rate": 4.5, "loan_years": 30, "property_tax_monthly": 350, "insurance_monthly": 150, "include_projection": true, "projection_years": 10 } ```
 
@@ -3032,6 +3100,12 @@ Get overall lead scoring statistics.
 **Tags**: Lead Scoring
 
 Record a visitor interaction for lead scoring. Uses visitor_id cookie.
+
+**Parameters**
+
+| Name | In | Type | Required | Description |
+|---|---|---|---|---|
+| access_token | cookie | string \| null | no |  |
 
 **Request Body**
 
@@ -3829,7 +3903,7 @@ Update privacy settings.
 
 **Summary**: List Prompt Templates
 
-**Tags**: Prompt Templates
+**Tags**: Prompt Templates, Prompt Templates
 
 **Responses**
 
@@ -3841,7 +3915,7 @@ Update privacy settings.
 
 **Summary**: Apply Prompt Template
 
-**Tags**: Prompt Templates
+**Tags**: Prompt Templates, Prompt Templates
 
 **Request Body**
 
@@ -3966,9 +4040,9 @@ Get VAPID public key for browser push subscription. This endpoint is public (no 
 
 **Summary**: Rag Qa
 
-**Tags**: RAG
+**Tags**: RAG, RAG
 
-Simple QA over uploaded knowledge with citations. If LLM is unavailable, returns concatenated context as answer.
+Simple QA over uploaded knowledge with citations. If LLM is unavailable, returns concatenated context as answer. Supports SSE streaming when stream=true.
 
 **Parameters**
 
@@ -3996,7 +4070,7 @@ Simple QA over uploaded knowledge with citations. If LLM is unavailable, returns
 
 **Summary**: Reset Rag Knowledge
 
-**Tags**: RAG
+**Tags**: RAG, RAG
 
 Clear all indexed knowledge documents for local RAG (CE-safe).
 
@@ -4010,7 +4084,7 @@ Clear all indexed knowledge documents for local RAG (CE-safe).
 
 **Summary**: Upload Documents
 
-**Tags**: RAG
+**Tags**: RAG, RAG
 
 Upload documents and index for local RAG (CE-safe). PDF/DOCX require optional dependencies; unsupported types return a 422 when nothing is indexed.
 
@@ -4345,9 +4419,9 @@ Increment usage count when user applies a saved search.
 
 **Summary**: Search Properties
 
-**Tags**: Search
+**Tags**: Search, Search
 
-Search for properties using semantic search and metadata filters.
+Search for properties using semantic search and metadata filters. Results are cached for 5 minutes (TTL 300s).
 
 **Request Body**
 
@@ -4805,7 +4879,7 @@ Send a reminder email to pending signers.
 
 **Summary**: List Tools
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 List available tools.
 
@@ -4819,7 +4893,7 @@ List available tools.
 
 **Summary**: Calculate Advanced Investment
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 Advanced investment analysis with multi-year projections, tax implications, appreciation scenarios, and risk assessment.
 
@@ -4839,7 +4913,7 @@ Advanced investment analysis with multi-year projections, tax implications, appr
 
 **Summary**: Commute Ranking
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 Rank multiple properties by commute time to a destination. Compares commute times from multiple properties to a common destination and returns a ranked list from shortest to longest commute.
 
@@ -4859,7 +4933,7 @@ Rank multiple properties by commute time to a destination. Compares commute time
 
 **Summary**: Commute Time Analysis
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 Calculate commute time from a property to a destination. Uses Google Routes API to calculate accurate commute times including real-time traffic conditions and transit schedules.
 
@@ -4879,7 +4953,7 @@ Calculate commute time from a property to a destination. Uses Google Routes API 
 
 **Summary**: Compare Properties
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 **Request Body**
 
@@ -4897,7 +4971,7 @@ Calculate commute time from a property to a destination. Uses Google Routes API 
 
 **Summary**: Crm Sync Contact
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 **Request Body**
 
@@ -4915,7 +4989,7 @@ Calculate commute time from a property to a destination. Uses Google Routes API 
 
 **Summary**: Enrich Address
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 **Request Body**
 
@@ -4933,7 +5007,7 @@ Calculate commute time from a property to a destination. Uses Google Routes API 
 
 **Summary**: Generate Listing
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 Generate AI-powered listing content for a property. Generates: - Property description with customizable tone and language - Multiple headline variants - Platform-specific social media content All generated content respects platform character limits.
 
@@ -4953,7 +5027,7 @@ Generate AI-powered listing content for a property. Generates: - Property descri
 
 **Summary**: Calculate Investment Analysis
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 Calculate investment property metrics including ROI, cap rate, cash flow, and rental yield.
 
@@ -4973,7 +5047,7 @@ Calculate investment property metrics including ROI, cap rate, cash flow, and re
 
 **Summary**: Legal Check
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 **Request Body**
 
@@ -4991,7 +5065,7 @@ Calculate investment property metrics including ROI, cap rate, cash flow, and re
 
 **Summary**: Location Analysis
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 **Request Body**
 
@@ -5009,7 +5083,7 @@ Calculate investment property metrics including ROI, cap rate, cash flow, and re
 
 **Summary**: Calculate Mortgage
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 Calculate mortgage payments.
 
@@ -5029,7 +5103,7 @@ Calculate mortgage payments.
 
 **Summary**: Neighborhood Quality
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 Calculate enhanced neighborhood quality index. Returns scores for 8 factors: - Core: Safety, Schools, Amenities, Walkability, Green Space - New: Air Quality, Noise Level, Public Transport Includes city comparison and nearby POIs for map visualization.
 
@@ -5049,7 +5123,7 @@ Calculate enhanced neighborhood quality index. Returns scores for 8 factors: - C
 
 **Summary**: Analyze Portfolio
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 Analyze a portfolio of investment properties including aggregate metrics, diversification scores, and risk assessment.
 
@@ -5069,7 +5143,7 @@ Analyze a portfolio of investment properties including aggregate metrics, divers
 
 **Summary**: Price Analysis
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 **Request Body**
 
@@ -5087,7 +5161,7 @@ Analyze a portfolio of investment properties including aggregate metrics, divers
 
 **Summary**: Calculate Rent Vs Buy
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 Compare renting vs buying a property over time. Calculates: - Monthly payment comparison - Total cost over time - Break-even point (when buying becomes cheaper) - Opportunity cost of down payment - Tax benefits of ownership - Property appreciation impact
 
@@ -5107,7 +5181,7 @@ Compare renting vs buying a property over time. Calculates: - Monthly payment co
 
 **Summary**: List Tco Available Locations
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 List all available locations with TCO default values. Returns a dictionary mapping country codes to lists of available regions.
 
@@ -5121,7 +5195,7 @@ List all available locations with TCO default values. Returns a dictionary mappi
 
 **Summary**: Calculate Tco
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 Calculate Total Cost of Ownership for a property. Includes mortgage, property taxes, insurance, HOA fees, utilities, maintenance, and parking.
 
@@ -5141,7 +5215,7 @@ Calculate Total Cost of Ownership for a property. Includes mortgage, property ta
 
 **Summary**: Compare Tco
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 Compare Total Cost of Ownership between two property scenarios. Provides: - Side-by-side enhanced TCO analysis with projections - Cost difference calculations (monthly and total) - Break-even analysis (when one scenario becomes better) - Trade-off analysis with pros/cons - Priority-weighted recommendation based on user preferences
 
@@ -5161,7 +5235,7 @@ Compare Total Cost of Ownership between two property scenarios. Provides: - Side
 
 **Summary**: Get Tco Location Defaults
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 Get location-based default cost estimates for TCO Calculator. Returns reasonable default values for: - Property tax rates (annual % of property value) - Insurance rates (annual % of property value) - Utilities per sqm (monthly) - Internet costs (monthly) - Parking costs (monthly) Supports EU (DE, ES, GB, FR, IT, NL) and USA regions.
 
@@ -5183,7 +5257,7 @@ Get location-based default cost estimates for TCO Calculator. Returns reasonable
 
 **Summary**: Valuation
 
-**Tags**: Tools
+**Tags**: Tools, Tools
 
 **Request Body**
 
