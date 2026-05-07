@@ -181,11 +181,12 @@ exclude:
   - dist/
   - build/
   - coverage/
-  - "*.test.js"
-  - "*.test.ts"
-  - "*.test.tsx"
-  - "*.spec.js"
-  - "*.spec.ts"
-  - "*.spec.tsx"
+  - "**/*.test.js"
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.js"
+  - "**/*.spec.ts"
+  - "**/*.spec.tsx"
   - "tests/"
   - "test_*.py"
+  - "**/__tests__/**"

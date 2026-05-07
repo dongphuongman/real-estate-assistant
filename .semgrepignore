@@ -1,0 +1,24 @@
+# Test files (these don't need security scanning)
+**/*.test.js
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.js
+**/*.spec.ts
+**/*.spec.tsx
+**/__tests__/**
+tests/
+test_*.py
+__pycache__/
+node_modules/
+.venv/
+.venv_ci/
+venv/
+.next/
+dist/
+build/
+coverage/
+*.pyc
+
+# Known false positives - Math.random() used for jitter, not security-critical
+apps/web/src/lib/streaming/ReconnectingEventSource.ts
+apps/web/src/lib/visitor-tracking.ts
