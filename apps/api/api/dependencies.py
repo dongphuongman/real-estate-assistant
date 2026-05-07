@@ -383,6 +383,23 @@ def clear_llm_cache() -> None:
     ModelProviderFactory.clear_cache()
 
 
+def clear_vector_store_cache() -> None:
+    """Clear vector store cache.
+
+    Useful for testing to ensure fresh state between tests.
+    Prevents lru_cache pollution when tests run in parallel.
+    """
+    get_vector_store.cache_clear()
+
+
+def clear_knowledge_store_cache() -> None:
+    """Clear knowledge store cache.
+
+    Useful for testing to ensure fresh state between tests.
+    """
+    get_knowledge_store.cache_clear()
+
+
 # =============================================================================
 # Task-Specific Model Preferences (Task #87)
 # =============================================================================

@@ -185,6 +185,29 @@ def reranker():
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 
+@pytest.fixture(scope="function", autouse=True)
+def clear_lru_caches() -> None:
+    """Clear all lru_cache instances before each test.
+
+    Prevents test isolation issues when tests run in parallel.
+    Particularly important for get_vector_store() and get_knowledge_store().
+    """
+    from api.dependencies import (
+        clear_knowledge_store_cache,
+        clear_llm_cache,
+        clear_vector_store_cache,
+    )
+
+    clear_vector_store_cache()
+    clear_knowledge_store_cache()
+    clear_llm_cache()
+    yield
+    # Clear again after test
+    clear_vector_store_cache()
+    clear_knowledge_store_cache()
+    clear_llm_cache()
+
+
 @pytest.fixture(scope="function")
 async def db_session() -> AsyncGenerator[AsyncSession, None]:
     """Create a fresh database session for each test."""
@@ -293,4 +316,5 @@ def user_activity_service(db_session):
     Task #82: User Activity Analytics
     """
     from services.user_activity_service import UserActivityService
+
     return UserActivityService(db_session, retention_days=30)
