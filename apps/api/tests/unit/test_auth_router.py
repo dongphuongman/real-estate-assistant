@@ -1,196 +1,546 @@
-"""Unit tests for auth router validation and utilities.
+"""
+Unit tests for auth router (api/routers/auth.py).
 
-Note: Full endpoint integration tests require async database setup.
-These tests focus on password validation, token generation, and input
-validation.
+Tests cover:
+- Request code endpoint (email validation, code generation, storage)
+- Verify code endpoint (code validation, session creation)
+- Get session endpoint (token validation, session retrieval)
+- Error handling (disabled auth, invalid input)
 """
 
-from core.jwt import (
-    create_access_token,
-    generate_csrf_token,
-    generate_refresh_token,
-    verify_access_token,
-)
-from core.password import (
-    hash_password,
-    validate_password_strength,
-    verify_password,
-)
+from unittest.mock import patch
+
+import pytest
+from fastapi import status
+
+from api.routers.auth import router as auth_router
 
 
-class TestPasswordValidation:
-    """Tests for password validation in auth context."""
+class MockSettings:
+    """Mock settings for testing."""
 
-    def test_validate_registration_password_strong(self):
-        """Test that strong password passes validation."""
-        password = "StrongPass123!"
-        is_valid, msg = validate_password_strength(password)
-        assert is_valid is True
-
-    def test_validate_registration_password_weak(self):
-        """Test that weak password fails validation."""
-        password = "weak"
-        is_valid, msg = validate_password_strength(password)
-        assert is_valid is False
-        assert "8" in msg
-
-    def test_validate_registration_password_no_uppercase(self):
-        """Test that password without uppercase fails."""
-        password = "lowercase123"
-        is_valid, msg = validate_password_strength(password)
-        assert is_valid is False
-        assert "uppercase" in msg.lower()
-
-    def test_validate_registration_password_no_digit(self):
-        """Test that password without digit fails."""
-        password = "NoDigitsHere"
-        is_valid, msg = validate_password_strength(password)
-        assert is_valid is False
-        assert "digit" in msg.lower()
+    def __init__(self):
+        self.auth_email_enabled = True
+        self.auth_storage_dir = "/tmp/test_auth"
+        self.auth_code_ttl_minutes = 10
+        self.environment = "development"
+        self.session_ttl_days = 7
 
 
-class TestTokenGeneration:
-    """Tests for token generation in auth context."""
+class MockAuthStorage:
+    """Mock AuthStorage for testing."""
 
-    def test_access_token_for_user(self):
-        """Test generating access token for user ID."""
-        user_id = "user-123"
-        token = create_access_token(subject=user_id, roles=["user"])
-        assert isinstance(token, str)
+    def __init__(self):
+        self.codes = {}
+        self.sessions = {}
 
-        payload = verify_access_token(token)
-        assert payload["sub"] == user_id
-        assert payload["roles"] == ["user"]
-        assert payload["type"] == "access"
+    def set_code(self, email, code, ttl_minutes):
+        self.codes[email] = {"code": code, "expires_at": "2099-01-01T00:00:00"}
 
-    def test_access_token_for_admin(self):
-        """Test generating access token for admin user."""
-        user_id = "admin-456"
-        token = create_access_token(subject=user_id, roles=["admin", "user"])
-        payload = verify_access_token(token)
-        assert "admin" in payload["roles"]
+    def get_code(self, email):
+        return self.codes.get(email)
 
-    def test_refresh_token_for_session(self):
-        """Test generating refresh token for session."""
-        token = generate_refresh_token()
-        assert isinstance(token, str)
-        assert len(token) >= 32
+    def delete_code(self, email):
+        if email in self.codes:
+            del self.codes[email]
 
-    def test_csrf_token_for_forms(self):
-        """Test generating CSRF token."""
-        token = generate_csrf_token()
-        assert isinstance(token, str)
-        assert len(token) >= 32
+    def create_session(self, email, ttl_days):
+        token = f"session_token_{email}"
+        self.sessions[token] = {"email": email}
+        return token
+
+    def get_session(self, token):
+        return self.sessions.get(token)
 
 
-class TestPasswordHashing:
-    """Tests for password hashing in auth context."""
+class TestRequestCodeEndpoint:
+    """Test request code endpoint."""
 
-    def test_hash_for_storage(self):
-        """Test that password hash is suitable for storage."""
-        password = "UserPassword123"
-        hashed = hash_password(password)
+    @pytest.mark.asyncio
+    @patch("api.routers.auth.get_settings")
+    @patch("api.routers.auth.AuthStorage")
+    async def test_request_code_success(self, mock_storage_class, mock_settings):
+        """Test successful code request with valid email."""
+        # Setup mocks
+        mock_settings.return_value = MockSettings()
+        storage = MockAuthStorage()
+        mock_storage_class.return_value = storage
 
-        # Should be bcrypt format
-        assert hashed.startswith("$2b$")
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
 
-        # Should not contain original password
-        assert password not in hashed
+        test_app = FastAPI()
+        test_app.include_router(auth_router)
 
-    def test_verify_for_login(self):
-        """Test password verification for login."""
-        password = "LoginPassword123"
-        hashed = hash_password(password)
+        client = TestClient(test_app)
+        response = client.post("/auth/request-code", json={"email": "test@example.com"})
 
-        # Correct password should verify
-        assert verify_password(password, hashed) is True
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert data["status"] == "code_sent"
+        # In development mode, code is returned
+        assert "code" in data
+        # Verify code was stored
+        stored = storage.get_code("test@example.com")
+        assert stored is not None
+        assert "code" in stored
 
-        # Wrong password should not verify
-        assert verify_password("WrongPassword", hashed) is False
+    @pytest.mark.asyncio
+    @patch("api.routers.auth.get_settings")
+    async def test_request_code_disabled_auth(self, mock_settings):
+        """Test request code when email auth is disabled."""
+        settings = MockSettings()
+        settings.auth_email_enabled = False
+        mock_settings.return_value = settings
+
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        test_app = FastAPI()
+        test_app.include_router(auth_router)
+
+        client = TestClient(test_app)
+        response = client.post("/auth/request-code", json={"email": "test@example.com"})
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        data = response.json()
+        assert "detail" in data
+        assert "disabled" in data["detail"].lower()
+
+    @pytest.mark.asyncio
+    async def test_request_code_invalid_email_format(self):
+        """Test request code with invalid email format."""
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        test_app = FastAPI()
+        test_app.include_router(auth_router)
+
+        client = TestClient(test_app)
+        response = client.post("/auth/request-code", json={"email": "invalid-email"})
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        data = response.json()
+        assert "detail" in data
+        assert "email" in data["detail"].lower()
+
+    @pytest.mark.asyncio
+    @patch("api.routers.auth.get_settings")
+    @patch("api.routers.auth.AuthStorage")
+    async def test_request_code_code_storage(self, mock_storage_class, mock_settings):
+        """Test that code is properly stored with TTL."""
+        mock_settings.return_value = MockSettings()
+        storage = MockAuthStorage()
+        mock_storage_class.return_value = storage
+
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        test_app = FastAPI()
+        test_app.include_router(auth_router)
+
+        client = TestClient(test_app)
+        response = client.post("/auth/request-code", json={"email": "user@example.com"})
+
+        assert response.status_code == status.HTTP_200_OK
+        stored = storage.get_code("user@example.com")
+        assert stored is not None
+        assert "code" in stored
+
+    @pytest.mark.asyncio
+    @patch("api.routers.auth.get_settings")
+    @patch("api.routers.auth.AuthStorage")
+    async def test_request_code_missing_email(self, mock_storage_class, mock_settings):
+        """Test request code with missing email field."""
+        mock_settings.return_value = MockSettings()
+        mock_storage_class.return_value = MockAuthStorage()
+
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        test_app = FastAPI()
+        test_app.include_router(auth_router)
+
+        client = TestClient(test_app)
+        response = client.post("/auth/request-code", json={})
+
+        # FastAPI validation should catch missing required field
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+    @pytest.mark.asyncio
+    @patch("api.routers.auth.get_settings")
+    @patch("api.routers.auth.AuthStorage")
+    async def test_request_code_empty_email(self, mock_storage_class, mock_settings):
+        """Test request code with empty email string."""
+        mock_settings.return_value = MockSettings()
+        mock_storage_class.return_value = MockAuthStorage()
+
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        test_app = FastAPI()
+        test_app.include_router(auth_router)
+
+        client = TestClient(test_app)
+        response = client.post("/auth/request-code", json={"email": ""})
+
+        # Should fail validation (empty email)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
-class TestAuthInputValidation:
-    """Tests for auth input validation."""
+class TestVerifyCodeEndpoint:
+    """Test verify code endpoint."""
 
-    def test_email_format_validation(self):
-        """Test that email format is validated."""
-        # This would be handled by Pydantic, but we can check the logic
+    @pytest.mark.asyncio
+    @patch("api.routers.auth.get_settings")
+    @patch("api.routers.auth.AuthStorage")
+    async def test_verify_code_success(self, mock_storage_class, mock_settings):
+        """Test successful code verification."""
+        settings = MockSettings()
+        mock_settings.return_value = settings
+
+        storage = MockAuthStorage()
+        # Pre-store a code
+        storage.set_code("test@example.com", "123456", 10)
+        mock_storage_class.return_value = storage
+
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        test_app = FastAPI()
+        test_app.include_router(auth_router)
+
+        client = TestClient(test_app)
+        response = client.post(
+            "/auth/verify-code", json={"email": "test@example.com", "code": "123456"}
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert "session_token" in data
+        assert data["user_email"] == "test@example.com"
+        # Verify code was deleted
+        assert storage.get_code("test@example.com") is None
+        # Verify session was created
+        session = storage.get_session(data["session_token"])
+        assert session is not None
+        assert session["email"] == "test@example.com"
+
+    @pytest.mark.asyncio
+    @patch("api.routers.auth.get_settings")
+    async def test_verify_code_disabled_auth(self, mock_settings):
+        """Test verify code when email auth is disabled."""
+        settings = MockSettings()
+        settings.auth_email_enabled = False
+        mock_settings.return_value = settings
+
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        test_app = FastAPI()
+        test_app.include_router(auth_router)
+
+        client = TestClient(test_app)
+        response = client.post(
+            "/auth/verify-code", json={"email": "test@example.com", "code": "123456"}
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        data = response.json()
+        assert "detail" in data
+        assert "disabled" in data["detail"].lower()
+
+    @pytest.mark.asyncio
+    @patch("api.routers.auth.get_settings")
+    @patch("api.routers.auth.AuthStorage")
+    async def test_verify_code_invalid_format(self, mock_storage_class, mock_settings):
+        """Test verify code with invalid code format (not 6 digits)."""
+        mock_settings.return_value = MockSettings()
+        mock_storage_class.return_value = MockAuthStorage()
+
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        test_app = FastAPI()
+        test_app.include_router(auth_router)
+
+        client = TestClient(test_app)
+        response = client.post(
+            "/auth/verify-code", json={"email": "test@example.com", "code": "abc"}
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        data = response.json()
+        assert "detail" in data
+        assert "code" in data["detail"].lower() or "format" in data["detail"].lower()
+
+    @pytest.mark.asyncio
+    @patch("api.routers.auth.get_settings")
+    @patch("api.routers.auth.AuthStorage")
+    async def test_verify_code_wrong_code(self, mock_storage_class, mock_settings):
+        """Test verify code with wrong code."""
+        mock_settings.return_value = MockSettings()
+
+        storage = MockAuthStorage()
+        storage.set_code("test@example.com", "123456", 10)
+        mock_storage_class.return_value = storage
+
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        test_app = FastAPI()
+        test_app.include_router(auth_router)
+
+        client = TestClient(test_app)
+        response = client.post(
+            "/auth/verify-code", json={"email": "test@example.com", "code": "999999"}
+        )
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        data = response.json()
+        assert "detail" in data
+
+    @pytest.mark.asyncio
+    @patch("api.routers.auth.get_settings")
+    @patch("api.routers.auth.AuthStorage")
+    async def test_verify_code_no_code_pending(self, mock_storage_class, mock_settings):
+        """Test verify code when no code was requested for email."""
+        mock_settings.return_value = MockSettings()
+        storage = MockAuthStorage()
+        mock_storage_class.return_value = storage
+
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        test_app = FastAPI()
+        test_app.include_router(auth_router)
+
+        client = TestClient(test_app)
+        response = client.post(
+            "/auth/verify-code", json={"email": "test@example.com", "code": "123456"}
+        )
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        data = response.json()
+        assert "detail" in data
+
+    @pytest.mark.asyncio
+    @patch("api.routers.auth.get_settings")
+    @patch("api.routers.auth.AuthStorage")
+    async def test_verify_code_session_creation(self, mock_storage_class, mock_settings):
+        """Test that verify code creates a session token."""
+        mock_settings.return_value = MockSettings()
+
+        storage = MockAuthStorage()
+        storage.set_code("test@example.com", "123456", 10)
+        mock_storage_class.return_value = storage
+
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        test_app = FastAPI()
+        test_app.include_router(auth_router)
+
+        client = TestClient(test_app)
+        response = client.post(
+            "/auth/verify-code", json={"email": "test@example.com", "code": "123456"}
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert "session_token" in data
+        token = data["session_token"]
+        # Verify session exists
+        session = storage.get_session(token)
+        assert session is not None
+        assert session["email"] == "test@example.com"
+
+
+class TestGetSessionEndpoint:
+    """Test get session endpoint."""
+
+    @pytest.mark.asyncio
+    @patch("api.routers.auth.get_settings")
+    @patch("api.routers.auth.AuthStorage")
+    async def test_get_session_valid_token(self, mock_storage_class, mock_settings):
+        """Test get session with valid token."""
+        mock_settings.return_value = MockSettings()
+
+        storage = MockAuthStorage()
+        # Create a session
+        token = storage.create_session("test@example.com", 7)
+        mock_storage_class.return_value = storage
+
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        test_app = FastAPI()
+        test_app.include_router(auth_router)
+
+        client = TestClient(test_app)
+        response = client.get("/auth/session", headers={"X-Session-Token": token})
+
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert "session_token" in data
+        assert "user_email" in data
+
+    @pytest.mark.asyncio
+    @patch("api.routers.auth.get_settings")
+    async def test_get_session_disabled_auth(self, mock_settings):
+        """Test get session when email auth is disabled."""
+        settings = MockSettings()
+        settings.auth_email_enabled = False
+        mock_settings.return_value = settings
+
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        test_app = FastAPI()
+        test_app.include_router(auth_router)
+
+        client = TestClient(test_app)
+        response = client.get("/auth/session", headers={"X-Session-Token": "some-token"})
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        data = response.json()
+        assert "detail" in data
+        assert "disabled" in data["detail"].lower()
+
+    @pytest.mark.asyncio
+    @patch("api.routers.auth.get_settings")
+    @patch("api.routers.auth.AuthStorage")
+    async def test_get_session_no_token(self, mock_storage_class, mock_settings):
+        """Test get session without token header."""
+        mock_settings.return_value = MockSettings()
+        mock_storage_class.return_value = MockAuthStorage()
+
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        test_app = FastAPI()
+        test_app.include_router(auth_router)
+
+        client = TestClient(test_app)
+        response = client.get("/auth/session")
+
+        # Should fail validation (missing token)
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    @pytest.mark.asyncio
+    @patch("api.routers.auth.get_settings")
+    @patch("api.routers.auth.AuthStorage")
+    async def test_get_session_invalid_token(self, mock_storage_class, mock_settings):
+        """Test get session with invalid/expired token."""
+        mock_settings.return_value = MockSettings()
+        storage = MockAuthStorage()
+        mock_storage_class.return_value = storage
+
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        test_app = FastAPI()
+        test_app.include_router(auth_router)
+
+        client = TestClient(test_app)
+        response = client.get("/auth/session", headers={"X-Session-Token": "invalid_token"})
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        data = response.json()
+        assert "detail" in data
+
+
+class TestAuthRouterValidation:
+    """Test auth router validation and configuration."""
+
+    def test_router_tag(self):
+        """Test that router has correct tag."""
+        assert auth_router.tags == ["Auth"]
+
+    def test_router_prefix(self):
+        """Test that router endpoints are configured."""
+        # Router should have endpoints registered
+        assert len(auth_router.routes) >= 3
+
+    @pytest.mark.asyncio
+    @patch("api.routers.auth.get_settings")
+    @patch("api.routers.auth.AuthStorage")
+    async def test_email_validation_pattern(self, mock_storage_class, mock_settings):
+        """Test that email validation follows expected pattern."""
+        mock_settings.return_value = MockSettings()
+        mock_storage_class.return_value = MockAuthStorage()
+
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        test_app = FastAPI()
+        test_app.include_router(auth_router)
+
+        client = TestClient(test_app)
+
+        # Valid emails
         valid_emails = [
-            "user@example.com",
+            "test@example.com",
             "user.name@example.com",
-            "user+tag@example.org",
+            "user+tag@example.co.uk",
         ]
-        # These should pass basic email validation
         for email in valid_emails:
-            assert "@" in email
-            assert "." in email.split("@")[1]
+            response = client.post("/auth/request-code", json={"email": email})
+            # Should pass email validation
+            assert response.status_code in (
+                status.HTTP_200_OK,
+                status.HTTP_400_BAD_REQUEST,
+            ), f"Unexpected status for {email}: {response.status_code}"
+            if response.status_code == status.HTTP_400_BAD_REQUEST:
+                # Make sure it's not an email error
+                assert "email" not in response.json()["detail"].lower()
 
-    def test_invalid_email_detection(self):
-        """Test detection of invalid emails."""
+        # Invalid emails
         invalid_emails = [
-            ("not-an-email", False),
-            ("@missing-local.com", False),
-            ("missing-at-sign.com", False),
-            ("", False),
+            "not-an-email",
+            "@example.com",
+            "user@",
+            "user space@example.com",
         ]
-        for email, expected_valid in invalid_emails:
-            # Basic check - valid emails have @ and domain with dot
-            parts = email.split("@")
-            has_valid_format = len(parts) == 2 and len(parts[0]) > 0 and "." in parts[1]
-            assert has_valid_format == expected_valid, f"Failed for: {email}"
+        for email in invalid_emails:
+            response = client.post("/auth/request-code", json={"email": email})
+            assert response.status_code == status.HTTP_400_BAD_REQUEST, f"Should fail for {email}"
 
-    def test_password_strength_requirements(self):
-        """Test password strength requirements for auth."""
-        # Minimum requirements: 8 chars, uppercase, lowercase, digit
-        valid_passwords = [
-            "Password1",
-            "SecurePass123",
-            "MyP@ssw0rd",
-        ]
-        for pwd in valid_passwords:
-            is_valid, _ = validate_password_strength(pwd)
-            assert is_valid is True
+    @pytest.mark.asyncio
+    @patch("api.routers.auth.get_settings")
+    @patch("api.routers.auth.AuthStorage")
+    async def test_code_validation_pattern(self, mock_storage_class, mock_settings):
+        """Test that code validation enforces 6-digit format."""
+        mock_settings.return_value = MockSettings()
+        storage = MockAuthStorage()
+        storage.set_code("test@example.com", "123456", 10)
+        mock_storage_class.return_value = storage
 
-        invalid_passwords = [
-            "short",  # Too short
-            "alllowercase1",  # No uppercase
-            "ALLUPPERCASE1",  # No lowercase
-            "NoDigitsHere",  # No digit
-        ]
-        for pwd in invalid_passwords:
-            is_valid, _ = validate_password_strength(pwd)
-            assert is_valid is False
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
 
+        test_app = FastAPI()
+        test_app.include_router(auth_router)
 
-class TestTokenPayloadStructure:
-    """Tests for JWT token payload structure."""
+        client = TestClient(test_app)
 
-    def test_token_includes_required_claims(self):
-        """Test that token includes all required claims."""
-        token = create_access_token(subject="user-123")
-        payload = verify_access_token(token)
+        # Valid codes (6 digits)
+        valid_codes = ["123456", "000000", "999999"]
+        for code in valid_codes:
+            response = client.post(
+                "/auth/verify-code", json={"email": "test@example.com", "code": code}
+            )
+            assert response.status_code in (
+                status.HTTP_200_OK,
+                status.HTTP_403_FORBIDDEN,
+            ), f"Failed for code {code}: {response.status_code}"
 
-        # Required claims
-        assert "sub" in payload  # Subject (user ID)
-        assert "exp" in payload  # Expiration
-        assert "iat" in payload  # Issued at
-        assert "type" in payload  # Token type
-        assert payload["type"] == "access"
-
-    def test_token_with_additional_claims(self):
-        """Test token with additional claims like email."""
-        token = create_access_token(
-            subject="user-123",
-            additional_claims={"email": "test@example.com"},
-        )
-        payload = verify_access_token(token)
-        assert payload["email"] == "test@example.com"
-
-    def test_token_with_roles(self):
-        """Test token includes role information."""
-        token = create_access_token(
-            subject="user-123",
-            roles=["user", "premium"],
-        )
-        payload = verify_access_token(token)
-        assert payload["roles"] == ["user", "premium"]
+        # Invalid codes
+        invalid_codes = ["12345", "1234567", "abcdef", "12 3456"]
+        for code in invalid_codes:
+            response = client.post(
+                "/auth/verify-code", json={"email": "test@example.com", "code": code}
+            )
+            assert response.status_code == status.HTTP_400_BAD_REQUEST, (
+                f"Should fail for code {code}"
+            )
