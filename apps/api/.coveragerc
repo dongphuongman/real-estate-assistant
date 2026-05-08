@@ -2,8 +2,13 @@
 omit =
     .venv/*
     */site-packages/*
+    tests/*
 
 [report]
+omit =
+    tests/*
+    .venv/*
+
 exclude_lines =
     pragma: no cover
     if __name__ == .__main__.:
