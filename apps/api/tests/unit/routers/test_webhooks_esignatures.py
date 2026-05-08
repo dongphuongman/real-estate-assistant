@@ -189,12 +189,14 @@ class TestVerifyHellosignSignature:
 
     def test_returns_false_on_exception_during_verification(self):
         """Any exception during HMAC computation returns False."""
-        with patch("api.routers.webhooks.esignatures.settings") as mock_settings:
+        with (
+            patch("api.routers.webhooks.esignatures.settings") as mock_settings,
+            patch(
+                "api.routers.webhooks.esignatures.hmac.new",
+                side_effect=RuntimeError("HMAC error"),
+            ),
+        ):
             mock_settings.hellosign_webhook_secret = "secret"
-            # Force an error by making encode raise
-            mock_settings.hellosign_webhook_secret.encode = MagicMock(
-                side_effect=RuntimeError("encode error")
-            )
             assert _verify_hellosign_signature(b"payload", "sig") is False
 
 
@@ -934,7 +936,7 @@ class TestDownloadAndStoreSignedDocument:
 
         with (
             patch(
-                "api.routers.webhooks.esignatures.get_document_storage",
+                "services.document_storage.get_document_storage",
                 return_value=mock_storage,
             ),
             patch(
@@ -966,7 +968,7 @@ class TestDownloadAndStoreSignedDocument:
 
         with (
             patch(
-                "api.routers.webhooks.esignatures.get_document_storage",
+                "services.document_storage.get_document_storage",
                 return_value=mock_storage,
             ),
         ):

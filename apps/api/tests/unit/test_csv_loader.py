@@ -889,11 +889,20 @@ class TestExcelLoadDf:
         assert captured["engine"] == "xlrd"
 
     def test_ods_loads_with_odf_engine(self, monkeypatch):
+        import importlib
+        import sys
+
         captured = {}
 
         def fake_read_excel(_path, **kwargs):
             captured.update(kwargs)
             return pd.DataFrame({"a": [1]})
+
+        # Fix the odf stub module to have a valid __spec__ so find_spec doesn't crash
+        if "odf" in sys.modules:
+            from importlib.machinery import ModuleSpec
+
+            sys.modules["odf"].__spec__ = ModuleSpec("odf", None)
 
         monkeypatch.setattr(pd, "read_excel", fake_read_excel)
         loader = DataLoaderExcel("fake.ods")
