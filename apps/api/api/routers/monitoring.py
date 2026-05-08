@@ -8,11 +8,10 @@ alerting, and operational insights.
 import logging
 import time
 from datetime import datetime
-from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.deps.auth import AuthCredentials, get_auth_credentials, require_permission
 from api.rbac import Permission
@@ -74,6 +73,7 @@ async def readiness_check(
         if hasattr(settings, "redis_url") and settings.redis_url:
             # Simple Redis connection test via cache import
             from core.cache import get_redis_client
+
             redis_client = get_redis_client()
             await redis_client.ping()
             checks["redis"] = "healthy"
@@ -86,6 +86,7 @@ async def readiness_check(
     # LLM provider check
     try:
         from models.provider_factory import get_default_llm
+
         llm = get_default_llm()
         if llm:
             checks["llm"] = "healthy"
@@ -105,9 +106,7 @@ async def readiness_check(
         checks["overall"] = "not_ready"
 
     status_code = (
-        status.HTTP_200_OK
-        if checks["overall"] == "ready"
-        else status.HTTP_503_SERVICE_UNAVAILABLE
+        status.HTTP_200_OK if checks["overall"] == "ready" else status.HTTP_503_SERVICE_UNAVAILABLE
     )
 
     return {
@@ -136,11 +135,11 @@ async def metrics(
     # Request metrics (example - would be collected from middleware)
     metrics.append("# HELP api_requests_total Total number of API requests")
     metrics.append("# TYPE api_requests_total counter")
-    metrics.append("api_requests_total{endpoint=\"metrics\"} 1")
+    metrics.append('api_requests_total{endpoint="metrics"} 1')
 
     metrics.append("# HELP api_errors_total Total number of API errors")
     metrics.append("# TYPE api_errors_total counter")
-    metrics.append("api_errors_total{endpoint=\"metrics\"} 0")
+    metrics.append('api_errors_total{endpoint="metrics"} 0')
 
     # Response time metrics
     metrics.append("# HELP api_response_time_seconds API response time in seconds")
@@ -149,7 +148,7 @@ async def metrics(
     metrics.append('api_response_time_seconds_bucket{le="0.5"} 1')
     metrics.append('api_response_time_seconds_bucket{le="1.0"} 1')
     metrics.append('api_response_time_seconds_bucket{le="5.0"} 1')
-    metrics.append('api_response_time_seconds_sum 0.6')
+    metrics.append("api_response_time_seconds_sum 0.6")
 
     # Database metrics
     try:
@@ -163,13 +162,14 @@ async def metrics(
 
     # LLM usage metrics
     settings = get_settings()
-    metrics.append(f'# HELP llm_api_calls_total Total LLM API calls')
-    metrics.append('# TYPE llm_api_calls_total counter')
+    metrics.append("# HELP llm_api_calls_total Total LLM API calls")
+    metrics.append("# TYPE llm_api_calls_total counter")
     metrics.append('llm_api_calls_total{provider="{settings.DEFAULT_PROVIDER}"} 0')
 
     # Cache metrics (if Redis enabled)
     if hasattr(settings, "redis_url") and settings.redis_url:
         from core.cache import get_redis_client
+
         redis_client = get_redis_client()
         try:
             info = await redis_client.info("stats")
@@ -179,8 +179,8 @@ async def metrics(
             metrics.append("cache_hits_total 0")
 
     # System info
-    metrics.append(f'# HELP app_info Application information')
-    metrics.append('# TYPE app_info gauge')
+    metrics.append("# HELP app_info Application information")
+    metrics.append("# TYPE app_info gauge")
     metrics.append(f'app_info{{version="1.0.0",environment="{settings.ENVIRONMENT}"}} 1')
 
     return "\n".join(metrics), 200, {"Content-Type": "text/plain"}
@@ -212,7 +212,9 @@ async def monitoring_overview(
 
         # Properties by source
         by_source = await db.execute(
-            text("SELECT source, COUNT(*) as count FROM properties GROUP BY source ORDER BY count DESC LIMIT 5")
+            text(
+                "SELECT source, COUNT(*) as count FROM properties GROUP BY source ORDER BY count DESC LIMIT 5"
+            )
         )
         properties_by_source = dict(by_source.fetchall())
     except Exception as e:
@@ -225,6 +227,7 @@ async def monitoring_overview(
     cache_stats = {}
     if hasattr(settings, "redis_url") and settings.redis_url:
         from core.cache import get_redis_client
+
         redis_client = get_redis_client()
         try:
             info = await redis_client.info("stats")
@@ -271,9 +274,7 @@ async def monitoring_overview(
 
 @router.post("/monitoring/test-alert", tags=["Monitoring"])
 async def test_alert(
-    credentials: AuthCredentials = Depends(
-        require_permission(Permission.SYSTEM_ADMIN)
-    ),
+    credentials: AuthCredentials = Depends(require_permission(Permission.ADMIN_SYSTEM_CONTROL)),
 ):
     """
     Test alert endpoint for monitoring notifications.
