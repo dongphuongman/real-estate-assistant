@@ -838,7 +838,9 @@ class TestTemplateServiceRender:
         assert "&lt;script&gt;" in result
 
     def test_syntax_error_raises(self):
-        with pytest.raises((ValueError, TypeError)):
+        from jinja2 import TemplateSyntaxError
+
+        with pytest.raises(TemplateSyntaxError):
             self.service.render_template("{% bad syntax %}", {})
 
     def test_missing_variable_in_strict_mode(self):
