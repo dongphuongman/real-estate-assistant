@@ -16,7 +16,8 @@ def test_health_check():
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "healthy"
-    assert "version" in data
+    assert "timestamp" in data
+    assert "service" in data
 
 
 def test_protected_route_no_auth():

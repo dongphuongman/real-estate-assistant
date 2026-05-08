@@ -109,10 +109,12 @@ async def readiness_check(
         status.HTTP_200_OK if checks["overall"] == "ready" else status.HTTP_503_SERVICE_UNAVAILABLE
     )
 
-    return {
-        **checks,
-        "timestamp": datetime.utcnow().isoformat(),
-    }, status_code
+    from fastapi.responses import JSONResponse
+
+    return JSONResponse(
+        content={**checks, "timestamp": datetime.utcnow().isoformat()},
+        status_code=status_code,
+    )
 
 
 @router.get("/metrics", tags=["Monitoring"])
@@ -164,7 +166,7 @@ async def metrics(
     settings = get_settings()
     metrics.append("# HELP llm_api_calls_total Total LLM API calls")
     metrics.append("# TYPE llm_api_calls_total counter")
-    metrics.append('llm_api_calls_total{provider="{settings.DEFAULT_PROVIDER}"} 0')
+    metrics.append(f'llm_api_calls_total{{provider="{settings.default_provider}"}} 0')
 
     # Cache metrics (if Redis enabled)
     if hasattr(settings, "redis_url") and settings.redis_url:
@@ -181,9 +183,11 @@ async def metrics(
     # System info
     metrics.append("# HELP app_info Application information")
     metrics.append("# TYPE app_info gauge")
-    metrics.append(f'app_info{{version="1.0.0",environment="{settings.ENVIRONMENT}"}} 1')
+    metrics.append(f'app_info{{version="1.0.0",environment="{settings.environment}"}} 1')
 
-    return "\n".join(metrics), 200, {"Content-Type": "text/plain"}
+    from starlette.responses import PlainTextResponse
+
+    return PlainTextResponse(content="\n".join(metrics), status_code=200)
 
 
 @router.get("/monitoring/overview", tags=["Monitoring"])
@@ -264,10 +268,10 @@ async def monitoring_overview(
         "cache": cache_stats,
         "knowledge_store": knowledge_stats,
         "llm": {
-            "default_provider": settings.DEFAULT_PROVIDER,
-            "default_model": settings.DEFAULT_MODEL,
+            "default_provider": settings.default_provider,
+            "default_model": settings.default_model,
         },
-        "environment": settings.ENVIRONMENT,
+        "environment": settings.environment,
         "timestamp": datetime.utcnow().isoformat(),
     }
 
