@@ -289,9 +289,10 @@ class AnomalyDetector:
         anomalies = []
 
         # Group by location
-        for group_cols in [["city"], ["city", "district"]]:
-            group_key = "_".join(group_cols) if isinstance(group_cols, list) else group_cols[0]
-
+        groupings: list[list[str]] = [["city"]]
+        if "district" in df.columns:
+            groupings.append(["city", "district"])
+        for group_cols in groupings:
             # Calculate baseline statistics
             baseline_stats = baseline_df.groupby(group_cols)["count"].agg(["mean", "std"])
             comparison_stats = comparison_df.groupby(group_cols)["count"].agg(["mean"])
@@ -301,7 +302,7 @@ class AnomalyDetector:
                 location_value = idx if isinstance(idx, tuple) else (idx,)
                 location_id = str(location_value)
 
-                if group_key not in baseline_stats.index:
+                if idx not in baseline_stats.index:
                     continue
 
                 baseline_row = baseline_stats.loc[idx]
