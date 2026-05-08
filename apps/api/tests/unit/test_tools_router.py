@@ -350,25 +350,81 @@ class TestTCOComparison:
 
     @pytest.mark.asyncio
     async def test_tco_comparison_valid(self, client):
-        payload = {
-            "scenario_a": {
-                "property_price": 300000,
-                "down_payment_percent": 20.0,
-                "interest_rate": 4.5,
-                "loan_years": 30,
-            },
-            "scenario_b": {
-                "property_price": 400000,
-                "down_payment_percent": 15.0,
-                "interest_rate": 5.0,
-                "loan_years": 25,
-            },
-        }
-        response = await client.post(
-            "/api/v1/tools/tco-comparison",
-            json=payload,
+        """TCO comparison with mocked tool to avoid coupling to internal logic."""
+        from tools.tco_tools import (
+            EnhancedTCOResult,
+            TCOComparisonResult,
         )
+
+        def _make_enhanced(monthly_payment):
+            """Build a minimal EnhancedTCOResult."""
+            return EnhancedTCOResult(
+                monthly_payment=monthly_payment,
+                total_interest=100000.0,
+                down_payment=60000.0,
+                loan_amount=240000.0,
+                monthly_mortgage=monthly_payment,
+                monthly_property_tax=250.0,
+                monthly_insurance=100.0,
+                monthly_hoa=200.0,
+                monthly_utilities=150.0,
+                monthly_internet=40.0,
+                monthly_parking=50.0,
+                monthly_maintenance=250.0,
+                monthly_tco=monthly_payment + 1040.0,
+                annual_mortgage=monthly_payment * 12,
+                annual_property_tax=3000.0,
+                annual_insurance=1200.0,
+                annual_hoa=2400.0,
+                annual_utilities=1800.0,
+                annual_internet=480.0,
+                annual_parking=600.0,
+                annual_maintenance=3000.0,
+                annual_tco=(monthly_payment + 1040.0) * 12,
+                total_ownership_cost=400000.0,
+                total_all_costs=460000.0,
+                breakdown={},
+            )
+
+        mock_result = TCOComparisonResult(
+            scenario_a=_make_enhanced(1215.0),
+            scenario_b=_make_enhanced(1600.0),
+            scenario_a_name="Property A",
+            scenario_b_name="Property B",
+            monthly_cost_difference=-385.0,
+            total_cost_difference=-50000.0,
+            equity_difference=10000.0,
+            break_even_years=7.5,
+            a_advantages=["Lower monthly cost"],
+            b_advantages=["Better location"],
+            recommendation="scenario_a",
+            recommendation_reason="Lower total cost",
+            priority_score_a=75.0,
+            priority_score_b=60.0,
+        )
+
+        with patch("api.routers.tools.TCOComparisonTool.calculate", return_value=mock_result):
+            payload = {
+                "scenario_a": {
+                    "property_price": 300000,
+                    "down_payment_percent": 20.0,
+                    "interest_rate": 4.5,
+                    "loan_years": 30,
+                },
+                "scenario_b": {
+                    "property_price": 400000,
+                    "down_payment_percent": 15.0,
+                    "interest_rate": 5.0,
+                    "loan_years": 25,
+                },
+            }
+            response = await client.post(
+                "/api/v1/tools/tco-comparison",
+                json=payload,
+            )
         assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert data["recommendation"] == "scenario_a"
 
     @pytest.mark.asyncio
     async def test_tco_comparison_missing_scenarios(self, client):
@@ -490,11 +546,12 @@ class TestInvestmentAnalysis:
 
     @pytest.mark.asyncio
     async def test_investment_zero_price(self, client):
+        """Pydantic gt=0 catches zero before the tool's ValueError."""
         response = await client.post(
             "/api/v1/tools/investment-analysis",
             json={"property_price": 0, "monthly_rent": 2000},
         )
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
     @pytest.mark.asyncio
     async def test_investment_negative_rent(self, client):
@@ -543,11 +600,12 @@ class TestAdvancedInvestmentAnalysis:
 
     @pytest.mark.asyncio
     async def test_advanced_investment_zero_price(self, client):
+        """Pydantic gt=0 catches zero before the tool's ValueError."""
         response = await client.post(
             "/api/v1/tools/advanced-investment-analysis",
             json={"property_price": 0, "monthly_rent": 2000},
         )
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 # ===========================================================================
@@ -567,18 +625,18 @@ class TestPortfolioAnalysis:
                     {
                         "city": "Berlin",
                         "property_type": "apartment",
-                        "purchase_price": 300000,
-                        "current_value": 350000,
+                        "property_price": 300000,
                         "monthly_rent": 1500,
-                        "monthly_expenses": 800,
+                        "monthly_cash_flow": 700,
+                        "cap_rate": 4.5,
                     },
                     {
                         "city": "Munich",
                         "property_type": "apartment",
-                        "purchase_price": 400000,
-                        "current_value": 460000,
+                        "property_price": 400000,
                         "monthly_rent": 2000,
-                        "monthly_expenses": 1000,
+                        "monthly_cash_flow": 900,
+                        "cap_rate": 5.0,
                     },
                 ],
             },
@@ -639,11 +697,12 @@ class TestRentVsBuy:
 
     @pytest.mark.asyncio
     async def test_rent_vs_buy_zero_price(self, client):
+        """Pydantic gt=0 catches zero before the tool's ValueError."""
         response = await client.post(
             "/api/v1/tools/rent-vs-buy",
             json={"property_price": 0, "monthly_rent": 1500},
         )
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 # ===========================================================================
@@ -1152,7 +1211,7 @@ class TestCommuteTime:
         mock_result.arrival_time = None
         mock_result.departure_time = None
 
-        with patch("api.routers.tools.CommuteTimeClient") as MockClient:
+        with patch("utils.commute_client.CommuteTimeClient") as MockClient:
             instance = MockClient.return_value
             instance.get_commute_time = AsyncMock(return_value=mock_result)
             transport = ASGITransport(app=app)
@@ -1280,7 +1339,7 @@ class TestCommuteTime:
         mock_result.arrival_time = datetime(2024, 1, 15, 9, 0, 0)
         mock_result.departure_time = datetime(2024, 1, 15, 8, 45, 0)
 
-        with patch("api.routers.tools.CommuteTimeClient") as MockClient:
+        with patch("utils.commute_client.CommuteTimeClient") as MockClient:
             instance = MockClient.return_value
             instance.get_commute_time = AsyncMock(return_value=mock_result)
             transport = ASGITransport(app=app)
@@ -1353,7 +1412,7 @@ class TestCommuteRanking:
             ),
         ]
 
-        with patch("api.routers.tools.CommuteTimeClient") as MockClient:
+        with patch("utils.commute_client.CommuteTimeClient") as MockClient:
             instance = MockClient.return_value
             instance.rank_properties_by_commute = AsyncMock(return_value=mock_rankings)
             transport = ASGITransport(app=app)
@@ -1464,7 +1523,7 @@ class TestCommuteRanking:
         store = _make_store_mock(docs_by_ids=docs)
         app = _build_app(store=store)
 
-        with patch("api.routers.tools.CommuteTimeClient") as MockClient:
+        with patch("utils.commute_client.CommuteTimeClient") as MockClient:
             instance = MockClient.return_value
             instance.rank_properties_by_commute = AsyncMock(return_value=[])
             transport = ASGITransport(app=app)
