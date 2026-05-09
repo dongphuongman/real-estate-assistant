@@ -1,0 +1,167 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: production
+        type: choice
+        options:
+          - production
+          - staging
+
+permissions:
+  contents: read
+  deployments: write
+
+env:
+  RENDER_SERVICE_ID_API: ${{ secrets.RENDER_SERVICE_ID_API }}
+  RENDER_SERVICE_ID_WEB: ${{ secrets.RENDER_SERVICE_ID_WEB }}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate deployment configs
+        run: |
+          echo "Validating deployment configurations..."
+          # Check required files exist
+          for f in render.yaml vercel.json deploy/docker/Dockerfile.backend deploy/docker/Dockerfile.frontend deploy/compose/docker-compose.yml; do
+            if [ ! -f "$f" ]; then
+              echo "ERROR: Missing $f"
+              exit 1
+            fi
+            echo "  ✓ $f"
+          done
+
+          # Check render.yaml has no placeholder secrets
+          if grep -q "REPLACE_WITH" render.yaml; then
+            echo "ERROR: render.yaml contains placeholder values"
+            exit 1
+          fi
+          echo "  ✓ render.yaml - no placeholders"
+
+          # Check Dockerfiles build successfully (dry-run)
+          docker build --check -f deploy/docker/Dockerfile.backend . 2>/dev/null || \
+            docker build -f deploy/docker/Dockerfile.backend --target deps . 1>/dev/null
+          echo "  ✓ Backend Dockerfile builds"
+
+  deploy-backend:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Trigger Render backend deploy
+        if: env.RENDER_SERVICE_ID_API != ''
+        run: |
+          curl -s -X POST "https://api.render.com/v1/services/${RENDER_SERVICE_ID_API}/deploys" \
+            -H "Accept: application/json" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -d '{"clearCache": "clear"}' | jq .
+        env:
+          RENDER_SERVICE_ID_API: ${{ secrets.RENDER_SERVICE_ID_API }}
+
+      - name: Wait for backend health
+        run: |
+          echo "Waiting for backend to become healthy..."
+          for i in $(seq 1 30); do
+            if curl -sf "https://realestate-api.onrender.com/health" | jq -e '.status == "healthy"' >/dev/null 2>&1; then
+              echo "Backend is healthy!"
+              exit 0
+            fi
+            echo "  Attempt $i/30 - waiting 30s..."
+            sleep 30
+          done
+          echo "ERROR: Backend health check failed after 15 minutes"
+          exit 1
+
+  deploy-frontend:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install Vercel CLI
+        run: npm i -g vercel@latest
+
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: apps/web
+
+      - name: Build
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: apps/web
+
+      - name: Deploy to Vercel
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tail -1)
+          echo "url=$url" >> $GITHUB_OUTPUT
+          echo "Deployed to: $url"
+        working-directory: apps/web
+
+      - name: Verify frontend
+        run: |
+          sleep 10
+          status=$(curl -s -o /dev/null -w "%{http_code}" "${{ steps.deploy.outputs.url }}")
+          if [ "$status" != "200" ]; then
+            echo "ERROR: Frontend returned HTTP $status"
+            exit 1
+          fi
+          echo "Frontend is live!"
+
+  smoke-test:
+    needs: [deploy-backend, deploy-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run smoke tests
+        run: |
+          echo "Running post-deployment smoke tests..."
+
+          # Backend health
+          health=$(curl -sf "https://realestate-api.onrender.com/health" | jq -r '.status')
+          if [ "$health" != "healthy" ]; then
+            echo "ERROR: Backend status=$health"
+            exit 1
+          fi
+          echo "  ✓ Backend healthy"
+
+          # Backend API key auth
+          status=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "X-API-Key: ${{ secrets.API_ACCESS_KEY }}" \
+            "https://realestate-api.onrender.com/api/v1/properties?limit=1")
+          if [ "$status" != "200" ]; then
+            echo "ERROR: API returned $status (expected 200)"
+            exit 1
+          fi
+          echo "  ✓ API auth working"
+
+          # Frontend
+          status=$(curl -s -o /dev/null -w "%{http_code}" "https://ai-real-estate-assistant.vercel.app")
+          if [ "$status" != "200" ]; then
+            echo "ERROR: Frontend returned $status (expected 200)"
+            exit 1
+          fi
+          echo "  ✓ Frontend live"
+
+          echo "All smoke tests passed!"

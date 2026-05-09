@@ -298,3 +298,27 @@ quickstart:
 	@echo "Frontend: http://localhost:3082"
 	@echo "Backend:  http://localhost:8082/docs"
 	@echo "Health:   http://localhost:8082/health"
+
+## deploy-prod: Start production stack (compose + prod overlay + postgres)
+deploy-prod:
+	@test -f deploy/compose/.env || cp deploy/compose/.env.example deploy/compose/.env
+	@echo "Starting production stack..."
+	docker compose \
+		-f deploy/compose/docker-compose.yml \
+		-f deploy/compose/docker-compose.prod.yml \
+		--profile postgres up -d
+	@echo ""
+	@echo "Production stack started."
+	@echo "Run 'make smoke-test' to verify."
+
+## deploy-validate: Validate deployment configs without deploying
+deploy-validate:
+	@echo "Validating deployment configs..."
+	@for f in render.yaml vercel.json deploy/docker/Dockerfile.backend deploy/docker/Dockerfile.frontend deploy/compose/docker-compose.yml; do \
+		if [ ! -f "$$f" ]; then echo "ERROR: Missing $$f"; exit 1; fi; \
+		echo "  ✓ $$f"; \
+	done
+	@if grep -q "REPLACE_WITH" deploy/compose/.env.example; then \
+		echo "  ✓ .env.example has expected placeholders"; \
+	fi
+	@echo "All configs valid."

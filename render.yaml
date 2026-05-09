@@ -71,6 +71,8 @@ services:
     dockerContext: .
     repo: https://github.com/AleksNeStu/ai-real-estate-assistant
     envVars:
+      - key: PORT
+        value: "10000"
       - key: BACKEND_API_URL
         value: https://realestate-api.onrender.com/api/v1
       - key: API_ACCESS_KEY
