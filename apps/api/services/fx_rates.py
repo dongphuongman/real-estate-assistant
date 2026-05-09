@@ -47,7 +47,7 @@ def _fetch_ecb_rates() -> dict[str, float]:
     rates = {"EUR": 1.0}
     try:
         req = urllib.request.Request(ECB_URL, headers={"User-Agent": "fx-rates/1.0"})
-        with urllib.request.urlopen(req, timeout=15) as resp:
+        with urllib.request.urlopen(req, timeout=15) as resp:  # nosec B310 - hardcoded trusted ECB URL
             content = resp.read().decode()
 
         # Parse XML manually (avoid xmltodict dependency)
@@ -70,7 +70,7 @@ def _fetch_nbp_rates() -> dict[str, float]:
     rates = {"PLN": 1.0}
     try:
         req = urllib.request.Request(NBP_URL, headers={"User-Agent": "fx-rates/1.0"})
-        with urllib.request.urlopen(req, timeout=15) as resp:
+        with urllib.request.urlopen(req, timeout=15) as resp:  # nosec B310 - hardcoded trusted NBP URL
             data = json.loads(resp.read().decode())
 
         for table in data:
