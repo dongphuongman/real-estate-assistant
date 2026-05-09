@@ -363,3 +363,4 @@ screenshots/
 # Playwright test output
 artifacts/e2e-output/
 test-results/
+.kiro/
