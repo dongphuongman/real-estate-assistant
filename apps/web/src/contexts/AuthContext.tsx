@@ -12,7 +12,6 @@ import React, {
 import { ApiError } from '@/lib/api';
 import * as authApi from '@/lib/auth';
 import type { User } from '@/lib/auth';
-import * as Sentry from '@sentry/nextjs';
 import { updateSentryUser } from '@/sentry.client';
 
 export interface AuthContextType {

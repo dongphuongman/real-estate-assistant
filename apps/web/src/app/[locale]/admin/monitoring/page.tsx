@@ -154,6 +154,7 @@ export default function MonitoringPage() {
     }, 30000);
 
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Generate simulated chart data (for demo purposes)
@@ -194,7 +195,11 @@ export default function MonitoringPage() {
   };
 
   // Status badge component
-  const StatusBadge = ({ status }: { status: 'healthy' | 'unhealthy' | 'ready' | 'not_ready' | 'degraded' }) => {
+  const StatusBadge = ({
+    status,
+  }: {
+    status: 'healthy' | 'unhealthy' | 'ready' | 'not_ready' | 'degraded';
+  }) => {
     const colors = {
       healthy: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
       unhealthy: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100',
@@ -212,7 +217,9 @@ export default function MonitoringPage() {
     };
 
     return (
-      <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${colors[status]}`}>
+      <span
+        className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${colors[status]}`}
+      >
         {icons[status]}
         {status.replace('_', ' ')}
       </span>
@@ -356,7 +363,8 @@ export default function MonitoringPage() {
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Uptime:</dt>
                   <dd className="font-medium">
-                    {Math.floor(healthStatus.uptime_seconds / 3600)}h {Math.floor((healthStatus.uptime_seconds % 3600) / 60)}m
+                    {Math.floor(healthStatus.uptime_seconds / 3600)}h{' '}
+                    {Math.floor((healthStatus.uptime_seconds % 3600) / 60)}m
                   </dd>
                 </div>
               )}
@@ -369,7 +377,9 @@ export default function MonitoringPage() {
               {healthStatus.git && (
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Git Commit:</dt>
-                  <dd className="font-medium font-mono text-xs">{healthStatus.git.commit.slice(0, 7)}</dd>
+                  <dd className="font-medium font-mono text-xs">
+                    {healthStatus.git.commit.slice(0, 7)}
+                  </dd>
                 </div>
               )}
             </dl>
@@ -428,7 +438,9 @@ export default function MonitoringPage() {
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Last Check:</dt>
-                <dd className="font-medium">{new Date(readinessStatus.timestamp).toLocaleString()}</dd>
+                <dd className="font-medium">
+                  {new Date(readinessStatus.timestamp).toLocaleString()}
+                </dd>
               </div>
             </dl>
           )}
@@ -444,7 +456,9 @@ export default function MonitoringPage() {
               <Database className="w-4 h-4 text-muted-foreground" />
               <h3 className="text-sm font-medium text-muted-foreground">Total Properties</h3>
             </div>
-            <p className="text-2xl font-bold">{overview.database.total_properties.toLocaleString()}</p>
+            <p className="text-2xl font-bold">
+              {overview.database.total_properties.toLocaleString()}
+            </p>
             <p className="text-xs text-muted-foreground mt-1">
               {overview.database.recent_properties_24h} in last 24h
             </p>
@@ -456,7 +470,9 @@ export default function MonitoringPage() {
               <HardDrive className="w-4 h-4 text-muted-foreground" />
               <h3 className="text-sm font-medium text-muted-foreground">Knowledge Store</h3>
             </div>
-            <p className="text-2xl font-bold">{overview.knowledge_store.documents.toLocaleString()}</p>
+            <p className="text-2xl font-bold">
+              {overview.knowledge_store.documents.toLocaleString()}
+            </p>
             <p className="text-xs text-muted-foreground mt-1">
               {overview.knowledge_store.chunks.toLocaleString()} chunks
             </p>
@@ -472,7 +488,8 @@ export default function MonitoringPage() {
               <>
                 <p className="text-2xl font-bold">{overview.cache.hit_rate.toFixed(1)}%</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {overview.cache.hits?.toLocaleString()} hits, {overview.cache.misses?.toLocaleString()} misses
+                  {overview.cache.hits?.toLocaleString()} hits,{' '}
+                  {overview.cache.misses?.toLocaleString()} misses
                 </p>
               </>
             ) : (
@@ -495,19 +512,21 @@ export default function MonitoringPage() {
       )}
 
       {/* Data Sources Breakdown */}
-      {overview && overview.database.by_source && Object.keys(overview.database.by_source).length > 0 && (
-        <div className="border rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Properties by Data Source</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {Object.entries(overview.database.by_source).map(([source, count]) => (
-              <div key={source} className="text-center p-3 bg-secondary rounded">
-                <p className="text-lg font-bold">{count.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground mt-1 truncate">{source}</p>
-              </div>
-            ))}
+      {overview &&
+        overview.database.by_source &&
+        Object.keys(overview.database.by_source).length > 0 && (
+          <div className="border rounded-lg p-6 mb-6">
+            <h2 className="text-xl font-semibold mb-4">Properties by Data Source</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {Object.entries(overview.database.by_source).map(([source, count]) => (
+                <div key={source} className="text-center p-3 bg-secondary rounded">
+                  <p className="text-lg font-bold">{count.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1 truncate">{source}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -526,7 +545,11 @@ export default function MonitoringPage() {
           </div>
           <div className="flex justify-between text-xs text-muted-foreground mt-2">
             <span>{new Date(requestRateData[0]?.timestamp).toLocaleTimeString()}</span>
-            <span>{new Date(requestRateData[requestRateData.length - 1]?.timestamp).toLocaleTimeString()}</span>
+            <span>
+              {new Date(
+                requestRateData[requestRateData.length - 1]?.timestamp
+              ).toLocaleTimeString()}
+            </span>
           </div>
         </div>
 
@@ -538,7 +561,11 @@ export default function MonitoringPage() {
               <div
                 key={i}
                 className={`flex-1 rounded-t transition-all hover:opacity-80 ${
-                  point.value > 5 ? 'bg-destructive' : point.value > 2 ? 'bg-yellow-500' : 'bg-green-500'
+                  point.value > 5
+                    ? 'bg-destructive'
+                    : point.value > 2
+                      ? 'bg-yellow-500'
+                      : 'bg-green-500'
                 }`}
                 style={{ height: `${Math.min(point.value * 10, 100)}%` }}
                 title={`${new Date(point.timestamp).toLocaleTimeString()}: ${point.value}%`}
@@ -547,7 +574,9 @@ export default function MonitoringPage() {
           </div>
           <div className="flex justify-between text-xs text-muted-foreground mt-2">
             <span>{new Date(errorRateData[0]?.timestamp).toLocaleTimeString()}</span>
-            <span>{new Date(errorRateData[errorRateData.length - 1]?.timestamp).toLocaleTimeString()}</span>
+            <span>
+              {new Date(errorRateData[errorRateData.length - 1]?.timestamp).toLocaleTimeString()}
+            </span>
           </div>
         </div>
 
@@ -559,7 +588,11 @@ export default function MonitoringPage() {
               <div
                 key={i}
                 className={`flex-1 rounded-t transition-all hover:opacity-80 ${
-                  point.value > 3000 ? 'bg-destructive' : point.value > 1000 ? 'bg-yellow-500' : 'bg-blue-500'
+                  point.value > 3000
+                    ? 'bg-destructive'
+                    : point.value > 1000
+                      ? 'bg-yellow-500'
+                      : 'bg-blue-500'
                 }`}
                 style={{ height: `${Math.min(point.value / 10, 100)}%` }}
                 title={`${new Date(point.timestamp).toLocaleTimeString()}: ${point.value}ms`}
@@ -568,7 +601,11 @@ export default function MonitoringPage() {
           </div>
           <div className="flex justify-between text-xs text-muted-foreground mt-2">
             <span>{new Date(responseTimeData[0]?.timestamp).toLocaleTimeString()}</span>
-            <span>{new Date(responseTimeData[responseTimeData.length - 1]?.timestamp).toLocaleTimeString()}</span>
+            <span>
+              {new Date(
+                responseTimeData[responseTimeData.length - 1]?.timestamp
+              ).toLocaleTimeString()}
+            </span>
           </div>
         </div>
       </div>

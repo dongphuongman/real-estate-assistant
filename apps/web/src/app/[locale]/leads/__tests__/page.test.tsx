@@ -6,7 +6,6 @@
 
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import LeadsPage from '../page';
 import * as api from '@/lib/api';
 import type { LeadWithScore, LeadListResponse, ScoringStatistics } from '@/lib/types';

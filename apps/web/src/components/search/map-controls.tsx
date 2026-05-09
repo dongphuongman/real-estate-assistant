@@ -1,17 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Layers,
-  Thermometer,
-  MapPin,
-  ZoomIn,
-  ZoomOut,
-  Filter,
-  X,
-  DollarSign,
-  TrendingUp,
-} from 'lucide-react';
+import { Layers, Thermometer, MapPin, ZoomIn, ZoomOut, Filter, X } from 'lucide-react';
 import type { HeatmapMode } from './property-map-utils';
 
 export interface ClusterOptions {

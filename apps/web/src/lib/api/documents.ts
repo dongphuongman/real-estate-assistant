@@ -8,18 +8,15 @@ import type {
   DocumentUploadResponse,
   DocumentListResponse,
   DocumentUpdateRequest,
-  DocumentFilters,
   ExpiringDocumentsResponse,
   SignatureRequest,
   SignatureRequestCreate,
   SignatureRequestListResponse,
   SignatureRequestFilters,
-  Signer,
   DocumentTemplate,
   DocumentTemplateCreate,
   DocumentTemplateUpdate,
   DocumentTemplateListResponse,
-  SignedDocument,
 } from '../types';
 
 import {

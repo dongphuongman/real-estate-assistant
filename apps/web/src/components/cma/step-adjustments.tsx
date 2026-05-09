@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import type { CMAComparable, CMAAdjustment } from '@/lib/types';
+import type { CMAComparable } from '@/lib/types';
 
 interface StepAdjustmentsProps {
   comparables: CMAComparable[];

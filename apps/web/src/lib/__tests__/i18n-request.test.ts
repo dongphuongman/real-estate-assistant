@@ -1,4 +1,4 @@
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import { describe, it, expect, jest } from '@jest/globals';
 import { locales, type Locale } from '../../i18n/config';
 
 // Mock the dynamic import of message files

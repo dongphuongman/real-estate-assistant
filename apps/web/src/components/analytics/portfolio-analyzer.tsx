@@ -82,7 +82,7 @@ export function PortfolioAnalyzer() {
     setErrorState(null);
 
     try {
-      const holdings: PropertyHolding[] = properties.map((p, index) => ({
+      const holdings: PropertyHolding[] = properties.map((p) => ({
         property_id: p.id,
         property_price: p.property_price,
         monthly_rent: p.monthly_rent,

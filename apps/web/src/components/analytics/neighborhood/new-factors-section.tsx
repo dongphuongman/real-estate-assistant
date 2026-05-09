@@ -108,7 +108,8 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
       detailKey: 'air_quality',
       description:
         'Measures air pollution levels using the Air Quality Index (AQI). Lower values indicate cleaner air.',
-      getRating: (_value) => {
+      getRating: (_value: number) => {
+        void _value;
         const detail = result.factor_details?.air_quality;
         return detail
           ? getAirQualityRating(detail.raw_value)
@@ -123,7 +124,8 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
       detailKey: 'noise_level',
       description:
         'Average ambient noise level in decibels. Lower values indicate a quieter environment.',
-      getRating: (_value) => {
+      getRating: (_value: number) => {
+        void _value;
         const detail = result.factor_details?.noise_level;
         return detail
           ? getNoiseRating(detail.raw_value)
@@ -138,7 +140,8 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
       detailKey: 'public_transport',
       description:
         'Number of public transport stops within 1km. Higher values indicate better accessibility.',
-      getRating: (_value) => {
+      getRating: (_value: number) => {
+        void _value;
         const detail = result.factor_details?.public_transport;
         return detail
           ? getTransportRating(detail.raw_value)

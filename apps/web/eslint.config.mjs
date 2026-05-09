@@ -18,6 +18,10 @@ const eslintConfig = defineConfig([
     rules: {
     // Disable the pages directory check for monorepo setup
     "@next/next/no-html-link-for-pages": "off",
+    // Allow unused vars with _ prefix (intentionally unused parameters)
+    "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+    // Allow <img> for dynamic external URLs where Next.js Image optimization isn't applicable
+    "@next/next/no-img-element": "off",
   },
   },
 ]);

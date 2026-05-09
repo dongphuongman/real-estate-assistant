@@ -55,7 +55,7 @@ export function StepComparables({
 
   useEffect(() => {
     fetchComparables();
-  }, [subjectPropertyId]);
+  }, [subjectPropertyId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleComparable = (comparable: CMAComparable) => {
     const isSelected = selectedComparables.some((c) => c.property_id === comparable.property_id);

@@ -6,7 +6,7 @@
 const CACHE_NAME = 'realestate-ai-v1';
 const STATIC_CACHE = 'static-v1';
 const API_CACHE = 'api-v1';
-const OFFLINE_URL = '/offline';
+const _OFFLINE_URL = '/offline';
 
 // Static assets to pre-cache on install
 const PRECACHE_URLS = [
@@ -18,8 +18,8 @@ const PRECACHE_URLS = [
 ];
 
 // Cache duration for API responses (5 minutes)
-const API_CACHE_MAX_AGE = 5 * 60 * 1000;
-const API_CACHE_MAX_ENTRIES = 50;
+const _API_CACHE_MAX_AGE = 5 * 60 * 1000;
+const _API_CACHE_MAX_ENTRIES = 50;
 
 // Install event — pre-cache essential assets
 self.addEventListener('install', (event) => {

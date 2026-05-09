@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
   const url = `${backendUrl}/monitoring/test-alert`;
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { PROPERTY_TYPE_COLORS, type ClusterTypeAnalysis } from './property-map-clustering';
+import { PROPERTY_TYPE_COLORS } from './property-map-clustering';
 
 interface ClusterMarkerProps {
   count: number;

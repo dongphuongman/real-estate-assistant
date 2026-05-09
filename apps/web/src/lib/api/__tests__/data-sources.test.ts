@@ -171,7 +171,7 @@ describe('Data Sources API', () => {
       const result = await updateDataSource('ds-1', update);
 
       expect(result.name).toBe('Updated Source');
-      const [_url, opts] = mockFetch.mock.calls[0];
+      const [, opts] = mockFetch.mock.calls[0];
       expect(opts.method).toBe('PATCH');
       expect(JSON.parse(opts.body)).toEqual(update);
     });

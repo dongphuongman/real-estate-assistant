@@ -18,7 +18,6 @@ import type {
   AgentProfileCreate,
   AgentProfileUpdate,
   AgentProfileListResponse,
-  AgentListing,
   AgentListingListResponse,
   AgentInquiry,
   AgentInquiryCreate,

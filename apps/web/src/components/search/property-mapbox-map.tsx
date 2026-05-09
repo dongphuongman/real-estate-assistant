@@ -452,6 +452,7 @@ export default function PropertyMapboxMap({
           .addTo(mapInstance);
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     points,
     debouncedZoom,

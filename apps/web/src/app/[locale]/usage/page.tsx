@@ -14,10 +14,8 @@ import {
   Calendar,
   Clock,
   MapPin,
-  FileText,
   RefreshCw,
   AlertCircle,
-  ChevronDown,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -33,15 +31,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
-import {
-  getUserActivitySummary,
-  getUserActivityTrends,
-  exportUserActivityCSV,
-} from '@/lib/api';
-import type {
-  UserActivitySummary,
-  UserActivityTrendPoint,
-} from '@/lib/types';
+import { getUserActivitySummary, getUserActivityTrends, exportUserActivityCSV } from '@/lib/api';
+import type { UserActivitySummary, UserActivityTrendPoint } from '@/lib/types';
 
 // Recharts components for charts
 import {
@@ -121,9 +112,7 @@ function MetricCard({
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
-        {description && (
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
-        )}
+        {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
       </CardContent>
     </Card>
   );
@@ -180,20 +169,23 @@ export default function UsagePage() {
   };
 
   // Prepare chart data
-  const topToolsData = summary?.top_tools?.slice(0, 6).map((tool) => ({
-    name: tool.tool_name.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
-    count: tool.count,
-  })) || [];
+  const topToolsData =
+    summary?.top_tools?.slice(0, 6).map((tool) => ({
+      name: tool.tool_name.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+      count: tool.count,
+    })) || [];
 
-  const topCitiesData = summary?.top_search_cities?.slice(0, 8).map((city) => ({
-    name: city.city,
-    count: city.count,
-  })) || [];
+  const topCitiesData =
+    summary?.top_search_cities?.slice(0, 8).map((city) => ({
+      name: city.city,
+      count: city.count,
+    })) || [];
 
-  const dailyEventsData = summary?.event_counts_by_day?.map((day) => ({
-    date: format(new Date(day.date), 'MMM dd'),
-    count: day.count,
-  })) || [];
+  const dailyEventsData =
+    summary?.event_counts_by_day?.map((day) => ({
+      date: format(new Date(day.date), 'MMM dd'),
+      count: day.count,
+    })) || [];
 
   const trendsChartData = trends.map((trend) => ({
     date: format(new Date(trend.date), 'MMM dd'),
@@ -222,9 +214,7 @@ export default function UsagePage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Usage Dashboard</h1>
-          <p className="text-muted-foreground">
-            Track your activity and analytics
-          </p>
+          <p className="text-muted-foreground">Track your activity and analytics</p>
         </div>
         <div className="flex gap-2">
           <Select value={interval} onValueChange={(v: 'day' | 'week' | 'month') => setInterval(v)}>
@@ -364,9 +354,7 @@ export default function UsagePage() {
           <Card>
             <CardHeader>
               <CardTitle>Activity Over Time</CardTitle>
-              <CardDescription>
-                Your usage trends grouped by {interval}
-              </CardDescription>
+              <CardDescription>Your usage trends grouped by {interval}</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -444,9 +432,7 @@ export default function UsagePage() {
           <Card>
             <CardHeader>
               <CardTitle>Most Used Tools</CardTitle>
-              <CardDescription>
-                Your favorite analysis and calculation tools
-              </CardDescription>
+              <CardDescription>Your favorite analysis and calculation tools</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -497,9 +483,7 @@ export default function UsagePage() {
             <Card className="md:col-span-2">
               <CardHeader>
                 <CardTitle>Top Search Cities</CardTitle>
-                <CardDescription>
-                  Most searched locations
-                </CardDescription>
+                <CardDescription>Most searched locations</CardDescription>
               </CardHeader>
               <CardContent>
                 {loading ? (
@@ -531,11 +515,7 @@ export default function UsagePage() {
                           borderRadius: '8px',
                         }}
                       />
-                      <Bar
-                        dataKey="count"
-                        fill={CHART_COLORS[1]}
-                        radius={[4, 4, 0, 0]}
-                      />
+                      <Bar dataKey="count" fill={CHART_COLORS[1]} radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -552,9 +532,7 @@ export default function UsagePage() {
               <Card className="md:col-span-2">
                 <CardHeader>
                   <CardTitle>Search Distribution</CardTitle>
-                  <CardDescription>
-                    Percentage of searches by city
-                  </CardDescription>
+                  <CardDescription>Percentage of searches by city</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={250}>
@@ -566,11 +544,16 @@ export default function UsagePage() {
                         cx="50%"
                         cy="50%"
                         outerRadius={80}
-                        label={(entry) => `${entry.name}: ${Math.round((entry.count / topCitiesData.reduce((sum, d) => sum + d.count, 0)) * 100)}%`}
+                        label={(entry) =>
+                          `${entry.name}: ${Math.round((entry.count / topCitiesData.reduce((sum, d) => sum + d.count, 0)) * 100)}%`
+                        }
                         labelLine={false}
                       >
                         {topCitiesData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={CHART_COLORS[index % CHART_COLORS.length]}
+                          />
                         ))}
                       </Pie>
                       <Tooltip
@@ -594,9 +577,7 @@ export default function UsagePage() {
           <Card>
             <CardHeader>
               <CardTitle>Daily Activity</CardTitle>
-              <CardDescription>
-                Events per day over the selected period
-              </CardDescription>
+              <CardDescription>Events per day over the selected period</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -628,11 +609,7 @@ export default function UsagePage() {
                         borderRadius: '8px',
                       }}
                     />
-                    <Bar
-                      dataKey="count"
-                      fill={CHART_COLORS[5]}
-                      radius={[4, 4, 0, 0]}
-                    />
+                    <Bar dataKey="count" fill={CHART_COLORS[5]} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (

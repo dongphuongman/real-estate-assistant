@@ -26,7 +26,7 @@ const PII_FIELDS = new Set([
 /**
  * Filter PII from event before sending to Sentry.
  */
-function beforeSend(event: Sentry.Event, hint: Sentry.EventHint) {
+function beforeSend(event: Sentry.Event, _hint: Sentry.EventHint) {
   // Redact PII from request headers
   const request = event.request;
   if (request?.headers) {

@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { Document as DocumentType, DocumentCategory } from '@/lib/types';
-import { deleteDocument, updateDocument, getDocumentDownloadUrl } from '@/lib/api';
+import { deleteDocument, getDocumentDownloadUrl } from '@/lib/api';
 
 interface DocumentListProps {
   documents: DocumentType[];
@@ -70,7 +70,7 @@ function isExpired(expiryDate?: string): boolean {
 export function DocumentList({
   documents,
   onDocumentDeleted,
-  onDocumentUpdated,
+  onDocumentUpdated: _onDocumentUpdated,
 }: DocumentListProps) {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [showMenu, setShowMenu] = useState<string | null>(null);

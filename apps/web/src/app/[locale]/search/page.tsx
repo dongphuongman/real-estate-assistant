@@ -210,26 +210,6 @@ function SearchPageContent() {
     return { filters: Object.keys(filters).length ? filters : undefined };
   };
 
-  const handleApplyPreset = (preset: FilterPreset) => {
-    const filters = preset.filters;
-    if (filters.min_price !== undefined) {
-      setMinPrice(String(filters.min_price));
-    }
-    if (filters.max_price !== undefined) {
-      setMaxPrice(String(filters.max_price));
-    }
-    if (filters.min_rooms !== undefined) {
-      setRooms(String(filters.min_rooms));
-    }
-    if (filters.property_type !== undefined) {
-      setPropertyType(String(filters.property_type));
-    }
-    // Trigger search with new filters
-    setTimeout(() => {
-      handleSearch();
-    }, 0);
-  };
-
   const handleSearch = async (e?: React.FormEvent) => {
     e?.preventDefault();
     setLoading(true);

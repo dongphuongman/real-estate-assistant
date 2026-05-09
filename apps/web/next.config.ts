@@ -3,7 +3,6 @@ import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import createNextIntlPlugin from 'next-intl/plugin';
 import withPWAInit from '@ducanh2912/next-pwa';
-import * as Sentry from '@sentry/nextjs';
 import { withSentryConfig } from '@sentry/nextjs';
 
 const configDir = dirname(fileURLToPath(import.meta.url));

@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { StepSubject } from './step-subject';
 import { StepComparables } from './step-comparables';
 import { StepAdjustments } from './step-adjustments';
 import { StepPreview } from './step-preview';
 import { StepExport } from './step-export';
-import type { Property, CMAComparable, CMAAdjustment, CMAReport } from '@/lib/types';
+import type { Property, CMAComparable, CMAReport } from '@/lib/types';
 
 interface CMAWizardState {
   currentStep: number;
@@ -46,6 +46,7 @@ export function CMAWizard() {
   const goToStep = useCallback((step: number) => {
     setState((prev) => ({ ...prev, currentStep: step, error: null }));
   }, []);
+  void goToStep;
 
   const nextStep = useCallback(() => {
     setState((prev) => ({

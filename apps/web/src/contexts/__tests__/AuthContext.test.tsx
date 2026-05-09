@@ -28,7 +28,6 @@ jest.mock('@/lib/api', () => ({
 }));
 
 import { AuthProvider, useAuth } from '../AuthContext';
-import { ApiError } from '@/lib/api';
 
 // Test component to access auth context
 function TestComponent() {
@@ -155,13 +154,15 @@ describe('AuthContext', () => {
       });
 
       // Second call: login
-      mockFetch.mockResolvedValueOnce(createMockResponse({
-        access_token: 'token',
-        refresh_token: 'refresh',
-        token_type: 'bearer',
-        expires_in: 3600,
-        user: mockUser
-      }));
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          access_token: 'token',
+          refresh_token: 'refresh',
+          token_type: 'bearer',
+          expires_in: 3600,
+          user: mockUser,
+        })
+      );
 
       // Click login button
       await act(async () => {
@@ -204,7 +205,7 @@ describe('AuthContext', () => {
         try {
           screen.getByTestId('login-btn').click();
           // Wait for the login promise to reject
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 100));
         } catch {
           // Expected - login throws on error
         }
@@ -280,7 +281,7 @@ describe('AuthContext', () => {
       await act(async () => {
         try {
           screen.getByTestId('login-btn').click();
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 100));
         } catch {
           // Expected - login throws on error
         }

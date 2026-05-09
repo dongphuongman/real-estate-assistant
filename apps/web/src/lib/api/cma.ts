@@ -2,15 +2,7 @@
  * CMA (Comparative Market Analysis) API - Task #85.
  */
 
-import type {
-  CMAStatus,
-  CMAAdjustment,
-  CMAComparable,
-  CMAValuation,
-  CMAReportCreate,
-  CMAReport,
-  CMAReportListResponse,
-} from '../types';
+import type { CMAComparable, CMAReportCreate, CMAReport, CMAReportListResponse } from '../types';
 
 import { getApiUrl, buildHeaders, safeFetch, handleResponse } from './client';
 

@@ -612,7 +612,7 @@ describe('Collections API', () => {
       mockFetch.mockResolvedValueOnce({ ok: true, status: 204 });
 
       await expect(deleteCollection('col-1')).resolves.toBeUndefined();
-      const [url, opts] = mockFetch.mock.calls[0];
+      const [, opts] = mockFetch.mock.calls[0];
       expect(opts.method).toBe('DELETE');
     });
 

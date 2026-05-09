@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, AlertCircle, RefreshCw, ArrowRight, Check, X } from 'lucide-react';
+import { Loader2, AlertCircle, ArrowRight, Check } from 'lucide-react';
 import { compareTCO, ApiError } from '@/lib/api';
 import type { TCOInput, TCOComparisonResult, EnhancedTCOResult } from '@/lib/types';
 import { TCOBreakdownChart } from './charts/tco-breakdown-chart';

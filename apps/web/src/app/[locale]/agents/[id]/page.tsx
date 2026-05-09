@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
-import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -36,9 +35,6 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
   // Unwrap params Promise using React.use()
   const resolvedParams = use(params);
   const agentId = resolvedParams.id;
-  const locale = resolvedParams.locale;
-
-  const t = useTranslations();
 
   const [agent, setAgent] = useState<AgentProfile | null>(null);
   const [listings, setListings] = useState<AgentListing[]>([]);

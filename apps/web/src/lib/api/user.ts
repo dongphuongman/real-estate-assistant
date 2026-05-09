@@ -12,7 +12,6 @@ import type {
   DataExportResponse,
   DataExportStatusResponse,
   UserActivitySummary,
-  UserActivityTrendPoint,
   UserActivityTrendsResponse,
   RagQaRequest,
   RagQaResponse,

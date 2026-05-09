@@ -16,8 +16,8 @@ import {
   DollarSign,
   BarChart3,
 } from 'lucide-react';
-import { compareAreas, getAreaInsights, ApiError } from '@/lib/api';
-import { AreaComparison, AreaInsights } from '@/lib/types';
+import { compareAreas, ApiError } from '@/lib/api';
+import { AreaComparison } from '@/lib/types';
 
 interface MetricRowProps {
   label: string;

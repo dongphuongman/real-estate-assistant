@@ -1,6 +1,6 @@
 'use client';
 
-import { Heart, ExternalLink, BedDouble, Bath, Maximize, MapPin } from 'lucide-react';
+import { Heart, ExternalLink, BedDouble, Maximize, MapPin } from 'lucide-react';
 import type { PropertyMapPoint } from './property-map-utils';
 
 interface PropertyMapPopupProps {
