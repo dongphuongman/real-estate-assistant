@@ -13,31 +13,22 @@ Tests cover:
 - duckduckgo_html_search (HTML parsing, result extraction, errors)
 """
 
-import html
 import ipaddress
 import socket
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from utils.web_fetch import (
     WebSearchResult,
-    _DDG_RESULT_A_RE,
-    _DDG_SNIPPET_RE,
-    _SEARX_ARTICLE_RE,
-    _SEARX_H3_LINK_RE,
-    _SEARX_SNIPPET_RE,
     _domain_allowed,
+    _hostname_resolves_to_public_ip,
     _html_to_text,
     _is_public_ip,
-    _hostname_resolves_to_public_ip,
     _normalize_domain,
     _url_is_safe,
     duckduckgo_html_search,
     fetch_url_text,
     searxng_search,
 )
-
 
 # ===========================================================================
 # Test: _normalize_domain
@@ -222,9 +213,7 @@ class TestUrlIsSafe:
     """Tests for URL safety validation."""
 
     def test_rejects_ftp_scheme(self):
-        with patch(
-            "utils.web_fetch._hostname_resolves_to_public_ip", return_value=True
-        ):
+        with patch("utils.web_fetch._hostname_resolves_to_public_ip", return_value=True):
             assert _url_is_safe("ftp://example.com/file", []) is False
 
     def test_rejects_javascript_scheme(self):
@@ -234,30 +223,22 @@ class TestUrlIsSafe:
         assert _url_is_safe("file:///etc/passwd", []) is False
 
     def test_accepts_http(self):
-        with patch(
-            "utils.web_fetch._hostname_resolves_to_public_ip", return_value=True
-        ):
+        with patch("utils.web_fetch._hostname_resolves_to_public_ip", return_value=True):
             assert _url_is_safe("http://example.com/page", []) is True
 
     def test_accepts_https(self):
-        with patch(
-            "utils.web_fetch._hostname_resolves_to_public_ip", return_value=True
-        ):
+        with patch("utils.web_fetch._hostname_resolves_to_public_ip", return_value=True):
             assert _url_is_safe("https://example.com/page", []) is True
 
     def test_rejects_url_without_hostname(self):
         assert _url_is_safe("http:///path-only", []) is False
 
     def test_rejects_blocked_domain(self):
-        with patch(
-            "utils.web_fetch._hostname_resolves_to_public_ip", return_value=True
-        ):
+        with patch("utils.web_fetch._hostname_resolves_to_public_ip", return_value=True):
             assert _url_is_safe("http://evil.com/page", ["allowed.com"]) is False
 
     def test_rejects_private_ip_hostname(self):
-        with patch(
-            "utils.web_fetch._hostname_resolves_to_public_ip", return_value=False
-        ):
+        with patch("utils.web_fetch._hostname_resolves_to_public_ip", return_value=False):
             assert _url_is_safe("http://192.168.1.1/admin", []) is False
 
 

@@ -17,8 +17,6 @@ import os
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
 from config.port_config import (
     _find_project_root,
     _load_env_ports,
@@ -29,7 +27,6 @@ from config.port_config import (
     get_frontend_url,
     get_frontend_url_for_settings,
 )
-
 
 # ===========================================================================
 # Test: _find_project_root
@@ -158,9 +155,7 @@ class TestLoadRegistryPorts:
                 {"category": "redis", "port": 6379, "status": "inactive"},
             ]
         }
-        (docs_dir / "PORT_REGISTRY.json").write_text(
-            json.dumps(registry), encoding="utf-8"
-        )
+        (docs_dir / "PORT_REGISTRY.json").write_text(json.dumps(registry), encoding="utf-8")
 
         result = _load_registry_ports(tmp_path)
         assert result == {"backend": 8080, "frontend": 3001}
@@ -178,9 +173,7 @@ class TestLoadRegistryPorts:
                 {"status": "active"},
             ]
         }
-        (docs_dir / "PORT_REGISTRY.json").write_text(
-            json.dumps(registry), encoding="utf-8"
-        )
+        (docs_dir / "PORT_REGISTRY.json").write_text(json.dumps(registry), encoding="utf-8")
 
         result = _load_registry_ports(tmp_path)
         assert result == {"backend": 8080}
@@ -197,9 +190,7 @@ class TestLoadRegistryPorts:
         """Malformed JSON returns empty dict without crashing."""
         docs_dir = tmp_path / "docs"
         docs_dir.mkdir()
-        (docs_dir / "PORT_REGISTRY.json").write_text(
-            "not valid json {{{", encoding="utf-8"
-        )
+        (docs_dir / "PORT_REGISTRY.json").write_text("not valid json {{{", encoding="utf-8")
 
         result = _load_registry_ports(tmp_path)
         assert result == {}
@@ -220,9 +211,7 @@ class TestLoadRegistryPorts:
         docs_dir = tmp_path / "docs"
         docs_dir.mkdir()
         registry = {"allocations": []}
-        (docs_dir / "PORT_REGISTRY.json").write_text(
-            json.dumps(registry), encoding="utf-8"
-        )
+        (docs_dir / "PORT_REGISTRY.json").write_text(json.dumps(registry), encoding="utf-8")
 
         result = _load_registry_ports(tmp_path)
         assert result == {}
@@ -232,9 +221,7 @@ class TestLoadRegistryPorts:
         docs_dir = tmp_path / "docs"
         docs_dir.mkdir()
         registry = {"version": "1.0.0"}
-        (docs_dir / "PORT_REGISTRY.json").write_text(
-            json.dumps(registry), encoding="utf-8"
-        )
+        (docs_dir / "PORT_REGISTRY.json").write_text(json.dumps(registry), encoding="utf-8")
 
         result = _load_registry_ports(tmp_path)
         assert result == {}
@@ -275,9 +262,7 @@ class TestGetBackendPort:
                 {"category": "backend", "port": 7777, "status": "active"},
             ]
         }
-        (docs_dir / "PORT_REGISTRY.json").write_text(
-            json.dumps(registry), encoding="utf-8"
-        )
+        (docs_dir / "PORT_REGISTRY.json").write_text(json.dumps(registry), encoding="utf-8")
 
         with (
             patch.dict(os.environ, {}, clear=False),
@@ -376,9 +361,7 @@ class TestGetFrontendUrl:
                 {"category": "frontend", "port": 3500, "status": "active"},
             ]
         }
-        (docs_dir / "PORT_REGISTRY.json").write_text(
-            json.dumps(registry), encoding="utf-8"
-        )
+        (docs_dir / "PORT_REGISTRY.json").write_text(json.dumps(registry), encoding="utf-8")
 
         with (
             patch.dict(os.environ, {}, clear=False),

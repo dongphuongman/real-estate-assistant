@@ -6,7 +6,7 @@ queued alerts, price snapshots, anomaly detection, search sync, error handling,
 and edge cases.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -20,7 +20,6 @@ from notifications.notification_preferences import (
     NotificationPreferences,
 )
 from notifications.scheduler import NotificationScheduler
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -136,7 +135,9 @@ class TestRunPending:
 
         with (
             patch.object(scheduler, "_refresh_data_sources"),
-            patch.object(scheduler, "_process_instant_alerts", return_value={"sent": 0, "queued": 0}),
+            patch.object(
+                scheduler, "_process_instant_alerts", return_value={"sent": 0, "queued": 0}
+            ),
         ):
             now = datetime(2023, 6, 15, 9, 0, 0)
             result = scheduler.run_pending(now=now)
@@ -250,8 +251,9 @@ class TestSendDueDigests:
     @patch("notifications.scheduler.load_previous_collection")
     @patch("notifications.scheduler.load_collection")
     @patch("notifications.scheduler.AlertManager")
-    def test_daily_digest_skipped_wrong_time(self, mock_am_cls, mock_load, mock_load_prev, scheduler):
-        mock_am = mock_am_cls.return_value
+    def test_daily_digest_skipped_wrong_time(
+        self, mock_am_cls, mock_load, mock_load_prev, scheduler
+    ):
         prefs = _make_prefs(
             alert_frequency=AlertFrequency.DAILY,
             enabled_alerts={AlertType.DIGEST},
@@ -328,9 +330,7 @@ class TestSendDueDigests:
     @patch("notifications.scheduler.load_previous_collection")
     @patch("notifications.scheduler.load_collection")
     @patch("notifications.scheduler.AlertManager")
-    def test_digest_dedup_same_minute(
-        self, mock_am_cls, mock_load, mock_load_prev, scheduler
-    ):
+    def test_digest_dedup_same_minute(self, mock_am_cls, mock_load, mock_load_prev, scheduler):
         """Second call within same minute is deduplicated (line 194)."""
         mock_am = mock_am_cls.return_value
         mock_am.send_digest.return_value = True
@@ -443,17 +443,13 @@ class TestIsTimeMatch:
         assert scheduler._is_time_match(prefs, now, AlertFrequency.DAILY) is False
 
     def test_weekly_correct_day(self, scheduler):
-        prefs = _make_prefs(
-            daily_digest_time="09:00", weekly_digest_day=DigestDay.THURSDAY
-        )
+        prefs = _make_prefs(daily_digest_time="09:00", weekly_digest_day=DigestDay.THURSDAY)
         # June 15 2023 is Thursday
         now = datetime(2023, 6, 15, 9, 0, 0)
         assert scheduler._is_time_match(prefs, now, AlertFrequency.WEEKLY) is True
 
     def test_weekly_wrong_day(self, scheduler):
-        prefs = _make_prefs(
-            daily_digest_time="09:00", weekly_digest_day=DigestDay.FRIDAY
-        )
+        prefs = _make_prefs(daily_digest_time="09:00", weekly_digest_day=DigestDay.FRIDAY)
         # June 15 2023 is Thursday
         now = datetime(2023, 6, 15, 9, 0, 0)
         assert scheduler._is_time_match(prefs, now, AlertFrequency.WEEKLY) is False
@@ -482,7 +478,9 @@ class TestBuildDigestData:
         mock_gen = mock_dg_cls.return_value
         mock_gen.generate_digest.return_value = {"new_properties": 5}
 
-        mock_load.return_value = PropertyCollection(properties=[], total_count=0, source_type="test")
+        mock_load.return_value = PropertyCollection(
+            properties=[], total_count=0, source_type="test"
+        )
         mock_load_prev.return_value = None
 
         prefs = _make_prefs()
@@ -497,7 +495,9 @@ class TestBuildDigestData:
     def test_fallback_without_vector_store(self, mock_load, mock_load_prev, scheduler):
         scheduler._vector_store = None  # no vector store
 
-        mock_load.return_value = PropertyCollection(properties=[], total_count=0, source_type="test")
+        mock_load.return_value = PropertyCollection(
+            properties=[], total_count=0, source_type="test"
+        )
         mock_load_prev.return_value = None
 
         prefs = _make_prefs()
@@ -546,9 +546,7 @@ class TestProcessInstantAlerts:
     @patch("notifications.scheduler.load_previous_collection")
     @patch("notifications.scheduler.load_collection")
     @patch("notifications.scheduler.AlertManager")
-    def test_price_drop_sent(
-        self, mock_am_cls, mock_load, mock_load_prev, scheduler
-    ):
+    def test_price_drop_sent(self, mock_am_cls, mock_load, mock_load_prev, scheduler):
         mock_am = mock_am_cls.return_value
         mock_am._get_property_key.side_effect = lambda p: str(p.id)
         mock_am.check_price_drops.return_value = [
@@ -660,9 +658,7 @@ class TestProcessInstantAlerts:
     @patch("notifications.scheduler.load_previous_collection")
     @patch("notifications.scheduler.load_collection")
     @patch("notifications.scheduler.AlertManager")
-    def test_price_drop_no_matching_search(
-        self, mock_am_cls, mock_load, mock_load_prev, scheduler
-    ):
+    def test_price_drop_no_matching_search(self, mock_am_cls, mock_load, mock_load_prev, scheduler):
         """Drops not matching any saved search are skipped."""
         mock_am = mock_am_cls.return_value
         mock_am._get_property_key.side_effect = lambda p: str(p.id)
@@ -717,9 +713,7 @@ class TestProcessInstantAlerts:
     @patch("notifications.scheduler.load_previous_collection")
     @patch("notifications.scheduler.load_collection")
     @patch("notifications.scheduler.AlertManager")
-    def test_new_property_alert_sent(
-        self, mock_am_cls, mock_load, mock_load_prev, scheduler
-    ):
+    def test_new_property_alert_sent(self, mock_am_cls, mock_load, mock_load_prev, scheduler):
         """New property matching a saved search triggers alert (lines 373-413)."""
         mock_am = mock_am_cls.return_value
         mock_am._get_property_key.side_effect = lambda p: str(p.id)
@@ -793,9 +787,7 @@ class TestProcessInstantAlerts:
     @patch("notifications.scheduler.load_previous_collection")
     @patch("notifications.scheduler.load_collection")
     @patch("notifications.scheduler.AlertManager")
-    def test_new_property_search_not_found(
-        self, mock_am_cls, mock_load, mock_load_prev, scheduler
-    ):
+    def test_new_property_search_not_found(self, mock_am_cls, mock_load, mock_load_prev, scheduler):
         """Matches with unknown search_id are skipped (line 386-387)."""
         mock_am = mock_am_cls.return_value
         mock_am._get_property_key.side_effect = lambda p: str(p.id)
@@ -855,7 +847,13 @@ class TestProcessQueuedAlerts:
             user_email="user@example.com",
             property_id="prop-1",
             data={
-                "property": {"id": "prop-1", "city": "CityA", "price": 900, "rooms": 2, "bathrooms": 1},
+                "property": {
+                    "id": "prop-1",
+                    "city": "CityA",
+                    "price": 900,
+                    "rooms": 2,
+                    "bathrooms": 1,
+                },
                 "old_price": 1000,
                 "new_price": 900,
                 "percent_drop": 10.0,
@@ -1103,9 +1101,7 @@ class TestPriceSnapshotCapture:
 
     @pytest.mark.asyncio
     async def test_async_capture_success(self, scheduler):
-        with patch(
-            "services.price_snapshot_service.get_price_snapshot_service"
-        ) as mock_get:
+        with patch("services.price_snapshot_service.get_price_snapshot_service") as mock_get:
             mock_service = MagicMock()
             mock_service.capture_all_property_prices = AsyncMock(
                 return_value={"captured": 10, "skipped": 2}
@@ -1264,7 +1260,6 @@ class TestRunLoop:
         """_run_loop calls run_pending and exits when stop_event is set."""
         scheduler._poll_interval_seconds = 0  # no wait
         call_count = 0
-        original_run_pending = scheduler.run_pending
 
         def counting_run_pending(now=None):
             nonlocal call_count
@@ -1287,16 +1282,16 @@ class TestEdgeCases:
     def test_default_prefs_manager_created(self, mock_email_service):
         """If no prefs_manager provided, default is created (line 56)."""
         with patch("notifications.scheduler.NotificationPreferencesManager"):
-            s = NotificationScheduler(email_service=mock_email_service)
+            NotificationScheduler(email_service=mock_email_service)
             # Should not raise
 
     def test_default_history_created(self, mock_email_service):
         with patch("notifications.scheduler.NotificationHistory"):
-            s = NotificationScheduler(email_service=mock_email_service)
+            NotificationScheduler(email_service=mock_email_service)
 
     def test_default_search_manager_created(self, mock_email_service):
         with patch("notifications.scheduler.SavedSearchManager"):
-            s = NotificationScheduler(email_service=mock_email_service)
+            NotificationScheduler(email_service=mock_email_service)
 
     def test_poll_interval_default(self, mock_email_service):
         s = NotificationScheduler(email_service=mock_email_service)

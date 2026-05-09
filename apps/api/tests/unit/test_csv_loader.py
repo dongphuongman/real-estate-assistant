@@ -889,7 +889,6 @@ class TestExcelLoadDf:
         assert captured["engine"] == "xlrd"
 
     def test_ods_loads_with_odf_engine(self, monkeypatch):
-        import importlib
         import sys
 
         captured = {}

@@ -10,17 +10,14 @@ Covers:
 - RateLimiter: token bucket algorithm, acquire, reset
 """
 
-import asyncio
 import time
 from datetime import datetime
-from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
 
 from data.adapters.base import (
     MAX_RETRIES,
-    RETRY_BASE_WAIT,
     RETRY_MAX_WAIT,
     RETRYABLE_EXCEPTIONS,
     ExternalSourceAdapter,
@@ -30,7 +27,6 @@ from data.adapters.base import (
     with_retry,
     with_retry_async,
 )
-
 
 # ---------------------------------------------------------------------------
 # with_retry decorator
