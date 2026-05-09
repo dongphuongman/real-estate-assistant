@@ -33,6 +33,9 @@ services:
     volumes:
       - chroma_data:/app/chroma_db
     restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -47,6 +50,11 @@ services:
         reservations:
           memory: 256M
           cpus: "0.25"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   frontend:
     image: ghcr.io/aleksnestu/ai-real-estate-assistant/frontend:latest
@@ -75,11 +83,16 @@ services:
         reservations:
           memory: 128M
           cpus: "0.1"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   redis:
     image: redis:7-alpine
     container_name: ai-redis
-    command: ["redis-server", "--appendonly", "yes"]
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "100mb", "--maxmemory-policy", "allkeys-lru"]
     volumes:
       - redis_data:/data
     restart: unless-stopped
@@ -88,6 +101,11 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
 
 volumes:
   chroma_data:
