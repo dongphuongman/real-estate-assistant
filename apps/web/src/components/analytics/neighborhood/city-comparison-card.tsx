@@ -104,7 +104,11 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
           {/* Circular percentile indicator */}
           <div className="flex-shrink-0">
             <div className="relative w-32 h-32">
-              <svg className="w-full h-full transform -rotate-90">
+              <svg
+                className="w-full h-full transform -rotate-90"
+                role="img"
+                aria-label={`Percentile rank: ${comparison.percentile}`}
+              >
                 <circle
                   cx="64"
                   cy="64"
@@ -157,7 +161,11 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
         {/* Comparison Chart */}
         <div className="mb-6">
           <h5 className="text-sm font-medium mb-3">Score Comparison</h5>
-          <div className="h-40">
+          <div
+            className="h-40"
+            role="img"
+            aria-label={`Score comparison: This area ${result.overall_score.toFixed(1)}, City average ${comparison.city_average.toFixed(1)}`}
+          >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} layout="vertical" barSize={40}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />
@@ -189,7 +197,7 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
           {comparison.better_than.length > 0 && (
             <div className="rounded-lg border border-green-200 bg-green-50 p-4">
               <div className="flex items-center gap-2 mb-3">
-                <TrendingUp className="h-4 w-4 text-green-600" />
+                <TrendingUp className="h-4 w-4 text-green-600" aria-hidden="true" />
                 <h5 className="text-sm font-semibold text-green-800">Better Than Average</h5>
               </div>
               <ul className="space-y-1">
@@ -211,7 +219,7 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
           {comparison.worse_than.length > 0 && (
             <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
               <div className="flex items-center gap-2 mb-3">
-                <TrendingDown className="h-4 w-4 text-orange-600" />
+                <TrendingDown className="h-4 w-4 text-orange-600" aria-hidden="true" />
                 <h5 className="text-sm font-semibold text-orange-800">Below Average</h5>
               </div>
               <ul className="space-y-1">
@@ -233,7 +241,7 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
           {comparison.better_than.length === 0 && comparison.worse_than.length === 0 && (
             <div className="md:col-span-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
               <div className="flex items-center gap-2">
-                <Minus className="h-4 w-4 text-gray-600" />
+                <Minus className="h-4 w-4 text-gray-600" aria-hidden="true" />
                 <p className="text-sm text-gray-600">
                   This neighborhood scores close to the city average across all factors.
                 </p>
@@ -254,11 +262,11 @@ export function CityComparisonCard({ result, className = '' }: CityComparisonCar
             }`}
           >
             {result.overall_score > comparison.city_average ? (
-              <TrendingUp className="h-4 w-4" />
+              <TrendingUp className="h-4 w-4" aria-hidden="true" />
             ) : result.overall_score < comparison.city_average ? (
-              <TrendingDown className="h-4 w-4" />
+              <TrendingDown className="h-4 w-4" aria-hidden="true" />
             ) : (
-              <Minus className="h-4 w-4" />
+              <Minus className="h-4 w-4" aria-hidden="true" />
             )}
             <span className="text-sm font-medium">
               {result.overall_score > comparison.city_average

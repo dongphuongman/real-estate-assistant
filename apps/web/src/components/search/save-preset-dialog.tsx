@@ -77,15 +77,23 @@ export function SavePresetDialog({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="save-preset-title"
+    >
       <div className="bg-background rounded-lg p-6 max-w-md w-full mx-4 shadow-lg">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Save Filter Preset</h2>
+          <h2 className="text-lg font-semibold" id="save-preset-title">
+            Save Filter Preset
+          </h2>
           <button
             onClick={handleClose}
             className="text-muted-foreground hover:text-foreground"
+            aria-label="Close dialog"
           >
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
 
@@ -99,10 +107,11 @@ export function SavePresetDialog({
         ) : (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">
+              <label htmlFor="preset-name" className="block text-sm font-medium mb-1">
                 Preset Name <span className="text-destructive">*</span>
               </label>
               <input
+                id="preset-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -114,10 +123,11 @@ export function SavePresetDialog({
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">
+              <label htmlFor="preset-description" className="block text-sm font-medium mb-1">
                 Description (optional)
               </label>
               <textarea
+                id="preset-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Brief description of this preset..."
@@ -141,7 +151,11 @@ export function SavePresetDialog({
               Saves your current filter settings for quick access later.
             </div>
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && (
+              <p className="text-sm text-destructive" role="alert">
+                {error}
+              </p>
+            )}
 
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={handleClose} disabled={saving}>
@@ -150,7 +164,7 @@ export function SavePresetDialog({
               <Button onClick={handleSave} disabled={saving}>
                 {saving ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
                     Saving...
                   </>
                 ) : (

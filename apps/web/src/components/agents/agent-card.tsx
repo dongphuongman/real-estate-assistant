@@ -29,13 +29,19 @@ export function AgentCard({ agent, locale }: AgentCardProps) {
                   className="h-24 w-24 rounded-full object-cover"
                 />
               ) : (
-                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-2xl font-bold text-white">
+                <div
+                  className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-2xl font-bold text-white"
+                  aria-hidden="true"
+                >
                   {displayName.charAt(0).toUpperCase()}
                 </div>
               )}
               {agent.is_verified && (
-                <div className="absolute -bottom-1 -right-1 rounded-full bg-green-500 p-1.5">
-                  <Award className="h-4 w-4 text-white" />
+                <div
+                  className="absolute -bottom-1 -right-1 rounded-full bg-green-500 p-1.5"
+                  aria-label="Verified agent"
+                >
+                  <Award className="h-4 w-4 text-white" aria-hidden="true" />
                 </div>
               )}
             </div>
@@ -61,14 +67,14 @@ export function AgentCard({ agent, locale }: AgentCardProps) {
             <div className="mb-3 flex flex-wrap items-center gap-4 text-sm">
               {agent.average_rating > 0 && (
                 <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" aria-hidden="true" />
                   <span className="font-medium">{agent.average_rating.toFixed(1)}</span>
                   <span className="text-muted-foreground">({agent.total_reviews} reviews)</span>
                 </div>
               )}
               {agent.total_sales > 0 && (
                 <div className="flex items-center gap-1 text-muted-foreground">
-                  <Briefcase className="h-4 w-4" />
+                  <Briefcase className="h-4 w-4" aria-hidden="true" />
                   <span>{agent.total_sales} sales</span>
                 </div>
               )}
@@ -93,7 +99,7 @@ export function AgentCard({ agent, locale }: AgentCardProps) {
             {/* Service Areas */}
             {agent.service_areas && agent.service_areas.length > 0 && (
               <div className="mb-3 flex items-center gap-1 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
+                <MapPin className="h-4 w-4" aria-hidden="true" />
                 <span>{agent.service_areas.slice(0, 2).join(', ')}</span>
                 {agent.service_areas.length > 2 && (
                   <span>+{agent.service_areas.length - 2} more</span>
@@ -111,7 +117,7 @@ export function AgentCard({ agent, locale }: AgentCardProps) {
               {agent.professional_phone && (
                 <a href={`tel:${agent.professional_phone}`}>
                   <Button variant="ghost" size="sm">
-                    <Phone className="mr-1 h-4 w-4" />
+                    <Phone className="mr-1 h-4 w-4" aria-hidden="true" />
                     Call
                   </Button>
                 </a>
@@ -119,7 +125,7 @@ export function AgentCard({ agent, locale }: AgentCardProps) {
               {agent.professional_email && (
                 <a href={`mailto:${agent.professional_email}`}>
                   <Button variant="ghost" size="sm">
-                    <Mail className="mr-1 h-4 w-4" />
+                    <Mail className="mr-1 h-4 w-4" aria-hidden="true" />
                     Email
                   </Button>
                 </a>

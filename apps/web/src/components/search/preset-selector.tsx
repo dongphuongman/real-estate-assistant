@@ -27,11 +27,7 @@ interface PresetSelectorProps {
   className?: string;
 }
 
-export function PresetSelector({
-  onPresetSelect,
-  currentFilters,
-  className,
-}: PresetSelectorProps) {
+export function PresetSelector({ onPresetSelect, currentFilters, className }: PresetSelectorProps) {
   const [presets, setPresets] = useState<FilterPreset[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -123,21 +119,19 @@ export function PresetSelector({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className={className}>
-            <Filter className="h-4 w-4 mr-2" />
+            <Filter className="h-4 w-4 mr-2" aria-hidden="true" />
             Presets
-            <ChevronDown className="h-4 w-4 ml-2" />
+            <ChevronDown className="h-4 w-4 ml-2" aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-64">
           {loading ? (
             <div className="flex items-center justify-center py-4">
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              <Loader2 className="h-4 w-4 animate-spin mr-2" aria-hidden="true" />
               Loading...
             </div>
           ) : error ? (
-            <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-              {error}
-            </div>
+            <div className="px-2 py-4 text-center text-sm text-muted-foreground">{error}</div>
           ) : presets.length === 0 ? (
             <div className="px-2 py-4 text-center text-sm text-muted-foreground">
               No saved presets yet
@@ -151,7 +145,10 @@ export function PresetSelector({
               >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   {preset.is_default && (
-                    <Star className="h-3 w-3 text-yellow-500 fill-yellow-500 flex-shrink-0" />
+                    <Star
+                      className="h-3 w-3 text-yellow-500 fill-yellow-500 flex-shrink-0"
+                      aria-hidden="true"
+                    />
                   )}
                   <span className="truncate">{preset.name}</span>
                 </div>
@@ -162,7 +159,10 @@ export function PresetSelector({
                       className="p-1 hover:bg-muted rounded"
                       title="Set as default"
                     >
-                      <Star className="h-3 w-3 text-muted-foreground hover:text-yellow-500" />
+                      <Star
+                        className="h-3 w-3 text-muted-foreground hover:text-yellow-500"
+                        aria-hidden="true"
+                      />
                     </button>
                   )}
                   <button
@@ -171,7 +171,10 @@ export function PresetSelector({
                     disabled={deletingId === preset.id}
                     title="Delete preset"
                   >
-                    <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                    <Trash2
+                      className="h-3 w-3 text-muted-foreground hover:text-destructive"
+                      aria-hidden="true"
+                    />
                   </button>
                 </div>
               </DropdownMenuItem>
@@ -183,7 +186,7 @@ export function PresetSelector({
             disabled={!hasFilters}
             className={!hasFilters ? 'opacity-50' : ''}
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
             Save Current Filters
           </DropdownMenuItem>
         </DropdownMenuContent>

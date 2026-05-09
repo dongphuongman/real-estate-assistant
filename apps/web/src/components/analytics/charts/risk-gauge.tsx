@@ -56,13 +56,17 @@ export function RiskGauge({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           Risk Assessment
-          {riskLevel.icon}
+          <span aria-hidden="true">{riskLevel.icon}</span>
         </CardTitle>
         <CardDescription>Investment risk analysis and recommendations</CardDescription>
       </CardHeader>
       <CardContent>
         {/* Gauge Visualization */}
-        <div className="flex flex-col items-center mb-6">
+        <div
+          className="flex flex-col items-center mb-6"
+          role="img"
+          aria-label={`Risk score: ${score} out of 100, ${riskLevel.label}`}
+        >
           <div className="relative w-48 h-24 overflow-hidden">
             {/* Gauge background arc */}
             <div className="absolute inset-0 border-[16px] border-muted rounded-t-full" />

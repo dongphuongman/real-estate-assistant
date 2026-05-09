@@ -77,7 +77,13 @@ export function AnomalyTypeBadge({ type, className, ...props }: AnomalyTypeBadge
 
   const icons: Record<AnomalyType, React.ReactNode> = {
     price_spike: (
-      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg
+        className="h-3 w-3"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -87,7 +93,13 @@ export function AnomalyTypeBadge({ type, className, ...props }: AnomalyTypeBadge
       </svg>
     ),
     price_drop: (
-      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg
+        className="h-3 w-3"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -97,7 +109,13 @@ export function AnomalyTypeBadge({ type, className, ...props }: AnomalyTypeBadge
       </svg>
     ),
     volume_spike: (
-      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg
+        className="h-3 w-3"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -107,7 +125,13 @@ export function AnomalyTypeBadge({ type, className, ...props }: AnomalyTypeBadge
       </svg>
     ),
     volume_drop: (
-      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg
+        className="h-3 w-3"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -117,7 +141,13 @@ export function AnomalyTypeBadge({ type, className, ...props }: AnomalyTypeBadge
       </svg>
     ),
     unusual_pattern: (
-      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg
+        className="h-3 w-3"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -167,7 +197,13 @@ export function getSeverityIcon(severity: AnomalySeverity) {
   const icons: Record<AnomalySeverity, React.ComponentType<{ className?: string }>> = {
     low: function LowIcon({ className }) {
       return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg
+          className={className}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -179,7 +215,13 @@ export function getSeverityIcon(severity: AnomalySeverity) {
     },
     medium: function MediumIcon({ className }) {
       return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg
+          className={className}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -191,7 +233,13 @@ export function getSeverityIcon(severity: AnomalySeverity) {
     },
     high: function HighIcon({ className }) {
       return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg
+          className={className}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -203,7 +251,13 @@ export function getSeverityIcon(severity: AnomalySeverity) {
     },
     critical: function CriticalIcon({ className }) {
       return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg
+          className={className}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"

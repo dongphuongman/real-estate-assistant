@@ -70,6 +70,8 @@ export default function ClusterMarker({
   return (
     <div
       className="mapbox-marker-cluster"
+      role="img"
+      aria-label={`${count} properties clustered`}
       style={{
         minWidth: count >= 100 ? '40px' : count >= 50 ? '35px' : '30px',
         height: count >= 100 ? '40px' : count >= 50 ? '35px' : '30px',

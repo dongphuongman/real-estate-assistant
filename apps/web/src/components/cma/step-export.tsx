@@ -101,6 +101,7 @@ export function StepExport({ report, onReset, onPrev }: StepExportProps) {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
@@ -122,6 +123,7 @@ export function StepExport({ report, onReset, onPrev }: StepExportProps) {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -150,6 +152,7 @@ export function StepExport({ report, onReset, onPrev }: StepExportProps) {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -178,6 +181,7 @@ export function StepExport({ report, onReset, onPrev }: StepExportProps) {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -200,7 +204,7 @@ export function StepExport({ report, onReset, onPrev }: StepExportProps) {
 
       {/* Download error */}
       {downloadError && (
-        <div className="text-sm text-destructive bg-destructive/10 px-4 py-3 rounded">
+        <div className="text-sm text-destructive bg-destructive/10 px-4 py-3 rounded" role="alert">
           {downloadError}
         </div>
       )}

@@ -54,7 +54,11 @@ export function DiversificationChart({ diversification, className }: Diversifica
           {/* Geographic Distribution */}
           <div>
             <h4 className="text-sm font-medium mb-2 text-center">By City</h4>
-            <div className="h-48">
+            <div
+              className="h-48"
+              role="img"
+              aria-label="Geographic distribution pie chart showing portfolio allocation by city"
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -83,7 +87,11 @@ export function DiversificationChart({ diversification, className }: Diversifica
           {/* Property Type Distribution */}
           <div>
             <h4 className="text-sm font-medium mb-2 text-center">By Property Type</h4>
-            <div className="h-48">
+            <div
+              className="h-48"
+              role="img"
+              aria-label="Property type distribution pie chart showing portfolio allocation by property type"
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie

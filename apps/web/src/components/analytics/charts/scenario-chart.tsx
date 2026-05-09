@@ -53,7 +53,11 @@ export function ScenarioChart({ scenarios, initialPrice, className }: ScenarioCh
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-64">
+        <div
+          className="h-64"
+          role="img"
+          aria-label="Appreciation scenarios line chart showing property value projections under pessimistic, realistic, and optimistic conditions"
+        >
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />

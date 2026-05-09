@@ -88,7 +88,11 @@ export function TCOBreakdownChart({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-64">
+        <div
+          className="h-64"
+          role="img"
+          aria-label={`Pie chart showing monthly cost breakdown: ${chartData.map((d) => `${d.name} ${formatCurrency(d.value)}`).join(', ')}`}
+        >
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie

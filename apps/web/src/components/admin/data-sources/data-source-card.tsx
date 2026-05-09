@@ -98,9 +98,7 @@ export function DataSourceCard({
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className="p-2 bg-muted rounded">
-            {getSourceTypeIcon()}
-          </div>
+          <div className="p-2 bg-muted rounded">{getSourceTypeIcon()}</div>
           <div>
             <h3 className="font-semibold text-sm">{source.name}</h3>
             <p className="text-xs text-muted-foreground">{getSourceTypeLabel()}</p>
@@ -114,16 +112,15 @@ export function DataSourceCard({
             size="sm"
             className="h-8 w-8 p-0"
             onClick={() => setShowMenu(!showMenu)}
+            aria-label="Actions menu"
+            aria-expanded={showMenu}
           >
-            <MoreVertical className="w-4 h-4" />
+            <MoreVertical className="w-4 h-4" aria-hidden="true" />
           </Button>
 
           {showMenu && (
             <>
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setShowMenu(false)}
-              />
+              <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
               <div className="absolute right-0 top-8 z-20 w-36 bg-card border rounded-md shadow-lg py-1">
                 <button
                   type="button"
@@ -188,7 +185,7 @@ export function DataSourceCard({
 
       {/* Error Message */}
       {source.last_error && (
-        <div className="mt-3 p-2 bg-destructive/10 rounded text-xs text-destructive">
+        <div className="mt-3 p-2 bg-destructive/10 rounded text-xs text-destructive" role="alert">
           {source.last_error}
         </div>
       )}

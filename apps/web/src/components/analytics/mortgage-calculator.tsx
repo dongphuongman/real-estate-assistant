@@ -1,16 +1,25 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { calculateMortgage, calculateTCO, ApiError } from "@/lib/api";
-import { MortgageResult, TCOResult } from "@/lib/types";
-import { Loader2, AlertCircle, RefreshCw, Calculator, ChevronDown, ChevronUp, Scale, Download } from "lucide-react";
-import { TCOBreakdownChart } from "./charts/tco-breakdown-chart";
-import { TCOComparison } from "./tco-comparison";
-import { exportTCOToPDF } from "@/lib/pdf-export";
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { calculateMortgage, calculateTCO, ApiError } from '@/lib/api';
+import { MortgageResult, TCOResult } from '@/lib/types';
+import {
+  Loader2,
+  AlertCircle,
+  RefreshCw,
+  Calculator,
+  ChevronDown,
+  ChevronUp,
+  Scale,
+  Download,
+} from 'lucide-react';
+import { TCOBreakdownChart } from './charts/tco-breakdown-chart';
+import { TCOComparison } from './tco-comparison';
+import { exportTCOToPDF } from '@/lib/pdf-export';
 
 interface ErrorState {
   message: string;
@@ -18,7 +27,7 @@ interface ErrorState {
 }
 
 const extractErrorState = (err: unknown): ErrorState => {
-  let message = "Unknown error";
+  let message = 'Unknown error';
   let requestId: string | undefined = undefined;
 
   if (err instanceof ApiError) {
@@ -120,10 +129,12 @@ export function MortgageCalculator() {
           </div>
           <h3 className="text-lg font-semibold mb-2">Mortgage Calculator</h3>
           <p className="text-sm text-muted-foreground max-w-md mx-auto mb-3">
-            Enter your property details below to estimate monthly payments, total interest, and complete loan breakdown.
+            Enter your property details below to estimate monthly payments, total interest, and
+            complete loan breakdown.
           </p>
           <p className="text-xs text-muted-foreground">
-            Adjust the default values and click Calculate to see your personalized mortgage analysis.
+            Adjust the default values and click Calculate to see your personalized mortgage
+            analysis.
           </p>
         </div>
       )}
@@ -132,9 +143,7 @@ export function MortgageCalculator() {
       <Card>
         <CardHeader>
           <CardTitle>Mortgage Calculator</CardTitle>
-          <CardDescription>
-            Estimate your monthly payments and total costs.
-          </CardDescription>
+          <CardDescription>Estimate your monthly payments and total costs.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleCalculate} className="space-y-4">
@@ -191,7 +200,7 @@ export function MortgageCalculator() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
               Calculate
             </Button>
 
@@ -294,7 +303,9 @@ export function MortgageCalculator() {
                     />
                   </div>
                   <div className="space-y-2 col-span-2">
-                    <Label htmlFor="maintenance_percent">Annual Maintenance (% of property value)</Label>
+                    <Label htmlFor="maintenance_percent">
+                      Annual Maintenance (% of property value)
+                    </Label>
                     <Input
                       id="maintenance_percent"
                       name="maintenance_percent"
@@ -321,7 +332,10 @@ export function MortgageCalculator() {
                 aria-live="assertive"
               >
                 <div className="flex items-start gap-2">
-                  <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" aria-hidden="true" />
+                  <AlertCircle
+                    className="h-4 w-4 text-destructive mt-0.5 shrink-0"
+                    aria-hidden="true"
+                  />
                   <div className="flex-1">
                     <p className="text-sm text-destructive font-medium">Calculation failed</p>
                     <p className="text-sm text-destructive/90 mt-1">{errorState.message}</p>
@@ -355,9 +369,7 @@ export function MortgageCalculator() {
         <Card>
           <CardHeader>
             <CardTitle>Mortgage Results</CardTitle>
-            <CardDescription>
-              Breakdown of your estimated mortgage.
-            </CardDescription>
+            <CardDescription>Breakdown of your estimated mortgage.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
@@ -392,7 +404,7 @@ export function MortgageCalculator() {
               <div className="space-y-1">
                 {Object.entries(result.breakdown).map(([key, value]) => (
                   <div key={key} className="flex justify-between text-sm">
-                    <span className="capitalize">{key.replace(/_/g, " ")}</span>
+                    <span className="capitalize">{key.replace(/_/g, ' ')}</span>
                     <span>${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                   </div>
                 ))}
@@ -407,7 +419,8 @@ export function MortgageCalculator() {
           <CardHeader>
             <CardTitle>Total Cost of Ownership</CardTitle>
             <CardDescription>
-              Complete monthly and annual costs including mortgage, taxes, insurance, utilities, and maintenance.
+              Complete monthly and annual costs including mortgage, taxes, insurance, utilities, and
+              maintenance.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -426,15 +439,23 @@ export function MortgageCalculator() {
                 </p>
               </div>
               <div className="bg-muted rounded-lg p-3">
-                <p className="text-xs text-muted-foreground">Total Over {formData.loan_years} Years</p>
+                <p className="text-xs text-muted-foreground">
+                  Total Over {formData.loan_years} Years
+                </p>
                 <p className="text-lg font-semibold">
-                  ${tcoResult.total_ownership_cost.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  $
+                  {tcoResult.total_ownership_cost.toLocaleString(undefined, {
+                    maximumFractionDigits: 0,
+                  })}
                 </p>
               </div>
               <div className="bg-muted rounded-lg p-3">
                 <p className="text-xs text-muted-foreground">All-In Cost</p>
                 <p className="text-lg font-semibold">
-                  ${tcoResult.total_all_costs.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  $
+                  {tcoResult.total_all_costs.toLocaleString(undefined, {
+                    maximumFractionDigits: 0,
+                  })}
                 </p>
               </div>
             </div>
@@ -445,35 +466,72 @@ export function MortgageCalculator() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="flex justify-between text-sm p-2 bg-muted/50 rounded">
                   <span className="text-muted-foreground">Mortgage</span>
-                  <span className="font-medium">${tcoResult.monthly_mortgage.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span className="font-medium">
+                    $
+                    {tcoResult.monthly_mortgage.toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm p-2 bg-muted/50 rounded">
                   <span className="text-muted-foreground">Property Tax</span>
-                  <span className="font-medium">${tcoResult.monthly_property_tax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span className="font-medium">
+                    $
+                    {tcoResult.monthly_property_tax.toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm p-2 bg-muted/50 rounded">
                   <span className="text-muted-foreground">Insurance</span>
-                  <span className="font-medium">${tcoResult.monthly_insurance.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span className="font-medium">
+                    $
+                    {tcoResult.monthly_insurance.toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm p-2 bg-muted/50 rounded">
                   <span className="text-muted-foreground">HOA</span>
-                  <span className="font-medium">${tcoResult.monthly_hoa.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span className="font-medium">
+                    ${tcoResult.monthly_hoa.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm p-2 bg-muted/50 rounded">
                   <span className="text-muted-foreground">Utilities</span>
-                  <span className="font-medium">${tcoResult.monthly_utilities.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span className="font-medium">
+                    $
+                    {tcoResult.monthly_utilities.toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm p-2 bg-muted/50 rounded">
                   <span className="text-muted-foreground">Internet</span>
-                  <span className="font-medium">${tcoResult.monthly_internet.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span className="font-medium">
+                    $
+                    {tcoResult.monthly_internet.toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm p-2 bg-muted/50 rounded">
                   <span className="text-muted-foreground">Parking</span>
-                  <span className="font-medium">${tcoResult.monthly_parking.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span className="font-medium">
+                    $
+                    {tcoResult.monthly_parking.toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm p-2 bg-muted/50 rounded">
                   <span className="text-muted-foreground">Maintenance</span>
-                  <span className="font-medium">${tcoResult.monthly_maintenance.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span className="font-medium">
+                    $
+                    {tcoResult.monthly_maintenance.toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
+                  </span>
                 </div>
               </div>
             </div>
@@ -483,20 +541,13 @@ export function MortgageCalculator() {
 
       {/* TCO Breakdown Pie Chart */}
       {tcoResult && (
-        <TCOBreakdownChart
-          tcoResult={tcoResult}
-          className="col-span-full md:col-span-2"
-        />
+        <TCOBreakdownChart tcoResult={tcoResult} className="col-span-full md:col-span-2" />
       )}
 
       {/* Export PDF Button */}
       {tcoResult && (
         <div className="col-span-full md:col-span-2 flex justify-center">
-          <Button
-            variant="outline"
-            onClick={() => exportTCOToPDF(tcoResult)}
-            className="gap-2"
-          >
+          <Button variant="outline" onClick={() => exportTCOToPDF(tcoResult)} className="gap-2">
             <Download className="h-4 w-4" />
             Export to PDF
           </Button>
@@ -513,7 +564,7 @@ export function MortgageCalculator() {
             className="gap-2"
           >
             <Scale className="h-4 w-4" />
-            {showComparison ? "Hide Comparison" : "Compare Scenarios"}
+            {showComparison ? 'Hide Comparison' : 'Compare Scenarios'}
           </Button>
         </div>
       )}

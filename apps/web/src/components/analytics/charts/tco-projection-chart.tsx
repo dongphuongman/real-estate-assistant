@@ -69,7 +69,11 @@ export function TCOProjectionChart({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-72">
+        <div
+          className="h-72"
+          role="img"
+          aria-label="Ownership projection line chart showing cumulative costs, equity built, property value, and loan balance over time"
+        >
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />

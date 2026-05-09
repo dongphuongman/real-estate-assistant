@@ -104,7 +104,7 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
     {
       key: 'air_quality_score',
       label: 'Air Quality',
-      icon: <Wind className="h-5 w-5" />,
+      icon: <Wind className="h-5 w-5" aria-hidden="true" />,
       detailKey: 'air_quality',
       description:
         'Measures air pollution levels using the Air Quality Index (AQI). Lower values indicate cleaner air.',
@@ -119,7 +119,7 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
     {
       key: 'noise_level_score',
       label: 'Noise Level',
-      icon: <Volume2 className="h-5 w-5" />,
+      icon: <Volume2 className="h-5 w-5" aria-hidden="true" />,
       detailKey: 'noise_level',
       description:
         'Average ambient noise level in decibels. Lower values indicate a quieter environment.',
@@ -134,7 +134,7 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
     {
       key: 'public_transport_score',
       label: 'Public Transport',
-      icon: <Bus className="h-5 w-5" />,
+      icon: <Bus className="h-5 w-5" aria-hidden="true" />,
       detailKey: 'public_transport',
       description:
         'Number of public transport stops within 1km. Higher values indicate better accessibility.',
@@ -150,15 +150,15 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
 
   const getConfidenceIcon = (confidence: number | undefined) => {
     if (confidence === undefined) {
-      return <Info className="h-3 w-3 text-gray-400" />;
+      return <Info className="h-3 w-3 text-gray-400" aria-hidden="true" />;
     }
     if (confidence >= 0.8) {
-      return <CheckCircle className="h-3 w-3 text-green-600" />;
+      return <CheckCircle className="h-3 w-3 text-green-600" aria-hidden="true" />;
     }
     if (confidence >= 0.6) {
-      return <Info className="h-3 w-3 text-yellow-600" />;
+      return <Info className="h-3 w-3 text-yellow-600" aria-hidden="true" />;
     }
-    return <AlertTriangle className="h-3 w-3 text-red-600" />;
+    return <AlertTriangle className="h-3 w-3 text-red-600" aria-hidden="true" />;
   };
 
   const getScoreColor = (score: number): string => {
@@ -211,7 +211,11 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
                   <div className="flex items-center justify-center mb-4">
                     <div className="relative w-24 h-24">
                       {/* Background circle */}
-                      <svg className="w-full h-full transform -rotate-90">
+                      <svg
+                        className="w-full h-full transform -rotate-90"
+                        role="img"
+                        aria-label={`${config.label} score: ${score.toFixed(0)} out of 100`}
+                      >
                         <circle
                           cx="48"
                           cy="48"
@@ -287,7 +291,7 @@ export function NewFactorsSection({ result, className = '' }: NewFactorsSectionP
           {result.data_freshness && (
             <div className="mt-4 pt-4 border-t">
               <p className="text-xs text-muted-foreground">
-                <Info className="h-3 w-3 inline mr-1" />
+                <Info className="h-3 w-3 inline mr-1" aria-hidden="true" />
                 Data freshness: Air Quality updated{' '}
                 {result.data_freshness.air_quality
                   ? new Date(result.data_freshness.air_quality).toLocaleDateString()

@@ -102,14 +102,19 @@ export function StepComparables({
       {/* Loading state */}
       {isLoading && (
         <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div
+            className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
+            aria-hidden="true"
+          ></div>
           <span className="ml-3 text-muted-foreground">Finding similar properties...</span>
         </div>
       )}
 
       {/* Error */}
       {error && (
-        <div className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded">{error}</div>
+        <div className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded" role="alert">
+          {error}
+        </div>
       )}
 
       {/* Selected count */}

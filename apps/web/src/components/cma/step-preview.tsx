@@ -80,7 +80,10 @@ export function StepPreview({
   if (isGenerating) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+        <div
+          className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"
+          aria-hidden="true"
+        ></div>
         <p className="text-muted-foreground">Generating CMA report...</p>
       </div>
     );
@@ -89,7 +92,9 @@ export function StepPreview({
   if (error) {
     return (
       <div className="space-y-4">
-        <div className="text-sm text-destructive bg-destructive/10 px-4 py-3 rounded">{error}</div>
+        <div className="text-sm text-destructive bg-destructive/10 px-4 py-3 rounded" role="alert">
+          {error}
+        </div>
         <div className="flex justify-between">
           <Button variant="outline" onClick={onPrev}>
             Back

@@ -7,10 +7,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  ListingGenerationRequest,
-  ListingGenerationResult,
-} from '@/lib/types';
+import { ListingGenerationRequest, ListingGenerationResult } from '@/lib/types';
 import { generateListing } from '@/lib/api';
 
 interface ListingGeneratorProps {
@@ -110,9 +107,9 @@ export function ListingGenerator({
           className="gap-2"
         >
           {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
           ) : (
-            <Sparkles className="h-4 w-4" />
+            <Sparkles className="h-4 w-4" aria-hidden="true" />
           )}
           {isLoading ? 'Generating...' : 'Generate Listing'}
         </Button>
@@ -123,15 +120,17 @@ export function ListingGenerator({
             size="sm"
             onClick={() => setIsOpen(!isOpen)}
             className="gap-1"
+            aria-label={isOpen ? 'Hide results' : 'Show results'}
+            aria-expanded={isOpen}
           >
             {isOpen ? (
               <>
-                <ChevronUp className="h-4 w-4" />
+                <ChevronUp className="h-4 w-4" aria-hidden="true" />
                 Hide
               </>
             ) : (
               <>
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className="h-4 w-4" aria-hidden="true" />
                 Show Results
               </>
             )}
@@ -141,7 +140,10 @@ export function ListingGenerator({
 
       {/* Error Display */}
       {error && (
-        <div className="mt-2 rounded-md bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+        <div
+          className="mt-2 rounded-md bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400"
+          role="alert"
+        >
           {error}
         </div>
       )}
@@ -192,9 +194,7 @@ export function ListingGenerator({
                     </div>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground text-sm">
-                    No description generated
-                  </p>
+                  <p className="text-muted-foreground text-sm">No description generated</p>
                 )}
               </TabsContent>
 
@@ -209,9 +209,7 @@ export function ListingGenerator({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() =>
-                          handleCopy(result.headlines!.join('\n'), 'headlines')
-                        }
+                        onClick={() => handleCopy(result.headlines!.join('\n'), 'headlines')}
                         className="gap-1"
                       >
                         {copiedField === 'headlines' ? (
@@ -235,12 +233,7 @@ export function ListingGenerator({
                         >
                           <span className="text-sm">{headline}</span>
                           <div className="flex items-center gap-2 shrink-0">
-                            <span
-                              className={cn(
-                                'text-xs',
-                                getCharCountColor(headline.length, 80)
-                              )}
-                            >
+                            <span className={cn('text-xs', getCharCountColor(headline.length, 80))}>
                               {headline.length}c
                             </span>
                             <Button
@@ -248,6 +241,9 @@ export function ListingGenerator({
                               size="sm"
                               onClick={() => handleCopy(headline, `hl-${index}`)}
                               className="h-6 w-6 p-0"
+                              aria-label={
+                                copiedField === `hl-${index}` ? 'Copied' : 'Copy headline'
+                              }
                             >
                               {copiedField === `hl-${index}` ? (
                                 <Check className="h-3 w-3" />
@@ -261,9 +257,7 @@ export function ListingGenerator({
                     </ul>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground text-sm">
-                    No headlines generated
-                  </p>
+                  <p className="text-muted-foreground text-sm">No headlines generated</p>
                 )}
               </TabsContent>
 
@@ -308,9 +302,7 @@ export function ListingGenerator({
                     </div>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground text-sm">
-                    No social content generated
-                  </p>
+                  <p className="text-muted-foreground text-sm">No social content generated</p>
                 )}
               </TabsContent>
             </Tabs>

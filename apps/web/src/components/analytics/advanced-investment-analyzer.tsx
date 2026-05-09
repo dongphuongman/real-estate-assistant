@@ -355,15 +355,16 @@ export function AdvancedInvestmentAnalyzer() {
                 variant="outline"
                 className="w-full"
                 onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+                aria-expanded={showAdvancedOptions}
               >
                 {showAdvancedOptions ? (
                   <>
-                    <ChevronUp className="mr-2 h-4 w-4" />
+                    <ChevronUp className="mr-2 h-4 w-4" aria-hidden="true" />
                     Hide Advanced Options
                   </>
                 ) : (
                   <>
-                    <ChevronDown className="mr-2 h-4 w-4" />
+                    <ChevronDown className="mr-2 h-4 w-4" aria-hidden="true" />
                     Show Advanced Options
                   </>
                 )}
@@ -453,8 +454,8 @@ export function AdvancedInvestmentAnalyzer() {
               )}
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <TrendingUp className="mr-2 h-4 w-4" />
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
+                <TrendingUp className="mr-2 h-4 w-4" aria-hidden="true" />
                 Run Advanced Analysis
               </Button>
 
@@ -465,7 +466,10 @@ export function AdvancedInvestmentAnalyzer() {
                   role="alert"
                 >
                   <div className="flex items-start gap-2">
-                    <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+                    <AlertCircle
+                      className="h-4 w-4 text-destructive mt-0.5 shrink-0"
+                      aria-hidden="true"
+                    />
                     <div className="flex-1">
                       <p className="text-sm text-destructive font-medium">Analysis failed</p>
                       <p className="text-sm text-destructive/90 mt-1">{errorState.message}</p>
@@ -485,7 +489,7 @@ export function AdvancedInvestmentAnalyzer() {
                       disabled={loading}
                       className="gap-2 ml-auto"
                     >
-                      <RefreshCw className="h-3 w-3" />
+                      <RefreshCw className="h-3 w-3" aria-hidden="true" />
                       Retry
                     </Button>
                   </div>
@@ -512,9 +516,9 @@ export function AdvancedInvestmentAnalyzer() {
                   disabled={exporting || !result}
                 >
                   {exporting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                   ) : (
-                    <Download className="h-4 w-4" />
+                    <Download className="h-4 w-4" aria-hidden="true" />
                   )}
                   Export Report
                 </Button>

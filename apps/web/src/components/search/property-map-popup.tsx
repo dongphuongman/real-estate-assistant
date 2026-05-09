@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Heart, ExternalLink, BedDouble, Bath, Maximize, MapPin } from "lucide-react";
-import type { PropertyMapPoint } from "./property-map-utils";
+import { Heart, ExternalLink, BedDouble, Bath, Maximize, MapPin } from 'lucide-react';
+import type { PropertyMapPoint } from './property-map-utils';
 
 interface PropertyMapPopupProps {
   point: PropertyMapPoint;
@@ -11,7 +11,7 @@ interface PropertyMapPopupProps {
 }
 
 function formatPrice(price: number | undefined): string {
-  if (price === undefined) return "Price on request";
+  if (price === undefined) return 'Price on request';
   if (price >= 1000000) {
     return `$${(price / 1000000).toFixed(1)}M`;
   }
@@ -34,31 +34,34 @@ export function PropertyMapPopup({
   };
 
   return (
-    <div className="min-w-[220px] max-w-[280px]">
+    <div
+      className="min-w-[220px] max-w-[280px]"
+      role="dialog"
+      aria-label={point.title || 'Property details'}
+    >
       {/* Image placeholder */}
-      <div className="w-full h-24 bg-muted rounded-t-md flex items-center justify-center">
+      <div
+        className="w-full h-24 bg-muted rounded-t-md flex items-center justify-center"
+        aria-hidden="true"
+      >
         <span className="text-xs text-muted-foreground">Property image</span>
       </div>
 
       {/* Content */}
       <div className="p-3 space-y-2">
         {/* Title */}
-        <h4 className="font-semibold text-sm line-clamp-1">
-          {point.title || "Untitled Property"}
-        </h4>
+        <h4 className="font-semibold text-sm line-clamp-1">{point.title || 'Untitled Property'}</h4>
 
         {/* Location */}
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <MapPin className="h-3 w-3" />
           <span className="line-clamp-1">
-            {[point.city, point.country].filter(Boolean).join(", ") || "Location unavailable"}
+            {[point.city, point.country].filter(Boolean).join(', ') || 'Location unavailable'}
           </span>
         </div>
 
         {/* Price */}
-        <div className="text-lg font-bold text-primary">
-          {formatPrice(point.price)}
-        </div>
+        <div className="text-lg font-bold text-primary">{formatPrice(point.price)}</div>
 
         {/* Specs */}
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -74,16 +77,12 @@ export function PropertyMapPopup({
               <span>{point.area_sqm} m²</span>
             </div>
           )}
-          {point.property_type && (
-            <span className="capitalize">{point.property_type}</span>
-          )}
+          {point.property_type && <span className="capitalize">{point.property_type}</span>}
         </div>
 
         {/* Price per sqm */}
         {point.price_per_sqm !== undefined && (
-          <div className="text-xs text-muted-foreground">
-            {formatPrice(point.price_per_sqm)}/m²
-          </div>
+          <div className="text-xs text-muted-foreground">{formatPrice(point.price_per_sqm)}/m²</div>
         )}
 
         {/* Actions */}
@@ -101,19 +100,12 @@ export function PropertyMapPopup({
             <button
               onClick={handleToggleFavorite}
               className={[
-                "p-1.5 rounded-md border transition-colors",
-                isFavorited
-                  ? "bg-red-50 border-red-200 text-red-500"
-                  : "hover:bg-muted",
-              ].join(" ")}
-              aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
+                'p-1.5 rounded-md border transition-colors',
+                isFavorited ? 'bg-red-50 border-red-200 text-red-500' : 'hover:bg-muted',
+              ].join(' ')}
+              aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
             >
-              <Heart
-                className={[
-                  "h-4 w-4",
-                  isFavorited ? "fill-current" : "",
-                ].join(" ")}
-              />
+              <Heart className={['h-4 w-4', isFavorited ? 'fill-current' : ''].join(' ')} />
             </button>
           )}
         </div>
@@ -125,7 +117,7 @@ export function PropertyMapPopup({
 // Export a function to generate HTML for Mapbox popup (since Mapbox uses HTML strings)
 export function generatePopupHTML(point: PropertyMapPoint): string {
   const formatPrice = (price: number | undefined): string => {
-    if (price === undefined) return "Price on request";
+    if (price === undefined) return 'Price on request';
     if (price >= 1000000) {
       return `$${(price / 1000000).toFixed(1)}M`;
     }
@@ -138,22 +130,22 @@ export function generatePopupHTML(point: PropertyMapPoint): string {
     point.property_type ? point.property_type : null,
   ]
     .filter(Boolean)
-    .join(" • ");
+    .join(' • ');
 
   return `
     <div style="min-width:180px;max-width:240px;font-family:system-ui,-apple-system,sans-serif;">
       <div style="padding:8px;">
         <div style="font-weight:600;font-size:14px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-          ${point.title || "Untitled Property"}
+          ${point.title || 'Untitled Property'}
         </div>
         <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">
-          ${[point.city, point.country].filter(Boolean).join(", ") || "Location unavailable"}
+          ${[point.city, point.country].filter(Boolean).join(', ') || 'Location unavailable'}
         </div>
         <div style="font-size:18px;font-weight:700;color:#2563eb;margin-bottom:4px;">
           ${formatPrice(point.price)}
         </div>
-        ${specs ? `<div style="font-size:12px;color:#6b7280;margin-bottom:4px;">${specs}</div>` : ""}
-        ${point.price_per_sqm !== undefined ? `<div style="font-size:11px;color:#6b7280;">${formatPrice(point.price_per_sqm)}/m²</div>` : ""}
+        ${specs ? `<div style="font-size:12px;color:#6b7280;margin-bottom:4px;">${specs}</div>` : ''}
+        ${point.price_per_sqm !== undefined ? `<div style="font-size:11px;color:#6b7280;">${formatPrice(point.price_per_sqm)}/m²</div>` : ''}
       </div>
     </div>
   `;

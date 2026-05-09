@@ -24,7 +24,10 @@ export function PropertyCard({
   const t = useTranslations('property.card');
 
   return (
-    <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+    <article
+      className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden"
+      aria-label={property.title || t('untitled')}
+    >
       <div className="aspect-video w-full bg-muted relative">
         {property.images?.[0] ? (
           <img
@@ -74,9 +77,9 @@ export function PropertyCard({
             property.area_sqm ? `${property.area_sqm} ${t('areaUnit')}` : null,
           ]
             .filter(Boolean)
-                       .join(' \u2022 ')}
+            .join(' \u2022 ')}
         </p>
       </div>
-    </div>
+    </article>
   );
 }

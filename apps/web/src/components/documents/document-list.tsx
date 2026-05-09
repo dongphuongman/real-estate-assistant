@@ -34,18 +34,18 @@ const CATEGORY_LABELS: Record<DocumentCategory, string> = {
 };
 
 const FILE_TYPE_ICONS: Record<string, React.ReactNode> = {
-  'application/pdf': <FileText className="h-8 w-8 text-red-500" />,
-  'application/msword': <File className="h-8 w-8 text-blue-500" />,
+  'application/pdf': <FileText className="h-8 w-8 text-red-500" aria-hidden="true" />,
+  'application/msword': <File className="h-8 w-8 text-blue-500" aria-hidden="true" />,
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': (
-    <File className="h-8 w-8 text-blue-500" />
+    <File className="h-8 w-8 text-blue-500" aria-hidden="true" />
   ),
-  'image/jpeg': <FileImage className="h-8 w-8 text-green-500" />,
-  'image/jpg': <FileImage className="h-8 w-8 text-green-500" />,
-  'image/png': <FileImage className="h-8 w-8 text-green-500" />,
+  'image/jpeg': <FileImage className="h-8 w-8 text-green-500" aria-hidden="true" />,
+  'image/jpg': <FileImage className="h-8 w-8 text-green-500" aria-hidden="true" />,
+  'image/png': <FileImage className="h-8 w-8 text-green-500" aria-hidden="true" />,
 };
 
 function getFileIcon(fileType: string): React.ReactNode {
-  return FILE_TYPE_ICONS[fileType] || <File className="h-8 w-8 text-gray-500" />;
+  return FILE_TYPE_ICONS[fileType] || <File className="h-8 w-8 text-gray-500" aria-hidden="true" />;
 }
 
 function formatFileSize(bytes: number): string {
@@ -144,7 +144,7 @@ export function DocumentList({
   if (documents.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <FileText className="h-16 w-16 text-muted-foreground/30 mb-4" />
+        <FileText className="h-16 w-16 text-muted-foreground/30 mb-4" aria-hidden="true" />
         <h3 className="text-lg font-medium text-muted-foreground">No documents yet</h3>
         <p className="text-sm text-muted-foreground/70 mt-1">
           Upload your first document to get started
@@ -158,10 +158,14 @@ export function DocumentList({
       {/* Filters */}
       <div className="flex flex-wrap gap-3 items-center">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+            aria-hidden="true"
+          />
           <input
             type="text"
             placeholder="Search documents..."
+            aria-label="Search documents"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 rounded-md border border-input bg-background text-sm"
@@ -169,6 +173,7 @@ export function DocumentList({
         </div>
 
         <select
+          aria-label="Filter by category"
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value as DocumentCategory | '')}
           className="rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -182,6 +187,7 @@ export function DocumentList({
         </select>
 
         <select
+          aria-label="Sort documents by"
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as 'date' | 'name' | 'size')}
           className="rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -194,6 +200,7 @@ export function DocumentList({
         <button
           onClick={() => setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
           className="px-3 py-2 rounded-md border border-input bg-background text-sm hover:bg-muted"
+          aria-label={`Sort order: ${sortOrder === 'asc' ? 'ascending' : 'descending'}. Click to toggle.`}
         >
           {sortOrder === 'asc' ? '↑ Ascending' : '↓ Descending'}
         </button>
@@ -224,7 +231,7 @@ export function DocumentList({
                       expired ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
                     }`}
                   >
-                    <AlertTriangle className="h-3 w-3" />
+                    <AlertTriangle className="h-3 w-3" aria-hidden="true" />
                     {expired ? 'Expired' : 'Expiring Soon'}
                   </div>
                 )}
@@ -244,27 +251,27 @@ export function DocumentList({
                 <div className="space-y-2 text-sm text-muted-foreground mb-3">
                   {doc.category && (
                     <div className="flex items-center gap-2">
-                      <Tag className="h-4 w-4" />
+                      <Tag className="h-4 w-4" aria-hidden="true" />
                       <span>{CATEGORY_LABELS[doc.category]}</span>
                     </div>
                   )}
 
                   {doc.property_id && (
                     <div className="flex items-center gap-2">
-                      <Building className="h-4 w-4" />
+                      <Building className="h-4 w-4" aria-hidden="true" />
                       <span className="truncate">Property: {doc.property_id}</span>
                     </div>
                   )}
 
                   {doc.expiry_date && (
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
+                      <Calendar className="h-4 w-4" aria-hidden="true" />
                       <span>Expires: {new Date(doc.expiry_date).toLocaleDateString()}</span>
                     </div>
                   )}
 
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
+                    <Clock className="h-4 w-4" aria-hidden="true" />
                     <span>
                       Added {formatDistanceToNow(new Date(doc.created_at), { addSuffix: true })}
                     </span>
@@ -298,7 +305,7 @@ export function DocumentList({
                     onClick={() => handleDownload(doc)}
                     className="inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-md hover:bg-muted transition-colors"
                   >
-                    <Download className="h-4 w-4" />
+                    <Download className="h-4 w-4" aria-hidden="true" />
                     Download
                   </button>
 
@@ -306,8 +313,10 @@ export function DocumentList({
                     <button
                       onClick={() => setShowMenu(showMenu === doc.id ? null : doc.id)}
                       className="p-1.5 rounded-md hover:bg-muted"
+                      aria-label={`Actions for ${doc.original_filename}`}
+                      aria-expanded={showMenu === doc.id}
                     >
-                      <MoreVertical className="h-4 w-4" />
+                      <MoreVertical className="h-4 w-4" aria-hidden="true" />
                     </button>
 
                     {showMenu === doc.id && (
@@ -319,7 +328,7 @@ export function DocumentList({
                             disabled={deleting === doc.id}
                             className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md disabled:opacity-50"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4" aria-hidden="true" />
                             {deleting === doc.id ? 'Deleting...' : 'Delete'}
                           </button>
                         </div>

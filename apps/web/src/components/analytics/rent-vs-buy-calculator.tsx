@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   LineChart,
   Line,
@@ -10,19 +10,13 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from "recharts";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { calculateRentVsBuy, ApiError } from "@/lib/api";
-import { RentVsBuyResult } from "@/lib/types";
+} from 'recharts';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { calculateRentVsBuy, ApiError } from '@/lib/api';
+import { RentVsBuyResult } from '@/lib/types';
 import {
   Loader2,
   AlertCircle,
@@ -32,7 +26,7 @@ import {
   ChevronDown,
   ChevronUp,
   TrendingUp,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface ErrorState {
   message: string;
@@ -40,7 +34,7 @@ interface ErrorState {
 }
 
 const extractErrorState = (err: unknown): ErrorState => {
-  let message = "Unknown error";
+  let message = 'Unknown error';
   let requestId: string | undefined = undefined;
 
   if (err instanceof ApiError) {
@@ -56,40 +50,38 @@ const extractErrorState = (err: unknown): ErrorState => {
 };
 
 const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
     maximumFractionDigits: 0,
   }).format(value);
 };
 
 const formatCurrencyDetailed = (value: number): string => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
     maximumFractionDigits: 2,
   }).format(value);
 };
 
 const getRecommendationColor = (rec: string): string => {
-  if (rec === "buy") return "text-green-600";
-  if (rec === "rent") return "text-blue-600";
-  return "text-yellow-600";
+  if (rec === 'buy') return 'text-green-600';
+  if (rec === 'rent') return 'text-blue-600';
+  return 'text-yellow-600';
 };
 
 const getRecommendationLabel = (rec: string): string => {
-  if (rec === "buy") return "Buying Recommended";
-  if (rec === "rent") return "Renting Recommended";
-  return "Depends on Your Timeline";
+  if (rec === 'buy') return 'Buying Recommended';
+  if (rec === 'rent') return 'Renting Recommended';
+  return 'Depends on Your Timeline';
 };
 
 export function RentVsBuyCalculator() {
   const [loading, setLoading] = useState(false);
   const [errorState, setErrorState] = useState<ErrorState | null>(null);
   const [result, setResult] = useState<RentVsBuyResult | null>(null);
-  const [lastFormData, setLastFormData] = useState<typeof formData | null>(
-    null
-  );
+  const [lastFormData, setLastFormData] = useState<typeof formData | null>(null);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
 
   const [formData, setFormData] = useState<{
@@ -166,11 +158,11 @@ export function RentVsBuyCalculator() {
   // Prepare chart data
   const chartData = result?.yearly_breakdown.map((item) => ({
     year: item.year,
-    "Cumulative Rent": item.cumulative_rent,
-    "Cumulative Ownership": item.cumulative_ownership_cost,
-    "Property Value": item.property_value,
+    'Cumulative Rent': item.cumulative_rent,
+    'Cumulative Ownership': item.cumulative_ownership_cost,
+    'Property Value': item.property_value,
     Equity: item.equity,
-    "Net Benefit": item.net_benefit,
+    'Net Benefit': item.net_benefit,
   }));
 
   return (
@@ -184,18 +176,13 @@ export function RentVsBuyCalculator() {
         >
           <div className="flex justify-center mb-3">
             <div className="p-3 rounded-full bg-primary/10">
-              <TrendingUp
-                className="h-8 w-8 text-primary"
-                aria-hidden="true"
-              />
+              <TrendingUp className="h-8 w-8 text-primary" aria-hidden="true" />
             </div>
           </div>
-          <h3 className="text-lg font-semibold mb-2">
-            Rent vs Buy Calculator
-          </h3>
+          <h3 className="text-lg font-semibold mb-2">Rent vs Buy Calculator</h3>
           <p className="text-sm text-muted-foreground max-w-md mx-auto mb-3">
-            Compare the financial implications of renting vs buying over time
-            with break-even analysis, opportunity costs, and tax benefits.
+            Compare the financial implications of renting vs buying over time with break-even
+            analysis, opportunity costs, and tax benefits.
           </p>
           <p className="text-xs text-muted-foreground">
             Enter property details and current rent to see the comparison.
@@ -207,7 +194,7 @@ export function RentVsBuyCalculator() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Home className="h-5 w-5" />
+            <Home className="h-5 w-5" aria-hidden="true" />
             Rent vs Buy Calculator
           </CardTitle>
           <CardDescription>
@@ -218,9 +205,7 @@ export function RentVsBuyCalculator() {
           <form onSubmit={handleCalculate} className="space-y-4">
             {/* Basic Inputs */}
             <div className="space-y-3">
-              <h4 className="text-sm font-semibold">
-                Property & Rent Information
-              </h4>
+              <h4 className="text-sm font-semibold">Property & Rent Information</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="property_price">Property Price ($)</Label>
@@ -257,15 +242,16 @@ export function RentVsBuyCalculator() {
               variant="outline"
               className="w-full"
               onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+              aria-expanded={showAdvancedOptions}
             >
               {showAdvancedOptions ? (
                 <>
-                  <ChevronUp className="mr-2 h-4 w-4" />
+                  <ChevronUp className="mr-2 h-4 w-4" aria-hidden="true" />
                   Hide Advanced Options
                 </>
               ) : (
                 <>
-                  <ChevronDown className="mr-2 h-4 w-4" />
+                  <ChevronDown className="mr-2 h-4 w-4" aria-hidden="true" />
                   Show Advanced Options
                 </>
               )}
@@ -277,9 +263,7 @@ export function RentVsBuyCalculator() {
                 <h4 className="text-sm font-semibold">Mortgage Details</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="down_payment_percent">
-                      Down Payment (%)
-                    </Label>
+                    <Label htmlFor="down_payment_percent">Down Payment (%)</Label>
                     <Input
                       id="down_payment_percent"
                       name="down_payment_percent"
@@ -292,9 +276,7 @@ export function RentVsBuyCalculator() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="interest_rate">
-                      Interest Rate (%)
-                    </Label>
+                    <Label htmlFor="interest_rate">Interest Rate (%)</Label>
                     <Input
                       id="interest_rate"
                       name="interest_rate"
@@ -322,9 +304,7 @@ export function RentVsBuyCalculator() {
                 <h4 className="text-sm font-semibold">Ownership Costs</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="annual_property_tax">
-                      Annual Property Tax ($)
-                    </Label>
+                    <Label htmlFor="annual_property_tax">Annual Property Tax ($)</Label>
                     <Input
                       id="annual_property_tax"
                       name="annual_property_tax"
@@ -336,9 +316,7 @@ export function RentVsBuyCalculator() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="annual_insurance">
-                      Annual Insurance ($)
-                    </Label>
+                    <Label htmlFor="annual_insurance">Annual Insurance ($)</Label>
                     <Input
                       id="annual_insurance"
                       name="annual_insurance"
@@ -362,9 +340,7 @@ export function RentVsBuyCalculator() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="maintenance_percent">
-                      Maintenance (%/year)
-                    </Label>
+                    <Label htmlFor="maintenance_percent">Maintenance (%/year)</Label>
                     <Input
                       id="maintenance_percent"
                       name="maintenance_percent"
@@ -381,9 +357,7 @@ export function RentVsBuyCalculator() {
                 <h4 className="text-sm font-semibold">Growth Rates</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="appreciation_rate">
-                      Appreciation Rate (%/year)
-                    </Label>
+                    <Label htmlFor="appreciation_rate">Appreciation Rate (%/year)</Label>
                     <Input
                       id="appreciation_rate"
                       name="appreciation_rate"
@@ -396,9 +370,7 @@ export function RentVsBuyCalculator() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="rent_increase_rate">
-                      Rent Increase Rate (%/year)
-                    </Label>
+                    <Label htmlFor="rent_increase_rate">Rent Increase Rate (%/year)</Label>
                     <Input
                       id="rent_increase_rate"
                       name="rent_increase_rate"
@@ -411,9 +383,7 @@ export function RentVsBuyCalculator() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="investment_return_rate">
-                      Investment Return (%/year)
-                    </Label>
+                    <Label htmlFor="investment_return_rate">Investment Return (%/year)</Label>
                     <Input
                       id="investment_return_rate"
                       name="investment_return_rate"
@@ -426,9 +396,7 @@ export function RentVsBuyCalculator() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="marginal_tax_rate">
-                      Marginal Tax Rate (%)
-                    </Label>
+                    <Label htmlFor="marginal_tax_rate">Marginal Tax Rate (%)</Label>
                     <Input
                       id="marginal_tax_rate"
                       name="marginal_tax_rate"
@@ -443,9 +411,7 @@ export function RentVsBuyCalculator() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="projection_years">
-                    Projection Period (Years)
-                  </Label>
+                  <Label htmlFor="projection_years">Projection Period (Years)</Label>
                   <Input
                     id="projection_years"
                     name="projection_years"
@@ -460,7 +426,7 @@ export function RentVsBuyCalculator() {
             )}
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
               Compare Rent vs Buy
             </Button>
 
@@ -477,12 +443,8 @@ export function RentVsBuyCalculator() {
                     aria-hidden="true"
                   />
                   <div className="flex-1">
-                    <p className="text-sm text-destructive font-medium">
-                      Analysis failed
-                    </p>
-                    <p className="text-sm text-destructive/90 mt-1">
-                      {errorState.message}
-                    </p>
+                    <p className="text-sm text-destructive font-medium">Analysis failed</p>
+                    <p className="text-sm text-destructive/90 mt-1">{errorState.message}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 w-full">
@@ -499,7 +461,7 @@ export function RentVsBuyCalculator() {
                     disabled={loading}
                     className="gap-2 ml-auto"
                   >
-                    <RefreshCw className="h-3 w-3" />
+                    <RefreshCw className="h-3 w-3" aria-hidden="true" />
                     Retry
                   </Button>
                 </div>
@@ -514,23 +476,18 @@ export function RentVsBuyCalculator() {
         <Card className="lg:row-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Building className="h-5 w-5" />
+              <Building className="h-5 w-5" aria-hidden="true" />
               Analysis Results
             </CardTitle>
             <CardDescription>
-              Comprehensive rent vs buy comparison over{" "}
-              {result.yearly_breakdown.length} years.
+              Comprehensive rent vs buy comparison over {result.yearly_breakdown.length} years.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Recommendation Banner */}
             <div className="bg-primary/5 rounded-lg p-4 text-center">
-              <p className="text-sm text-muted-foreground mb-1">
-                Recommendation
-              </p>
-              <p
-                className={`text-2xl font-bold ${getRecommendationColor(result.recommendation)}`}
-              >
+              <p className="text-sm text-muted-foreground mb-1">Recommendation</p>
+              <p className={`text-2xl font-bold ${getRecommendationColor(result.recommendation)}`}>
                 {getRecommendationLabel(result.recommendation)}
               </p>
               {result.break_even_years && (
@@ -543,33 +500,25 @@ export function RentVsBuyCalculator() {
             {/* Key Metrics */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">
-                  Monthly Mortgage
-                </p>
+                <p className="text-sm text-muted-foreground">Monthly Mortgage</p>
                 <p className="text-xl font-bold">
                   {formatCurrencyDetailed(result.monthly_mortgage)}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">
-                  Monthly Rent (Initial)
-                </p>
+                <p className="text-sm text-muted-foreground">Monthly Rent (Initial)</p>
                 <p className="text-xl font-bold">
                   {formatCurrencyDetailed(result.monthly_rent_initial)}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">
-                  Total Rent Paid
-                </p>
+                <p className="text-sm text-muted-foreground">Total Rent Paid</p>
                 <p className="text-xl font-bold text-blue-600">
                   {formatCurrency(result.total_rent_paid)}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">
-                  Total Ownership Cost
-                </p>
+                <p className="text-sm text-muted-foreground">Total Ownership Cost</p>
                 <p className="text-xl font-bold text-green-600">
                   {formatCurrency(result.total_ownership_cost)}
                 </p>
@@ -580,44 +529,35 @@ export function RentVsBuyCalculator() {
             <div className="border-t pt-4">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-sm text-muted-foreground">
-                    Net Buying Advantage
-                  </p>
+                  <p className="text-sm text-muted-foreground">Net Buying Advantage</p>
                   <p
-                    className={`text-xl font-bold ${result.net_buying_advantage >= 0 ? "text-green-600" : "text-red-600"}`}
+                    className={`text-xl font-bold ${result.net_buying_advantage >= 0 ? 'text-green-600' : 'text-red-600'}`}
                   >
                     {formatCurrency(result.net_buying_advantage)}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-muted-foreground">
-                    Equity Built
-                  </p>
-                  <p className="text-xl font-bold">
-                    {formatCurrency(result.total_equity_built)}
-                  </p>
+                  <p className="text-sm text-muted-foreground">Equity Built</p>
+                  <p className="text-xl font-bold">{formatCurrency(result.total_equity_built)}</p>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                Positive = buying is financially better. Negative = renting is
-                better.
+                Positive = buying is financially better. Negative = renting is better.
               </p>
             </div>
 
             {/* Cumulative Cost Chart */}
             <div className="border-t pt-4">
-              <h4 className="text-sm font-medium mb-3">
-                Cumulative Cost Comparison
-              </h4>
-              <div className="h-64">
+              <h4 className="text-sm font-medium mb-3">Cumulative Cost Comparison</h4>
+              <div
+                className="h-64"
+                role="img"
+                aria-label="Cumulative cost comparison chart showing rent vs buy costs over time"
+              >
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="year"
-                      tick={{ fontSize: 12 }}
-                      tickLine={false}
-                    />
+                    <XAxis dataKey="year" tick={{ fontSize: 12 }} tickLine={false} />
                     <YAxis
                       tick={{ fontSize: 12 }}
                       tickLine={false}
@@ -649,18 +589,16 @@ export function RentVsBuyCalculator() {
 
             {/* Equity vs Property Value Chart */}
             <div className="border-t pt-4">
-              <h4 className="text-sm font-medium mb-3">
-                Equity & Property Value Growth
-              </h4>
-              <div className="h-64">
+              <h4 className="text-sm font-medium mb-3">Equity & Property Value Growth</h4>
+              <div
+                className="h-64"
+                role="img"
+                aria-label="Equity and property value growth chart over time"
+              >
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="year"
-                      tick={{ fontSize: 12 }}
-                      tickLine={false}
-                    />
+                    <XAxis dataKey="year" tick={{ fontSize: 12 }} tickLine={false} />
                     <YAxis
                       tick={{ fontSize: 12 }}
                       tickLine={false}
@@ -695,35 +633,21 @@ export function RentVsBuyCalculator() {
               <h4 className="text-sm font-medium mb-3">Final Summary</h4>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="p-2 bg-muted/50 rounded">
-                  <p className="text-muted-foreground">
-                    Final Property Value
-                  </p>
-                  <p className="font-medium">
-                    {formatCurrency(result.final_property_value)}
-                  </p>
+                  <p className="text-muted-foreground">Final Property Value</p>
+                  <p className="font-medium">{formatCurrency(result.final_property_value)}</p>
                 </div>
                 <div className="p-2 bg-muted/50 rounded">
-                  <p className="text-muted-foreground">
-                    Total Equity Built
-                  </p>
-                  <p className="font-medium">
-                    {formatCurrency(result.total_equity_built)}
-                  </p>
+                  <p className="text-muted-foreground">Total Equity Built</p>
+                  <p className="font-medium">{formatCurrency(result.total_equity_built)}</p>
                 </div>
                 <div className="p-2 bg-muted/50 rounded">
-                  <p className="text-muted-foreground">
-                    Opportunity Cost
-                  </p>
-                  <p className="font-medium">
-                    {formatCurrency(result.opportunity_cost_of_buying)}
-                  </p>
+                  <p className="text-muted-foreground">Opportunity Cost</p>
+                  <p className="font-medium">{formatCurrency(result.opportunity_cost_of_buying)}</p>
                 </div>
                 <div className="p-2 bg-muted/50 rounded">
-                  <p className="text-muted-foreground">
-                    Net Advantage
-                  </p>
+                  <p className="text-muted-foreground">Net Advantage</p>
                   <p
-                    className={`font-medium ${result.net_buying_advantage >= 0 ? "text-green-600" : "text-red-600"}`}
+                    className={`font-medium ${result.net_buying_advantage >= 0 ? 'text-green-600' : 'text-red-600'}`}
                   >
                     {formatCurrency(result.net_buying_advantage)}
                   </p>

@@ -44,7 +44,7 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
     {
       key: 'safety_score',
       label: 'Safety',
-      icon: <Shield className="h-4 w-4" />,
+      icon: <Shield className="h-4 w-4" aria-hidden="true" />,
       weight: '15%',
       description: 'Crime rate and police proximity',
       color: 'text-blue-600',
@@ -53,7 +53,7 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
     {
       key: 'schools_score',
       label: 'Schools',
-      icon: <GraduationCap className="h-4 w-4" />,
+      icon: <GraduationCap className="h-4 w-4" aria-hidden="true" />,
       weight: '15%',
       description: 'School quality and proximity',
       color: 'text-indigo-600',
@@ -62,7 +62,7 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
     {
       key: 'amenities_score',
       label: 'Amenities',
-      icon: <ShoppingBag className="h-4 w-4" />,
+      icon: <ShoppingBag className="h-4 w-4" aria-hidden="true" />,
       weight: '15%',
       description: 'Shops, restaurants, services',
       color: 'text-purple-600',
@@ -71,7 +71,7 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
     {
       key: 'walkability_score',
       label: 'Walkability',
-      icon: <Footprints className="h-4 w-4" />,
+      icon: <Footprints className="h-4 w-4" aria-hidden="true" />,
       weight: '15%',
       description: 'Pedestrian-friendly infrastructure',
       color: 'text-green-600',
@@ -80,7 +80,7 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
     {
       key: 'green_space_score',
       label: 'Green Space',
-      icon: <Trees className="h-4 w-4" />,
+      icon: <Trees className="h-4 w-4" aria-hidden="true" />,
       weight: '10%',
       description: 'Parks and natural areas',
       color: 'text-emerald-600',
@@ -89,7 +89,7 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
     {
       key: 'air_quality_score',
       label: 'Air Quality',
-      icon: <Wind className="h-4 w-4" />,
+      icon: <Wind className="h-4 w-4" aria-hidden="true" />,
       weight: '10%',
       description: 'Air pollution index (AQI)',
       color: 'text-cyan-600',
@@ -98,7 +98,7 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
     {
       key: 'noise_level_score',
       label: 'Noise Level',
-      icon: <Volume2 className="h-4 w-4" />,
+      icon: <Volume2 className="h-4 w-4" aria-hidden="true" />,
       weight: '10%',
       description: 'Ambient noise levels',
       color: 'text-orange-600',
@@ -107,7 +107,7 @@ export function FactorBreakdown({ result, compact = false, className = '' }: Fac
     {
       key: 'public_transport_score',
       label: 'Public Transport',
-      icon: <Bus className="h-4 w-4" />,
+      icon: <Bus className="h-4 w-4" aria-hidden="true" />,
       weight: '10%',
       description: 'Transit accessibility',
       color: 'text-rose-600',

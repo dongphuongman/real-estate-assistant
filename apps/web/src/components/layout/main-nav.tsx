@@ -117,7 +117,7 @@ export function MainNav() {
             isActiveRoute(route.href) ? 'text-foreground' : 'text-muted-foreground'
           )}
         >
-          <route.icon className="w-4 h-4" />
+          <route.icon className="w-4 h-4" aria-hidden="true" />
           {route.label}
         </Link>
       ))}
@@ -130,8 +130,8 @@ export function MainNav() {
           onClick={toggleTheme}
           aria-label={tCommon('toggleTheme')}
         >
-          <Sun className="h-4 w-4 hidden dark:block" />
-          <Moon className="h-4 w-4 block dark:hidden" />
+          <Sun className="h-4 w-4 hidden dark:block" aria-hidden="true" />
+          <Moon className="h-4 w-4 block dark:hidden" aria-hidden="true" />
         </Button>
         <UserMenu />
       </div>

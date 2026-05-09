@@ -111,8 +111,8 @@ export function ScheduleViewingDialog({
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg">Schedule a Viewing</CardTitle>
         {onCancel && (
-          <Button variant="ghost" size="icon" onClick={onCancel}>
-            <X className="h-4 w-4" />
+          <Button variant="ghost" size="icon" onClick={onCancel} aria-label="Close dialog">
+            <X className="h-4 w-4" aria-hidden="true" />
           </Button>
         )}
       </CardHeader>
@@ -218,7 +218,9 @@ export function ScheduleViewingDialog({
           </div>
 
           {error && (
-            <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">{error}</div>
+            <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive" role="alert">
+              {error}
+            </div>
           )}
 
           <div className="flex justify-end gap-2">
@@ -230,12 +232,12 @@ export function ScheduleViewingDialog({
             <Button type="submit" disabled={loading}>
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                   Requesting...
                 </>
               ) : (
                 <>
-                  <Clock className="mr-2 h-4 w-4" />
+                  <Clock className="mr-2 h-4 w-4" aria-hidden="true" />
                   Request Viewing
                 </>
               )}

@@ -70,11 +70,14 @@ export function InstallPrompt({ className }: InstallPromptProps) {
   }
 
   return (
-    <Card className={`fixed bottom-4 left-4 right-4 z-50 mx-4 shadow-lg ${className || ''}`}>
+    <Card
+      className={`fixed bottom-4 left-4 right-4 z-50 mx-4 shadow-lg ${className || ''}`}
+      role="status"
+    >
       <div className="flex items-start gap-3 p-4">
         <div className="flex-shrink-0">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-            <Download className="h-5 w-5 text-primary" />
+            <Download className="h-5 w-5 text-primary" aria-hidden="true" />
           </div>
         </div>
         <div className="flex-1">

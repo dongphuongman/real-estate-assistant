@@ -127,8 +127,9 @@ export function AnomalyList() {
               value={filters.search}
               onChange={(e) => handleFilterChange('search', e.target.value)}
               className="pl-10 pr-4 text-sm text-muted"
+              aria-label="Search anomalies"
             />
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted" aria-hidden="true" />
           </div>
 
           {/* Severity Filter */}
@@ -141,6 +142,7 @@ export function AnomalyList() {
               )
             }
             className="rounded-md border bg-background px-3 py-2 text-sm"
+            aria-label="Filter by severity"
           >
             <option value="">All Severities</option>
             {severityOptions.map((s) => (
@@ -160,6 +162,7 @@ export function AnomalyList() {
               )
             }
             className="rounded-md border bg-background px-3 py-2 text-sm"
+            aria-label="Filter by anomaly type"
           >
             <option value="">All Types</option>
             {typeOptions.map((t) => (
@@ -176,7 +179,7 @@ export function AnomalyList() {
 
       {/* Loading State */}
       {loading && (
-        <div className="flex justify-center py-8">
+        <div className="flex justify-center py-8" role="status" aria-live="polite">
           <div className="animate-pulse flex flex-col items-center gap-2">
             <div className="h-4 w-4 bg-muted rounded-full"></div>
             <p className="text-sm text-muted">Loading anomalies...</p>
@@ -186,9 +189,9 @@ export function AnomalyList() {
 
       {/* Error State */}
       {error && (
-        <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4">
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4" role="alert">
           <div className="flex items-center gap-2 text-destructive">
-            <AlertTriangle className="h-4 w-4" />
+            <AlertTriangle className="h-4 w-4" aria-hidden="true" />
             <p className="text-sm">{error}</p>
           </div>
         </div>
@@ -197,7 +200,7 @@ export function AnomalyList() {
       {/* Empty State */}
       {!loading && !error && filteredAnomalies.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-muted">
-          <CheckCircle className="h-8 w-8 text-muted" />
+          <CheckCircle className="h-8 w-8 text-muted" aria-hidden="true" />
           <p className="text-sm">No anomalies detected</p>
           <p className="text-xs mt-1">Anomalies will appear here when detected by the system.</p>
         </div>
@@ -218,7 +221,7 @@ export function AnomalyList() {
                     <AnomalyBadge severity={anomaly.severity} />
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted">
-                    <Clock className="h-3 w-3" />
+                    <Clock className="h-3 w-3" aria-hidden="true" />
                     <span>{formatTimestamp(anomaly.detected_at)}</span>
                   </div>
                 </div>
@@ -306,7 +309,7 @@ export function AnomalyList() {
                       onClick={() => handleDismiss(anomaly.id)}
                       className="text-xs"
                     >
-                      <Eye className="h-3 w-3 mr-1" />
+                      <Eye className="h-3 w-3 mr-1" aria-hidden="true" />
                       Mark as Reviewed
                     </Button>
                   </div>

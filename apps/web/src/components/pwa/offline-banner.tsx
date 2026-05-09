@@ -82,13 +82,15 @@ export function OfflineBanner({ className }: OfflineBannerProps) {
   if (bannerState === 'restored') {
     return (
       <div
+        role="status"
+        aria-live="polite"
         className={cn(
           'fixed top-0 left-0 right-0 z-50 bg-green-600 px-4 py-2 text-center text-sm text-white transition-all',
           className
         )}
       >
         <div className="flex items-center justify-center gap-2">
-          <Wifi className="h-4 w-4" />
+          <Wifi className="h-4 w-4" aria-hidden="true" />
           <span>Back online! Your data is synced.</span>
         </div>
       </div>
@@ -99,13 +101,15 @@ export function OfflineBanner({ className }: OfflineBannerProps) {
   if (bannerState === 'offline') {
     return (
       <div
+        role="status"
+        aria-live="polite"
         className={cn(
           'fixed top-0 left-0 right-0 z-50 bg-amber-600 px-4 py-2 text-center text-sm text-white transition-all',
           className
         )}
       >
         <div className="flex items-center justify-center gap-2">
-          <WifiOff className="h-4 w-4" />
+          <WifiOff className="h-4 w-4" aria-hidden="true" />
           <span>You are offline. Some features may be limited.</span>
         </div>
       </div>

@@ -50,7 +50,7 @@ export function NeighborhoodDetails({
       <Card className={className}>
         <CardContent className="flex items-center justify-center py-12">
           <div className="text-center text-muted-foreground">
-            <AlertCircle className="h-8 w-8 mx-auto mb-2" />
+            <AlertCircle className="h-8 w-8 mx-auto mb-2" aria-hidden="true" />
             <p>No neighborhood data available</p>
           </div>
         </CardContent>
@@ -65,7 +65,7 @@ export function NeighborhoodDetails({
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-muted-foreground" />
+              <MapPin className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
               <CardTitle className="text-lg">Neighborhood Quality</CardTitle>
             </div>
             <NeighborhoodBadge overallScore={result.overall_score} size="sm" />
@@ -92,7 +92,7 @@ export function NeighborhoodDetails({
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <MapPin className="h-5 w-5 text-muted-foreground" />
+                <MapPin className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
                 <CardTitle>Neighborhood Quality Assessment</CardTitle>
               </div>
               <CardDescription>
@@ -167,7 +167,7 @@ export function NeighborhoodDetails({
                       key={index}
                       className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md bg-muted"
                     >
-                      <Info className="h-3 w-3" />
+                      <Info className="h-3 w-3" aria-hidden="true" />
                       {source}
                     </span>
                   ))}
@@ -266,7 +266,7 @@ export function NeighborhoodDetails({
       {/* Data freshness footer */}
       {result.data_freshness && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground px-2">
-          <Info className="h-3 w-3" />
+          <Info className="h-3 w-3" aria-hidden="true" />
           <span>
             Data freshness:{' '}
             {Object.entries(result.data_freshness).map(([key, date]) => (
@@ -293,7 +293,10 @@ export function NeighborhoodDetailsLoading({
     <Card>
       <CardContent className="flex items-center justify-center py-12">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3 text-muted-foreground" />
+          <Loader2
+            className="h-8 w-8 animate-spin mx-auto mb-3 text-muted-foreground"
+            aria-hidden="true"
+          />
           <p className="text-sm text-muted-foreground">{message}</p>
         </div>
       </CardContent>
@@ -315,7 +318,7 @@ export function NeighborhoodDetailsError({
     <Card>
       <CardContent className="flex items-center justify-center py-12">
         <div className="text-center max-w-md">
-          <AlertCircle className="h-8 w-8 mx-auto mb-3 text-destructive" />
+          <AlertCircle className="h-8 w-8 mx-auto mb-3 text-destructive" aria-hidden="true" />
           <h3 className="text-lg font-semibold mb-2">Failed to load neighborhood data</h3>
           <p className="text-sm text-muted-foreground mb-4">{error.message}</p>
           {error.requestId && (

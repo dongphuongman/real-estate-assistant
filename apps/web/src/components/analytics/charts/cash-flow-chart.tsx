@@ -51,7 +51,11 @@ export function CashFlowChart({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-72">
+        <div
+          className="h-72"
+          role="img"
+          aria-label="Cash flow projection chart showing yearly cash flow and cumulative returns over time"
+        >
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />

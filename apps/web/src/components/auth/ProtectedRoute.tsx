@@ -40,7 +40,7 @@ export function ProtectedRoute({ children, redirectTo = '/auth/login' }: Protect
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
           <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
       </div>

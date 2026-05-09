@@ -46,9 +46,11 @@ export function UpdateBanner({ className }: UpdateBannerProps) {
         'fixed top-0 left-0 right-0 z-50 bg-blue-600 px-4 py-2 text-center text-sm text-white transition-all',
         className
       )}
+      role="status"
+      aria-live="polite"
     >
       <div className="flex items-center justify-center gap-3">
-        <RefreshCw className="h-4 w-4" />
+        <RefreshCw className="h-4 w-4" aria-hidden="true" />
         <span>A new version is available. Refresh to update.</span>
         <Button variant="secondary" size="sm" onClick={handleUpdate} className="ml-2">
           Refresh
@@ -58,8 +60,9 @@ export function UpdateBanner({ className }: UpdateBannerProps) {
           size="sm"
           onClick={handleDismiss}
           className="text-white hover:text-white"
+          aria-label="Dismiss update notification"
         >
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4" aria-hidden="true" />
         </Button>
       </div>
     </div>

@@ -1,16 +1,22 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Shield, Download, Loader2, Eye, EyeOff, Mail, Phone, MessageSquare, FileText, Clock } from 'lucide-react';
+import {
+  Shield,
+  Download,
+  Loader2,
+  Eye,
+  EyeOff,
+  Mail,
+  Phone,
+  MessageSquare,
+  FileText,
+  Clock,
+} from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Label } from '../ui/label';
-import {
-  getProfile,
-  updatePrivacySettings,
-  requestDataExport,
-  getExportStatus,
-} from '@/lib/api';
+import { getProfile, updatePrivacySettings, requestDataExport, getExportStatus } from '@/lib/api';
 import {
   ProfileResponse,
   PrivacySettings as PrivacySettingsType,
@@ -45,7 +51,12 @@ export function PrivacySettings() {
 
   // Poll export status when job is processing
   useEffect(() => {
-    if (!pollingExport || !exportJob || exportJob.status === 'completed' || exportJob.status === 'failed') {
+    if (
+      !pollingExport ||
+      !exportJob ||
+      exportJob.status === 'completed' ||
+      exportJob.status === 'failed'
+    ) {
       return;
     }
 
@@ -155,7 +166,7 @@ export function PrivacySettings() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-primary" />
+            <Shield className="h-5 w-5 text-primary" aria-hidden="true" />
             <CardTitle>Privacy Controls</CardTitle>
           </div>
           <CardDescription>Control what information is visible to others.</CardDescription>
@@ -164,7 +175,11 @@ export function PrivacySettings() {
           <div className="flex items-center justify-between space-x-2">
             <Label htmlFor="profile_visible" className="flex flex-col space-y-1">
               <div className="flex items-center gap-2">
-                {settings.profile_visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                {settings.profile_visible ? (
+                  <Eye className="h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <EyeOff className="h-4 w-4" aria-hidden="true" />
+                )}
                 <span>Public Profile</span>
               </div>
               <span className="font-normal text-muted-foreground">
@@ -183,7 +198,11 @@ export function PrivacySettings() {
           <div className="flex items-center justify-between space-x-2">
             <Label htmlFor="activity_visible" className="flex flex-col space-y-1">
               <div className="flex items-center gap-2">
-                {settings.activity_visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                {settings.activity_visible ? (
+                  <Eye className="h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <EyeOff className="h-4 w-4" aria-hidden="true" />
+                )}
                 <span>Activity Visibility</span>
               </div>
               <span className="font-normal text-muted-foreground">
@@ -202,7 +221,7 @@ export function PrivacySettings() {
           <div className="flex items-center justify-between space-x-2">
             <Label htmlFor="show_email" className="flex flex-col space-y-1">
               <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
+                <Mail className="h-4 w-4" aria-hidden="true" />
                 <span>Show Email</span>
               </div>
               <span className="font-normal text-muted-foreground">
@@ -221,7 +240,7 @@ export function PrivacySettings() {
           <div className="flex items-center justify-between space-x-2">
             <Label htmlFor="show_phone" className="flex flex-col space-y-1">
               <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4" />
+                <Phone className="h-4 w-4" aria-hidden="true" />
                 <span>Show Phone</span>
               </div>
               <span className="font-normal text-muted-foreground">
@@ -240,7 +259,7 @@ export function PrivacySettings() {
           <div className="flex items-center justify-between space-x-2">
             <Label htmlFor="allow_contact" className="flex flex-col space-y-1">
               <div className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4" />
+                <MessageSquare className="h-4 w-4" aria-hidden="true" />
                 <span>Allow Contact</span>
               </div>
               <span className="font-normal text-muted-foreground">
@@ -262,7 +281,7 @@ export function PrivacySettings() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary" />
+            <FileText className="h-5 w-5 text-primary" aria-hidden="true" />
             <CardTitle>Data Export (GDPR)</CardTitle>
           </div>
           <CardDescription>
@@ -272,8 +291,8 @@ export function PrivacySettings() {
         <CardContent className="space-y-4">
           <div className="text-sm text-muted-foreground">
             <p className="mb-2">
-              You can request an export of all your personal data stored in our system.
-              This includes:
+              You can request an export of all your personal data stored in our system. This
+              includes:
             </p>
             <ul className="list-disc list-inside space-y-1 ml-2">
               <li>Profile information</li>
@@ -282,8 +301,8 @@ export function PrivacySettings() {
               <li>Uploaded documents</li>
             </ul>
             <p className="mt-2">
-              Export requests are processed in the background and may take a few minutes.
-              Download links expire after 24 hours.
+              Export requests are processed in the background and may take a few minutes. Download
+              links expire after 24 hours.
             </p>
           </div>
 
@@ -292,11 +311,15 @@ export function PrivacySettings() {
             <div className="rounded-md bg-muted p-4 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Export Status</span>
-                <span className={`text-sm ${
-                  exportJob.status === 'completed' ? 'text-green-600' :
-                  exportJob.status === 'failed' ? 'text-red-600' :
-                  'text-yellow-600'
-                }`}>
+                <span
+                  className={`text-sm ${
+                    exportJob.status === 'completed'
+                      ? 'text-green-600'
+                      : exportJob.status === 'failed'
+                        ? 'text-red-600'
+                        : 'text-yellow-600'
+                  }`}
+                >
                   {exportJob.status.charAt(0).toUpperCase() + exportJob.status.slice(1)}
                 </span>
               </div>
@@ -307,7 +330,14 @@ export function PrivacySettings() {
                     <span>Progress</span>
                     <span>{exportJob.progress_percent}%</span>
                   </div>
-                  <div className="h-2 bg-muted-foreground/20 rounded-full overflow-hidden">
+                  <div
+                    className="h-2 bg-muted-foreground/20 rounded-full overflow-hidden"
+                    role="progressbar"
+                    aria-valuenow={exportJob.progress_percent}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`Export progress: ${exportJob.progress_percent}%`}
+                  >
                     <div
                       className="h-full bg-primary transition-all duration-300"
                       style={{ width: `${exportJob.progress_percent}%` }}
@@ -318,7 +348,7 @@ export function PrivacySettings() {
 
               {exportJob.status === 'completed' && exportJob.download_url && (
                 <Button onClick={handleDownload} className="w-full">
-                  <Download className="mr-2 h-4 w-4" />
+                  <Download className="mr-2 h-4 w-4" aria-hidden="true" />
                   Download Your Data
                 </Button>
               )}
@@ -329,10 +359,8 @@ export function PrivacySettings() {
 
               {exportJob.expires_at && (
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Clock className="h-3 w-3" />
-                  <span>
-                    Link expires: {new Date(exportJob.expires_at).toLocaleString()}
-                  </span>
+                  <Clock className="h-3 w-3" aria-hidden="true" />
+                  <span>Link expires: {new Date(exportJob.expires_at).toLocaleString()}</span>
                 </div>
               )}
             </div>
@@ -345,11 +373,15 @@ export function PrivacySettings() {
             disabled={exporting || pollingExport}
           >
             {exporting || pollingExport ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
             ) : (
-              <Download className="mr-2 h-4 w-4" />
+              <Download className="mr-2 h-4 w-4" aria-hidden="true" />
             )}
-            {exporting ? 'Starting Export...' : pollingExport ? 'Processing...' : 'Request Data Export'}
+            {exporting
+              ? 'Starting Export...'
+              : pollingExport
+                ? 'Processing...'
+                : 'Request Data Export'}
           </Button>
 
           {profile?.gdpr_consent_at && (

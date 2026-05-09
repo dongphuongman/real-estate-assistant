@@ -161,13 +161,14 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
                 setFile(null);
               }}
               className="ml-2 p-1 hover:bg-muted rounded"
+              aria-label="Remove selected file"
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
         ) : (
           <>
-            <Upload className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
+            <Upload className="h-10 w-10 mx-auto mb-3 text-muted-foreground" aria-hidden="true" />
             <p className="font-medium">Drag & drop a file here</p>
             <p className="text-sm text-muted-foreground mt-1">or click to browse</p>
             <p className="text-xs text-muted-foreground mt-2">
@@ -180,8 +181,11 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
       {/* Metadata fields */}
       <div className="grid gap-4">
         <div>
-          <label className="text-sm font-medium">Category</label>
+          <label htmlFor="doc-category" className="text-sm font-medium">
+            Category
+          </label>
           <select
+            id="doc-category"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -195,8 +199,11 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
         </div>
 
         <div>
-          <label className="text-sm font-medium">Description</label>
+          <label htmlFor="doc-description" className="text-sm font-medium">
+            Description
+          </label>
           <textarea
+            id="doc-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Optional description..."
@@ -206,8 +213,11 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
         </div>
 
         <div>
-          <label className="text-sm font-medium">Tags</label>
+          <label htmlFor="doc-tags" className="text-sm font-medium">
+            Tags
+          </label>
           <input
+            id="doc-tags"
             type="text"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
@@ -217,8 +227,11 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
         </div>
 
         <div>
-          <label className="text-sm font-medium">Expiry Date</label>
+          <label htmlFor="doc-expiry" className="text-sm font-medium">
+            Expiry Date
+          </label>
           <input
+            id="doc-expiry"
             type="date"
             value={expiryDate}
             onChange={(e) => setExpiryDate(e.target.value)}
@@ -229,7 +242,10 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
 
       {/* Error display */}
       {error && (
-        <div className="flex items-start gap-3 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+        <div
+          className="flex items-start gap-3 p-4 rounded-lg bg-destructive/10 border border-destructive/20"
+          role="alert"
+        >
           <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-destructive">Upload Failed</p>
@@ -258,12 +274,12 @@ export function DocumentUpload({ propertyId, onUploadSuccess, onCancel }: Docume
         >
           {uploading ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
               Uploading...
             </>
           ) : (
             <>
-              <Upload className="w-4 h-4" />
+              <Upload className="w-4 h-4" aria-hidden="true" />
               Upload Document
             </>
           )}

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import {
   Layers,
   Thermometer,
@@ -11,8 +11,8 @@ import {
   X,
   DollarSign,
   TrendingUp,
-} from "lucide-react";
-import type { HeatmapMode } from "./property-map-utils";
+} from 'lucide-react';
+import type { HeatmapMode } from './property-map-utils';
 
 export interface ClusterOptions {
   cellSizePx: number;
@@ -49,7 +49,7 @@ export default function MapControls({
   onZoomIn,
   onZoomOut,
   onFitBounds,
-  className = "",
+  className = '',
 }: MapControlsProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -68,7 +68,7 @@ export default function MapControls({
           aria-label="Zoom in"
           title="Zoom in"
         >
-          <ZoomIn className="h-4 w-4" />
+          <ZoomIn className="h-4 w-4" aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -77,7 +77,7 @@ export default function MapControls({
           aria-label="Zoom out"
           title="Zoom out"
         >
-          <ZoomOut className="h-4 w-4" />
+          <ZoomOut className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
@@ -89,7 +89,7 @@ export default function MapControls({
         aria-label="Fit bounds"
         title="Fit all properties"
       >
-        <MapPin className="h-4 w-4" />
+        <MapPin className="h-4 w-4" aria-hidden="true" />
       </button>
 
       {/* Advanced filters toggle */}
@@ -101,7 +101,11 @@ export default function MapControls({
         aria-pressed={showAdvanced}
         title="Map filters"
       >
-        {showAdvanced ? <X className="h-4 w-4" /> : <Filter className="h-4 w-4" />}
+        {showAdvanced ? (
+          <X className="h-4 w-4" aria-hidden="true" />
+        ) : (
+          <Filter className="h-4 w-4" aria-hidden="true" />
+        )}
       </button>
 
       {/* Advanced controls panel */}
@@ -112,14 +116,14 @@ export default function MapControls({
           aria-label="Map filters"
         >
           <div className="flex items-center gap-2 font-semibold text-sm">
-            <Layers className="h-4 w-4" />
+            <Layers className="h-4 w-4" aria-hidden="true" />
             Map Options
           </div>
 
           {/* Heatmap toggle */}
           <label className="flex items-center justify-between cursor-pointer">
             <span className="text-sm flex items-center gap-2">
-              <Thermometer className="h-4 w-4" />
+              <Thermometer className="h-4 w-4" aria-hidden="true" />
               Heatmap
             </span>
             <input
@@ -139,8 +143,10 @@ export default function MapControls({
               </label>
               <select
                 id="heatmap-mode"
-                value={options.heatmapMode || "density"}
-                onChange={(e) => onChange({ ...options, heatmapMode: e.target.value as HeatmapMode })}
+                value={options.heatmapMode || 'density'}
+                onChange={(e) =>
+                  onChange({ ...options, heatmapMode: e.target.value as HeatmapMode })
+                }
                 className="w-full text-sm rounded border border-input bg-background px-2 py-1"
                 aria-label="Heatmap mode"
               >
@@ -165,7 +171,9 @@ export default function MapControls({
                 max="3"
                 step="0.1"
                 value={options.heatmapIntensity}
-                onChange={(e) => onChange({ ...options, heatmapIntensity: parseFloat(e.target.value) })}
+                onChange={(e) =>
+                  onChange({ ...options, heatmapIntensity: parseFloat(e.target.value) })
+                }
                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                 aria-label="Heatmap intensity"
               />
@@ -190,7 +198,8 @@ export default function MapControls({
               {/* Cluster size slider */}
               <div className="space-y-1">
                 <label htmlFor="cluster-size" className="text-xs text-muted-foreground">
-                  Cluster Size: {options.clusterOptions?.cellSizePx ?? DEFAULT_CLUSTER_OPTIONS.cellSizePx}px
+                  Cluster Size:{' '}
+                  {options.clusterOptions?.cellSizePx ?? DEFAULT_CLUSTER_OPTIONS.cellSizePx}px
                 </label>
                 <input
                   id="cluster-size"
@@ -216,7 +225,9 @@ export default function MapControls({
               {/* Max zoom for clustering slider */}
               <div className="space-y-1">
                 <label htmlFor="cluster-max-zoom" className="text-xs text-muted-foreground">
-                  Max Zoom: {options.clusterOptions?.maxZoomForClustering ?? DEFAULT_CLUSTER_OPTIONS.maxZoomForClustering}
+                  Max Zoom:{' '}
+                  {options.clusterOptions?.maxZoomForClustering ??
+                    DEFAULT_CLUSTER_OPTIONS.maxZoomForClustering}
                 </label>
                 <input
                   id="cluster-max-zoom"
@@ -224,7 +235,10 @@ export default function MapControls({
                   min="12"
                   max="18"
                   step="1"
-                  value={options.clusterOptions?.maxZoomForClustering ?? DEFAULT_CLUSTER_OPTIONS.maxZoomForClustering}
+                  value={
+                    options.clusterOptions?.maxZoomForClustering ??
+                    DEFAULT_CLUSTER_OPTIONS.maxZoomForClustering
+                  }
                   onChange={(e) =>
                     onChange({
                       ...options,
@@ -284,7 +298,7 @@ export default function MapControls({
           <div className="space-y-2 pt-2 border-t">
             <div className="text-xs font-medium text-muted-foreground">Property Type</div>
             <select
-              value={options.propertyType || ""}
+              value={options.propertyType || ''}
               onChange={(e) => onChange({ ...options, propertyType: e.target.value || undefined })}
               className="w-full text-sm rounded border border-input bg-background px-2 py-1"
               aria-label="Filter by property type"
@@ -305,7 +319,7 @@ export default function MapControls({
               onChange({
                 showHeatmap: false,
                 heatmapIntensity: 1,
-                heatmapMode: "density",
+                heatmapMode: 'density',
                 showClusters: true,
                 clusterOptions: DEFAULT_CLUSTER_OPTIONS,
                 priceRange: undefined,

@@ -44,7 +44,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
       return (
         <div className="flex flex-col items-center justify-center min-h-[200px] p-8 text-center">
-          <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+          <AlertTriangle className="h-12 w-12 text-destructive mb-4" aria-hidden="true" />
           <h2 className="text-lg font-semibold mb-2">Something went wrong</h2>
           <p className="text-sm text-muted-foreground mb-4 max-w-md">
             {this.state.error?.message || 'An unexpected error occurred.'}
@@ -53,7 +53,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             onClick={this.handleRetry}
             className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
             Try again
           </button>
         </div>

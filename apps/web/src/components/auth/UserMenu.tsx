@@ -75,9 +75,13 @@ export function UserMenu() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') setIsOpen(false);
+        }}
         className="flex items-center gap-2 rounded-full px-3 py-1.5 hover:bg-accent transition-colors"
         aria-expanded={isOpen}
         aria-haspopup="true"
+        aria-label={t('userMenu', { defaultValue: 'User menu' })}
       >
         <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground text-sm font-medium">
           {initials}
@@ -89,7 +93,11 @@ export function UserMenu() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 rounded-md border bg-popover shadow-lg z-50">
+        <div
+          className="absolute right-0 mt-2 w-56 rounded-md border bg-popover shadow-lg z-50"
+          role="menu"
+          aria-label={t('userMenu', { defaultValue: 'User menu' })}
+        >
           <div className="p-3 border-b">
             <p className="text-sm font-medium">{user.full_name || t('user')}</p>
             <p className="text-xs text-muted-foreground truncate">{user.email}</p>

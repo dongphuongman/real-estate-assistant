@@ -61,6 +61,7 @@ export function StepSubject({
           type="text"
           className="flex-1 border rounded-md px-3 py-2 text-sm"
           placeholder="Search by address, city, or property ID..."
+          aria-label="Search properties"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -72,7 +73,7 @@ export function StepSubject({
 
       {/* Search error */}
       {searchError && (
-        <div className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded">
+        <div className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded" role="alert">
           {searchError}
         </div>
       )}

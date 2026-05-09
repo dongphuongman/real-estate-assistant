@@ -108,7 +108,7 @@ export function PriceHistoryChart({
     return (
       <Card className={className}>
         <CardContent className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
         </CardContent>
       </Card>
     );
@@ -118,7 +118,7 @@ export function PriceHistoryChart({
     return (
       <Card className={className}>
         <CardContent className="flex flex-col items-center justify-center h-64 text-center">
-          <AlertCircle className="h-8 w-8 text-destructive mb-2" />
+          <AlertCircle className="h-8 w-8 text-destructive mb-2" aria-hidden="true" />
           <p className="text-destructive">{error}</p>
         </CardContent>
       </Card>
@@ -145,7 +145,7 @@ export function PriceHistoryChart({
             <CardDescription>{data.total} price snapshots recorded</CardDescription>
           </div>
           <div className={`flex items-center gap-2 ${trendColor}`}>
-            <TrendIcon className="h-5 w-5" />
+            <TrendIcon className="h-5 w-5" aria-hidden="true" />
             <span className="font-medium capitalize">{data.trend}</span>
             {data.price_change_percent !== null && data.price_change_percent !== undefined && (
               <span className="text-sm">
@@ -161,7 +161,7 @@ export function PriceHistoryChart({
         {showAnomalies && anomalies.length > 0 && (
           <div className="mb-4 p-3 rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
             <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
-              <AlertTriangle className="h-4 w-4" />
+              <AlertTriangle className="h-4 w-4" aria-hidden="true" />
               <span className="text-sm font-medium">
                 {anomalies.length} price {anomalies.length === 1 ? 'anomaly' : 'anomalies'} detected
               </span>
@@ -169,7 +169,11 @@ export function PriceHistoryChart({
           </div>
         )}
 
-        <div className="h-64">
+        <div
+          className="h-64"
+          role="img"
+          aria-label={`Price history chart showing ${data.total} snapshots, trend: ${data.trend}`}
+        >
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />

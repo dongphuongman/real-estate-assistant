@@ -94,8 +94,8 @@ export function ContactAgentForm({
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg">Contact {displayName}</CardTitle>
         {onCancel && (
-          <Button variant="ghost" size="icon" onClick={onCancel}>
-            <X className="h-4 w-4" />
+          <Button variant="ghost" size="icon" onClick={onCancel} aria-label="Close form">
+            <X className="h-4 w-4" aria-hidden="true" />
           </Button>
         )}
       </CardHeader>
@@ -176,7 +176,9 @@ export function ContactAgentForm({
           </div>
 
           {error && (
-            <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">{error}</div>
+            <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive" role="alert">
+              {error}
+            </div>
           )}
 
           <div className="flex justify-end gap-2">
@@ -188,12 +190,12 @@ export function ContactAgentForm({
             <Button type="submit" disabled={loading}>
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                   Sending...
                 </>
               ) : (
                 <>
-                  <Send className="mr-2 h-4 w-4" />
+                  <Send className="mr-2 h-4 w-4" aria-hidden="true" />
                   Send Message
                 </>
               )}

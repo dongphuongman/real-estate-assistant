@@ -60,7 +60,7 @@ export function WhatsNearbySection({
     {
       key: 'schools',
       label: 'Schools',
-      icon: <GraduationCap className="h-4 w-4" />,
+      icon: <GraduationCap className="h-4 w-4" aria-hidden="true" />,
       description: 'Educational institutions nearby',
       color: 'text-indigo-600',
       bgColor: 'bg-indigo-50',
@@ -68,7 +68,7 @@ export function WhatsNearbySection({
     {
       key: 'amenities',
       label: 'Amenities',
-      icon: <ShoppingBag className="h-4 w-4" />,
+      icon: <ShoppingBag className="h-4 w-4" aria-hidden="true" />,
       description: 'Shops, restaurants, and services',
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
@@ -76,7 +76,7 @@ export function WhatsNearbySection({
     {
       key: 'green_spaces',
       label: 'Green Spaces',
-      icon: <Trees className="h-4 w-4" />,
+      icon: <Trees className="h-4 w-4" aria-hidden="true" />,
       description: 'Parks and recreational areas',
       color: 'text-green-600',
       bgColor: 'bg-green-50',
@@ -84,7 +84,7 @@ export function WhatsNearbySection({
     {
       key: 'transport_stops',
       label: 'Transport',
-      icon: <Bus className="h-4 w-4" />,
+      icon: <Bus className="h-4 w-4" aria-hidden="true" />,
       description: 'Public transport access points',
       color: 'text-rose-600',
       bgColor: 'bg-rose-50',
@@ -92,7 +92,7 @@ export function WhatsNearbySection({
     {
       key: 'police_stations',
       label: 'Safety',
-      icon: <Shield className="h-4 w-4" />,
+      icon: <Shield className="h-4 w-4" aria-hidden="true" />,
       description: 'Police and emergency services',
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
@@ -165,7 +165,7 @@ export function WhatsNearbySection({
           >
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div className={`p-2 rounded-full ${category.bgColor} ${category.color} shrink-0`}>
-                <MapPin className="h-3 w-3" />
+                <MapPin className="h-3 w-3" aria-hidden="true" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium truncate">{poi.name}</p>
@@ -184,7 +184,7 @@ export function WhatsNearbySection({
                   className="p-1.5 rounded-md hover:bg-background transition-colors"
                   title="Open in Google Maps"
                 >
-                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 </a>
               )}
             </div>
@@ -217,7 +217,7 @@ export function WhatsNearbySection({
         {/* Summary stats */}
         <div className="flex flex-wrap items-center gap-4 mb-4 pb-4 border-b">
           <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-muted-foreground" />
+            <MapPin className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
             <span className="text-sm">
               <span className="font-semibold">{getTotalCount()}</span> places nearby
             </span>
@@ -281,7 +281,7 @@ export function WhatsNearbySection({
           <div className="mt-4 pt-4 border-t">
             <div className="rounded-lg bg-muted h-48 flex items-center justify-center">
               <div className="text-center text-muted-foreground">
-                <MapPin className="h-8 w-8 mx-auto mb-2" />
+                <MapPin className="h-8 w-8 mx-auto mb-2" aria-hidden="true" />
                 <p className="text-sm">Map integration coming soon</p>
                 <p className="text-xs">
                   Location: {result.latitude.toFixed(4)}, {result.longitude.toFixed(4)}

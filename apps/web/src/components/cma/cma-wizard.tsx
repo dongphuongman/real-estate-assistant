@@ -146,7 +146,13 @@ export function CMAWizard() {
                 }`}
               >
                 {state.currentStep > step.id ? (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -181,7 +187,9 @@ export function CMAWizard() {
 
       {/* Error display */}
       {state.error && (
-        <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-md">{state.error}</div>
+        <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-md" role="alert">
+          {state.error}
+        </div>
       )}
 
       {/* Step content */}

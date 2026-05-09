@@ -1,7 +1,20 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { MapPin, Clock, Car, Bike, Footprints, Train, Plus, Trash2, MapPinned, Save, X, Star } from 'lucide-react';
+import {
+  MapPin,
+  Clock,
+  Car,
+  Bike,
+  Footprints,
+  Train,
+  Plus,
+  Trash2,
+  MapPinned,
+  Save,
+  X,
+  Star,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -80,7 +93,7 @@ export function CommuteCalculator({
     if (saved) {
       try {
         const parsed: SavedDestination[] = JSON.parse(saved);
-        setDestinations(parsed.map(d => ({ ...d, lastCalculated: undefined })));
+        setDestinations(parsed.map((d) => ({ ...d, lastCalculated: undefined })));
       } catch {
         // Invalid data, ignore
       }
@@ -101,44 +114,43 @@ export function CommuteCalculator({
   }, []);
 
   // Handle calculating commute for a specific destination
-  const handleCalculate = useCallback(async (destination: SavedDestinationWithResult) => {
-    if (!propertyLat || !propertyLon) {
-      setError('Property location not available');
-      return;
-    }
-
-    setCalculatingId(destination.id);
-    setError(null);
-
-    try {
-      const request: CommuteTimeRequest = {
-        property_id: propertyId,
-        destination_lat: destination.latitude,
-        destination_lon: destination.longitude,
-        mode: selectedMode,
-        destination_name: destination.name,
-      };
-
-      const response = await calculateCommuteTime(request);
-
-      // Update the destination with the result
-      setDestinations(prev =>
-        prev.map(d =>
-          d.id === destination.id
-            ? { ...d, lastCalculated: response.result }
-            : d
-        )
-      );
-
-      if (onCommuteCalculated && response.result) {
-        onCommuteCalculated(response.result);
+  const handleCalculate = useCallback(
+    async (destination: SavedDestinationWithResult) => {
+      if (!propertyLat || !propertyLon) {
+        setError('Property location not available');
+        return;
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to calculate commute');
-    } finally {
-      setCalculatingId(null);
-    }
-  }, [propertyId, propertyLat, propertyLon, selectedMode, onCommuteCalculated]);
+
+      setCalculatingId(destination.id);
+      setError(null);
+
+      try {
+        const request: CommuteTimeRequest = {
+          property_id: propertyId,
+          destination_lat: destination.latitude,
+          destination_lon: destination.longitude,
+          mode: selectedMode,
+          destination_name: destination.name,
+        };
+
+        const response = await calculateCommuteTime(request);
+
+        // Update the destination with the result
+        setDestinations((prev) =>
+          prev.map((d) => (d.id === destination.id ? { ...d, lastCalculated: response.result } : d))
+        );
+
+        if (onCommuteCalculated && response.result) {
+          onCommuteCalculated(response.result);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to calculate commute');
+      } finally {
+        setCalculatingId(null);
+      }
+    },
+    [propertyId, propertyLat, propertyLon, selectedMode, onCommuteCalculated]
+  );
 
   // Add a new destination
   const handleAddDestination = useCallback(() => {
@@ -167,21 +179,27 @@ export function CommuteCalculator({
   }, [destinations, form, saveToStorage]);
 
   // Remove a destination
-  const handleRemove = useCallback((id: string) => {
-    const filtered = destinations.filter(d => d.id !== id);
-    setDestinations(filtered.map(d => ({ ...d, lastCalculated: undefined })));
-    saveToStorage(filtered);
-  }, [destinations, saveToStorage]);
+  const handleRemove = useCallback(
+    (id: string) => {
+      const filtered = destinations.filter((d) => d.id !== id);
+      setDestinations(filtered.map((d) => ({ ...d, lastCalculated: undefined })));
+      saveToStorage(filtered);
+    },
+    [destinations, saveToStorage]
+  );
 
   // Set a destination as default
-  const handleSetDefault = useCallback((id: string) => {
-    const updated = destinations.map(d => ({
-      ...d,
-      is_default: d.id === id,
-    }));
-    setDestinations(updated);
-    saveToStorage(updated);
-  }, [destinations, saveToStorage]);
+  const handleSetDefault = useCallback(
+    (id: string) => {
+      const updated = destinations.map((d) => ({
+        ...d,
+        is_default: d.id === id,
+      }));
+      setDestinations(updated);
+      saveToStorage(updated);
+    },
+    [destinations, saveToStorage]
+  );
 
   // Check if we can calculate
   const canCalculate = useMemo(() => {
@@ -218,7 +236,10 @@ export function CommuteCalculator({
 
       {/* Error display */}
       {error && (
-        <div className="p-3 rounded-md bg-red-50 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400 mb-4">
+        <div
+          className="p-3 rounded-md bg-red-50 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400 mb-4"
+          role="alert"
+        >
           {error}
         </div>
       )}
@@ -226,7 +247,7 @@ export function CommuteCalculator({
       {/* Destination list */}
       {destinations.length > 0 ? (
         <div className="space-y-3">
-          {destinations.map(dest => (
+          {destinations.map((dest) => (
             <div
               key={dest.id}
               className={cn(
@@ -257,6 +278,7 @@ export function CommuteCalculator({
                     size="sm"
                     onClick={() => handleCalculate(dest)}
                     disabled={!canCalculate || calculatingId === dest.id}
+                    aria-label="Calculate commute"
                   >
                     {calculatingId === dest.id ? (
                       <div className="h-4 w-4 animate-spin border-2 border-current border-t-transparent rounded-full" />
@@ -268,16 +290,22 @@ export function CommuteCalculator({
                     variant="ghost"
                     size="sm"
                     onClick={() => handleSetDefault(dest.id)}
+                    aria-label="Set as default"
                   >
-                    <Star className={cn(
-                      'h-4 w-4',
-                      dest.is_default ? 'fill-yellow-500 text-yellow-500' : 'text-muted-foreground'
-                    )} />
+                    <Star
+                      className={cn(
+                        'h-4 w-4',
+                        dest.is_default
+                          ? 'fill-yellow-500 text-yellow-500'
+                          : 'text-muted-foreground'
+                      )}
+                    />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleRemove(dest.id)}
+                    aria-label="Remove destination"
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
@@ -288,12 +316,12 @@ export function CommuteCalculator({
                 <div className="mt-2 pt-2 border-t border-dashed text-xs text-muted-foreground">
                   <div className="flex items-center gap-4">
                     <span>
-                      {dest.lastCalculated.distance_text} via {MODE_LABELS[dest.lastCalculated.mode as CommuteMode] || dest.lastCalculated.mode}
+                      {dest.lastCalculated.distance_text} via{' '}
+                      {MODE_LABELS[dest.lastCalculated.mode as CommuteMode] ||
+                        dest.lastCalculated.mode}
                     </span>
                     {dest.lastCalculated.arrival_time && (
-                      <span>
-                        Arrival: {dest.lastCalculated.arrival_time}
-                      </span>
+                      <span>Arrival: {dest.lastCalculated.arrival_time}</span>
                     )}
                   </div>
                 </div>
@@ -305,7 +333,9 @@ export function CommuteCalculator({
         <div className="text-center py-6 text-sm text-muted-foreground">
           <MapPinned className="h-8 w-8 mx-auto mb-2 opacity-50" />
           <p>No destinations saved</p>
-          <p className="text-xs">Add your work location or other frequent destinations to check commute times.</p>
+          <p className="text-xs">
+            Add your work location or other frequent destinations to check commute times.
+          </p>
         </div>
       )}
 

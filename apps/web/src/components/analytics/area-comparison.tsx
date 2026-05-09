@@ -63,7 +63,11 @@ function MetricRow({
           <div
             className={`flex items-center justify-center gap-1 text-xs ${isBetter ? 'text-green-600' : 'text-red-600'}`}
           >
-            {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+            {isPositive ? (
+              <TrendingUp className="h-3 w-3" aria-hidden="true" />
+            ) : (
+              <TrendingDown className="h-3 w-3" aria-hidden="true" />
+            )}
             <span>{diffPercent}%</span>
           </div>
         )}
@@ -118,7 +122,7 @@ export function AreaComparisonComponent() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5" />
+          <BarChart3 className="h-5 w-5" aria-hidden="true" />
           Area Comparison
         </CardTitle>
         <CardDescription>Compare market metrics between two cities side by side</CardDescription>
@@ -148,7 +152,7 @@ export function AreaComparisonComponent() {
           </div>
           <div className="flex items-end">
             <Button onClick={handleCompare} disabled={loading} className="w-full">
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
               Compare
             </Button>
           </div>
@@ -156,16 +160,19 @@ export function AreaComparisonComponent() {
 
         {/* Error State */}
         {error && (
-          <div className="flex items-center gap-2 p-4 border border-destructive/20 bg-destructive/10 rounded-lg">
-            <AlertCircle className="h-5 w-5 text-destructive" />
+          <div
+            className="flex items-center gap-2 p-4 border border-destructive/20 bg-destructive/10 rounded-lg"
+            role="alert"
+          >
+            <AlertCircle className="h-5 w-5 text-destructive" aria-hidden="true" />
             <p className="text-destructive">{error}</p>
           </div>
         )}
 
         {/* Loading State */}
         {loading && !comparison && (
-          <div className="flex items-center justify-center h-48">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="flex items-center justify-center h-48" role="status" aria-live="polite">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
           </div>
         )}
 
@@ -177,7 +184,7 @@ export function AreaComparisonComponent() {
               <Card className="bg-muted/50">
                 <CardContent className="pt-4">
                   <div className="flex items-center gap-2">
-                    <TrendIcon className="h-5 w-5 text-primary" />
+                    <TrendIcon className="h-5 w-5 text-primary" aria-hidden="true" />
                     <div>
                       <p className="text-sm text-muted-foreground">Price Difference</p>
                       <p className="text-lg font-semibold">
@@ -192,7 +199,7 @@ export function AreaComparisonComponent() {
               <Card className="bg-muted/50">
                 <CardContent className="pt-4">
                   <div className="flex items-center gap-2">
-                    <DollarSign className="h-5 w-5 text-green-600" />
+                    <DollarSign className="h-5 w-5 text-green-600" aria-hidden="true" />
                     <div>
                       <p className="text-sm text-muted-foreground">Cheaper Area</p>
                       <p className="text-lg font-semibold">{comparison.cheaper_area}</p>
@@ -204,7 +211,7 @@ export function AreaComparisonComponent() {
               <Card className="bg-muted/50">
                 <CardContent className="pt-4">
                   <div className="flex items-center gap-2">
-                    <Building2 className="h-5 w-5 text-blue-600" />
+                    <Building2 className="h-5 w-5 text-blue-600" aria-hidden="true" />
                     <div>
                       <p className="text-sm text-muted-foreground">More Listings</p>
                       <p className="text-lg font-semibold">{comparison.more_properties_area}</p>
@@ -277,7 +284,7 @@ export function AreaComparisonComponent() {
                           <div className="capitalize font-medium">{key.replace(/_/g, ' ')}</div>
                           <div className="flex items-center gap-2 text-muted-foreground">
                             <span>{val1.toFixed(0)}%</span>
-                            <ArrowRight className="h-3 w-3" />
+                            <ArrowRight className="h-3 w-3" aria-hidden="true" />
                             <span>{val2.toFixed(0)}%</span>
                             {diff !== 0 && (
                               <span className={diff > 0 ? 'text-green-600' : 'text-red-600'}>

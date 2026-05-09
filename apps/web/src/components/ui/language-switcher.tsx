@@ -51,6 +51,7 @@ export function LanguageSwitcher() {
             key={loc}
             onClick={() => switchLocale(loc)}
             className={loc === locale ? 'bg-accent' : ''}
+            aria-current={loc === locale ? 'true' : undefined}
           >
             <span className="mr-2">{localeFlags[loc]}</span>
             {localeNames[loc]}

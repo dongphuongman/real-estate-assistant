@@ -89,12 +89,21 @@ export function SaveSearchButton({
       </Button>
 
       {isOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Save Search"
+        >
           <div className="bg-background rounded-lg p-6 max-w-md w-full mx-4 shadow-lg">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Save Search</h2>
-              <button onClick={handleClose} className="text-muted-foreground hover:text-foreground">
-                <X className="h-5 w-5" />
+              <button
+                onClick={handleClose}
+                className="text-muted-foreground hover:text-foreground"
+                aria-label="Close dialog"
+              >
+                <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
 
@@ -108,8 +117,11 @@ export function SaveSearchButton({
             ) : (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Search Name</label>
+                  <label htmlFor="search-name" className="block text-sm font-medium mb-1">
+                    Search Name
+                  </label>
                   <input
+                    id="search-name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -120,8 +132,11 @@ export function SaveSearchButton({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Alert Frequency</label>
+                  <label htmlFor="alert-frequency" className="block text-sm font-medium mb-1">
+                    Alert Frequency
+                  </label>
                   <select
+                    id="alert-frequency"
                     value={alertFrequency}
                     onChange={(e) => setAlertFrequency(e.target.value as AlertFrequency)}
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -137,7 +152,11 @@ export function SaveSearchButton({
                   You&apos;ll be notified about new properties and price drops matching this search.
                 </div>
 
-                {error && <p className="text-sm text-destructive">{error}</p>}
+                {error && (
+                  <p className="text-sm text-destructive" role="alert">
+                    {error}
+                  </p>
+                )}
 
                 <div className="flex justify-end gap-2 pt-2">
                   <Button variant="outline" onClick={handleClose} disabled={saving}>
@@ -146,7 +165,7 @@ export function SaveSearchButton({
                   <Button onClick={handleSave} disabled={saving}>
                     {saving ? (
                       <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
                         Saving...
                       </>
                     ) : (

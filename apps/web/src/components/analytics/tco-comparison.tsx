@@ -321,7 +321,7 @@ export function TCOComparison({ className }: TCOComparisonProps) {
           {/* Compare Button */}
           <div className="flex justify-center">
             <Button onClick={handleCompare} disabled={loading} size="lg">
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
               Compare Scenarios
             </Button>
           </div>
@@ -329,7 +329,7 @@ export function TCOComparison({ className }: TCOComparisonProps) {
           {/* Error State */}
           {error && (
             <div className="mt-4 flex items-center gap-2 text-destructive bg-destructive/10 p-3 rounded-lg">
-              <AlertCircle className="h-4 w-4" />
+              <AlertCircle className="h-4 w-4" aria-hidden="true" />
               <span className="text-sm">{error}</span>
             </div>
           )}
@@ -354,8 +354,10 @@ export function TCOComparison({ className }: TCOComparisonProps) {
                       result.monthly_cost_difference > 0 ? 'text-red-600' : 'text-green-600'
                     }`}
                   >
-                    {result.monthly_cost_difference > 0 ? '+' : ''}
-                    ${result.monthly_cost_difference.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    {result.monthly_cost_difference > 0 ? '+' : ''}$
+                    {result.monthly_cost_difference.toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {result.scenario_a_name} vs {result.scenario_b_name}
@@ -370,8 +372,10 @@ export function TCOComparison({ className }: TCOComparisonProps) {
                       result.equity_difference < 0 ? 'text-red-600' : 'text-green-600'
                     }`}
                   >
-                    {result.equity_difference > 0 ? '+' : ''}
-                    ${result.equity_difference.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    {result.equity_difference > 0 ? '+' : ''}$
+                    {result.equity_difference.toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {result.scenario_a_name} vs {result.scenario_b_name}
@@ -394,11 +398,11 @@ export function TCOComparison({ className }: TCOComparisonProps) {
               <div className="mt-6 p-4 bg-primary/5 rounded-lg">
                 <div className="flex items-start gap-3">
                   {result.recommendation === 'scenario_a' ? (
-                    <Check className="h-5 w-5 text-green-600 mt-0.5" />
+                    <Check className="h-5 w-5 text-green-600 mt-0.5" aria-hidden="true" />
                   ) : result.recommendation === 'scenario_b' ? (
-                    <Check className="h-5 w-5 text-green-600 mt-0.5" />
+                    <Check className="h-5 w-5 text-green-600 mt-0.5" aria-hidden="true" />
                   ) : (
-                    <ArrowRight className="h-5 w-5 text-blue-600 mt-0.5" />
+                    <ArrowRight className="h-5 w-5 text-blue-600 mt-0.5" aria-hidden="true" />
                   )}
                   <div>
                     <p className="font-medium">Recommendation: {result.recommendation}</p>
@@ -413,7 +417,7 @@ export function TCOComparison({ className }: TCOComparisonProps) {
               <div className="grid md:grid-cols-2 gap-4 mt-4">
                 <div className="p-4 bg-muted rounded-lg">
                   <h4 className="font-medium mb-2 flex items-center gap-2">
-                    <Check className="h-4 w-4 text-green-600" />
+                    <Check className="h-4 w-4 text-green-600" aria-hidden="true" />
                     {result.scenario_a_name} Advantages
                   </h4>
                   <ul className="text-sm space-y-1">
@@ -426,7 +430,7 @@ export function TCOComparison({ className }: TCOComparisonProps) {
                 </div>
                 <div className="p-4 bg-muted rounded-lg">
                   <h4 className="font-medium mb-2 flex items-center gap-2">
-                    <Check className="h-4 w-4 text-green-600" />
+                    <Check className="h-4 w-4 text-green-600" aria-hidden="true" />
                     {result.scenario_b_name} Advantages
                   </h4>
                   <ul className="text-sm space-y-1">

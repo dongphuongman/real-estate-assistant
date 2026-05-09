@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { calculateInvestment, ApiError } from "@/lib/api";
-import { InvestmentAnalysisResult } from "@/lib/types";
-import { Loader2, AlertCircle, RefreshCw, TrendingUp, ChevronDown, ChevronUp } from "lucide-react";
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { calculateInvestment, ApiError } from '@/lib/api';
+import { InvestmentAnalysisResult } from '@/lib/types';
+import { Loader2, AlertCircle, RefreshCw, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ErrorState {
   message: string;
@@ -15,7 +15,7 @@ interface ErrorState {
 }
 
 const extractErrorState = (err: unknown): ErrorState => {
-  let message = "Unknown error";
+  let message = 'Unknown error';
   let requestId: string | undefined = undefined;
 
   if (err instanceof ApiError) {
@@ -31,17 +31,17 @@ const extractErrorState = (err: unknown): ErrorState => {
 };
 
 const getScoreColor = (score: number): string => {
-  if (score >= 80) return "text-green-600";
-  if (score >= 60) return "text-yellow-600";
-  if (score >= 40) return "text-orange-600";
-  return "text-red-600";
+  if (score >= 80) return 'text-green-600';
+  if (score >= 60) return 'text-yellow-600';
+  if (score >= 40) return 'text-orange-600';
+  return 'text-red-600';
 };
 
 const getScoreLabel = (score: number): string => {
-  if (score >= 80) return "Excellent";
-  if (score >= 60) return "Good";
-  if (score >= 40) return "Fair";
-  return "Poor";
+  if (score >= 80) return 'Excellent';
+  if (score >= 60) return 'Good';
+  if (score >= 40) return 'Fair';
+  return 'Poor';
 };
 
 export function InvestmentAnalyzer() {
@@ -137,7 +137,8 @@ export function InvestmentAnalyzer() {
           </div>
           <h3 className="text-lg font-semibold mb-2">Investment Property Analyzer</h3>
           <p className="text-sm text-muted-foreground max-w-md mx-auto mb-3">
-            Analyze investment properties with comprehensive metrics including ROI, cap rate, cash flow, and rental yield.
+            Analyze investment properties with comprehensive metrics including ROI, cap rate, cash
+            flow, and rental yield.
           </p>
           <p className="text-xs text-muted-foreground">
             Enter property and rental details below to calculate investment returns and scores.
@@ -194,15 +195,16 @@ export function InvestmentAnalyzer() {
               variant="outline"
               className="w-full"
               onClick={() => setShowFinancingOptions(!showFinancingOptions)}
+              aria-expanded={showFinancingOptions}
             >
               {showFinancingOptions ? (
                 <>
-                  <ChevronUp className="mr-2 h-4 w-4" />
+                  <ChevronUp className="mr-2 h-4 w-4" aria-hidden="true" />
                   Hide Financing Options
                 </>
               ) : (
                 <>
-                  <ChevronDown className="mr-2 h-4 w-4" />
+                  <ChevronDown className="mr-2 h-4 w-4" aria-hidden="true" />
                   Show Financing Options
                 </>
               )}
@@ -284,15 +286,16 @@ export function InvestmentAnalyzer() {
               variant="outline"
               className="w-full"
               onClick={() => setShowExpenseOptions(!showExpenseOptions)}
+              aria-expanded={showExpenseOptions}
             >
               {showExpenseOptions ? (
                 <>
-                  <ChevronUp className="mr-2 h-4 w-4" />
+                  <ChevronUp className="mr-2 h-4 w-4" aria-hidden="true" />
                   Hide Operating Expenses
                 </>
               ) : (
                 <>
-                  <ChevronDown className="mr-2 h-4 w-4" />
+                  <ChevronDown className="mr-2 h-4 w-4" aria-hidden="true" />
                   Show Operating Expenses
                 </>
               )}
@@ -383,7 +386,7 @@ export function InvestmentAnalyzer() {
             )}
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
               Analyze Investment
             </Button>
 
@@ -395,7 +398,10 @@ export function InvestmentAnalyzer() {
                 aria-live="assertive"
               >
                 <div className="flex items-start gap-2">
-                  <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" aria-hidden="true" />
+                  <AlertCircle
+                    className="h-4 w-4 text-destructive mt-0.5 shrink-0"
+                    aria-hidden="true"
+                  />
                   <div className="flex-1">
                     <p className="text-sm text-destructive font-medium">Analysis failed</p>
                     <p className="text-sm text-destructive/90 mt-1">{errorState.message}</p>
@@ -415,7 +421,7 @@ export function InvestmentAnalyzer() {
                     disabled={loading}
                     className="gap-2 ml-auto"
                   >
-                    <RefreshCw className="h-3 w-3" />
+                    <RefreshCw className="h-3 w-3" aria-hidden="true" />
                     Retry
                   </Button>
                 </div>
@@ -430,9 +436,7 @@ export function InvestmentAnalyzer() {
         <Card>
           <CardHeader>
             <CardTitle>Investment Analysis Results</CardTitle>
-            <CardDescription>
-              Comprehensive metrics and investment quality score.
-            </CardDescription>
+            <CardDescription>Comprehensive metrics and investment quality score.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Investment Score */}
@@ -449,7 +453,9 @@ export function InvestmentAnalyzer() {
               <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                 {Object.entries(result.score_breakdown).map(([key, value]) => (
                   <div key={key} className="flex justify-between">
-                    <span className="text-muted-foreground">{key.replace(/_/g, " ").replace("score", "score").replace("yield", "yield")}:</span>
+                    <span className="text-muted-foreground">
+                      {key.replace(/_/g, ' ').replace('score', 'score').replace('yield', 'yield')}:
+                    </span>
                     <span className="font-medium">{value.toFixed(1)}</span>
                   </div>
                 ))}
@@ -460,27 +466,24 @@ export function InvestmentAnalyzer() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Monthly Cash Flow</p>
-                <p className={`text-xl font-bold ${result.monthly_cash_flow >= 0 ? "text-green-600" : "text-red-600"}`}>
-                  ${result.monthly_cash_flow.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                <p
+                  className={`text-xl font-bold ${result.monthly_cash_flow >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                >
+                  $
+                  {result.monthly_cash_flow.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Cash on Cash ROI</p>
-                <p className="text-xl font-bold">
-                  {result.cash_on_cash_roi.toFixed(2)}%
-                </p>
+                <p className="text-xl font-bold">{result.cash_on_cash_roi.toFixed(2)}%</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Cap Rate</p>
-                <p className="text-xl font-bold">
-                  {result.cap_rate.toFixed(2)}%
-                </p>
+                <p className="text-xl font-bold">{result.cap_rate.toFixed(2)}%</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Net Yield</p>
-                <p className="text-xl font-bold">
-                  {result.net_yield.toFixed(2)}%
-                </p>
+                <p className="text-xl font-bold">{result.net_yield.toFixed(2)}%</p>
               </div>
             </div>
 
@@ -490,20 +493,37 @@ export function InvestmentAnalyzer() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Monthly Income (Rent)</span>
-                  <span className="font-medium text-green-600">${result.monthly_income.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span className="font-medium text-green-600">
+                    ${result.monthly_income.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Mortgage Payment</span>
-                  <span className="font-medium text-red-600">-${result.monthly_mortgage.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span className="font-medium text-red-600">
+                    -$
+                    {result.monthly_mortgage.toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Operating Expenses</span>
-                  <span className="font-medium text-red-600">-${(result.monthly_expenses - result.monthly_mortgage).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span className="font-medium text-red-600">
+                    -$
+                    {(result.monthly_expenses - result.monthly_mortgage).toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm font-semibold pt-2 border-t">
                   <span>Net Monthly Cash Flow</span>
-                  <span className={result.monthly_cash_flow >= 0 ? "text-green-600" : "text-red-600"}>
-                    ${result.monthly_cash_flow.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  <span
+                    className={result.monthly_cash_flow >= 0 ? 'text-green-600' : 'text-red-600'}
+                  >
+                    $
+                    {result.monthly_cash_flow.toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
                   </span>
                 </div>
               </div>
@@ -515,12 +535,22 @@ export function InvestmentAnalyzer() {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="p-2 bg-muted/50 rounded">
                   <p className="text-muted-foreground">Total Investment</p>
-                  <p className="font-medium">${result.total_investment.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                  <p className="font-medium">
+                    $
+                    {result.total_investment.toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
+                  </p>
                 </div>
                 <div className="p-2 bg-muted/50 rounded">
                   <p className="text-muted-foreground">Annual Cash Flow</p>
-                  <p className={`font-medium ${result.annual_cash_flow >= 0 ? "text-green-600" : "text-red-600"}`}>
-                    ${result.annual_cash_flow.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  <p
+                    className={`font-medium ${result.annual_cash_flow >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                  >
+                    $
+                    {result.annual_cash_flow.toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
                   </p>
                 </div>
                 <div className="p-2 bg-muted/50 rounded">
@@ -529,7 +559,9 @@ export function InvestmentAnalyzer() {
                 </div>
                 <div className="p-2 bg-muted/50 rounded">
                   <p className="text-muted-foreground">Annual Income</p>
-                  <p className="font-medium">${result.annual_income.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                  <p className="font-medium">
+                    ${result.annual_income.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  </p>
                 </div>
               </div>
             </div>

@@ -1,41 +1,41 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import { useEffect, useMemo, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import {
   getTaskModelPreferences,
   createTaskModelPreference,
   updateTaskModelPreference,
   deleteTaskModelPreference,
   getSystemModelDefaults,
-} from "@/lib/api";
+} from '@/lib/api';
 import type {
   TaskType,
   TaskModelPreference,
   TaskModelPreferenceCreate,
   SystemDefaultsResponse,
   ModelProviderCatalog,
-} from "@/lib/types";
+} from '@/lib/types';
 
 const TASK_TYPE_LABELS: Record<TaskType, string> = {
-  chat: "Chat",
-  search: "Search",
-  tools: "Tools",
-  analysis: "Analysis",
-  embedding: "Embedding",
+  chat: 'Chat',
+  search: 'Search',
+  tools: 'Tools',
+  analysis: 'Analysis',
+  embedding: 'Embedding',
 };
 
 const TASK_TYPE_DESCRIPTIONS: Record<TaskType, string> = {
-  chat: "Conversational responses and general queries",
-  search: "Property search query processing",
-  tools: "Tool execution and function calling",
-  analysis: "Market analysis and complex reasoning",
-  embedding: "Vector embedding generation",
+  chat: 'Conversational responses and general queries',
+  search: 'Property search query processing',
+  tools: 'Tool execution and function calling',
+  analysis: 'Market analysis and complex reasoning',
+  embedding: 'Vector embedding generation',
 };
 
-const TASK_TYPES: TaskType[] = ["chat", "search", "tools", "analysis", "embedding"];
+const TASK_TYPES: TaskType[] = ['chat', 'search', 'tools', 'analysis', 'embedding'];
 
 interface TaskRowProps {
   taskType: TaskType;
@@ -58,11 +58,9 @@ function TaskRow({
   onReset,
   loading,
 }: TaskRowProps) {
-  const [provider, setProvider] = useState(
-    preference?.provider || systemDefault?.provider || ""
-  );
+  const [provider, setProvider] = useState(preference?.provider || systemDefault?.provider || '');
   const [modelName, setModelName] = useState(
-    preference?.model_name || systemDefault?.model_name || ""
+    preference?.model_name || systemDefault?.model_name || ''
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,12 +83,12 @@ function TaskRow({
   const handleProviderChange = (newProvider: string) => {
     setProvider(newProvider);
     const models = availableModels[newProvider] || [];
-    setModelName(models[0] || "");
+    setModelName(models[0] || '');
   };
 
   const handleSave = async () => {
     if (!provider || !modelName) {
-      setError("Select both provider and model");
+      setError('Select both provider and model');
       return;
     }
     setSaving(true);
@@ -98,10 +96,10 @@ function TaskRow({
     setSuccess(null);
     try {
       await onSave(taskType, provider, modelName);
-      setSuccess("Saved");
+      setSuccess('Saved');
       setTimeout(() => setSuccess(null), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save");
+      setError(err instanceof Error ? err.message : 'Failed to save');
     } finally {
       setSaving(false);
     }
@@ -117,10 +115,10 @@ function TaskRow({
         setProvider(systemDefault.provider);
         setModelName(systemDefault.model_name);
       }
-      setSuccess("Reset to system default");
+      setSuccess('Reset to system default');
       setTimeout(() => setSuccess(null), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to reset");
+      setError(err instanceof Error ? err.message : 'Failed to reset');
     } finally {
       setSaving(false);
     }
@@ -137,14 +135,10 @@ function TaskRow({
         <div className="flex items-center gap-2">
           <span className="font-medium">{TASK_TYPE_LABELS[taskType]}</span>
           {isUsingDefault && (
-            <span className="text-xs bg-muted px-2 py-0.5 rounded">
-              System Default
-            </span>
+            <span className="text-xs bg-muted px-2 py-0.5 rounded">System Default</span>
           )}
         </div>
-        <p className="text-sm text-muted-foreground">
-          {TASK_TYPE_DESCRIPTIONS[taskType]}
-        </p>
+        <p className="text-sm text-muted-foreground">{TASK_TYPE_DESCRIPTIONS[taskType]}</p>
       </div>
 
       <div className="flex items-center gap-2">
@@ -153,6 +147,7 @@ function TaskRow({
           value={provider}
           onChange={(e) => handleProviderChange(e.target.value)}
           disabled={loading || saving}
+          aria-label={`${TASK_TYPE_LABELS[taskType]} provider`}
         >
           <option value="">Provider</option>
           {providers.map((p) => (
@@ -167,6 +162,7 @@ function TaskRow({
           value={modelName}
           onChange={(e) => setModelName(e.target.value)}
           disabled={loading || saving || !provider}
+          aria-label={`${TASK_TYPE_LABELS[taskType]} model`}
         >
           <option value="">Model</option>
           {modelsForProvider.map((m) => (
@@ -176,21 +172,12 @@ function TaskRow({
           ))}
         </select>
 
-        <Button
-          size="sm"
-          onClick={handleSave}
-          disabled={loading || saving || !hasChanges}
-        >
-          {saving ? "..." : "Save"}
+        <Button size="sm" onClick={handleSave} disabled={loading || saving || !hasChanges}>
+          {saving ? '...' : 'Save'}
         </Button>
 
         {preference && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleReset}
-            disabled={loading || saving}
-          >
+          <Button size="sm" variant="outline" onClick={handleReset} disabled={loading || saving}>
             Reset
           </Button>
         )}
@@ -210,8 +197,7 @@ interface TaskModelSettingsProps {
 export function TaskModelSettings({ catalog, userEmail }: TaskModelSettingsProps) {
   const [loading, setLoading] = useState(true);
   const [preferences, setPreferences] = useState<TaskModelPreference[]>([]);
-  const [systemDefaults, setSystemDefaults] =
-    useState<SystemDefaultsResponse | null>(null);
+  const [systemDefaults, setSystemDefaults] = useState<SystemDefaultsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const providers = useMemo(() => {
@@ -245,9 +231,7 @@ export function TaskModelSettings({ catalog, userEmail }: TaskModelSettingsProps
         setPreferences(prefsResponse.items);
         setSystemDefaults(defaultsResponse);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load preferences"
-        );
+        setError(err instanceof Error ? err.message : 'Failed to load preferences');
       } finally {
         setLoading(false);
       }
@@ -263,16 +247,10 @@ export function TaskModelSettings({ catalog, userEmail }: TaskModelSettingsProps
   const getSystemDefaultForTask = (
     taskType: TaskType
   ): { provider: string; model_name: string; description?: string } | null => {
-    return (
-      systemDefaults?.defaults.find((d) => d.task_type === taskType) || null
-    );
+    return systemDefaults?.defaults.find((d) => d.task_type === taskType) || null;
   };
 
-  const handleSave = async (
-    taskType: TaskType,
-    provider: string,
-    modelName: string
-  ) => {
+  const handleSave = async (taskType: TaskType, provider: string, modelName: string) => {
     const existing = getPreferenceForTask(taskType);
 
     if (existing) {
@@ -280,9 +258,7 @@ export function TaskModelSettings({ catalog, userEmail }: TaskModelSettingsProps
         provider,
         model_name: modelName,
       });
-      setPreferences((prev) =>
-        prev.map((p) => (p.id === updated.id ? updated : p))
-      );
+      setPreferences((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
     } else {
       const data: TaskModelPreferenceCreate = {
         task_type: taskType,
@@ -305,8 +281,7 @@ export function TaskModelSettings({ catalog, userEmail }: TaskModelSettingsProps
         <CardHeader>
           <CardTitle>Task Model Preferences</CardTitle>
           <CardDescription>
-            Set an email in Identity settings to enable per-task model
-            preferences.
+            Set an email in Identity settings to enable per-task model preferences.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -318,15 +293,13 @@ export function TaskModelSettings({ catalog, userEmail }: TaskModelSettingsProps
       <CardHeader>
         <CardTitle>Task Model Preferences</CardTitle>
         <CardDescription>
-          Configure different AI models for different types of tasks. Each task
-          type can use the optimal model for its specific workload.
+          Configure different AI models for different types of tasks. Each task type can use the
+          optimal model for its specific workload.
         </CardDescription>
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="p-4 text-sm text-muted-foreground">
-            Loading preferences...
-          </div>
+          <div className="p-4 text-sm text-muted-foreground">Loading preferences...</div>
         ) : error ? (
           <div className="p-4 text-sm text-red-600">{error}</div>
         ) : (
@@ -337,9 +310,7 @@ export function TaskModelSettings({ catalog, userEmail }: TaskModelSettingsProps
                 taskType={taskType}
                 preference={getPreferenceForTask(taskType)}
                 systemDefault={getSystemDefaultForTask(taskType)}
-                availableModels={
-                  systemDefaults?.available_models || availableModels
-                }
+                availableModels={systemDefaults?.available_models || availableModels}
                 providers={systemDefaults?.available_providers || providers}
                 onSave={handleSave}
                 onReset={handleReset}

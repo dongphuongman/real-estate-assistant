@@ -15,17 +15,13 @@ import {
   NotificationSettingsUpdate,
   NotificationPreviewRequest,
 } from '@/lib/types';
-import { isPushSupported, requestNotificationPermission, getNotificationPermission } from '@/lib/push';
+import {
+  isPushSupported,
+  requestNotificationPermission,
+  getNotificationPermission,
+} from '@/lib/push';
 
-const DAYS_OF_WEEK = [
-  'sunday',
-  'monday',
-  'tuesday',
-  'wednesday',
-  'thursday',
-  'friday',
-  'saturday',
-];
+const DAYS_OF_WEEK = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
 export function NotificationSettings() {
   const [settings, setSettings] = useState<SettingsType | null>(null);
@@ -33,8 +29,9 @@ export function NotificationSettings() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [pushPermissionStatus, setPushPermissionStatus] =
-    useState<NotificationPermission | null>(null);
+  const [pushPermissionStatus, setPushPermissionStatus] = useState<NotificationPermission | null>(
+    null
+  );
   const [sendingPreview, setSendingPreview] = useState(false);
 
   useEffect(() => {
@@ -157,7 +154,7 @@ export function NotificationSettings() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Bell className="h-5 w-5 text-primary" />
+            <Bell className="h-5 w-5 text-primary" aria-hidden="true" />
             <CardTitle>Notification Types</CardTitle>
           </div>
           <CardDescription>Choose which notifications you want to receive.</CardDescription>
@@ -239,7 +236,7 @@ export function NotificationSettings() {
           <div className="flex items-center justify-between space-x-2">
             <Label htmlFor="email_channel" className="flex flex-col space-y-1">
               <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
+                <Mail className="h-4 w-4" aria-hidden="true" />
                 <span>Email</span>
               </div>
               <span className="font-normal text-muted-foreground">
@@ -258,7 +255,7 @@ export function NotificationSettings() {
           <div className="flex items-center justify-between space-x-2">
             <Label htmlFor="push_channel" className="flex flex-col space-y-1">
               <div className="flex items-center gap-2">
-                <Smartphone className="h-4 w-4" />
+                <Smartphone className="h-4 w-4" aria-hidden="true" />
                 <span>Push Notifications</span>
               </div>
               <span className="font-normal text-muted-foreground">
@@ -279,7 +276,7 @@ export function NotificationSettings() {
             <div className="rounded-md bg-muted p-3 text-sm">
               <p className="mb-2">Enable push notifications in your browser to receive alerts.</p>
               <Button size="sm" onClick={handleEnablePush}>
-                <Bell className="mr-2 h-4 w-4" />
+                <Bell className="mr-2 h-4 w-4" aria-hidden="true" />
                 Enable Push
               </Button>
             </div>
@@ -294,7 +291,7 @@ export function NotificationSettings() {
           <div className="flex items-center justify-between space-x-2">
             <Label htmlFor="in_app_channel" className="flex flex-col space-y-1">
               <div className="flex items-center gap-2">
-                <Monitor className="h-4 w-4" />
+                <Monitor className="h-4 w-4" aria-hidden="true" />
                 <span>In-App Notifications</span>
               </div>
               <span className="font-normal text-muted-foreground">
@@ -326,10 +323,7 @@ export function NotificationSettings() {
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={settings.alert_frequency}
               onChange={(e) =>
-                updateSetting(
-                  'alert_frequency',
-                  e.target.value as 'instant' | 'daily' | 'weekly'
-                )
+                updateSetting('alert_frequency', e.target.value as 'instant' | 'daily' | 'weekly')
               }
             >
               <option value="instant">Instant</option>
@@ -371,7 +365,7 @@ export function NotificationSettings() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-primary" />
+            <Clock className="h-5 w-5 text-primary" aria-hidden="true" />
             <CardTitle>Advanced Settings</CardTitle>
           </div>
           <CardDescription>Fine-tune your notification preferences.</CardDescription>
@@ -455,7 +449,7 @@ export function NotificationSettings() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Send className="h-5 w-5 text-primary" />
+            <Send className="h-5 w-5 text-primary" aria-hidden="true" />
             <CardTitle>Test Notifications</CardTitle>
           </div>
           <CardDescription>Send a test notification to verify your settings.</CardDescription>
@@ -468,7 +462,7 @@ export function NotificationSettings() {
               onClick={() => handleSendPreview('email')}
               disabled={sendingPreview || !settings.email_enabled}
             >
-              <Mail className="mr-2 h-4 w-4" />
+              <Mail className="mr-2 h-4 w-4" aria-hidden="true" />
               Test Email
             </Button>
             <Button
@@ -477,7 +471,7 @@ export function NotificationSettings() {
               onClick={() => handleSendPreview('push')}
               disabled={sendingPreview || !settings.push_enabled}
             >
-              <Smartphone className="mr-2 h-4 w-4" />
+              <Smartphone className="mr-2 h-4 w-4" aria-hidden="true" />
               Test Push
             </Button>
             <Button
@@ -486,7 +480,7 @@ export function NotificationSettings() {
               onClick={() => handleSendPreview('in_app')}
               disabled={sendingPreview || !settings.in_app_enabled}
             >
-              <Monitor className="mr-2 h-4 w-4" />
+              <Monitor className="mr-2 h-4 w-4" aria-hidden="true" />
               Test In-App
             </Button>
           </div>

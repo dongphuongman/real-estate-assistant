@@ -158,7 +158,7 @@ export function PortfolioAnalyzer() {
             <CardTitle className="flex items-center justify-between">
               <span>Properties</span>
               <Button type="button" variant="outline" size="sm" onClick={addProperty}>
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="h-4 w-4 mr-1" aria-hidden="true" />
                 Add Property
               </Button>
             </CardTitle>
@@ -172,7 +172,7 @@ export function PortfolioAnalyzer() {
                 <div key={property.id} className="p-4 border rounded-lg space-y-4">
                   <div className="flex items-center justify-between">
                     <h4 className="text-sm font-semibold flex items-center gap-2">
-                      <Building2 className="h-4 w-4" />
+                      <Building2 className="h-4 w-4" aria-hidden="true" />
                       Property {index + 1}
                     </h4>
                     {properties.length > 1 && (
@@ -182,15 +182,16 @@ export function PortfolioAnalyzer() {
                         size="sm"
                         onClick={() => removeProperty(property.id)}
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <Trash2 className="h-4 w-4 text-destructive" aria-hidden="true" />
                       </Button>
                     )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Property Price ($)</Label>
+                      <Label htmlFor={`price-${property.id}`}>Property Price ($)</Label>
                       <Input
+                        id={`price-${property.id}`}
                         type="number"
                         value={property.property_price}
                         onChange={(e) =>
@@ -205,8 +206,9 @@ export function PortfolioAnalyzer() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Monthly Rent ($)</Label>
+                      <Label htmlFor={`rent-${property.id}`}>Monthly Rent ($)</Label>
                       <Input
+                        id={`rent-${property.id}`}
                         type="number"
                         value={property.monthly_rent}
                         onChange={(e) =>
@@ -220,8 +222,9 @@ export function PortfolioAnalyzer() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Monthly Cash Flow ($)</Label>
+                      <Label htmlFor={`cashflow-${property.id}`}>Monthly Cash Flow ($)</Label>
                       <Input
+                        id={`cashflow-${property.id}`}
                         type="number"
                         value={property.monthly_cash_flow}
                         onChange={(e) =>
@@ -234,8 +237,9 @@ export function PortfolioAnalyzer() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Cap Rate (%)</Label>
+                      <Label htmlFor={`caprate-${property.id}`}>Cap Rate (%)</Label>
                       <Input
+                        id={`caprate-${property.id}`}
                         type="number"
                         value={property.cap_rate}
                         onChange={(e) =>
@@ -247,8 +251,9 @@ export function PortfolioAnalyzer() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>City</Label>
+                      <Label htmlFor={`city-${property.id}`}>City</Label>
                       <Input
+                        id={`city-${property.id}`}
                         type="text"
                         value={property.city}
                         onChange={(e) => updateProperty(property.id, 'city', e.target.value)}
@@ -256,14 +261,14 @@ export function PortfolioAnalyzer() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Property Type</Label>
+                      <Label htmlFor={`type-${property.id}`}>Property Type</Label>
                       <Select
                         value={property.property_type}
                         onValueChange={(value) =>
                           updateProperty(property.id, 'property_type', value)
                         }
                       >
-                        <SelectTrigger>
+                        <SelectTrigger id={`type-${property.id}`}>
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -280,8 +285,8 @@ export function PortfolioAnalyzer() {
               ))}
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <PieChart className="mr-2 h-4 w-4" />
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
+                <PieChart className="mr-2 h-4 w-4" aria-hidden="true" />
                 Analyze Portfolio
               </Button>
 
@@ -292,7 +297,10 @@ export function PortfolioAnalyzer() {
                   role="alert"
                 >
                   <div className="flex items-start gap-2">
-                    <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+                    <AlertCircle
+                      className="h-4 w-4 text-destructive mt-0.5 shrink-0"
+                      aria-hidden="true"
+                    />
                     <div className="flex-1">
                       <p className="text-sm text-destructive font-medium">Analysis failed</p>
                       <p className="text-sm text-destructive/90 mt-1">{errorState.message}</p>
@@ -312,7 +320,7 @@ export function PortfolioAnalyzer() {
                       disabled={loading}
                       className="gap-2 ml-auto"
                     >
-                      <RefreshCw className="h-3 w-3" />
+                      <RefreshCw className="h-3 w-3" aria-hidden="true" />
                       Retry
                     </Button>
                   </div>

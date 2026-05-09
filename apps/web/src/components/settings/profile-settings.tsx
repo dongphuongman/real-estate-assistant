@@ -6,16 +6,8 @@ import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import {
-  getProfile,
-  updateProfile,
-  uploadAvatar,
-  deleteAvatar,
-} from '@/lib/api';
-import {
-  ProfileResponse,
-  ProfileUpdate,
-} from '@/lib/types';
+import { getProfile, updateProfile, uploadAvatar, deleteAvatar } from '@/lib/api';
+import { ProfileResponse, ProfileUpdate } from '@/lib/types';
 
 // Common timezones
 const TIMEZONES = [
@@ -175,7 +167,7 @@ export function ProfileSettings() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Camera className="h-5 w-5 text-primary" />
+            <Camera className="h-5 w-5 text-primary" aria-hidden="true" />
             <CardTitle>Profile Picture</CardTitle>
           </div>
           <CardDescription>Upload a profile picture (PNG, JPG, or WEBP, max 2MB).</CardDescription>
@@ -191,7 +183,7 @@ export function ProfileSettings() {
                 />
               ) : (
                 <div className="h-24 w-24 rounded-full bg-muted flex items-center justify-center border-2 border-muted">
-                  <User className="h-12 w-12 text-muted-foreground" />
+                  <User className="h-12 w-12 text-muted-foreground" aria-hidden="true" />
                 </div>
               )}
             </div>
@@ -210,9 +202,9 @@ export function ProfileSettings() {
                 disabled={uploadingAvatar}
               >
                 {uploadingAvatar ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                 ) : (
-                  <Camera className="mr-2 h-4 w-4" />
+                  <Camera className="mr-2 h-4 w-4" aria-hidden="true" />
                 )}
                 {uploadingAvatar ? 'Uploading...' : 'Upload Photo'}
               </Button>
@@ -224,7 +216,7 @@ export function ProfileSettings() {
                   disabled={uploadingAvatar}
                   className="text-destructive hover:bg-destructive/10"
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <Trash2 className="mr-2 h-4 w-4" aria-hidden="true" />
                   Remove
                 </Button>
               )}
@@ -237,7 +229,7 @@ export function ProfileSettings() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <User className="h-5 w-5 text-primary" />
+            <User className="h-5 w-5 text-primary" aria-hidden="true" />
             <CardTitle>Profile Information</CardTitle>
           </div>
           <CardDescription>Update your personal information.</CardDescription>
@@ -245,13 +237,7 @@ export function ProfileSettings() {
         <CardContent className="space-y-4">
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={profile.email}
-              disabled
-              className="bg-muted"
-            />
+            <Input id="email" type="email" value={profile.email} disabled className="bg-muted" />
             <span className="text-xs text-muted-foreground">
               Email cannot be changed. Contact support if needed.
             </span>
@@ -290,9 +276,7 @@ export function ProfileSettings() {
               rows={3}
               maxLength={500}
             />
-            <span className="text-xs text-muted-foreground">
-              {bio.length}/500 characters
-            </span>
+            <span className="text-xs text-muted-foreground">{bio.length}/500 characters</span>
           </div>
         </CardContent>
       </Card>
@@ -358,7 +342,9 @@ export function ProfileSettings() {
             </div>
             <div>
               <span className="text-muted-foreground">Verified:</span>
-              <span className={`ml-2 ${profile.is_verified ? 'text-green-600' : 'text-yellow-600'}`}>
+              <span
+                className={`ml-2 ${profile.is_verified ? 'text-green-600' : 'text-yellow-600'}`}
+              >
                 {profile.is_verified ? 'Yes' : 'Pending'}
               </span>
             </div>
@@ -371,9 +357,7 @@ export function ProfileSettings() {
             {profile.last_login_at && (
               <div className="col-span-2">
                 <span className="text-muted-foreground">Last login:</span>
-                <span className="ml-2">
-                  {new Date(profile.last_login_at).toLocaleString()}
-                </span>
+                <span className="ml-2">{new Date(profile.last_login_at).toLocaleString()}</span>
               </div>
             )}
           </div>
