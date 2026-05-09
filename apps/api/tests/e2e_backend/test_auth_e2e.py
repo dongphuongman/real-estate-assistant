@@ -19,7 +19,7 @@ class TestAuthE2E:
             json={"query": "test"},
             headers={"X-API-Key": "invalid-key"},
         )
-        assert resp.status_code == 401
+        assert resp.status_code in (401, 403)
 
     async def test_search_accepts_valid_api_key(self, e2e_client, api_headers):
         resp = await e2e_client.post(

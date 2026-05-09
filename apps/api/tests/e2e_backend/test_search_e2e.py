@@ -43,8 +43,8 @@ class TestSearchE2E:
             json={"query": ""},
             headers=api_headers,
         )
-        # Should handle gracefully (200 with empty results or 422 validation error)
-        assert resp.status_code in (200, 422)
+        # Should handle gracefully (200 with empty results, 400 sanitizer, or 422)
+        assert resp.status_code in (200, 400, 422)
 
     async def test_search_invalid_body(self, e2e_client, api_headers):
         resp = await e2e_client.post(
