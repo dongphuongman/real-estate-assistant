@@ -1,6 +1,6 @@
 services:
-  # Backend: FastAPI + SQLite + ChromaDB in-memory
-  # Public repository: AleksNeStu/ai-real-estate-assistant
+  # Backend: FastAPI + SQLite + ChromaDB
+  # Repository: AleksNeStu/ai-real-estate-assistant
   - type: web
     name: realestate-api
     plan: free
@@ -23,22 +23,47 @@ services:
       - key: CORS_ALLOW_ORIGINS
         value: https://realestate-web.onrender.com,https://ai-real-estate-assistant.vercel.app
       - key: AUTH_JWT_ENABLED
-        value: "false"
+        value: "true"
+      - key: JWT_SECRET_KEY
+        generateValue: true
       - key: INTERNET_ENABLED
         value: "false"
       - key: SEED_ON_STARTUP
         value: "true"
+      # Response Cache (Redis)
       - key: CACHE_ENABLED
         value: "true"
+      - key: CACHE_TTL_SECONDS
+        value: "300"
+      - key: CACHE_REDIS_URL
+        value: redis://red-:6379
+      # Metrics
       - key: METRICS_ENABLED
-        value: "false"
+        value: "true"
+      # Rate Limiting
       - key: API_RATE_LIMIT_ENABLED
-        value: "false"
+        value: "true"
+      - key: API_RATE_LIMIT_RPM
+        value: "120"
+      # Connection Pool
+      - key: DB_POOL_SIZE
+        value: "5"
+      - key: DB_MAX_OVERFLOW
+        value: "10"
       - key: VECTOR_PERSIST_ENABLED
         value: "false"
+      # Sentry Error Tracking
+      - key: SENTRY_DSN
+        sync: false
+      - key: SENTRY_TRACES_SAMPLE_RATE
+        value: "0.1"
+      # SMTP Email (optional)
+      - key: EMAIL_PROVIDER
+        value: console
+    healthCheckPath: /health
 
   # Frontend: Next.js standalone
-  # Public repository: AleksNeStu/ai-real-estate-assistant
+  # Repository: AleksNeStu/ai-real-estate-assistant
   - type: web
     name: realestate-web
     plan: free
@@ -54,3 +79,10 @@ services:
         value: /api/v1
       - key: NODE_ENV
         value: production
+      # Sentry
+      - key: NEXT_PUBLIC_SENTRY_DSN
+        sync: false
+      - key: SENTRY_ORG
+        sync: false
+      - key: SENTRY_PROJECT
+        sync: false

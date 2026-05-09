@@ -68,12 +68,20 @@ services:
       - ./.notifications:/app/.notifications
       - ./.sessions:/app/.sessions
     restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     deploy:
       resources:
         limits:
@@ -82,7 +90,6 @@ services:
         reservations:
           memory: 256M
           cpus: "0.25"
-    # No Ollama dependency - backend works with external providers
 
   frontend:
     build:
@@ -96,7 +103,8 @@ services:
       - BACKEND_API_URL=${BACKEND_API_URL:-http://backend:8000/api/v1}
       - API_ACCESS_KEY=${API_ACCESS_KEY:-dev-secret-key}
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ >/dev/null 2>&1 || exit 1"]
@@ -104,6 +112,11 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     deploy:
       resources:
         limits:
@@ -185,10 +198,15 @@ services:
     container_name: redis
     ports:
       - "16379:6379"
-    command: ["redis-server", "--appendonly", "yes"]
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "100mb", "--maxmemory-policy", "allkeys-lru"]
     volumes:
       - redis_data:/data
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 30s

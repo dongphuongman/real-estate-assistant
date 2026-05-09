@@ -7,11 +7,5 @@
   "regions": ["iad1"],
   "env": {
     "NEXT_PUBLIC_API_URL": "/api/v1"
-  },
-  "rewrites": [
-    {
-      "source": "/api/v1/:path*",
-      "destination": "https://realestate-api.onrender.com/api/v1/:path*"
-    }
-  ]
+  }
 }
