@@ -11,19 +11,19 @@ graph TB
         A --> C[Security Scans]
         A --> D[Build Checks]
     end
-    
+
     subgraph "On Push to main"
         E[deploy.yml] --> F[Deploy to Production]
     end
-    
+
     subgraph "On PR"
         G[llm-costs.yml] --> H[Analyze Token Costs]
     end
-    
+
     subgraph "Weekly Schedule"
         I[metrics.yml] --> J[Collect Community Metrics]
     end
-    
+
     subgraph "On Version Tag"
         K[publish-ghcr.yml] --> L[Publish Docker Images]
     end
@@ -316,11 +316,11 @@ sequenceDiagram
     CI->>CI: Run tests (parallel)
     CI->>CI: Security scans
     CI->>GH: Report results
-    
+
     Dev->>GH: Create PR to main
     GH->>CI: Trigger ci.yml
     CI->>GH: Report results
-    
+
     Dev->>GH: Merge PR to main
     GH->>CI: Trigger ci.yml
     CI->>GH: Tests pass
