@@ -1,174 +1,376 @@
 # Scripts Directory
 
-Entry point scripts for running the AI Real Estate Assistant.
+This directory contains utility scripts for development, testing, and CI/CD operations.
 
-## Single Source of Truth
+## 📁 Directory Structure
 
-All scripts delegate to **`scripts/start.py`** - the Python-based launcher that handles:
-
-- Environment detection (Docker vs local)
-- GPU availability detection
-- Dependency bootstrapping
-- Port configuration
-
-## Quick Reference
-
-### Windows (PowerShell)
-
-| Want to... | Command |
-| ---------- | ------- |
-| Auto-detect mode | `.\scripts\run.ps1` |
-| Force local mode | `.\scripts\local\run.ps1` |
-| Docker mode | `.\scripts\docker.ps1` |
-| Backend only | `.\scripts\local\backend.ps1` |
-| Frontend only | `.\scripts\local\frontend.ps1` |
-| Docker CPU | `.\scripts\docker\cpu.ps1` |
-| Docker GPU | `.\scripts\docker\gpu.ps1` |
-| Docker + Internet | `.\scripts\docker\gpu-internet.ps1` |
-
-### Linux/Mac (Bash)
-
-| Want to... | Command |
-| ---------- | ------- |
-| Auto-detect mode | `./scripts/run.sh` |
-| Force local mode | `./scripts/local/run.sh` |
-| Docker mode | `./scripts/docker.sh` |
-| Backend only | `./scripts/local/backend.sh` |
-| Frontend only | `./scripts/local/frontend.sh` |
-| Docker CPU | `./scripts/docker/cpu.sh` |
-| Docker GPU | `./scripts/docker/gpu.sh` |
-| Docker + Internet | `./scripts/docker/gpu-internet.sh` |
-
-## Script Hierarchy
-
-```text
+```
 scripts/
-├── start.py                   # << SINGLE SOURCE OF TRUTH >>
-├── bootstrap.py               # Environment setup
-│
-├── run.ps1 / run.sh           # Auto-detect mode
-├── docker.ps1 / docker.sh     # Force Docker mode
-│
-├── local/                     # Local development
-│   ├── run.ps1 / run.sh       # Both services
-│   ├── backend.ps1 / run.sh   # Backend only
-│   └── frontend.ps1 / run.sh  # Frontend only
-│
-├── docker/                    # Docker profiles
-│   ├── cpu.ps1 / cpu.sh       # CPU-only mode
-│   ├── gpu.ps1 / gpu.sh       # GPU-accelerated
-│   ├── cpu-internet.ps1 / cpu-internet.sh
-│   └── gpu-internet.ps1 / gpu-internet.sh
-│
-├── shared/                    # Shared utilities
-│   └── resolve_python.ps1     # Python detection
-│
-├── setup/                     # Environment setup
-│   ├── setup.ps1
-│   └── setup.sh
-│
-├── ci/                        # CI/CD scripts
-├── security/                  # Security scanning
-└── README.md                  # This file
+├── testing/          # Test execution scripts
+├── dev/              # Development server scripts  
+├── docker/           # Docker and container scripts
+├── api/              # API-specific scripts
+├── utils/            # Utility scripts
+├── ci/               # CI/CD pipeline scripts
+├── docs/             # Documentation generation
+├── security/         # Security scanning
+├── setup/            # Setup and installation
+├── deployment/       # Deployment scripts
+└── validation/       # Validation scripts
 ```
 
-## Advanced Usage
+## 🧪 Testing Scripts (`testing/`)
 
-All launcher flags are available through any wrapper script:
+### Simple Scripts (Recommended)
+
+**Don't want to remember parameters? Use these:**
+
+| Script | Purpose | Speed | When to Use |
+|--------|---------|-------|-------------|
+| `test-fast` | Quick feedback | ⚡ Fastest | During development |
+| `test-ci` | Full CI suite | 🐢 Full | Before committing |
+| `test-all` | See all failures | 🐢 Full | Fixing multiple issues |
+| `test-coverage` | Coverage reports | 🐢 Full | Before PR |
+
+**Windows:**
 
 ```powershell
-# Dry run (show commands without executing)
-.\scripts\run.ps1 --dry-run
-
-# Custom ports
-.\scripts\local\run.ps1 --backend-port 8080 --frontend-port 4000
-
-# Skip bootstrap
-.\scripts\local\run.ps1 --no-bootstrap
-
-# Docker with internet search
-.\scripts\docker.ps1 --internet
-
-# Force specific Docker mode
-.\scripts\docker.ps1 --docker-mode ask
+.\scripts\testing\test-fast.ps1       # Quick test during development
+.\scripts\testing\test-ci.ps1         # Full CI suite before commit
+.\scripts\testing\test-all.ps1        # See all failures at once
+.\scripts\testing\test-coverage.ps1   # Generate coverage reports
 ```
 
-### Launcher Flags
-
-```text
---mode {auto,docker,local}       Execution mode (default: auto)
---service {all,backend,frontend} Which services (default: all)
---docker-mode {auto,cpu,gpu,ask} Docker variant (default: auto)
---internet                       Enable web search (SearXNG)
---dry-run                        Show commands without executing
---no-bootstrap                   Skip dependency installation
---backend-port PORT              Backend port (default: 8000)
---frontend-port PORT             Frontend port (default: 3000)
-```
-
-## Docker Profiles
-
-| Profile | Description | Command |
-| ------- | ----------- | ------- |
-| (default) | External AI only | `docker compose up` |
-| `local-llm` | + Ollama CPU | `--profile local-llm` |
-| `local-llm` + `gpu` | + Ollama GPU | `--profile local-llm --profile gpu` |
-| `internet` | + SearXNG search | `--profile internet` |
-
-## Troubleshooting
-
-### "Python not found" (Windows)
-
-Run: `.\scripts\setup\setup.ps1`
-
-Or install Python 3.11+ from https://python.org
-
-### "Python3 not found" (Linux/Mac)
+**Linux/macOS:**
 
 ```bash
-# Ubuntu/Debian
-sudo apt install python3.11
-
-# macOS
-brew install python@3.11
+./scripts/testing/test-fast.sh        # Quick test during development
+./scripts/testing/test-ci.sh          # Full CI suite before commit
+./scripts/testing/test-all.sh         # See all failures at once
+./scripts/testing/test-coverage.sh    # Generate coverage reports
 ```
 
-### "uv not found"
+**See [Testing Guide](../docs/testing/TESTING_GUIDE.md) for detailed usage.**
 
-```bash
+### Advanced Testing
+
+**`testing/run_ci_tests_local.ps1` / `testing/run_ci_tests_local.sh`**
+
+Full control over test execution:
+
+```powershell
 # Windows
-pip install uv
-
-# Linux/Mac
-pip3 install uv
-# or
-pipx install uv
+.\scripts\testing\run_ci_tests_local.ps1                    # Full test suite
+.\scripts\testing\run_ci_tests_local.ps1 -Fast              # Skip slow tests
+.\scripts\testing\run_ci_tests_local.ps1 -Coverage          # With coverage
+.\scripts\testing\run_ci_tests_local.ps1 -ContinueOnError   # Don't stop on failures
 ```
-
-### "Docker compose not available"
-
-Install Docker Desktop (Windows/Mac) or Docker Compose plugin (Linux).
-
-### Port conflicts
-
-Use `--backend-port` and `--frontend-port` flags:
-
-```powershell
-.\scripts\local\run.ps1 --backend-port 8080 --frontend-port 4000
-```
-
-## Getting Help
-
-All scripts support `--help`:
-
-```powershell
-.\scripts\run.ps1 --help
-.\scripts\docker.ps1 --help
-.\scripts\local\run.ps1 --help
-```
-
-For full options:
 
 ```bash
-python scripts/start.py --help
+# Linux/macOS
+./scripts/testing/run_ci_tests_local.sh                     # Full test suite
+./scripts/testing/run_ci_tests_local.sh --fast              # Skip slow tests
+./scripts/testing/run_ci_tests_local.sh --coverage          # With coverage
+./scripts/testing/run_ci_tests_local.sh --continue-on-error # Don't stop on failures
 ```
+
+**Test Suite Includes:**
+
+1. Ruff linting
+2. RuleEngine integration test
+3. Forbidden tokens security scan
+4. OpenAPI breaking-change detection
+5. Alembic migration check
+6. Unit tests (~6,254 tests)
+7. Integration tests
+8. MyPy type checking (optional)
+
+---
+
+## 🚀 Development Scripts (`dev/`)
+
+### Start/Stop Services
+
+**Windows:**
+
+```powershell
+.\scripts\dev\start.ps1       # Start both backend and frontend
+.\scripts\dev\stop.ps1        # Stop all services
+.\scripts\dev\be.ps1          # Start backend only
+.\scripts\dev\fe.ps1          # Start frontend only
+.\scripts\dev\stop-be.ps1     # Stop backend
+.\scripts\dev\stop-fe.ps1     # Stop frontend
+.\scripts\dev\run.ps1         # Alternative start script
+```
+
+**Linux/macOS:**
+
+```bash
+./scripts/dev/run.sh          # Start both services
+```
+
+---
+
+## 🐳 Docker Scripts (`docker/`)
+
+### Docker Compose
+
+```powershell
+# Windows
+.\scripts\docker\start-docker.ps1
+.\scripts\docker\docker.ps1
+
+# Linux/macOS
+./scripts/docker/docker-up.sh
+./scripts/docker/docker.sh
+```
+
+### Quickstart Verification
+
+```powershell
+# Windows
+.\scripts\docker\quickstart-verify.ps1
+
+# Linux/macOS
+./scripts/docker/quickstart-verify.sh
+```
+
+### CPU/GPU Variants
+
+```bash
+./scripts/docker/cpu.sh              # CPU-only
+./scripts/docker/gpu.sh              # GPU-enabled
+./scripts/docker/cpu-internet.sh     # CPU with internet
+./scripts/docker/gpu-internet.sh     # GPU with internet
+```
+
+### Smoke Tests
+
+```bash
+python scripts/docker/compose_smoke.py --ci --timeout-seconds 600
+```
+
+---
+
+## 🔧 Utility Scripts (`utils/`)
+
+### Port Management
+
+```powershell
+# Kill process on specific port
+.\scripts\utils\kill-port.ps1 8000
+./scripts/utils/kill-port.sh 8000
+
+# Verify port allocation system
+python scripts/utils/verify-port-system.py
+
+# Start with custom ports
+python scripts/utils/start-with-ports.py
+```
+
+### Service Discovery
+
+```bash
+python scripts/utils/service_discovery.py
+```
+
+### Screenshots
+
+```bash
+node scripts/utils/take_screenshots.js
+```
+
+---
+
+## 📚 API Scripts (`api/`)
+
+### OpenAPI Diff
+
+Detect breaking changes in API schema:
+
+```bash
+cd apps/api
+python ../../scripts/api/openapi_diff.py --baseline ../../docs/api-v1-baseline.json
+```
+
+---
+
+## 🔒 Security Scripts (`security/`)
+
+### Forbidden Tokens Scan
+
+```bash
+python scripts/security/forbidden_tokens.py
+```
+
+---
+
+## 📖 Documentation Scripts (`docs/`)
+
+### Export OpenAPI Schema
+
+```bash
+cd apps/api
+python ../../scripts/docs/export_openapi.py --output docs/api/openapi.json
+```
+
+### Generate API Reference
+
+```bash
+cd apps/api
+python ../../scripts/docs/generate_api_reference.py --schema docs/api/openapi.json
+```
+
+### Update Full API Reference
+
+```bash
+cd apps/api
+python ../../scripts/docs/update_api_reference_full.py
+```
+
+---
+
+## 🔄 CI/CD Scripts (`ci/`)
+
+### Coverage Gate
+
+```bash
+python scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90
+```
+
+### CI Parity Check
+
+```bash
+python scripts/ci/ci_parity.py
+```
+
+### Network Isolation Check
+
+```bash
+python scripts/ci/network_isolation_check.py
+```
+
+---
+
+## 📦 Other Directories
+
+- **`setup/`** - Installation and setup scripts
+- **`deployment/`** - Deployment automation
+- **`validation/`** - Validation and verification scripts
+- **`workflows/`** - GitHub Actions workflow helpers
+- **`community/`** - Community contribution scripts
+- **`internal/`** - Internal tooling
+- **`local/`** - Local development helpers
+- **`port/`** - Port management system
+- **`shared/`** - Shared utilities
+- **`sprav/`** - Reference data scripts
+- **`taskmaster/`** - Task automation
+
+---
+
+## 🎯 Best Practices
+
+### Test Atomicity
+
+All tests must be:
+
+- **Atomic**: Self-contained, no shared state
+- **Independent**: No execution order dependencies
+- **Isolated**: Clean up resources after execution
+
+This ensures tests can run in parallel without conflicts.
+
+### Python Version
+
+The project requires Python 3.12+ to match CI environment:
+
+- CI uses Python 3.12 (specified in `pyproject.toml`)
+- Local development should use Python 3.12 or higher
+- Python 3.14+ has breaking changes with type annotations
+
+### Virtual Environment Setup
+
+```bash
+# Create Python 3.12 environment
+cd apps/api
+python3.12 -m venv .venv312
+source .venv312/bin/activate  # Linux/macOS
+.venv312\Scripts\Activate.ps1  # Windows
+
+# Install dependencies
+pip install -r requirements.txt
+pip install pytest pytest-xdist pytest-cov ruff mypy
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### "Python 3.12+ not found"
+
+Install Python 3.12 or create a virtual environment:
+
+```bash
+cd apps/api
+python3.12 -m venv .venv312
+```
+
+### Tests fail in parallel but pass sequentially
+
+Check for:
+
+- Shared state between tests
+- Global variable modifications
+- Database isolation issues
+- File system conflicts
+
+Run with `--no-parallel` to debug:
+
+```bash
+./scripts/testing/run_ci_tests_local.sh --no-parallel
+```
+
+### Import errors
+
+Ensure all dependencies are installed:
+
+```bash
+cd apps/api
+pip install -r requirements.txt
+```
+
+---
+
+## 💡 Performance Tips
+
+1. **Use Fast Mode** for quick feedback during development
+2. **Run Specific Tests** instead of full suite when debugging
+3. **Enable Parallel Execution** for faster results
+4. **Use Coverage Selectively** (adds ~20% overhead)
+
+---
+
+## 📚 Related Documentation
+
+- [Testing Guide](../docs/testing/TESTING_GUIDE.md) - Complete testing guide
+- [Quick Reference](../docs/testing/QUICK_REFERENCE.md) - One-page cheat sheet
+- [Test Optimization](../docs/testing/TEST_OPTIMIZATION.md) - Technical details
+- [AGENTS.md](../AGENTS.md) - AI agent instructions
+
+---
+
+## 🤝 Contributing
+
+When adding new scripts:
+
+1. Place in appropriate subdirectory
+2. Add documentation to this README
+3. Include usage examples
+4. Add error handling
+5. Support both Windows and Linux/macOS
+6. Follow existing script patterns
+
+---
+
+**Last Updated:** 2026-05-10  
+**Version:** 2.0.0 (Reorganized structure)

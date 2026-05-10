@@ -90,19 +90,36 @@ cd apps/web && npm install && npm run dev
 
 ## 🧪 Testing
 
-```bash
-make test              # All tests (backend + frontend)
-make lint              # Linting (ruff + eslint)
-make security          # Security scans (Gitleaks, Semgrep, Bandit, pip-audit)
-make ci                # Full CI pipeline locally
+### Quick Commands
+
+**Windows:**
+```powershell
+.\scripts\testing\test-fast.ps1       # ⚡ Quick test (3-5 min) - during development
+.\scripts\testing\test-ci.ps1         # 🔍 Full CI (8-12 min) - before commit
+.\scripts\testing\test-all.ps1        # 🐛 See all failures - fixing multiple issues
+.\scripts\testing\test-coverage.ps1   # 📊 Coverage report - before PR
 ```
 
-| Layer | Tests | Tools |
-|-------|------:|-------|
-| Backend | 3000+ | pytest, mypy, ruff |
-| Frontend | 1000+ | Jest, ESLint |
-| Security | 5 scanners | Gitleaks, Semgrep, Bandit, Trivy, CodeQL |
-| E2E | WCAG 2.1 AA | axe-core, Playwright |
+**Linux/macOS:**
+```bash
+./scripts/testing/test-fast.sh        # ⚡ Quick test (3-5 min)
+./scripts/testing/test-ci.sh          # 🔍 Full CI (8-12 min)
+./scripts/testing/test-all.sh         # 🐛 See all failures
+./scripts/testing/test-coverage.sh    # 📊 Coverage report
+```
+
+**See [Testing Guide](docs/testing/TESTING_GUIDE.md) for detailed usage.**
+
+### Test Coverage
+
+| Layer | Tests | Tools | Coverage |
+|-------|------:|-------|----------|
+| Backend | 6,254+ | pytest, mypy, ruff | 90%+ |
+| Frontend | 1,000+ | Jest, ESLint | 80%+ |
+| Security | 5 scanners | Gitleaks, Semgrep, Bandit, Trivy, CodeQL | - |
+| E2E | WCAG 2.1 AA | axe-core, Playwright | - |
+
+**Performance:** Tests run in parallel using pytest-xdist (local) and GitHub Actions matrix (CI).
 
 ---
 

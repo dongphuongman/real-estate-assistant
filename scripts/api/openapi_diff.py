@@ -179,6 +179,8 @@ def main() -> int:
 
             os.environ.setdefault("ENVIRONMENT", "test")
             os.environ.setdefault("API_ACCESS_KEY", "test-key")
+            # Enable JWT auth so ALL conditional routers are included in the schema
+            os.environ.setdefault("AUTH_JWT_ENABLED", "true")
 
             from api.main import app
 
@@ -193,12 +195,8 @@ def main() -> int:
     baseline_paths = baseline_schema.get("paths", {})
     current_paths = current_schema.get("paths", {})
 
-    # Filter to only /api/v1/ paths
-    current_v1_paths = {
-        k: v for k, v in current_paths.items() if k.startswith("/api/v1/")
-    }
-
-    errors = diff_paths(baseline_paths, current_v1_paths)
+    # Compare all paths (not just /api/v1/)
+    errors = diff_paths(baseline_paths, current_paths)
 
     if errors:
         print(f"\n[FAIL] Found {len(errors)} breaking change(s):\n")
@@ -211,7 +209,7 @@ def main() -> int:
         return 1
 
     # Summary
-    new_endpoints = set(current_v1_paths.keys()) - set(baseline_paths.keys())
+    new_endpoints = set(current_paths.keys()) - set(baseline_paths.keys())
     if new_endpoints:
         print("\n[PASS] No breaking changes detected.")
         print(f"[INFO] New endpoints added (non-breaking): {len(new_endpoints)}")
