@@ -118,13 +118,90 @@ jobs:
 
   # ===== STAGE 2: Build & Basic Tests =====
 
+  # ===== STAGE 2: Backend Tests (Parallel Matrix) =====
+
+  backend-validation:
+    runs-on: ubuntu-latest
+    needs: [backend-lint]
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system -r requirements.txt
+          uv pip install --system pytest
+
+      - name: RuleEngine test
+        run: |
+          python -m pytest -q tests/integration/test_rule_engine_clean.py
+
+      - name: Forbidden tokens scan
+        run: |
+          python ../../scripts/security/forbidden_tokens.py
+
+      - name: OpenAPI breaking-change detection
+        run: |
+          python ../../scripts/api/openapi_diff.py --baseline ../../docs/api-v1-baseline.json
+
+      - name: Alembic migration check
+        run: |
+          python -m alembic check
+
   backend-tests:
     runs-on: ubuntu-latest
     needs: [backend-lint]
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        test-suite:
+          - name: unit-agents
+            path: tests/unit/agents
+            coverage-min: 90
+          - name: unit-analytics
+            path: tests/unit/analytics
+            coverage-min: 90
+          - name: unit-api
+            path: tests/unit/api
+            coverage-min: 90
+          - name: unit-core
+            path: tests/unit/core
+            coverage-min: 85
+          - name: unit-models
+            path: tests/unit/models
+            coverage-min: 90
+          - name: unit-services
+            path: tests/unit/services
+            coverage-min: 85
+          - name: unit-tools
+            path: tests/unit/tools
+            coverage-min: 90
+          - name: unit-utils
+            path: tests/unit/utils
+            coverage-min: 85
+          - name: integration
+            path: tests/integration
+            coverage-min: 70
+
     defaults:
       run:
         working-directory: apps/api
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -140,7 +217,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/.local/share/uv
-          key: ${{ runner.os }}-uv-${{ hashFiles('apps/api/requirements.txt', 'apps/api/pyproject.toml') }}
+          key: ${{ runner.os }}-uv-${{ hashFiles('apps/api/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-uv-
 
@@ -154,121 +231,22 @@ jobs:
           uv pip install --system -r requirements.txt
           uv pip install --system pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout ruff httpx types-requests
 
-      - name: RuleEngine (custom rules)
+      - name: Run ${{ matrix.test-suite.name }} tests
         run: |
-          python -m pytest -q tests/integration/test_rule_engine_clean.py
+          python -m pytest ${{ matrix.test-suite.path }} \
+            --cov=. \
+            --cov-report=xml \
+            --cov-report=term \
+            -n auto \
+            --timeout=600 \
+            --maxfail=5 \
+            -v
 
-      - name: Forbidden token scan
-        run: |
-          python scripts/security/forbidden_tokens.py
-
-      - name: OpenAPI breaking-change detection (Task #97)
-        run: |
-          python scripts/openapi_diff.py --baseline ../../docs/api-v1-baseline.json
-
-      - name: OpenAPI schema drift check
-        continue-on-error: true
-        run: |
-          python scripts/docs/export_openapi.py --check
-
-      - name: API reference (generated) drift check
-        continue-on-error: true
-        run: |
-          python scripts/docs/generate_api_reference.py --check
-
-      - name: API reference (full) drift check
-        continue-on-error: true
-        run: |
-          python scripts/docs/update_api_reference_full.py --check
-
-      - name: Alembic migration check (Task #63)
-        run: |
-          python -m alembic check
-
-      - name: Run unit tests with coverage (pytest)
-        run: |
-          python -m pytest tests/unit --cov=. --cov-report=xml --cov-report=term -n auto --timeout=600 --maxfail=5
-
-      - name: Unit coverage summary
-        run: |
-          python - <<'PY'
-          import os
-          import xml.etree.ElementTree as ET
-          tree = ET.parse("coverage.xml")
-          root = tree.getroot()
-          rate = float(root.attrib.get("line-rate", 0)) * 100
-          summary = os.environ.get("GITHUB_STEP_SUMMARY")
-          with open(summary, "a", encoding="utf-8") as fh:
-              fh.write("### Backend Unit Coverage\n\n")
-              fh.write(f"Line coverage: {rate:.2f}%\n")
-          PY
-
-      - name: Fetch base ref (PR only)
-        if: ${{ github.event_name == 'pull_request' }}
-        run: |
-          git fetch origin ${{ github.base_ref }} --depth=1
-
-      - name: 'Coverage gate (unit: diff)'
-        if: ${{ github.event_name == 'pull_request' }}
-        run: |
-          python scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --base-ref origin/${{ github.base_ref }} --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
-
-      - name: 'Coverage gate (unit: diff fallback)'
-        if: ${{ github.event_name != 'pull_request' }}
-        continue-on-error: true
-        run: |
-          python scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
-
-      - name: 'Coverage gate (unit: critical)'
-        run: |
-          python scripts/ci/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include 'api/*.py' --include 'api/routers/*.py' --include 'rules/*.py' --include 'models/provider_factory.py' --include 'models/user_model_preferences.py' --include 'config/*.py'
-
-      - name: Upload backend coverage (unit)
+      - name: Upload coverage
         uses: actions/upload-artifact@v7
         with:
-          name: backend-coverage-unit-xml
-          path: coverage.xml
-
-      - name: Run integration tests with coverage (pytest)
-        run: |
-          set -e
-          for attempt in 1 2; do
-            python -m pytest tests/integration --cov=. --cov-report=xml --cov-report=term -n auto && break
-            if [ $attempt -eq 2 ]; then exit 1; fi
-            echo "Integration tests failed. Retrying..."
-          done
-
-      - name: Integration coverage summary
-        run: |
-          python - <<'PY'
-          import os
-          import xml.etree.ElementTree as ET
-          tree = ET.parse("coverage.xml")
-          root = tree.getroot()
-          rate = float(root.attrib.get("line-rate", 0)) * 100
-          summary = os.environ.get("GITHUB_STEP_SUMMARY")
-          with open(summary, "a", encoding="utf-8") as fh:
-              fh.write("### Backend Integration Coverage\n\n")
-              fh.write(f"Line coverage: {rate:.2f}%\n")
-          PY
-
-      - name: 'Coverage gate (integration: diff)'
-        if: ${{ github.event_name == 'pull_request' }}
-        run: |
-          python scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --base-ref origin/${{ github.base_ref }} --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
-
-      - name: 'Coverage gate (integration: diff fallback)'
-        if: ${{ github.event_name != 'pull_request' }}
-        continue-on-error: true
-        run: |
-          python scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
-
-      - name: Upload backend coverage (integration)
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: backend-coverage-integration-xml
-          path: coverage.xml
+          name: coverage-${{ matrix.test-suite.name }}
+          path: apps/api/coverage.xml
 
   frontend-build:
     runs-on: ubuntu-latest
@@ -387,7 +365,7 @@ jobs:
 
   docs-generation:
     runs-on: ubuntu-latest
-    needs: [backend-tests]
+    needs: [backend-validation, backend-tests]
     timeout-minutes: 10
     defaults:
       run:
@@ -439,7 +417,7 @@ jobs:
 
   security-deps:
     runs-on: ubuntu-latest
-    needs: [backend-tests]
+    needs: [backend-validation, backend-tests]
     defaults:
       run:
         working-directory: apps/api
@@ -742,7 +720,7 @@ jobs:
 
   compose_smoke:
     runs-on: ubuntu-latest
-    needs: [backend-tests, frontend-build]
+    needs: [backend-validation, backend-tests, frontend-build]
     timeout-minutes: 20
     steps:
       - name: Checkout
@@ -772,7 +750,7 @@ jobs:
   pipeline-health:
     runs-on: ubuntu-latest
     if: always()
-    needs: [gitleaks, secret-validation, backend-lint, backend-tests,
+    needs: [gitleaks, secret-validation, backend-lint, backend-validation, backend-tests,
             frontend-build, security-sast, frontend-tests, docs-generation,
             security-deps, codeql-python, codeql-javascript, container-scan,
             lighthouse, e2e, compose_smoke]
