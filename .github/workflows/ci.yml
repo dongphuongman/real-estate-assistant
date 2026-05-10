@@ -228,7 +228,6 @@ jobs:
         env:
           ENVIRONMENT: test
           API_ACCESS_KEY: ci-test-key
-          ENABLE_JWT_AUTH: "true"
 
       - name: Upload coverage
         uses: actions/upload-artifact@v7
