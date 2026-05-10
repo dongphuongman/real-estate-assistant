@@ -226,8 +226,6 @@ jobs:
             --timeout=60 \
             --maxfail=5 \
             -v
-        env:
-          API_ACCESS_KEY: ci-test-key
 
       - name: Upload coverage
         uses: actions/upload-artifact@v7
