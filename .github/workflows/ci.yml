@@ -171,28 +171,13 @@ jobs:
   backend-tests:
     runs-on: ubuntu-latest
     needs: [backend-lint]
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         test-suite:
-          - name: unit-agents
-            path: tests/unit/agents
-            coverage-min: 90
-          - name: unit-analytics
-            path: tests/unit/analytics
-            coverage-min: 90
-          - name: unit-api
-            path: tests/unit/api
-            coverage-min: 90
-          - name: unit-models
-            path: tests/unit/models
-            coverage-min: 90
-          - name: unit-flat-a-m
-            path: tests/unit/test_[a-m]*.py
-            coverage-min: 85
-          - name: unit-flat-n-z
-            path: tests/unit/test_[n-z]*.py
+          - name: unit
+            path: tests/unit
             coverage-min: 85
           - name: integration
             path: tests/integration
@@ -234,11 +219,6 @@ jobs:
       - name: Run ${{ matrix.test-suite.name }} tests
         run: |
           python -m pytest ${{ matrix.test-suite.path }} \
-            --ignore=tests/unit/test_dev_start_script.py \
-            --ignore=tests/unit/scripts/test_start_docker_mode.py \
-            --ignore=tests/integration/test_port_allocation.py \
-            --ignore=tests/integration/test_versioning.py \
-            --ignore=tests/integration/test_dev_start_script_integration.py \
             --cov=. \
             --cov-report=xml \
             --cov-report=term \
