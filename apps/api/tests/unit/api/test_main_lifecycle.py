@@ -1,6 +1,6 @@
 from time import time
 from types import SimpleNamespace
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -91,8 +91,9 @@ class TestTask17Features:
         main_mod.scheduler = _DummyScheduler()
         app.state.scheduler = main_mod.scheduler
 
-        # Create a mock response_cache
+        # Create a mock response_cache with async clear_all
         mock_cache = MagicMock()
+        mock_cache.clear_all = AsyncMock()
         app.state.response_cache = mock_cache
 
         await shutdown_event()
@@ -109,8 +110,9 @@ class TestTask17Features:
         main_mod.scheduler = _DummyScheduler()
         app.state.scheduler = main_mod.scheduler
 
-        # Create a mock pool_manager
+        # Create a mock pool_manager with async close_all
         mock_pool_manager = MagicMock()
+        mock_pool_manager.close_all = AsyncMock()
         app.state.pool_manager = mock_pool_manager
 
         await shutdown_event()
