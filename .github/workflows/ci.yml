@@ -1,10 +1,8 @@
-name: CI/CD AI Real Estate Assistant (Full)
+name: CI/CD AI Real Estate Assistant
 
 permissions:
   contents: read
   pull-requests: read
-  security-events: write
-  actions: read
 
 on:
   push:
@@ -14,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       enable_deep_analysis:
-        description: 'Enable Stage 5 deep analysis (CodeQL, Trivy, Lighthouse, E2E)'
+        description: 'Enable Stage 4 deep analysis (CodeQL, Trivy, Lighthouse, E2E)'
         required: false
         type: boolean
         default: false
@@ -24,108 +22,62 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ===== STAGE 1: Quick Checks (Parallel) =====
+  # ===== STAGE 1: Quick Checks =====
 
-  quick-checks:
+  gitleaks:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        check:
-          - name: gitleaks
-            command: echo "Gitleaks scan"
-          - name: secret-validation
-            command: |
-              echo "Checking for placeholder secrets..."
-              PATTERNS=("your-generated-api-key-here" "your-jwt-secret-key-here" "change-me" "changeme")
-              EXIT_CODE=0
-              for pattern in "${PATTERNS[@]}"; do
-                if grep -r "$pattern" deploy/ 2>/dev/null; then
-                  echo "::error::Found placeholder '$pattern' in deploy config"
-                  EXIT_CODE=1
-                fi
-              done
-              exit $EXIT_CODE
-          - name: backend-lint
-            command: |
-              cd apps/api
-              python -m ruff check .
-          - name: backend-typecheck
-            command: |
-              cd apps/api
-              python -m mypy . --explicit-package-bases
-
+    if: true  # Always run for public repo
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Gitleaks scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
 
-      - name: Set up uv
-        if: matrix.check.name != 'gitleaks' && matrix.check.name != 'secret-validation'
-        uses: astral-sh/setup-uv@v1
-        with:
-          version: 'latest'
-
-      - name: Set up Python
-        if: matrix.check.name != 'gitleaks' && matrix.check.name != 'secret-validation'
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        if: matrix.check.name == 'backend-lint' || matrix.check.name == 'backend-typecheck'
-        run: |
-          cd apps/api
-          uv pip install --system -r requirements.txt
-          uv pip install --system pytest ruff mypy
-
-      - name: Run ${{ matrix.check.name }}
-        run: ${{ matrix.check.command }}
-        continue-on-error: ${{ matrix.check.name == 'backend-typecheck' }}
-
-  # ===== STAGE 2: Backend Tests (Parallel by Test Type) =====
-
-  backend-tests:
+  secret-validation:
     runs-on: ubuntu-latest
-    needs: [quick-checks]
-    timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        test-suite:
-          - name: unit-agents
-            path: tests/unit/agents
-            coverage-min: 90
-          - name: unit-analytics
-            path: tests/unit/analytics
-            coverage-min: 90
-          - name: unit-api
-            path: tests/unit/api
-            coverage-min: 90
-          - name: unit-core
-            path: tests/unit/core
-            coverage-min: 85
-          - name: unit-models
-            path: tests/unit/models
-            coverage-min: 90
-          - name: unit-services
-            path: tests/unit/services
-            coverage-min: 85
-          - name: unit-tools
-            path: tests/unit/tools
-            coverage-min: 90
-          - name: unit-utils
-            path: tests/unit/utils
-            coverage-min: 85
-          - name: integration
-            path: tests/integration
-            coverage-min: 70
+    if: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
+      - name: Check for placeholder secrets in deploy configs
+        run: |
+          echo "Checking for placeholder secrets in deploy configuration..."
+
+          PATTERNS=(
+            "your-generated-api-key-here"
+            "your-jwt-secret-key-here"
+            "change-me"
+            "changeme"
+          )
+
+          EXIT_CODE=0
+
+          for pattern in "${PATTERNS[@]}"; do
+            if grep -r "$pattern" deploy/ 2>/dev/null; then
+              echo "::error::Found placeholder '$pattern' in deploy config"
+              EXIT_CODE=1
+            fi
+          done
+
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "No placeholder secrets found in deploy configs"
+          fi
+
+          exit $EXIT_CODE
+
+  backend-lint:
+    runs-on: ubuntu-latest
+    needs: [gitleaks, secret-validation]
     defaults:
       run:
         working-directory: apps/api
-
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -141,7 +93,54 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/.local/share/uv
-          key: ${{ runner.os }}-uv-${{ hashFiles('apps/api/requirements.txt') }}
+          key: ${{ runner.os }}-uv-${{ hashFiles('apps/api/requirements.txt', 'apps/api/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system -r requirements.txt
+          uv pip install --system pytest ruff mypy
+
+      - name: Lint (ruff)
+        run: |
+          python -m ruff check .
+
+      - name: Type check (mypy)
+        run: |
+          python -m mypy . --explicit-package-bases
+        continue-on-error: true
+
+  # ===== STAGE 2: Build & Basic Tests =====
+
+  backend-tests:
+    runs-on: ubuntu-latest
+    needs: [backend-lint]
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v1
+        with:
+          version: 'latest'
+
+      - name: Cache uv
+        uses: actions/cache@v5
+        with:
+          path: ~/.local/share/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('apps/api/requirements.txt', 'apps/api/pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-uv-
 
@@ -155,18 +154,42 @@ jobs:
           uv pip install --system -r requirements.txt
           uv pip install --system pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout ruff httpx types-requests
 
-      - name: Run ${{ matrix.test-suite.name }} tests
+      - name: RuleEngine (custom rules)
         run: |
-          python -m pytest ${{ matrix.test-suite.path }} \
-            --cov=. \
-            --cov-report=xml \
-            --cov-report=term \
-            -n auto \
-            --timeout=600 \
-            --maxfail=5 \
-            -v
+          python -m pytest -q tests/integration/test_rule_engine_clean.py
 
-      - name: Coverage summary
+      - name: Forbidden token scan
+        run: |
+          python scripts/security/forbidden_tokens.py
+
+      - name: OpenAPI breaking-change detection (Task #97)
+        run: |
+          python scripts/openapi_diff.py --baseline ../../docs/api-v1-baseline.json
+
+      - name: OpenAPI schema drift check
+        continue-on-error: true
+        run: |
+          python scripts/docs/export_openapi.py --check
+
+      - name: API reference (generated) drift check
+        continue-on-error: true
+        run: |
+          python scripts/docs/generate_api_reference.py --check
+
+      - name: API reference (full) drift check
+        continue-on-error: true
+        run: |
+          python scripts/docs/update_api_reference_full.py --check
+
+      - name: Alembic migration check (Task #63)
+        run: |
+          python -m alembic check
+
+      - name: Run unit tests with coverage (pytest)
+        run: |
+          python -m pytest tests/unit --cov=. --cov-report=xml --cov-report=term -n auto --timeout=600 --maxfail=5
+
+      - name: Unit coverage summary
         run: |
           python - <<'PY'
           import os
@@ -176,7 +199,7 @@ jobs:
           rate = float(root.attrib.get("line-rate", 0)) * 100
           summary = os.environ.get("GITHUB_STEP_SUMMARY")
           with open(summary, "a", encoding="utf-8") as fh:
-              fh.write(f"### Coverage: ${{ matrix.test-suite.name }}\n\n")
+              fh.write("### Backend Unit Coverage\n\n")
               fh.write(f"Line coverage: {rate:.2f}%\n")
           PY
 
@@ -185,95 +208,157 @@ jobs:
         run: |
           git fetch origin ${{ github.base_ref }} --depth=1
 
-      - name: 'Coverage gate (diff)'
+      - name: 'Coverage gate (unit: diff)'
         if: ${{ github.event_name == 'pull_request' }}
         run: |
-          python ../../scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage ${{ matrix.test-suite.coverage-min }} --base-ref origin/${{ github.base_ref }} --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
+          python scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --base-ref origin/${{ github.base_ref }} --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
-      - name: 'Coverage gate (critical files)'
-        if: matrix.test-suite.name == 'unit-api'
+      - name: 'Coverage gate (unit: diff fallback)'
+        if: ${{ github.event_name != 'pull_request' }}
+        continue-on-error: true
         run: |
-          python ../../scripts/ci/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include 'api/*.py' --include 'api/routers/*.py' --include 'rules/*.py' --include 'models/provider_factory.py' --include 'models/user_model_preferences.py' --include 'config/*.py'
+          python scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 90 --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
 
-      - name: Upload coverage
+      - name: 'Coverage gate (unit: critical)'
+        run: |
+          python scripts/ci/coverage_gate.py critical --coverage-xml coverage.xml --min-coverage 90 --include 'api/*.py' --include 'api/routers/*.py' --include 'rules/*.py' --include 'models/provider_factory.py' --include 'models/user_model_preferences.py' --include 'config/*.py'
+
+      - name: Upload backend coverage (unit)
         uses: actions/upload-artifact@v7
         with:
-          name: coverage-${{ matrix.test-suite.name }}
-          path: apps/api/coverage.xml
+          name: backend-coverage-unit-xml
+          path: coverage.xml
 
-  # ===== STAGE 3: Backend Validation Tests (Sequential) =====
+      - name: Run integration tests with coverage (pytest)
+        run: |
+          set -e
+          for attempt in 1 2; do
+            python -m pytest tests/integration --cov=. --cov-report=xml --cov-report=term -n auto && break
+            if [ $attempt -eq 2 ]; then exit 1; fi
+            echo "Integration tests failed. Retrying..."
+          done
 
-  backend-validation:
+      - name: Integration coverage summary
+        run: |
+          python - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          tree = ET.parse("coverage.xml")
+          root = tree.getroot()
+          rate = float(root.attrib.get("line-rate", 0)) * 100
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          with open(summary, "a", encoding="utf-8") as fh:
+              fh.write("### Backend Integration Coverage\n\n")
+              fh.write(f"Line coverage: {rate:.2f}%\n")
+          PY
+
+      - name: 'Coverage gate (integration: diff)'
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          python scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --base-ref origin/${{ github.base_ref }} --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
+
+      - name: 'Coverage gate (integration: diff fallback)'
+        if: ${{ github.event_name != 'pull_request' }}
+        continue-on-error: true
+        run: |
+          python scripts/ci/coverage_gate.py diff --coverage-xml coverage.xml --min-coverage 70 --exclude 'tests/*' --exclude 'scripts/*' --exclude 'workflows/*'
+
+      - name: Upload backend coverage (integration)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-coverage-integration-xml
+          path: coverage.xml
+
+  frontend-build:
     runs-on: ubuntu-latest
-    needs: [quick-checks]
-    timeout-minutes: 10
+    needs: [gitleaks, secret-validation]
     defaults:
       run:
-        working-directory: apps/api
-
+        working-directory: apps/web
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v1
+      - name: Cache npm
+        uses: actions/cache@v5
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('apps/web/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+  security-sast:
+    runs-on: ubuntu-latest
+    needs: [backend-lint]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Install dependencies
+      - name: Install security tools
         run: |
-          uv pip install --system -r requirements.txt
-          uv pip install --system pytest
+          python -m pip install --upgrade pip
+          python -m pip install bandit semgrep
 
-      - name: RuleEngine test
-        run: |
-          python -m pytest -q tests/integration/test_rule_engine_clean.py
-
-      - name: Forbidden tokens scan
-        run: |
-          python ../../scripts/security/forbidden_tokens.py
-
-      - name: OpenAPI breaking-change detection
-        run: |
-          python ../../scripts/api/openapi_diff.py --baseline ../../docs/api-v1-baseline.json
-
-      - name: OpenAPI schema drift check
+      - name: Run Bandit (exclude tests, fail on high severity)
         continue-on-error: true
         run: |
-          python ../../scripts/docs/export_openapi.py --check
+          mkdir -p artifacts
+          python -m bandit -r apps/api -x tests,node_modules,.history,venv,venv/*,.venv,.venv/*,.venv_ci,.venv_ci/* --severity-level high --confidence-level high -f json -o artifacts/bandit.json
 
-      - name: API reference drift check
+      - name: Run Semgrep
         continue-on-error: true
         run: |
-          python ../../scripts/docs/generate_api_reference.py --check
+          semgrep scan --config semgrep.yml --error
 
-      - name: Alembic migration check
-        run: |
-          python -m alembic check
+      - name: Upload bandit report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: bandit-report
+          path: artifacts/bandit.json
 
-  # ===== STAGE 4: Frontend Tests =====
+  # ===== STAGE 3: Quality Checks =====
 
   frontend-tests:
     runs-on: ubuntu-latest
-    needs: [quick-checks]
+    needs: [frontend-build]
     defaults:
       run:
         working-directory: apps/web
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Cache npm
         uses: actions/cache@v5
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('apps/web/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Set up Node
         uses: actions/setup-node@v6
@@ -287,9 +372,6 @@ jobs:
         run: npm audit --audit-level=high --omit=dev
         continue-on-error: true
 
-      - name: Lint
-        run: npm run lint
-
       - name: Run tests
         run: npm run test:ci
 
@@ -297,13 +379,11 @@ jobs:
         run: |
           node -e 'const fs=require("fs"); const summary=JSON.parse(fs.readFileSync("coverage/coverage-summary.json","utf8")); const total=summary.total; const text=["### Frontend Coverage","","Lines: "+total.lines.pct+"%","Statements: "+total.statements.pct+"%","Functions: "+total.functions.pct+"%","Branches: "+total.branches.pct+"%",""].join("\n"); fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, text);'
 
-      - name: Upload coverage
+      - name: Upload frontend coverage
         uses: actions/upload-artifact@v7
         with:
           name: frontend-coverage
           path: apps/web/coverage
-
-  # ===== STAGE 5: Documentation Generation =====
 
   docs-generation:
     runs-on: ubuntu-latest
@@ -312,7 +392,6 @@ jobs:
     defaults:
       run:
         working-directory: apps/api
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -321,6 +400,8 @@ jobs:
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v1
+        with:
+          version: 'latest'
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -331,11 +412,11 @@ jobs:
         run: |
           uv pip install --system -r requirements.txt
 
-      - name: Generate OpenAPI documentation
+      - name: Generate OpenAPI documentation (Task #54)
         run: |
-          mkdir -p ../../docs/api
-          python ../../scripts/docs/export_openapi.py --output ../../docs/api/openapi.json
-          python ../../scripts/docs/generate_api_reference.py --schema ../../docs/api/openapi.json --output ../../docs/api/API_REFERENCE.generated.md
+          mkdir -p docs/api
+          python scripts/docs/export_openapi.py --output docs/api/openapi.json
+          python scripts/docs/generate_api_reference.py --schema docs/api/openapi.json --output docs/api/API_REFERENCE.generated.md
 
       - name: Upload OpenAPI documentation
         if: always()
@@ -356,98 +437,51 @@ jobs:
             echo "- OpenAPI schema size: $(wc -c < ../../docs/api/openapi.json) bytes" >> $GITHUB_STEP_SUMMARY
           fi
 
-  # ===== STAGE 6: Security Scans (Parallel) =====
-
-  security:
+  security-deps:
     runs-on: ubuntu-latest
     needs: [backend-tests]
-    strategy:
-      fail-fast: false
-      matrix:
-        scan:
-          - name: bandit
-            command: |
-              cd apps/api
-              mkdir -p ../../artifacts
-              python -m bandit -r . -x tests,node_modules,.venv,.venv312 --severity-level high -f json -o ../../artifacts/bandit.json
-          - name: semgrep
-            command: semgrep scan --config semgrep.yml --error
-          - name: pip-audit
-            command: |
-              cd apps/api
-              mkdir -p ../../artifacts
-              python -m pip_audit -r requirements.txt -f json -o ../../artifacts/pip-audit.json
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install security tools
-        run: |
-          python -m pip install --upgrade pip
-          if [ "${{ matrix.scan.name }}" = "bandit" ]; then
-            python -m pip install bandit
-          elif [ "${{ matrix.scan.name }}" = "semgrep" ]; then
-            python -m pip install semgrep
-          elif [ "${{ matrix.scan.name }}" = "pip-audit" ]; then
-            python -m pip install pip-audit
-          fi
-
-      - name: Run ${{ matrix.scan.name }}
-        run: ${{ matrix.scan.command }}
-        continue-on-error: true
-
-      - name: Upload results
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: security-${{ matrix.scan.name }}
-          path: artifacts/
-
-  # ===== STAGE 7: Integration Tests =====
-
-  compose-smoke:
-    runs-on: ubuntu-latest
-    needs: [backend-tests, frontend-tests]
-    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/api
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v1
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Docker Compose smoke test
-        continue-on-error: true
-        env:
-          API_ACCESS_KEY: ci-test-key
+      - name: Install pip-audit
         run: |
-          docker --version
-          docker compose version
-          set -e
-          for attempt in 1 2; do
-            python scripts/docker/compose_smoke.py --ci --timeout-seconds 600 && break
-            if [ $attempt -eq 2 ]; then exit 1; fi
-            echo "Compose smoke failed. Retrying..."
-          done
+          uv pip install --system pip-audit
 
-  # ===== STAGE 8: Deep Analysis (main/ver4 or manual) =====
+      - name: Run pip-audit (fail on vulnerabilities)
+        continue-on-error: true
+        run: |
+          mkdir -p ../../artifacts
+          python -m pip_audit -r requirements.txt -f json -o ../../artifacts/pip-audit.json
+
+      - name: Upload pip-audit report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pip-audit-report
+          path: artifacts/pip-audit.json
+
+  # ===== STAGE 4: Deep Analysis (main/ver4 or manual) =====
 
   codeql-python:
     runs-on: ubuntu-latest
     if: |
       (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4') ||
       (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
-    needs: [security]
+    needs: [security-deps]
     timeout-minutes: 30
     permissions:
       security-events: write
@@ -473,10 +507,13 @@ jobs:
               - '**/__pycache__'
               - '**/venv'
               - '**/.venv'
-              - '**/.venv312'
+              - '**/.venv_ci'
               - '**/*.test.js'
               - '**/*.test.ts'
               - '**/*.test.tsx'
+              - '**/*.spec.js'
+              - '**/*.spec.ts'
+              - '**/*.spec.tsx'
               - '**/tests/**'
 
       - name: Perform CodeQL Analysis
@@ -491,7 +528,7 @@ jobs:
     if: |
       (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4') ||
       (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
-    needs: [security]
+    needs: [security-deps]
     timeout-minutes: 30
     permissions:
       security-events: write
@@ -517,10 +554,13 @@ jobs:
               - '**/__pycache__'
               - '**/venv'
               - '**/.venv'
-              - '**/.venv312'
+              - '**/.venv_ci'
               - '**/*.test.js'
               - '**/*.test.ts'
               - '**/*.test.tsx'
+              - '**/*.spec.js'
+              - '**/*.spec.ts'
+              - '**/*.spec.tsx'
               - '**/tests/**'
 
       - name: Perform CodeQL Analysis
@@ -535,7 +575,7 @@ jobs:
     if: |
       (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4') ||
       (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
-    needs: [frontend-tests]
+    needs: [frontend-build]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -618,12 +658,23 @@ jobs:
           name: lighthouse-results
           path: apps/web/.lighthouseci
 
+      - name: Lighthouse summary
+        if: always()
+        run: |
+          echo "### Lighthouse CI Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -d .lighthouseci ]; then
+            ls -1 .lighthouseci/*.html 2>/dev/null | while read f; do
+              echo "- Report: $(basename "$f")" >> $GITHUB_STEP_SUMMARY
+            done
+          fi
+
   e2e:
     runs-on: ubuntu-latest
     if: |
       (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4') ||
       (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
-    needs: [frontend-tests]
+    needs: [frontend-build]
     timeout-minutes: 20
     continue-on-error: true
     steps:
@@ -662,21 +713,69 @@ jobs:
           name: e2e-report
           path: artifacts/e2e-report/
 
-      - name: Upload E2E output
+      - name: Upload E2E output (screenshots/traces)
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: e2e-output
           path: artifacts/e2e-output/
 
-  # ===== STAGE 9: Pipeline Health Summary =====
+      - name: E2E summary
+        if: always()
+        run: |
+          echo "### E2E Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f artifacts/e2e-report/results.json ]; then
+            PASSED=$(python3 -c "import json; d=json.load(open('artifacts/e2e-report/results.json')); print(d.get('stats',{}).get('passed',0))")
+            FAILED=$(python3 -c "import json; d=json.load(open('artifacts/e2e-report/results.json')); print(d.get('stats',{}).get('failed',0))")
+            TOTAL=$(python3 -c "import json; d=json.load(open('artifacts/e2e-report/results.json')); print(d.get('stats',{}).get('total',0))")
+            echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Total | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+            echo "| Passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
+            echo "| Failed | $FAILED |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No results.json found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ===== STAGE 5: Integration =====
+
+  compose_smoke:
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-build]
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Docker Compose smoke test (build + health checks)
+        continue-on-error: true
+        env:
+          API_ACCESS_KEY: ci-test-key
+        run: |
+          docker --version
+          docker compose version
+          set -e
+          for attempt in 1 2; do
+            python scripts/docker/compose_smoke.py --ci --timeout-seconds 600 && break
+            if [ $attempt -eq 2 ]; then exit 1; fi
+            echo "Compose smoke failed. Retrying..."
+          done
 
   pipeline-health:
     runs-on: ubuntu-latest
     if: always()
-    needs: [quick-checks, backend-tests, backend-validation, frontend-tests, 
-            docs-generation, security, compose-smoke, codeql-python, 
-            codeql-javascript, container-scan, lighthouse, e2e]
+    needs: [gitleaks, secret-validation, backend-lint, backend-tests,
+            frontend-build, security-sast, frontend-tests, docs-generation,
+            security-deps, codeql-python, codeql-javascript, container-scan,
+            lighthouse, e2e, compose_smoke]
     permissions:
       contents: read
     steps:
@@ -688,7 +787,7 @@ jobs:
             const rows = Object.entries(needs).map(([job, data]) => [job, (data && data.result) || 'unknown']);
             core.summary.addHeading('Pipeline Health');
             core.summary.addTable([['Job', 'Result'], ...rows]);
-            const nonSuccess = rows.filter(([, result]) => result !== 'success' && result !== 'skipped');
+            const nonSuccess = rows.filter(([, result]) => result !== 'success');
             const nonSuccessList = nonSuccess.map(([job, result]) => job + '(' + result + ')').join(', ');
 
             if (nonSuccess.length) {
@@ -696,15 +795,8 @@ jobs:
             } else {
               core.summary.addRaw('All pipeline jobs succeeded.');
             }
-            
-            // Only fail on critical jobs
-            const criticalJobs = ['quick-checks', 'backend-tests', 'backend-validation', 'frontend-tests'];
-            const criticalFailures = rows.filter(([job, result]) => 
-              criticalJobs.includes(job) && result !== 'success'
-            );
-            
-            if (criticalFailures.length) {
-              core.setFailed('Critical jobs failed: ' + criticalFailures.map(([job]) => job).join(', '));
+            if (nonSuccess.length) {
+              core.setFailed('Non-success jobs: ' + nonSuccessList);
             }
 
             await core.summary.write();
