@@ -208,7 +208,7 @@ strategy:
    ```python
    # Bad: Global variable
    cache = {}
-   
+
    # Good: Fixture
    @pytest.fixture
    def cache():
@@ -220,7 +220,7 @@ strategy:
    # Bad: Fixed filename
    with open("test.txt", "w") as f:
        f.write("data")
-   
+
    # Good: Temporary file
    import tempfile
    with tempfile.NamedTemporaryFile() as f:
@@ -231,7 +231,7 @@ strategy:
    ```python
    # Bad: Shared database state
    db.create_user("test")
-   
+
    # Good: Transaction rollback
    @pytest.fixture
    def db_session():
@@ -288,7 +288,7 @@ pytest -n auto --dist loadscope
    ```python
    # Bad
    CACHE = {}
-   
+
    # Good
    @pytest.fixture
    def cache():

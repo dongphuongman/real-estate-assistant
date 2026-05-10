@@ -6,7 +6,7 @@
 .DESCRIPTION
     Runs all CI tests without stopping on first failure.
     Perfect for preparing fixes - you'll see all issues at once.
-    
+
     This is equivalent to: run_ci_tests_local.ps1 -ContinueOnError
 
 .EXAMPLE

@@ -9,9 +9,9 @@
     - Skips mypy type checking
     - Parallel execution enabled
     - No coverage reports
-    
+
     Perfect for quick validation during active development.
-    
+
     This is equivalent to: run_ci_tests_local.ps1 -Fast
 
 .EXAMPLE

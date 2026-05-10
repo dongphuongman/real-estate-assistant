@@ -237,6 +237,6 @@ None at this time.
 
 ---
 
-**Version:** 1.0.0  
-**Date:** 2026-05-10  
+**Version:** 1.0.0
+**Date:** 2026-05-10
 **Author:** Development Team

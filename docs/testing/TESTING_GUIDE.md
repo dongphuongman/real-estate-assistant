@@ -12,7 +12,7 @@ Choose the right script for your situation:
 # Linux/macOS
 ./scripts/test-fast.sh
 ```
-**What it does:** Quick feedback loop - skips slow tests and type checking.  
+**What it does:** Quick feedback loop - skips slow tests and type checking.
 **When to use:** Every few minutes while coding.
 
 ---
@@ -25,7 +25,7 @@ Choose the right script for your situation:
 # Linux/macOS
 ./scripts/test-ci.sh
 ```
-**What it does:** Full CI test suite - exactly what GitHub Actions runs.  
+**What it does:** Full CI test suite - exactly what GitHub Actions runs.
 **When to use:** Before `git push` to ensure CI will pass.
 
 ---
@@ -38,7 +38,7 @@ Choose the right script for your situation:
 # Linux/macOS
 ./scripts/test-all.sh
 ```
-**What it does:** Runs ALL tests without stopping - shows complete picture.  
+**What it does:** Runs ALL tests without stopping - shows complete picture.
 **When to use:** When you want to see all failures at once and fix them together.
 
 ---
@@ -51,7 +51,7 @@ Choose the right script for your situation:
 # Linux/macOS
 ./scripts/test-coverage.sh
 ```
-**What it does:** Generates code coverage reports.  
+**What it does:** Generates code coverage reports.
 **When to use:** Before submitting PR to ensure adequate test coverage.
 
 ---

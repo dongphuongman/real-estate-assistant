@@ -13,9 +13,9 @@
     - Unit tests (parallel)
     - Integration tests (parallel)
     - Type checking (mypy)
-    
+
     Use this before pushing to ensure CI will pass.
-    
+
     This is the default mode: run_ci_tests_local.ps1
 
 .EXAMPLE

@@ -7,7 +7,7 @@ This directory contains utility scripts for development, testing, and CI/CD oper
 ```
 scripts/
 ├── testing/          # Test execution scripts
-├── dev/              # Development server scripts  
+├── dev/              # Development server scripts
 ├── docker/           # Docker and container scripts
 ├── api/              # API-specific scripts
 ├── utils/            # Utility scripts
@@ -372,5 +372,5 @@ When adding new scripts:
 
 ---
 
-**Last Updated:** 2026-05-10  
+**Last Updated:** 2026-05-10
 **Version:** 2.0.0 (Reorganized structure)

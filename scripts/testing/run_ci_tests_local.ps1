@@ -150,29 +150,29 @@ try {
     # 6. Unit tests
     Write-Host "`n[6/8] Running unit tests..." -ForegroundColor Yellow
     $UnitTestArgs = @("tests/unit", "-q")
-    
+
     # Add maxfail only if NOT in ContinueOnError mode
     if (-not $ContinueOnError) {
         $UnitTestArgs += "--maxfail=5"
     } else {
         Write-Host "  (running ALL tests, no early exit)" -ForegroundColor Gray
     }
-    
+
     if ($Parallel) {
         $UnitTestArgs += "-n", "auto"
         Write-Host "  (parallel execution enabled)" -ForegroundColor Gray
     }
-    
+
     if ($Coverage) {
         $UnitTestArgs += "--cov=.", "--cov-report=xml", "--cov-report=term"
         Write-Host "  (coverage enabled)" -ForegroundColor Gray
     }
-    
+
     if ($Fast) {
         $UnitTestArgs += "-m", "not slow"
         Write-Host "  (skipping slow tests)" -ForegroundColor Gray
     }
-    
+
     & $PYTHON -m pytest @UnitTestArgs
     if ($LASTEXITCODE -ne 0) {
         $FailedSteps += "Unit tests"
@@ -185,24 +185,24 @@ try {
     # 7. Integration tests
     Write-Host "`n[7/8] Running integration tests..." -ForegroundColor Yellow
     $IntegrationTestArgs = @("tests/integration", "-q")
-    
+
     # Add maxfail only if NOT in ContinueOnError mode
     if (-not $ContinueOnError) {
         # No maxfail for integration tests by default
     } else {
         Write-Host "  (running ALL tests, no early exit)" -ForegroundColor Gray
     }
-    
+
     if ($Parallel) {
         $IntegrationTestArgs += "-n", "auto"
         Write-Host "  (parallel execution enabled)" -ForegroundColor Gray
     }
-    
+
     if ($Coverage) {
         $IntegrationTestArgs += "--cov=.", "--cov-report=xml", "--cov-report=term", "--cov-append"
         Write-Host "  (coverage enabled)" -ForegroundColor Gray
     }
-    
+
     & $PYTHON -m pytest @IntegrationTestArgs
     if ($LASTEXITCODE -ne 0) {
         $FailedSteps += "Integration tests"
@@ -224,7 +224,7 @@ try {
 
     $EndTime = Get-Date
     $Duration = $EndTime - $StartTime
-    
+
     # Summary
     if ($FailedSteps.Count -eq 0) {
         Write-Host "`n=== All CI tests passed! ===" -ForegroundColor Green
@@ -234,19 +234,19 @@ try {
         foreach ($step in $FailedSteps) {
             Write-Host "  ✗ $step" -ForegroundColor Red
         }
-        
+
         if ($ContinueOnError) {
             Write-Host "`nNote: ContinueOnError mode was enabled - all tests were executed" -ForegroundColor Cyan
             Write-Host "Fix the issues above and re-run without -ContinueOnError flag" -ForegroundColor Cyan
         }
     }
-    
+
     Write-Host "Total time: $($Duration.ToString('mm\:ss'))" -ForegroundColor Cyan
-    
+
     if ($Coverage) {
         Write-Host "`nCoverage report saved to: coverage.xml" -ForegroundColor Cyan
     }
-    
+
     # Exit with error if there were failures
     if ($FailedSteps.Count -gt 0) {
         Pop-Location

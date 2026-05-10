@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   # ===== STAGE 1: Quick Checks (Parallel) =====
-  
+
   quick-checks:
     runs-on: ubuntu-latest
     strategy:
@@ -46,7 +46,7 @@ jobs:
             command: |
               cd apps/api
               python -m mypy . --explicit-package-bases
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -77,7 +77,7 @@ jobs:
         continue-on-error: ${{ matrix.check.name == 'backend-typecheck' }}
 
   # ===== STAGE 2: Backend Tests (Parallel by Test Type) =====
-  
+
   backend-tests:
     runs-on: ubuntu-latest
     needs: [quick-checks]
@@ -113,11 +113,11 @@ jobs:
           - name: integration
             path: tests/integration
             coverage-min: 70
-    
+
     defaults:
       run:
         working-directory: apps/api
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -165,7 +165,7 @@ jobs:
           path: apps/api/coverage.xml
 
   # ===== STAGE 3: Backend Validation Tests (Sequential) =====
-  
+
   backend-validation:
     runs-on: ubuntu-latest
     needs: [quick-checks]
@@ -173,7 +173,7 @@ jobs:
     defaults:
       run:
         working-directory: apps/api
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -210,14 +210,14 @@ jobs:
           python -m alembic check
 
   # ===== STAGE 4: Frontend Tests =====
-  
+
   frontend-tests:
     runs-on: ubuntu-latest
     needs: [quick-checks]
     defaults:
       run:
         working-directory: apps/web
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -249,7 +249,7 @@ jobs:
           path: apps/web/coverage
 
   # ===== STAGE 5: Security Scans (Parallel) =====
-  
+
   security:
     runs-on: ubuntu-latest
     needs: [backend-tests]
@@ -269,7 +269,7 @@ jobs:
               cd apps/api
               mkdir -p ../../artifacts
               python -m pip_audit -r requirements.txt -f json -o ../../artifacts/pip-audit.json
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -302,12 +302,12 @@ jobs:
           path: artifacts/
 
   # ===== STAGE 6: Summary =====
-  
+
   ci-summary:
     runs-on: ubuntu-latest
     if: always()
     needs: [quick-checks, backend-tests, backend-validation, frontend-tests, security]
-    
+
     steps:
       - name: Check results
         run: |
@@ -316,7 +316,7 @@ jobs:
           echo "Backend validation: ${{ needs.backend-validation.result }}"
           echo "Frontend tests: ${{ needs.frontend-tests.result }}"
           echo "Security: ${{ needs.security.result }}"
-          
+
           if [ "${{ needs.quick-checks.result }}" != "success" ] || \
              [ "${{ needs.backend-tests.result }}" != "success" ] || \
              [ "${{ needs.backend-validation.result }}" != "success" ] || \
