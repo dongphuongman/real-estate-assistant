@@ -51,6 +51,10 @@ class AppSettings(BaseModel):
     google_api_key: Optional[str] = Field(default_factory=lambda: os.getenv("GOOGLE_API_KEY"))
     grok_api_key: Optional[str] = Field(default_factory=lambda: os.getenv("XAI_API_KEY"))
     deepseek_api_key: Optional[str] = Field(default_factory=lambda: os.getenv("DEEPSEEK_API_KEY"))
+    openrouter_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("OPENROUTER_API_KEY"),
+        description="OpenRouter API key - unified access to 400+ models including free ones",
+    )
     zai_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("ZAI_API_KEY"),
         description="ZAI (Zhipu AI) API key - Chinese LLM provider with free tier",
@@ -750,6 +754,7 @@ class AppSettings(BaseModel):
                 "google": self.google_api_key,
                 "grok": self.grok_api_key,
                 "deepseek": self.deepseek_api_key,
+                "openrouter": self.openrouter_api_key,
                 "zai": self.zai_api_key,
                 "moonshot": self.moonshot_api_key,
             }

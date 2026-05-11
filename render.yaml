@@ -13,9 +13,14 @@ services:
       - key: ENVIRONMENT
         value: production
       - key: DEFAULT_PROVIDER
-        value: openai
+        value: openrouter
       - key: DEFAULT_MODEL
-        value: gpt-4o-mini
+        value: meta-llama/llama-3.1-8b-instruct:free
+      # LLM Provider Keys
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
       - key: ZAI_API_KEY
         sync: false
       - key: API_ACCESS_KEY
@@ -35,8 +40,6 @@ services:
         value: "true"
       - key: CACHE_TTL_SECONDS
         value: "300"
-      - key: CACHE_REDIS_URL
-        value: redis://red-:6379
       # Metrics
       - key: METRICS_ENABLED
         value: "true"

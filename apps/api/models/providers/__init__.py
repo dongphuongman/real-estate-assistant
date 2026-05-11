@@ -19,6 +19,7 @@ from .grok import GrokProvider
 from .moonshot import MoonshotProvider
 from .ollama import OllamaProvider
 from .openai import OpenAIProvider
+from .openrouter import OpenRouterProvider
 from .zai import ZaiProvider
 
 __all__ = [
@@ -29,6 +30,7 @@ __all__ = [
     "ModelCapability",
     "PricingInfo",
     "OpenAIProvider",
+    "OpenRouterProvider",
     "AnthropicProvider",
     "GoogleProvider",
     "GrokProvider",
