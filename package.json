@@ -18,6 +18,8 @@
     "test:web": "cd apps/web && npm test",
     "test:coverage": "cd apps/web && npm run test:coverage",
     "test:e2e": "playwright test",
+    "test:e2e:smoke": "playwright test --grep @smoke",
+    "test:e2e:ci": "playwright test --project=desktop-chromium",
     "lint": "npm run lint:api && npm run lint:web",
     "lint:api": "cd apps/api && ruff check .",
     "lint:web": "cd apps/web && npm run lint",
@@ -53,7 +55,8 @@
     "concurrently": "^8.2.2",
     "eslint": "^9.39.3",
     "lint-staged": "^15.4.3",
-    "prettier": "^3.5.2"
+    "prettier": "^3.5.2",
+    "wait-on": "^8.0.5"
   },
   "lint-staged": {
     "apps/web/**/*.{ts,tsx,js,jsx}": [

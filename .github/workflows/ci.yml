@@ -570,7 +570,7 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
     needs: [frontend-build]
     timeout-minutes: 20
     continue-on-error: true
@@ -593,6 +593,21 @@ jobs:
 
       - name: Install root dependencies
         run: npm ci
+
+      - name: Install frontend dependencies
+        working-directory: apps/web
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: apps/web
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: /api/v1
+
+      - name: Start frontend server
+        run: |
+          cd apps/web && npx next start -p 3000 &
+          npx wait-on http://localhost:3000 --timeout 60000
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium

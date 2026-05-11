@@ -4,7 +4,7 @@
  */
 
 import { test as base, Page, BrowserContext } from '@playwright/test';
-import { LoginPage, RegisterPage, SearchPage, ChatPage, DocumentsPage } from './page-objects';
+import { LoginPage, RegisterPage, SearchPage, ChatPage, DocumentsPage, SavedSearchesPage, MarketTrendsPage, ToolsPage } from './page-objects';
 import { TEST_USERS, TestUser } from './fixtures/users';
 import { mockChatSuccess, mockSearchSuccess, setupAuthMocks } from './mocks';
 
@@ -15,10 +15,16 @@ type E2EFixtures = {
   searchPage: SearchPage;
   chatPage: ChatPage;
   documentsPage: DocumentsPage;
+  savedSearchesPage: SavedSearchesPage;
+  marketTrendsPage: MarketTrendsPage;
+  toolsPage: ToolsPage;
   authenticatedPage: Page;
   authenticatedChatPage: ChatPage;
   authenticatedSearchPage: SearchPage;
   authenticatedDocumentsPage: DocumentsPage;
+  authenticatedSavedSearchesPage: SavedSearchesPage;
+  authenticatedMarketTrendsPage: MarketTrendsPage;
+  authenticatedToolsPage: ToolsPage;
   testUser: TestUser;
 };
 
@@ -87,6 +93,24 @@ export const test = base.extend<E2EFixtures>({
     await use(documentsPage);
   },
 
+  // Saved searches page fixture
+  savedSearchesPage: async ({ page }, use) => {
+    const savedSearchesPage = new SavedSearchesPage(page);
+    await use(savedSearchesPage);
+  },
+
+  // Market trends page fixture
+  marketTrendsPage: async ({ page }, use) => {
+    const marketTrendsPage = new MarketTrendsPage(page);
+    await use(marketTrendsPage);
+  },
+
+  // Tools page fixture
+  toolsPage: async ({ page }, use) => {
+    const toolsPage = new ToolsPage(page);
+    await use(toolsPage);
+  },
+
   // Authenticated page fixture - sets up mocks and logs in via UI
   authenticatedPage: async ({ page }, use) => {
     // Setup auth mocks before any navigation
@@ -145,6 +169,27 @@ export const test = base.extend<E2EFixtures>({
     await setupPageAuth(page);
     const documentsPage = new DocumentsPage(page);
     await use(documentsPage);
+  },
+
+  // Authenticated saved searches page fixture
+  authenticatedSavedSearchesPage: async ({ page }, use) => {
+    await setupPageAuth(page);
+    const savedSearchesPage = new SavedSearchesPage(page);
+    await use(savedSearchesPage);
+  },
+
+  // Authenticated market trends page fixture
+  authenticatedMarketTrendsPage: async ({ page }, use) => {
+    await setupPageAuth(page);
+    const marketTrendsPage = new MarketTrendsPage(page);
+    await use(marketTrendsPage);
+  },
+
+  // Authenticated tools page fixture
+  authenticatedToolsPage: async ({ page }, use) => {
+    await setupPageAuth(page);
+    const toolsPage = new ToolsPage(page);
+    await use(toolsPage);
   },
 });
 
