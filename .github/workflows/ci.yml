@@ -31,9 +31,6 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  DEEP_ANALYSIS: ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4') || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true') }}
-
 jobs:
   # ===== STAGE 1: Quick Checks =====
 
@@ -393,7 +390,7 @@ jobs:
 
   codeql-python:
     runs-on: ubuntu-latest
-    if: env.DEEP_ANALYSIS == 'true'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
     needs: [security-deps]
     timeout-minutes: 30
     permissions:
@@ -438,7 +435,7 @@ jobs:
 
   codeql-javascript:
     runs-on: ubuntu-latest
-    if: env.DEEP_ANALYSIS == 'true'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
     needs: [security-deps]
     timeout-minutes: 30
     permissions:
@@ -483,7 +480,7 @@ jobs:
 
   container-scan:
     runs-on: ubuntu-latest
-    if: env.DEEP_ANALYSIS == 'true'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
     needs: [frontend-build]
     steps:
       - name: Checkout
@@ -519,7 +516,7 @@ jobs:
 
   lighthouse:
     runs-on: ubuntu-latest
-    if: env.DEEP_ANALYSIS == 'true'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
     needs: [frontend-tests]
     timeout-minutes: 15
     defaults:
@@ -576,7 +573,7 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    if: env.DEEP_ANALYSIS == 'true'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
     needs: [frontend-build]
     timeout-minutes: 20
     continue-on-error: true
