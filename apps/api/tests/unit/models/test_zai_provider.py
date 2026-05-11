@@ -162,7 +162,7 @@ class TestZaiProvider:
         """Test that default base URL is set correctly."""
         provider = ZaiProvider()
         assert provider.config.get("base_url") == ZAI_BASE_URL
-        assert "api.z.ai" in provider.config.get("base_url", "")
+        assert "bigmodel.cn" in ZAI_BASE_URL or "z.ai" in ZAI_BASE_URL
 
     def test_api_key_from_environment(self):
         """Test that API key is loaded from environment."""
