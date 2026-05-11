@@ -23,40 +23,42 @@ logger = logging.getLogger(__name__)
 
 
 # System default models per task type
+# When DEFAULT_PROVIDER=openrouter, these OpenRouter models are used.
+# Override per-task via user preferences or request parameters.
 SYSTEM_DEFAULTS: dict[str, dict[str, Any]] = {
     "chat": {
-        "provider": "openai",
-        "model_name": "gpt-4o-mini",
-        "description": "Balanced chat model with good performance",
-        "cost_per_1m_input_tokens": 0.15,
-        "cost_per_1m_output_tokens": 0.60,
+        "provider": "openrouter",
+        "model_name": "meta-llama/llama-3.1-8b-instruct:free",
+        "description": "Free Llama 3.1 8B via OpenRouter — good for general chat",
+        "cost_per_1m_input_tokens": 0.0,
+        "cost_per_1m_output_tokens": 0.0,
     },
     "search": {
-        "provider": "openai",
-        "model_name": "gpt-4o-mini",
-        "description": "Fast model for search query processing",
-        "cost_per_1m_input_tokens": 0.15,
-        "cost_per_1m_output_tokens": 0.60,
+        "provider": "openrouter",
+        "model_name": "meta-llama/llama-3.1-8b-instruct:free",
+        "description": "Free Llama 3.1 8B — fast search query processing",
+        "cost_per_1m_input_tokens": 0.0,
+        "cost_per_1m_output_tokens": 0.0,
     },
     "tools": {
-        "provider": "openai",
-        "model_name": "gpt-4o",
-        "description": "Powerful model for tool execution",
-        "cost_per_1m_input_tokens": 2.50,
-        "cost_per_1m_output_tokens": 10.00,
+        "provider": "openrouter",
+        "model_name": "deepseek/deepseek-chat",
+        "description": "DeepSeek V3 — cheap tool execution with strong reasoning",
+        "cost_per_1m_input_tokens": 0.14,
+        "cost_per_1m_output_tokens": 0.28,
     },
     "analysis": {
-        "provider": "openai",
-        "model_name": "gpt-4o",
-        "description": "Advanced model for market analysis",
-        "cost_per_1m_input_tokens": 2.50,
-        "cost_per_1m_output_tokens": 10.00,
+        "provider": "openrouter",
+        "model_name": "deepseek/deepseek-chat",
+        "description": "DeepSeek V3 — cheap analysis with strong reasoning",
+        "cost_per_1m_input_tokens": 0.14,
+        "cost_per_1m_output_tokens": 0.28,
     },
     "embedding": {
-        "provider": "openai",
-        "model_name": "text-embedding-3-small",
-        "description": "Efficient embedding model",
-        "cost_per_1m_input_tokens": 0.02,
+        "provider": "openrouter",
+        "model_name": "meta-llama/llama-3.1-8b-instruct:free",
+        "description": "Free model — ChromaDB uses FastEmbed locally",
+        "cost_per_1m_input_tokens": 0.0,
         "cost_per_1m_output_tokens": 0.0,
     },
 }
@@ -80,6 +82,15 @@ AVAILABLE_MODELS: dict[str, list[str]] = {
         "gemini-1.5-pro",
         "gemini-1.5-flash",
         "gemini-1.0-pro",
+    ],
+    "openrouter": [
+        "meta-llama/llama-3.1-8b-instruct:free",
+        "google/gemma-2-9b-it:free",
+        "qwen/qwen-2-7b-instruct:free",
+        "google/gemini-2.0-flash-exp:free",
+        "deepseek/deepseek-chat",
+        "openai/gpt-4o-mini",
+        "anthropic/claude-3.5-haiku",
     ],
     "ollama": [
         "llama3.2:3b",
