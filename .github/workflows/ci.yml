@@ -7,8 +7,18 @@ permissions:
 on:
   push:
     branches: [main, dev, ver4]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
   pull_request:
     branches: [main, dev, ver4]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
   workflow_dispatch:
     inputs:
       enable_deep_analysis:
@@ -20,6 +30,9 @@ on:
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  DEEP_ANALYSIS: ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4') || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true') }}
 
 jobs:
   # ===== STAGE 1: Quick Checks =====
@@ -166,6 +179,17 @@ jobs:
             --timeout=60 \
             --maxfail=5 \
             -v
+
+      - name: Check coverage threshold
+        run: |
+          COVERAGE=$(python -c "import xml.etree.ElementTree as ET; print(float(ET.parse('coverage.xml').getroot().attrib['line-rate']) * 100)")
+          echo "Coverage: ${COVERAGE}%"
+          THRESHOLD=${{ matrix.test-suite.coverage-min }}
+          if [ "$(echo "$COVERAGE < $THRESHOLD" | bc -l)" -eq 1 ]; then
+            echo "::error::Coverage ${COVERAGE}% below threshold ${THRESHOLD}%"
+            exit 1
+          fi
+          echo "Coverage ${COVERAGE}% meets threshold ${THRESHOLD}%"
 
       - name: Upload coverage
         uses: actions/upload-artifact@v7
@@ -369,9 +393,7 @@ jobs:
 
   codeql-python:
     runs-on: ubuntu-latest
-    if: |
-      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4') ||
-      (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
+    if: env.DEEP_ANALYSIS == 'true'
     needs: [security-deps]
     timeout-minutes: 30
     permissions:
@@ -416,9 +438,7 @@ jobs:
 
   codeql-javascript:
     runs-on: ubuntu-latest
-    if: |
-      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4') ||
-      (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
+    if: env.DEEP_ANALYSIS == 'true'
     needs: [security-deps]
     timeout-minutes: 30
     permissions:
@@ -463,9 +483,7 @@ jobs:
 
   container-scan:
     runs-on: ubuntu-latest
-    if: |
-      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4') ||
-      (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
+    if: env.DEEP_ANALYSIS == 'true'
     needs: [frontend-build]
     steps:
       - name: Checkout
@@ -501,9 +519,7 @@ jobs:
 
   lighthouse:
     runs-on: ubuntu-latest
-    if: |
-      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4') ||
-      (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
+    if: env.DEEP_ANALYSIS == 'true'
     needs: [frontend-tests]
     timeout-minutes: 15
     defaults:
@@ -560,9 +576,7 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    if: |
-      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4') ||
-      (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
+    if: env.DEEP_ANALYSIS == 'true'
     needs: [frontend-build]
     timeout-minutes: 20
     continue-on-error: true
