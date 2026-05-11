@@ -96,6 +96,10 @@ test: test-api test-web
 test-api:
 	cd apps/api && $(PYTHON) -m pytest tests/unit tests/integration --cov=. --cov-report=term
 
+## test-dev: Run tests in dev mode (stop on first fail, rerun failed first)
+test-dev:
+	cd apps/api && $(PYTHON) -m pytest tests/unit tests/integration -x --ff
+
 ## benchmark-search: Run search p95 benchmark tests (Task #50)
 benchmark-search:
 	cd apps/api && $(PYTHON) -m pytest tests/performance/test_search_p95.py -v -m benchmark

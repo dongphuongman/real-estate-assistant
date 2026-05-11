@@ -1,0 +1,5 @@
+-P ubuntu-latest=node:20-bookworm
+--container-architecture linux/amd64
+--artifact-default-path /tmp/artifacts
+--matrix test-suite:name:unit:path:tests/unit:coverage-min:85
+--matrix test-suite:name:integration:path:tests/integration:coverage-min:70
