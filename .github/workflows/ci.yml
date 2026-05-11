@@ -145,6 +145,7 @@ jobs:
         run: |
           uv pip install --system -r requirements.txt
           uv pip install --system pytest
+          uv pip install --system -e .
 
       - name: RuleEngine test
         run: |
@@ -216,6 +217,7 @@ jobs:
         run: |
           uv pip install --system -r requirements.txt
           uv pip install --system pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout ruff httpx types-requests
+          uv pip install --system -e .
 
       - name: Run ${{ matrix.test-suite.name }} tests
         run: |
@@ -375,6 +377,7 @@ jobs:
       - name: Install dependencies
         run: |
           uv pip install --system -r requirements.txt
+          uv pip install --system -e .
 
       - name: Generate OpenAPI documentation (Task #54)
         run: |

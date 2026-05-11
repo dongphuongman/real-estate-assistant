@@ -1,36 +1,23 @@
-// Mock for next/navigation hooks to avoid ESM issues in Jest
-// This complements the next-intl/navigation mock
-
-const mockRouter = {
+export const useRouter = () => ({
   push: jest.fn(),
   replace: jest.fn(),
+  prefetch: jest.fn(),
   back: jest.fn(),
   forward: jest.fn(),
   refresh: jest.fn(),
-  prefetch: jest.fn(),
-};
-
-export const useRouter = () => mockRouter;
-
-export const usePathname = () => '/';
-
-export const useSearchParams = () => new URLSearchParams();
-
-export const redirect = jest.fn();
-
-export const notFound = jest.fn();
-
-// Reset mocks between tests
-beforeEach(() => {
-  jest.clearAllMocks();
+  pathname: '/',
+  query: {},
+  asPath: '/',
+  route: '/',
+  events: {
+    on: jest.fn(),
+    off: jest.fn(),
+    emit: jest.fn(),
+  },
 });
 
-const nextNavigationMock = {
-  useRouter,
-  usePathname,
-  useSearchParams,
-  redirect,
-  notFound,
-};
-
-export default nextNavigationMock;
+export const usePathname = () => '/';
+export const useSearchParams = () => new URLSearchParams();
+export const useParams = () => ({});
+export const redirect = jest.fn();
+export const notFound = jest.fn();

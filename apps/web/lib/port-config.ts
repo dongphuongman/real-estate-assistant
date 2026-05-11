@@ -120,10 +120,12 @@ export function isDynamicPortMode(): boolean {
 }
 
 // Default export for convenience
-export default {
+const portConfig = {
   getBackendApiUrl,
   getFrontendPort,
   getFrontendUrl,
   getPortConfig,
   isDynamicPortMode,
 };
+
+export default portConfig;
