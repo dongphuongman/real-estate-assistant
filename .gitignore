@@ -367,3 +367,6 @@ screenshots/
 artifacts/e2e-output/
 test-results/
 .kiro/
+
+# Local GitHub Actions simulation (act)
+.actrc

@@ -94,7 +94,7 @@ test: test-api test-web
 
 ## test-api: Run backend tests with coverage
 test-api:
-	cd apps/api && $(PYTHON) -m pytest tests/unit tests/integration --cov=. --cov-report=term -n auto
+	cd apps/api && $(PYTHON) -m pytest tests/unit tests/integration --cov=. --cov-report=term
 
 ## benchmark-search: Run search p95 benchmark tests (Task #50)
 benchmark-search:
