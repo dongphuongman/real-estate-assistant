@@ -379,15 +379,15 @@ jobs:
       - name: Generate OpenAPI documentation (Task #54)
         run: |
           mkdir -p docs/api
-          python scripts/docs/export_openapi.py --output docs/api/openapi.json
-          python scripts/docs/generate_api_reference.py --schema docs/api/openapi.json --output docs/api/API_REFERENCE.generated.md
+          python ../../scripts/docs/export_openapi.py --output docs/api/openapi.json
+          python ../../scripts/docs/generate_api_reference.py --schema docs/api/openapi.json --output docs/api/API_REFERENCE.generated.md
 
       - name: Upload OpenAPI documentation
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: openapi-docs
-          path: docs/api/
+          path: apps/api/docs/api/
 
       - name: Docs summary
         if: always()
