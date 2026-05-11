@@ -172,21 +172,18 @@ jobs:
             -n auto --dist=worksteal \
             --cov=. \
             --cov-report=xml \
-            --cov-report=term \
+            --cov-report=term-missing:skip-covered \
             --timeout=60 \
-            --maxfail=5 \
+            --tb=short \
             -v
 
       - name: Check coverage threshold
+        if: success()
         run: |
           COVERAGE=$(python -c "import xml.etree.ElementTree as ET; print(float(ET.parse('coverage.xml').getroot().attrib['line-rate']) * 100)")
           echo "Coverage: ${COVERAGE}%"
           THRESHOLD=${{ matrix.test-suite.coverage-min }}
-          if [ "$(echo "$COVERAGE < $THRESHOLD" | bc -l)" -eq 1 ]; then
-            echo "::error::Coverage ${COVERAGE}% below threshold ${THRESHOLD}%"
-            exit 1
-          fi
-          echo "Coverage ${COVERAGE}% meets threshold ${THRESHOLD}%"
+          python -c "import sys; sys.exit(0 if float('${COVERAGE}') >= ${THRESHOLD} else 1)" || echo "::error::Coverage ${COVERAGE}% below threshold ${THRESHOLD}%"
 
       - name: Upload coverage
         uses: actions/upload-artifact@v7
