@@ -8,6 +8,7 @@ repos:
       - id: trailing-whitespace
       - id: check-merge-conflict
       - id: check-added-large-files
+        exclude: ^apps/api/docs/api/openapi\.json$
       - id: check-illegal-windows-names
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
