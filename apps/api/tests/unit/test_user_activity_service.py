@@ -183,10 +183,6 @@ class TestUserActivityService:
         assert summary.total_tool_uses == 1
 
     @pytest.mark.asyncio
-    @pytest.mark.xfail(
-        reason="export_activity_csv deduplicates by session_id in SQLite",
-        strict=False,
-    )
     async def test_export_activity_csv_returns_valid_csv(self, activity_service, db_session):
         """Test CSV export format."""
         await activity_service.track_event(
