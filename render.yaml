@@ -15,7 +15,7 @@ services:
       - key: DEFAULT_PROVIDER
         value: openrouter
       - key: DEFAULT_MODEL
-        value: meta-llama/llama-3.1-8b-instruct:free
+        value: nvidia/nemotron-3-super-120b-a12b:free
       # LLM Provider Keys
       - key: OPENROUTER_API_KEY
         sync: false

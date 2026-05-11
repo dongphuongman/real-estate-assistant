@@ -23,41 +23,41 @@ logger = logging.getLogger(__name__)
 
 
 # System default models per task type
-# When DEFAULT_PROVIDER=openrouter, these OpenRouter models are used.
+# All models use OpenRouter free tier — $0 cost, production quality.
 # Override per-task via user preferences or request parameters.
 SYSTEM_DEFAULTS: dict[str, dict[str, Any]] = {
     "chat": {
         "provider": "openrouter",
-        "model_name": "meta-llama/llama-3.1-8b-instruct:free",
-        "description": "Free Llama 3.1 8B via OpenRouter — good for general chat",
+        "model_name": "nvidia/nemotron-3-super-120b-a12b:free",
+        "description": "Nemotron 3 Super 120B — best free model, function calling, 262K ctx",
         "cost_per_1m_input_tokens": 0.0,
         "cost_per_1m_output_tokens": 0.0,
     },
     "search": {
         "provider": "openrouter",
-        "model_name": "meta-llama/llama-3.1-8b-instruct:free",
-        "description": "Free Llama 3.1 8B — fast search query processing",
+        "model_name": "nvidia/nemotron-3-super-120b-a12b:free",
+        "description": "Nemotron 3 Super 120B — fast search query processing",
         "cost_per_1m_input_tokens": 0.0,
         "cost_per_1m_output_tokens": 0.0,
     },
     "tools": {
         "provider": "openrouter",
-        "model_name": "deepseek/deepseek-chat",
-        "description": "DeepSeek V3 — cheap tool execution with strong reasoning",
-        "cost_per_1m_input_tokens": 0.14,
-        "cost_per_1m_output_tokens": 0.28,
+        "model_name": "nvidia/nemotron-3-super-120b-a12b:free",
+        "description": "Nemotron 3 Super 120B — tool execution with function calling",
+        "cost_per_1m_input_tokens": 0.0,
+        "cost_per_1m_output_tokens": 0.0,
     },
     "analysis": {
         "provider": "openrouter",
-        "model_name": "deepseek/deepseek-chat",
-        "description": "DeepSeek V3 — cheap analysis with strong reasoning",
-        "cost_per_1m_input_tokens": 0.14,
-        "cost_per_1m_output_tokens": 0.28,
+        "model_name": "nvidia/nemotron-3-super-120b-a12b:free",
+        "description": "Nemotron 3 Super 120B — complex analysis and reasoning",
+        "cost_per_1m_input_tokens": 0.0,
+        "cost_per_1m_output_tokens": 0.0,
     },
     "embedding": {
         "provider": "openrouter",
-        "model_name": "meta-llama/llama-3.1-8b-instruct:free",
-        "description": "Free model — ChromaDB uses FastEmbed locally",
+        "model_name": "nvidia/nemotron-3-super-120b-a12b:free",
+        "description": "ChromaDB uses FastEmbed locally; fallback for LLM-based tasks",
         "cost_per_1m_input_tokens": 0.0,
         "cost_per_1m_output_tokens": 0.0,
     },
@@ -84,13 +84,12 @@ AVAILABLE_MODELS: dict[str, list[str]] = {
         "gemini-1.0-pro",
     ],
     "openrouter": [
-        "meta-llama/llama-3.1-8b-instruct:free",
-        "google/gemma-2-9b-it:free",
-        "qwen/qwen-2-7b-instruct:free",
-        "google/gemini-2.0-flash-exp:free",
+        "nvidia/nemotron-3-super-120b-a12b:free",
+        "meta-llama/llama-3.3-70b-instruct:free",
+        "openai/gpt-oss-120b:free",
+        "google/gemma-4-31b-it:free",
         "deepseek/deepseek-chat",
         "openai/gpt-4o-mini",
-        "anthropic/claude-3.5-haiku",
     ],
     "ollama": [
         "llama3.2:3b",

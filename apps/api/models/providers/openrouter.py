@@ -41,10 +41,38 @@ class OpenRouterProvider(RemoteModelProvider):
     def list_models(self) -> List[ModelInfo]:
         """List curated OpenRouter models (free + cheap)."""
         return [
-            # --- Free models ---
+            # --- Top free models (production quality) ---
             ModelInfo(
-                id="meta-llama/llama-3.1-8b-instruct:free",
-                display_name="Llama 3.1 8B (Free)",
+                id="nvidia/nemotron-3-super-120b-a12b:free",
+                display_name="Nemotron 3 Super 120B (Free)",
+                provider_name=self.display_name,
+                context_window=262144,
+                pricing=None,
+                capabilities=[
+                    ModelCapability.STREAMING,
+                    ModelCapability.FUNCTION_CALLING,
+                    ModelCapability.SYSTEM_MESSAGES,
+                ],
+                description="120B MoE hybrid Mamba-Transformer, 12B active. Top free model.",
+                recommended_for=["free tier", "production", "chat", "tools", "analysis"],
+            ),
+            ModelInfo(
+                id="meta-llama/llama-3.3-70b-instruct:free",
+                display_name="Llama 3.3 70B (Free)",
+                provider_name=self.display_name,
+                context_window=65536,
+                pricing=None,
+                capabilities=[
+                    ModelCapability.STREAMING,
+                    ModelCapability.FUNCTION_CALLING,
+                    ModelCapability.SYSTEM_MESSAGES,
+                ],
+                description="70B multilingual (8 languages), strong dialogue",
+                recommended_for=["free tier", "multilingual", "chat"],
+            ),
+            ModelInfo(
+                id="openai/gpt-oss-120b:free",
+                display_name="GPT-oss 120B (Free)",
                 provider_name=self.display_name,
                 context_window=131072,
                 pricing=None,
@@ -53,36 +81,24 @@ class OpenRouterProvider(RemoteModelProvider):
                     ModelCapability.FUNCTION_CALLING,
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
-                description="Free tier Llama 3.1 8B — good for general queries",
-                recommended_for=["free tier", "general purpose", "chat"],
+                description="OpenAI open-source 120B MoE, function calling",
+                recommended_for=["free tier", "general purpose"],
             ),
             ModelInfo(
-                id="google/gemma-2-9b-it:free",
-                display_name="Gemma 2 9B (Free)",
+                id="google/gemma-4-31b-it:free",
+                display_name="Gemma 4 31B (Free)",
                 provider_name=self.display_name,
-                context_window=8192,
+                context_window=262144,
                 pricing=None,
                 capabilities=[
                     ModelCapability.STREAMING,
+                    ModelCapability.FUNCTION_CALLING,
                     ModelCapability.SYSTEM_MESSAGES,
                 ],
-                description="Free tier Gemma 2 9B — strong instruction following",
-                recommended_for=["free tier", "instruction following"],
+                description="31B dense, 256K context, 140+ languages",
+                recommended_for=["free tier", "multilingual", "long context"],
             ),
-            ModelInfo(
-                id="qwen/qwen-2-7b-instruct:free",
-                display_name="Qwen 2 7B (Free)",
-                provider_name=self.display_name,
-                context_window=32768,
-                pricing=None,
-                capabilities=[
-                    ModelCapability.STREAMING,
-                    ModelCapability.SYSTEM_MESSAGES,
-                ],
-                description="Free tier Qwen 2 7B — good multilingual support",
-                recommended_for=["free tier", "multilingual"],
-            ),
-            # --- Cheap paid models ---
+            # --- Cheap paid models (fallback) ---
             ModelInfo(
                 id="deepseek/deepseek-chat",
                 display_name="DeepSeek V3",
@@ -99,21 +115,6 @@ class OpenRouterProvider(RemoteModelProvider):
                 recommended_for=["cost-effective", "reasoning", "general purpose"],
             ),
             ModelInfo(
-                id="google/gemini-2.0-flash-exp:free",
-                display_name="Gemini 2.0 Flash (Free)",
-                provider_name=self.display_name,
-                context_window=1048576,
-                pricing=None,
-                capabilities=[
-                    ModelCapability.STREAMING,
-                    ModelCapability.FUNCTION_CALLING,
-                    ModelCapability.VISION,
-                    ModelCapability.SYSTEM_MESSAGES,
-                ],
-                description="Free Gemini 2.0 Flash — fast, 1M context",
-                recommended_for=["free tier", "fast responses", "long context"],
-            ),
-            ModelInfo(
                 id="openai/gpt-4o-mini",
                 display_name="GPT-4o Mini (via OpenRouter)",
                 provider_name=self.display_name,
@@ -128,21 +129,6 @@ class OpenRouterProvider(RemoteModelProvider):
                 ],
                 description="GPT-4o Mini through OpenRouter — affordable quality",
                 recommended_for=["balanced quality/cost", "function calling"],
-            ),
-            ModelInfo(
-                id="anthropic/claude-3.5-haiku",
-                display_name="Claude 3.5 Haiku (via OpenRouter)",
-                provider_name=self.display_name,
-                context_window=200000,
-                pricing=PricingInfo(input_price_per_1m=0.80, output_price_per_1m=4.00),
-                capabilities=[
-                    ModelCapability.STREAMING,
-                    ModelCapability.FUNCTION_CALLING,
-                    ModelCapability.VISION,
-                    ModelCapability.SYSTEM_MESSAGES,
-                ],
-                description="Claude 3.5 Haiku — fast and capable",
-                recommended_for=["fast quality", "analysis"],
             ),
         ]
 
