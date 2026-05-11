@@ -354,6 +354,9 @@ scripts/ci/
 # Release validation reports (internal)
 docs/releases/
 
+# Design system docs (internal, not for public repo)
+DESIGN.md
+
 # Local development files (not for public repo)
 .research/
 logs/
