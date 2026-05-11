@@ -357,7 +357,6 @@ class TestAssignAgent:
 
 
 class TestBulkAssign:
-    @pytest.mark.xfail(reason="Route shadowing: /{lead_id}/assign catches /bulk/assign")
     @pytest.mark.asyncio
     async def test_bulk_assign_forbidden(self, auth_user, mock_db):
         transport = ASGITransport(app=_test_app)

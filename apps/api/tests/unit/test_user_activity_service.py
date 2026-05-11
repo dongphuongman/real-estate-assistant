@@ -245,7 +245,9 @@ class TestUserActivityService:
 
         await db_session.flush()
 
-        csv_data = await activity_service.export_activity_csv()
+        csv_data = await activity_service.export_activity_csv(
+            period_end=datetime.now(UTC) + timedelta(seconds=1),
+        )
 
         # Session ID should be truncated
         assert "..." in csv_data
