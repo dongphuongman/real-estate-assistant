@@ -754,16 +754,22 @@ jobs:
             const rows = Object.entries(needs).map(([job, data]) => [job, (data && data.result) || 'unknown']);
             core.summary.addHeading('Pipeline Health');
             core.summary.addTable([['Job', 'Result'], ...rows]);
-            const nonSuccess = rows.filter(([, result]) => result !== 'success');
-            const nonSuccessList = nonSuccess.map(([job, result]) => job + '(' + result + ')').join(', ');
+            const failures = rows.filter(([, result]) => result === 'failure');
+            const skipped = rows.filter(([, result]) => result === 'skipped');
+            const failureList = failures.map(([job, result]) => job + '(' + result + ')').join(', ');
+            const skippedList = skipped.map(([job, result]) => job + '(' + result + ')').join(', ');
 
-            if (nonSuccess.length) {
-              core.summary.addRaw('Non-success jobs: ' + nonSuccessList);
-            } else {
+            if (failures.length) {
+              core.summary.addRaw('Failed jobs: ' + failureList);
+            }
+            if (skipped.length) {
+              core.summary.addRaw('\nSkipped jobs (expected on non-release branches): ' + skippedList);
+            }
+            if (!failures.length && !skipped.length) {
               core.summary.addRaw('All pipeline jobs succeeded.');
             }
-            if (nonSuccess.length) {
-              core.setFailed('Non-success jobs: ' + nonSuccessList);
+            if (failures.length) {
+              core.setFailed('Failed jobs: ' + failureList);
             }
 
             await core.summary.write();
