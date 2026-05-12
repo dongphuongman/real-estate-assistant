@@ -29,11 +29,12 @@ const PII_FIELDS = new Set([
 function beforeSend(event: Sentry.Event, _hint: Sentry.EventHint) {
   // Redact PII from request headers
   const request = event.request;
-  if (request?.headers) {
-    Object.keys(request.headers).forEach((key) => {
+  if (request?.headers && typeof request.headers === 'object') {
+    const headers = request.headers as Record<string, string>;
+    Object.keys(headers).forEach((key) => {
       const normalizedKey = key.toLowerCase().replace(/-/g, '').replace(/_/g, '');
       if (PII_FIELDS.has(normalizedKey)) {
-        request.headers[key] = '[Redacted]';
+        headers[key] = '[Redacted]';
       }
     });
   }
