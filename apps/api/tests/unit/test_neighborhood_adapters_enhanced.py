@@ -8,7 +8,7 @@ Tests for:
 - SafetyAdapter (enhanced safety data)
 """
 
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -287,8 +287,11 @@ class TestAdapterIntegration:
         assert noise is not None
         assert safety is not None
 
-    def test_all_adapters_handle_missing_coords(self):
+    @patch("data.adapters.safety_adapter.requests.get")
+    def test_all_adapters_handle_missing_coords(self, mock_requests_get):
         """Test that all adapters handle missing coordinates gracefully."""
+        mock_requests_get.return_value = Mock(status_code=200, json=lambda: {"results": []})
+
         air = get_air_quality_adapter()
         transport = get_transport_adapter()
         noise = get_noise_adapter()

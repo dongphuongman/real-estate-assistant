@@ -715,16 +715,82 @@ class TestNeighborhoodQuality:
 
     @pytest.mark.asyncio
     async def test_neighborhood_quality_valid(self, client):
-        response = await client.post(
-            "/api/v1/tools/neighborhood-quality",
-            json={
-                "property_id": "prop-123",
-                "latitude": 52.52,
-                "longitude": 13.405,
-                "city": "Berlin",
-                "neighborhood": "Mitte",
-            },
+        from unittest.mock import Mock
+
+        from data.adapters.air_quality_adapter import AirQualityAdapter, AirQualityResult
+        from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+        from data.adapters.noise_adapter import NoiseAdapter, NoiseResult
+        from data.adapters.safety_adapter import SafetyAdapter, SafetyResult
+        from data.adapters.transport_adapter import TransportAdapter
+
+        mock_na_inst = Mock(spec=NeighborhoodAdapter)
+        mock_na_inst.count_schools.return_value = 5
+        mock_na_inst.count_amenities.return_value = 10
+        mock_na_inst.calculate_walkability.return_value = 70.0
+        mock_na_inst.count_green_spaces.return_value = 3
+
+        mock_sa_inst = Mock(spec=SafetyAdapter)
+        mock_sa_inst.get_safety_score.return_value = SafetyResult(
+            score=75.0,
+            police_stations_nearby=2,
+            emergency_services_nearby=1,
+            lighting_score=None,
+            pois=[],
+            data_source="osm_overpass_api",
+            confidence=0.7,
         )
+
+        mock_aq_inst = Mock(spec=AirQualityAdapter)
+        mock_aq_inst.get_aqi_score.return_value = AirQualityResult(
+            score=70.0,
+            aqi_value=None,
+            pm25=None,
+            pm10=None,
+            data_source="fallback",
+            confidence=0.3,
+            station_name=None,
+        )
+
+        mock_noise_inst = Mock(spec=NoiseAdapter)
+        mock_noise_inst.estimate_noise_level.return_value = NoiseResult(
+            score=65.0,
+            estimated_db=50.0,
+            noise_sources=[],
+            data_source="fallback",
+            confidence=0.3,
+            query_latitude=None,
+            query_longitude=None,
+        )
+
+        mock_transport_inst = Mock(spec=TransportAdapter)
+        mock_transport_inst.calculate_accessibility_score.return_value = 60.0
+
+        with (
+            patch(
+                "data.adapters.neighborhood_adapter.get_neighborhood_adapter",
+                return_value=mock_na_inst,
+            ),
+            patch("data.adapters.safety_adapter.get_safety_adapter", return_value=mock_sa_inst),
+            patch(
+                "data.adapters.air_quality_adapter.get_air_quality_adapter",
+                return_value=mock_aq_inst,
+            ),
+            patch("data.adapters.noise_adapter.get_noise_adapter", return_value=mock_noise_inst),
+            patch(
+                "data.adapters.transport_adapter.get_transport_adapter",
+                return_value=mock_transport_inst,
+            ),
+        ):
+            response = await client.post(
+                "/api/v1/tools/neighborhood-quality",
+                json={
+                    "property_id": "prop-123",
+                    "latitude": 52.52,
+                    "longitude": 13.405,
+                    "city": "Berlin",
+                    "neighborhood": "Mitte",
+                },
+            )
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert "property_id" in data
@@ -733,23 +799,89 @@ class TestNeighborhoodQuality:
 
     @pytest.mark.asyncio
     async def test_neighborhood_quality_with_custom_weights(self, client):
-        response = await client.post(
-            "/api/v1/tools/neighborhood-quality",
-            json={
-                "property_id": "prop-123",
-                "latitude": 52.52,
-                "longitude": 13.405,
-                "custom_weights": {
-                    "safety": 0.3,
-                    "schools": 0.2,
-                    "amenities": 0.2,
-                    "walkability": 0.15,
-                    "green_space": 0.15,
-                },
-                "compare_to_city_average": False,
-                "include_pois": False,
-            },
+        from unittest.mock import Mock
+
+        from data.adapters.air_quality_adapter import AirQualityAdapter, AirQualityResult
+        from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+        from data.adapters.noise_adapter import NoiseAdapter, NoiseResult
+        from data.adapters.safety_adapter import SafetyAdapter, SafetyResult
+        from data.adapters.transport_adapter import TransportAdapter
+
+        mock_na_inst = Mock(spec=NeighborhoodAdapter)
+        mock_na_inst.count_schools.return_value = 5
+        mock_na_inst.count_amenities.return_value = 10
+        mock_na_inst.calculate_walkability.return_value = 70.0
+        mock_na_inst.count_green_spaces.return_value = 3
+
+        mock_sa_inst = Mock(spec=SafetyAdapter)
+        mock_sa_inst.get_safety_score.return_value = SafetyResult(
+            score=75.0,
+            police_stations_nearby=2,
+            emergency_services_nearby=1,
+            lighting_score=None,
+            pois=[],
+            data_source="osm_overpass_api",
+            confidence=0.7,
         )
+
+        mock_aq_inst = Mock(spec=AirQualityAdapter)
+        mock_aq_inst.get_aqi_score.return_value = AirQualityResult(
+            score=70.0,
+            aqi_value=None,
+            pm25=None,
+            pm10=None,
+            data_source="fallback",
+            confidence=0.3,
+            station_name=None,
+        )
+
+        mock_noise_inst = Mock(spec=NoiseAdapter)
+        mock_noise_inst.estimate_noise_level.return_value = NoiseResult(
+            score=65.0,
+            estimated_db=50.0,
+            noise_sources=[],
+            data_source="fallback",
+            confidence=0.3,
+            query_latitude=None,
+            query_longitude=None,
+        )
+
+        mock_transport_inst = Mock(spec=TransportAdapter)
+        mock_transport_inst.calculate_accessibility_score.return_value = 60.0
+
+        with (
+            patch(
+                "data.adapters.neighborhood_adapter.get_neighborhood_adapter",
+                return_value=mock_na_inst,
+            ),
+            patch("data.adapters.safety_adapter.get_safety_adapter", return_value=mock_sa_inst),
+            patch(
+                "data.adapters.air_quality_adapter.get_air_quality_adapter",
+                return_value=mock_aq_inst,
+            ),
+            patch("data.adapters.noise_adapter.get_noise_adapter", return_value=mock_noise_inst),
+            patch(
+                "data.adapters.transport_adapter.get_transport_adapter",
+                return_value=mock_transport_inst,
+            ),
+        ):
+            response = await client.post(
+                "/api/v1/tools/neighborhood-quality",
+                json={
+                    "property_id": "prop-123",
+                    "latitude": 52.52,
+                    "longitude": 13.405,
+                    "custom_weights": {
+                        "safety": 0.3,
+                        "schools": 0.2,
+                        "amenities": 0.2,
+                        "walkability": 0.15,
+                        "green_space": 0.15,
+                    },
+                    "compare_to_city_average": False,
+                    "include_pois": False,
+                },
+            )
         assert response.status_code == status.HTTP_200_OK
 
     @pytest.mark.asyncio

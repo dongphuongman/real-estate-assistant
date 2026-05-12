@@ -15,6 +15,93 @@ from tools.property_tools import (
 )
 
 
+def _mock_neighborhood_adapter():
+    """Create a mock NeighborhoodAdapter with sensible defaults."""
+    from data.adapters.neighborhood_adapter import NeighborhoodAdapter
+
+    mock = Mock(spec=NeighborhoodAdapter)
+    mock.count_schools.return_value = 5
+    mock.count_amenities.return_value = 10
+    mock.calculate_walkability.return_value = 70.0
+    mock.count_green_spaces.return_value = 3
+    return mock
+
+
+def _mock_safety_adapter():
+    """Create a mock SafetyAdapter with sensible defaults."""
+    from data.adapters.safety_adapter import SafetyAdapter, SafetyResult
+
+    mock = Mock(spec=SafetyAdapter)
+    mock.get_safety_score.return_value = SafetyResult(
+        score=75.0,
+        police_stations_nearby=2,
+        emergency_services_nearby=1,
+        lighting_score=None,
+        pois=[],
+        data_source="osm_overpass_api",
+        confidence=0.7,
+    )
+    return mock
+
+
+@pytest.fixture
+def _patch_adapters():
+    """Patch all external adapters to prevent real HTTP calls during tests."""
+    from data.adapters.air_quality_adapter import AirQualityAdapter, AirQualityResult
+    from data.adapters.noise_adapter import NoiseAdapter, NoiseResult
+    from data.adapters.transport_adapter import TransportAdapter
+
+    mock_aq = Mock(spec=AirQualityAdapter)
+    mock_aq.get_aqi_score.return_value = AirQualityResult(
+        score=70.0,
+        aqi_value=None,
+        pm25=None,
+        pm10=None,
+        data_source="fallback",
+        confidence=0.3,
+        station_name=None,
+    )
+
+    mock_noise = Mock(spec=NoiseAdapter)
+    mock_noise.estimate_noise_level.return_value = NoiseResult(
+        score=65.0,
+        estimated_db=50.0,
+        noise_sources=[],
+        data_source="fallback",
+        confidence=0.3,
+        query_latitude=None,
+        query_longitude=None,
+    )
+
+    mock_transport = Mock(spec=TransportAdapter)
+    mock_transport.calculate_accessibility_score.return_value = 60.0
+
+    with (
+        patch(
+            "data.adapters.neighborhood_adapter.get_neighborhood_adapter",
+            return_value=_mock_neighborhood_adapter(),
+        ),
+        patch(
+            "data.adapters.safety_adapter.get_safety_adapter",
+            return_value=_mock_safety_adapter(),
+        ),
+        patch(
+            "data.adapters.air_quality_adapter.get_air_quality_adapter",
+            return_value=mock_aq,
+        ),
+        patch(
+            "data.adapters.noise_adapter.get_noise_adapter",
+            return_value=mock_noise,
+        ),
+        patch(
+            "data.adapters.transport_adapter.get_transport_adapter",
+            return_value=mock_transport,
+        ),
+    ):
+        yield
+
+
+@pytest.mark.usefixtures("_patch_adapters")
 class TestNeighborhoodQualityIndexTool:
     """Test suite for NeighborhoodQualityIndexTool."""
 
@@ -325,6 +412,7 @@ class TestNeighborhoodToolFactory:
         assert tool_names == expected_names
 
 
+@pytest.mark.usefixtures("_patch_adapters")
 class TestNeighborhoodToolPhase2:
     """Test Phase 2 OSM integration and fallback behavior."""
 
@@ -457,8 +545,10 @@ class TestNeighborhoodToolPhase2:
         finally:
             na_module.get_neighborhood_adapter = original_get_adapter
 
-    def test_adapter_import_error_fallback(self):
+    @patch("requests.get")
+    def test_adapter_import_error_fallback(self, mock_get):
         """Test fallback when adapter module cannot be imported."""
+        mock_get.return_value = Mock(status_code=200, json=lambda: {"elements": []})
         import sys
 
         # Save the original module and remove it temporarily
