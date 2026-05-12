@@ -128,26 +128,13 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Sentry configuration wrapper
-export default withSentryConfig(withPWA(withNextIntl(nextConfig)), {
-  // Silence the hidden source-map warnings
+// Sentry configuration wrapper - only wrap when auth token is available
+const sentryBuildOptions = {
   silent: true,
-  // Organization and project settings
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
-  // Disable Sentry in development
-  disabled: process.env.NODE_ENV !== 'production',
-  // Session replay configuration
-  replayIntegration: {
-    // Capture sessions for all errors
-    onError: (event) => {
-      // Only capture replay for errors
-      return event.exception !== undefined;
-    },
-  },
-  // Performance monitoring
-  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0,
-  // Session replay sample rate
-  replaysSessionSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0,
-  replaysOnErrorSampleRate: 1.0,
-});
+};
+
+export default process.env.SENTRY_AUTH_TOKEN
+  ? withSentryConfig(withPWA(withNextIntl(nextConfig)), sentryBuildOptions)
+  : withPWA(withNextIntl(nextConfig));
