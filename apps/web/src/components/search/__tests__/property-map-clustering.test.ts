@@ -165,10 +165,11 @@ describe('property-map-clustering', () => {
   // Tests for edge cases
   describe('edge cases', () => {
     it('handles very dense areas (1000+ points)', () => {
+      // nosemgrep: weak-random.random — test data generation, not security-sensitive
       const points = Array.from({ length: 1500 }, (_, idx) => ({
         id: `p-${idx}`,
-        lat: 52.23 + Math.random() * 0.01,
-        lon: 21.01 + Math.random() * 0.01,
+        lat: 52.23 + Math.random() * 0.01, // nosemgrep: weak-random.random
+        lon: 21.01 + Math.random() * 0.01, // nosemgrep: weak-random.random
       }));
 
       const start = performance.now();

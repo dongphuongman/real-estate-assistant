@@ -174,8 +174,6 @@ class HybridPropertyRetriever(BaseRetriever):
                 results = [doc for doc, score in reranked]
             except Exception as e:
                 logger.warning(f"Reranking failed: {e}")
-                # Fallback to original results
-                pass
 
         return results[: self.k]
 

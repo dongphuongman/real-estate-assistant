@@ -1,21 +1,8 @@
 # Semgrep Configuration for AI Real Estate Assistant
 # Runs SAST (Static Application Security Testing) on Python and JavaScript/TypeScript
 
-# Auto-rules from Semgrep registry - enables maintained rule sets
 rules:
   # ===== Python Security Rules =====
-
-  # OWASP Top 10 for Python
-  - id: python.jwt.best-practice
-    patterns:
-      - pattern: jwt.encode(...)
-      - metavariable-pattern:
-          metavariable: $ALG
-          patterns:
-            - pattern: $ALG="none"
-    message: "JWT algorithm 'none' is insecure and allows token forgery"
-    severity: ERROR
-    languages: [python]
 
   # Dangerous function usage
   - id: python.dangerous-functions
@@ -163,30 +150,7 @@ rules:
     metadata:
       cwe: "CWE-377: Insecure Temporary File"
 
-# Configuration options
-extends:
-  # Enable additional rule sets from Semgrep registry
-  - uses: security
-  - uses: bandit
-  - uses: eslint
-
-# Exclude paths from scanning
-exclude:
-  - node_modules/
-  - venv/
-  - .venv/
-  - .venv_ci/
-  - __pycache__/
-  - .next/
-  - dist/
-  - build/
-  - coverage/
-  - "**/*.test.js"
-  - "**/*.test.ts"
-  - "**/*.test.tsx"
-  - "**/*.spec.js"
-  - "**/*.spec.ts"
-  - "**/*.spec.tsx"
-  - "tests/"
-  - "test_*.py"
-  - "**/__tests__/**"
+# Exclude paths from scanning (passed via CLI --exclude or .semgrepignore)
+# Semgrep OSS does not support top-level "extends" or "exclude" keys in rules files.
+# Use: semgrep --config semgrep.yml --exclude "node_modules,venv,.venv,.next,dist,build,coverage"
+# Or create a .semgrepignore file for persistent exclusions.

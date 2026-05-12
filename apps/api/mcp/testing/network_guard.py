@@ -60,7 +60,7 @@ class NetworkGuard:
             )
 
         with patch("socket.socket", side_effect=block_socket):
-            guard = cls()
+            guard = cls()  # codeql[py/call-to-non-callable] — constructor call, not __call__
             yield guard
 
         cls._active = False
@@ -76,7 +76,7 @@ class NetworkGuard:
         """
         was_active = cls._active
         cls._active = False
-        guard = cls()
+        guard = cls()  # codeql[py/call-to-non-callable] — constructor call, not __call__
         yield guard
         cls._active = was_active
 

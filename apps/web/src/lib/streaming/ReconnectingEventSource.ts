@@ -81,9 +81,9 @@ export class ReconnectingEventSource {
     }
 
     const baseDelay =
-      this.options.initialDelay *
-      Math.pow(this.options.backoffMultiplier, this.retryCount);
+      this.options.initialDelay * Math.pow(this.options.backoffMultiplier, this.retryCount);
     const cappedDelay = Math.min(baseDelay, this.options.maxDelay);
+    // nosemgrep: weak-random.random — retry jitter, not security-sensitive
     const jitter = cappedDelay * this.options.jitterFactor * Math.random();
 
     return Math.floor(cappedDelay + jitter);
@@ -174,10 +174,7 @@ export class ReconnectingEventSource {
   /**
    * Remove an event handler.
    */
-  removeEventListener(
-    type: ReconnectingEventSourceEventType,
-    handler: EventHandler
-  ): this {
+  removeEventListener(type: ReconnectingEventSourceEventType, handler: EventHandler): this {
     const handlers = this.eventHandlers.get(type);
     if (handlers) {
       handlers.delete(handler);

@@ -35,18 +35,17 @@ repos:
         args: [--baseline, .secrets.baseline]
 
   # Semgrep - SAST (Static Application Security Testing)
-  # NOTE: Disabled on Windows due to Python module path issues.
-  # To enable: Use Docker (via dev container) or install with: pip install semgrep
-  # For CI/CD (GitHub Actions), Semgrep runs fine in the Linux environment.
-  # - repo: local
-  #   hooks:
-  #     - id: semgrep
-  #       name: semgrep (SAST)
-  #       entry: semgrep
-  #       args: [--config, auto, --config, semgrep.yml, --error, --severity, ERROR]
-  #       language: system
-  #       types: [python]
-  #       pass_filenames: true
+  # NOTE: Runs only on pre-push to avoid slowing down frequent commits.
+  # Requires: pip install semgrep (Linux/macOS) or Docker (Windows)
+  - repo: local
+    hooks:
+      - id: semgrep-sast
+        name: semgrep SAST (error-only)
+        entry: semgrep --config semgrep.yml --error --severity ERROR --quiet
+        language: system
+        files: \.(py|js|ts|tsx|jsx)$
+        pass_filenames: true
+        stages: [pre-push]
 
   # Lint-staged - Run linting on staged frontend files only
   # Requires package.json with lint-staged configuration

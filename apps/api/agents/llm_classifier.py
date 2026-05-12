@@ -41,7 +41,7 @@ Respond with a JSON object containing:
 - "reasoning": a brief explanation of the classification
 
 Example response:
-{"intent": "property_search", "confidence": 0.95, "complexity": "simple", "reasoning": "User is asking to show apartments, which is a direct property search request"}
+{{"intent": "property_search", "confidence": 0.95, "complexity": "simple", "reasoning": "User is asking to show apartments, which is a direct property search request"}}
 
 Respond with ONLY the JSON object, no additional text."""
 

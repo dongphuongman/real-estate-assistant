@@ -408,11 +408,15 @@ class NotificationPreferencesManager:
         enabled_users = sum(1 for p in self._preferences_cache.values() if p.enabled)
 
         frequency_counts = {}
-        for freq in AlertFrequency:
+        for (
+            freq
+        ) in AlertFrequency:  # codeql[py/non-iterable-in-for-loop] — Enum classes are iterable
             frequency_counts[freq.value] = len(self.get_users_by_frequency(freq))
 
         alert_type_counts = {}
-        for alert_type in AlertType:
+        for (
+            alert_type
+        ) in AlertType:  # codeql[py/non-iterable-in-for-loop] — Enum classes are iterable
             alert_type_counts[alert_type.value] = len(self.get_users_with_alert_enabled(alert_type))
 
         return {

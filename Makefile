@@ -85,6 +85,10 @@ security:
 security-quick:
 	$(PYTHON) $(SCRIPTS_DIR)/security/local_scan.py --quick
 
+## security-pre-push: Quick security check for pre-push (semgrep errors only)
+security-pre-push:
+	$(PYTHON) $(SCRIPTS_DIR)/security/local_scan.py --scan-only=semgrep --quick
+
 ## ============================================================================
 ## TESTING
 ## ============================================================================

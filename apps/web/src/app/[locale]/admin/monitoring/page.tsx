@@ -161,9 +161,10 @@ export default function MonitoringPage() {
   useEffect(() => {
     const now = Date.now();
     const generateData = (baseValue: number, variance: number) => {
+      // nosemgrep: weak-random.random — mock dashboard data, not security-sensitive
       return Array.from({ length: 20 }, (_, i) => ({
         timestamp: new Date(now - (19 - i) * 60000).toISOString(),
-        value: Math.round(baseValue + (Math.random() - 0.5) * variance),
+        value: Math.round(baseValue + (Math.random() - 0.5) * variance), // nosemgrep: weak-random.random
       }));
     };
 

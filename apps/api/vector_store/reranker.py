@@ -363,7 +363,6 @@ class StrategicReranker(PropertyReranker):
                     except Exception as e:
                         # Log warning but continue
                         logger.warning(f"Failed to value property {metadata.get('id')}: {e}")
-                        pass
 
                 # Simple heuristic boosts if no model (or if model failed)
                 if metadata.get("price") and metadata.get("area_sqm"):
