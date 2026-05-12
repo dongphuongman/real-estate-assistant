@@ -21,6 +21,7 @@ permissions:
 env:
   RENDER_SERVICE_ID_API: ${{ secrets.RENDER_SERVICE_ID_API }}
   RENDER_SERVICE_ID_WEB: ${{ secrets.RENDER_SERVICE_ID_WEB }}
+  RENDER_BACKEND_URL: ${{ secrets.RENDER_BACKEND_URL }}
 
 jobs:
   validate:
@@ -73,7 +74,7 @@ jobs:
         run: |
           echo "Waiting for backend to become healthy..."
           for i in $(seq 1 30); do
-            if curl -sf "https://realestate-api.onrender.com/health" | jq -e '.status == "healthy"' >/dev/null 2>&1; then
+            if curl -sf "${RENDER_BACKEND_URL}/health" | jq -e '.status == "healthy"' >/dev/null 2>&1; then
               echo "Backend is healthy!"
               exit 0
             fi
@@ -139,7 +140,7 @@ jobs:
           echo "Running post-deployment smoke tests..."
 
           # Backend health
-          health=$(curl -sf "https://realestate-api.onrender.com/health" | jq -r '.status')
+          health=$(curl -sf "${RENDER_BACKEND_URL}/health" | jq -r '.status')
           if [ "$health" != "healthy" ]; then
             echo "ERROR: Backend status=$health"
             exit 1
@@ -149,7 +150,7 @@ jobs:
           # Backend API key auth
           status=$(curl -s -o /dev/null -w "%{http_code}" \
             -H "X-API-Key: ${{ secrets.API_ACCESS_KEY }}" \
-            "https://realestate-api.onrender.com/api/v1/properties?limit=1")
+            "${RENDER_BACKEND_URL}/api/v1/properties?limit=1")
           if [ "$status" != "200" ]; then
             echo "ERROR: API returned $status (expected 200)"
             exit 1

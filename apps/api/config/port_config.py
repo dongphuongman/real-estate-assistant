@@ -11,18 +11,20 @@ from pathlib import Path
 
 
 def _find_project_root() -> Path:
-    """Find project root by looking for docs/PORT_REGISTRY.json."""
+    """Find project root by looking for marker files."""
     current = Path(__file__).resolve()
 
-    # Walk up the directory tree
     for parent in current.parents:
         if (parent / "docs" / "PORT_REGISTRY.json").exists():
             return parent
         if (parent / "apps" / "api").exists() and (parent / "apps" / "web").exists():
             return parent
+        # Docker: WORKDIR=/app, apps/api contents copied directly
+        if (parent / "pyproject.toml").exists() and (parent / "config").is_dir():
+            return parent
 
-    # Fallback: assume we're in apps/api/config/
-    return Path(__file__).resolve().parents[3]
+    # Safe fallback: nearest existing parent
+    return current.parent.parent
 
 
 def _load_env_ports(project_root: Path) -> dict[str, str]:
