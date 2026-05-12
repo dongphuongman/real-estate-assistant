@@ -41,9 +41,10 @@ function beforeSend(event: Sentry.Event, _hint: Sentry.EventHint) {
 
   // Redact PII from request body
   if (request?.data && typeof request.data === 'object') {
-    Object.keys(request.data).forEach((key) => {
+    const data = request.data as Record<string, unknown>;
+    Object.keys(data).forEach((key) => {
       if (PII_FIELDS.has(key.toLowerCase())) {
-        request.data[key] = '[Redacted]';
+        data[key] = '[Redacted]';
       }
     });
   }
