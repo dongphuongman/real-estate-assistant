@@ -35,6 +35,7 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
   // Unwrap params Promise using React.use()
   const resolvedParams = use(params);
   const agentId = resolvedParams.id;
+  const locale = resolvedParams.locale;
 
   const [agent, setAgent] = useState<AgentProfile | null>(null);
   const [listings, setListings] = useState<AgentListing[]>([]);
