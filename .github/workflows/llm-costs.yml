@@ -3,6 +3,13 @@ name: LLM Cost Analysis
 on:
   pull_request:
     branches: [main, dev]
+    paths-ignore:
+      - '**.md'
+      - 'apps/api/requirements.txt'
+      - 'apps/web/package-lock.json'
+      - 'apps/web/package.json'
+      - '.github/dependabot.yml'
+      - '.github/workflows/dependabot-*'
 
 permissions:
   contents: read
