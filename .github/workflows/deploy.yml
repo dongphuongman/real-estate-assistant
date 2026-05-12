@@ -31,22 +31,23 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Verify CI passed on main
+      - name: Verify CI passed on target branch
         uses: actions/github-script@v9
         with:
           script: |
+            const branch = context.ref.replace('refs/heads/', '');
             const runs = await github.rest.actions.listWorkflowRuns({
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'ci.yml',
-              branch: 'main',
+              branch: branch,
               status: 'completed',
               per_page: 1
             });
             if (!runs.data.workflow_runs.length || runs.data.workflow_runs[0].conclusion !== 'success') {
-              core.setFailed('Last CI run on main did not succeed. Deploy blocked.');
+              core.setFailed(`Last CI run on ${branch} did not succeed. Deploy blocked.`);
             } else {
-              core.info('CI passed. Proceeding with deployment.');
+              core.info(`CI passed on ${branch}. Proceeding with deployment.`);
             }
 
   validate:
