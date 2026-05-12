@@ -383,21 +383,25 @@ class TestGetCostEstimate:
 
     def test_returns_cost_estimate_for_known_model(self, service):
         """Test getting cost estimate for a known model."""
-        estimate = service.get_cost_estimate("openai", "gpt-4o-mini", 1000)
+        estimate = service.get_cost_estimate(
+            "openrouter", "nvidia/nemotron-3-super-120b-a12b:free", 1000
+        )
 
-        assert estimate.provider == "openai"
-        assert estimate.model_name == "gpt-4o-mini"
-        assert estimate.input_cost_per_1m == 0.15
-        assert estimate.output_cost_per_1m == 0.60
+        assert estimate.provider == "openrouter"
+        assert estimate.model_name == "nvidia/nemotron-3-super-120b-a12b:free"
+        assert estimate.input_cost_per_1m == 0.0
+        assert estimate.output_cost_per_1m == 0.0
         assert estimate.estimated_tokens_per_request == 1000
 
     def test_calculates_estimated_cost(self, service):
         """Test that cost estimate includes calculated cost."""
-        estimate = service.get_cost_estimate("openai", "gpt-4o-mini", 1000)
+        estimate = service.get_cost_estimate(
+            "openrouter", "nvidia/nemotron-3-super-120b-a12b:free", 1000
+        )
 
-        # Cost calculation: (0.15/1M * 800) + (0.60/1M * 200) = 0.00012 + 0.00012 = 0.00024
+        # Free model: cost is 0.0
         assert estimate.estimated_cost_per_request is not None
-        assert estimate.estimated_cost_per_request > 0
+        assert estimate.estimated_cost_per_request == 0.0
 
     def test_returns_estimate_for_unknown_model(self, service):
         """Test getting cost estimate for an unknown model."""

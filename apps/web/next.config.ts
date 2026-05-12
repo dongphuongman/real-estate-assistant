@@ -132,8 +132,6 @@ const nextConfig: NextConfig = {
 export default withSentryConfig(withPWA(withNextIntl(nextConfig)), {
   // Silence the hidden source-map warnings
   silent: true,
-  // Hide all source maps from Sentry client
-  hideSourceMaps: true,
   // Organization and project settings
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
