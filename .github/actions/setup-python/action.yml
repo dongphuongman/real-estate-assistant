@@ -1,0 +1,44 @@
+name: 'Setup Python Environment'
+description: 'Install uv, Python 3.12, cache deps, and install project requirements'
+
+inputs:
+  working-directory:
+    description: 'Working directory for install commands'
+    default: 'apps/api'
+  install-extras:
+    description: 'Extra pip packages to install (space-separated)'
+    default: ''
+  requirements-file:
+    description: 'Requirements file path relative to working directory'
+    default: 'requirements.txt'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        version: 'latest'
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.12'
+
+    - name: Cache uv
+      uses: actions/cache@v5
+      with:
+        path: ~/.local/share/uv
+        key: ${{ runner.os }}-uv-${{ hashFiles('apps/api/requirements.txt', 'apps/api/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-uv-
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        uv pip install --system -r ${{ inputs.requirements-file }}
+        uv pip install --system -e .
+        if [ -n "${{ inputs.install-extras }}" ]; then
+          uv pip install --system ${{ inputs.install-extras }}
+        fi

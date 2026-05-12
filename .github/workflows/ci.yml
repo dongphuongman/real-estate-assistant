@@ -31,11 +31,21 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Condition: only run on NestLab-Tech repo (skip forks)
+# Condition: skip Stage 4 on Dependabot PRs (dependency-only changes)
+# Condition: Stage 4 on dev/main/ver4 pushes or manual dispatch
+env:
+  STAGE4_CONDITION: >-
+    github.repository_owner == 'NestLab-Tech' &&
+    github.actor != 'dependabot[bot]' &&
+    (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true'))
+
 jobs:
   # ===== STAGE 1: Quick Checks =====
 
   gitleaks:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'NestLab-Tech'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -49,6 +59,7 @@ jobs:
 
   secret-validation:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'NestLab-Tech'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -90,28 +101,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v7
+      - name: Setup Python
+        uses: ./.github/actions/setup-python
         with:
-          version: 'latest'
-
-      - name: Cache uv
-        uses: actions/cache@v5
-        with:
-          path: ~/.local/share/uv
-          key: ${{ runner.os }}-uv-${{ hashFiles('apps/api/requirements.txt', 'apps/api/pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-uv-
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        run: |
-          uv pip install --system -r requirements.txt
-          uv pip install --system pytest ruff
+          working-directory: apps/api
+          install-extras: 'pytest ruff'
 
       - name: Lint (ruff)
         run: |
@@ -142,29 +136,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v7
+      - name: Setup Python
+        uses: ./.github/actions/setup-python
         with:
-          version: 'latest'
-
-      - name: Cache uv
-        uses: actions/cache@v5
-        with:
-          path: ~/.local/share/uv
-          key: ${{ runner.os }}-uv-${{ hashFiles('apps/api/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-uv-
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        run: |
-          uv pip install --system -r requirements.txt
-          uv pip install --system pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout ruff httpx types-requests
-          uv pip install --system -e .
+          working-directory: apps/api
+          install-extras: 'pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout ruff httpx types-requests'
 
       - name: Run ${{ matrix.test-suite.name }} tests
         run: |
@@ -201,18 +177,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Cache npm
-        uses: actions/cache@v5
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('apps/web/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -227,17 +197,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v7
-
       - name: Install security tools
-        run: |
-          uv pip install --system bandit
+        uses: ./.github/actions/setup-python
+        with:
+          working-directory: apps/api
+          install-extras: 'bandit'
 
       - name: Run Bandit (exclude tests, fail on high severity)
         continue-on-error: true
@@ -264,18 +228,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Cache npm
-        uses: actions/cache@v5
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('apps/web/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -308,20 +266,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v7
+      - name: Setup Python
+        uses: ./.github/actions/setup-python
         with:
-          version: 'latest'
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        run: |
-          uv pip install --system -r requirements.txt
-          uv pip install --system -e .
+          working-directory: apps/api
 
       - name: Generate OpenAPI documentation (Task #54)
         run: |
@@ -358,17 +306,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v7
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-
       - name: Install pip-audit
-        run: |
-          uv pip install --system pip-audit
+        uses: ./.github/actions/setup-python
+        with:
+          working-directory: apps/api
+          install-extras: 'pip-audit'
 
       - name: Run pip-audit (fail on vulnerabilities)
         continue-on-error: true
@@ -383,11 +325,11 @@ jobs:
           name: pip-audit-report
           path: artifacts/pip-audit.json
 
-  # ===== STAGE 4: Deep Analysis (main/ver4 or manual) =====
+  # ===== STAGE 4: Deep Analysis (main/dev/ver4 or manual, skip Dependabot) =====
 
   codeql-python:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
+    if: ${{ github.repository_owner == 'NestLab-Tech' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [security-deps]
     timeout-minutes: 30
     permissions:
@@ -432,7 +374,7 @@ jobs:
 
   codeql-javascript:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
+    if: ${{ github.repository_owner == 'NestLab-Tech' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [security-deps]
     timeout-minutes: 30
     permissions:
@@ -477,7 +419,7 @@ jobs:
 
   container-scan:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
+    if: ${{ github.repository_owner == 'NestLab-Tech' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [frontend-build]
     steps:
       - name: Checkout
@@ -513,7 +455,7 @@ jobs:
 
   lighthouse:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
+    if: ${{ github.repository_owner == 'NestLab-Tech' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [frontend-tests]
     timeout-minutes: 15
     defaults:
@@ -523,18 +465,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Cache npm
-        uses: actions/cache@v5
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('apps/web/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -570,7 +506,7 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')
+    if: ${{ github.repository_owner == 'NestLab-Tech' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [frontend-build]
     timeout-minutes: 20
     continue-on-error: true
@@ -578,18 +514,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Cache npm
-        uses: actions/cache@v5
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Set up Node
+      - name: Set up Node (root)
         uses: actions/setup-node@v6
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
 
       - name: Install root dependencies
         run: npm ci
