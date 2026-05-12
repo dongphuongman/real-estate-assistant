@@ -12,15 +12,17 @@ services:
       - key: ENVIRONMENT
         value: production
       - key: DEFAULT_PROVIDER
-        value: openrouter
+        value: zai
       - key: DEFAULT_MODEL
-        value: nvidia/nemotron-3-super-120b-a12b:free
+        value: glm-4.7-flash
       # LLM Provider Keys
-      - key: OPENROUTER_API_KEY
+      - key: ZHIPUAI_API_KEY
+        sync: false
+      - key: DEEPSEEK_API_KEY
         sync: false
       - key: GOOGLE_API_KEY
         sync: false
-      - key: ZAI_API_KEY
+      - key: OPENROUTER_API_KEY
         sync: false
       - key: API_ACCESS_KEY
         sync: false

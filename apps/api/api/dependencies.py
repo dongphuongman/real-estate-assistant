@@ -175,7 +175,7 @@ def _set_provider_api_key(provider: str, api_key: str) -> Optional[str]:
         "google": "GOOGLE_API_KEY",
         "grok": "XAI_API_KEY",
         "deepseek": "DEEPSEEK_API_KEY",
-        "zai": "ZAI_API_KEY",
+        "zai": "ZHIPUAI_API_KEY",
         "moonshot": "MOONSHOT_API_KEY",
     }
 
@@ -202,7 +202,7 @@ def _restore_provider_api_key(provider: str, old_key: Optional[str]) -> None:
         "google": "GOOGLE_API_KEY",
         "grok": "XAI_API_KEY",
         "deepseek": "DEEPSEEK_API_KEY",
-        "zai": "ZAI_API_KEY",
+        "zai": "ZHIPUAI_API_KEY",
         "moonshot": "MOONSHOT_API_KEY",
     }
 

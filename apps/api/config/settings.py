@@ -55,9 +55,9 @@ class AppSettings(BaseModel):
         default_factory=lambda: os.getenv("OPENROUTER_API_KEY"),
         description="OpenRouter API key - unified access to 400+ models including free ones",
     )
-    zai_api_key: Optional[str] = Field(
-        default_factory=lambda: os.getenv("ZAI_API_KEY"),
-        description="ZAI (Zhipu AI) API key - Chinese LLM provider with free tier",
+    zhipuai_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("ZHIPUAI_API_KEY") or os.getenv("ZAI_API_KEY"),
+        description="Zhipu AI API key - Chinese LLM provider with free tier (glm-4.7-flash)",
     )
     moonshot_api_key: Optional[str] = Field(
         default_factory=lambda: os.getenv("MOONSHOT_API_KEY"),
@@ -734,7 +734,7 @@ class AppSettings(BaseModel):
             "google": "GOOGLE_API_KEYS",
             "grok": "XAI_API_KEYS",
             "deepseek": "DEEPSEEK_API_KEYS",
-            "zai": "ZAI_API_KEYS",
+            "zai": "ZHIPUAI_API_KEYS",
             "moonshot": "MOONSHOT_API_KEYS",
         }
 
@@ -755,7 +755,7 @@ class AppSettings(BaseModel):
                 "grok": self.grok_api_key,
                 "deepseek": self.deepseek_api_key,
                 "openrouter": self.openrouter_api_key,
-                "zai": self.zai_api_key,
+                "zai": self.zhipuai_api_key,
                 "moonshot": self.moonshot_api_key,
             }
             for provider, key in single_key_mapping.items():
@@ -915,8 +915,8 @@ def update_api_key(provider: str, api_key: str) -> None:
         settings.deepseek_api_key = api_key
         os.environ["DEEPSEEK_API_KEY"] = api_key
     elif provider == "zai":
-        settings.zai_api_key = api_key
-        os.environ["ZAI_API_KEY"] = api_key
+        settings.zhipuai_api_key = api_key
+        os.environ["ZHIPUAI_API_KEY"] = api_key
     elif provider == "moonshot":
         settings.moonshot_api_key = api_key
         os.environ["MOONSHOT_API_KEY"] = api_key

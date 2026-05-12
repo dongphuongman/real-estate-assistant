@@ -111,7 +111,7 @@ class ModelProviderFactory:
             elif provider_name == "openrouter":
                 config["api_key"] = settings.openrouter_api_key
             elif provider_name == "zai":
-                config["api_key"] = settings.zai_api_key
+                config["api_key"] = settings.zhipuai_api_key
             elif provider_name == "moonshot":
                 config["api_key"] = settings.moonshot_api_key
 

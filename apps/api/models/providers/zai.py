@@ -37,7 +37,7 @@ class ZaiProvider(RemoteModelProvider):
         super().__init__(config)
         # Get API key from config, environment, or None
         if "api_key" not in self.config:
-            self.config["api_key"] = os.getenv("ZAI_API_KEY")
+            self.config["api_key"] = os.getenv("ZHIPUAI_API_KEY") or os.getenv("ZAI_API_KEY")
 
         # Set base URL for ZAI API
         if "base_url" not in self.config:
@@ -193,7 +193,7 @@ class ZaiProvider(RemoteModelProvider):
         api_key = self.get_api_key()
         if not api_key:
             raise RuntimeError(
-                "ZAI API key required. Set ZAI_API_KEY environment variable or provide in config."
+                "Zhipu AI API key required. Set ZHIPUAI_API_KEY environment variable or provide in config."
             )
 
         # Get timeout from config or use default from settings
