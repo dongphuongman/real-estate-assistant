@@ -18,7 +18,6 @@ env:
 jobs:
   publish-backend:
     runs-on: ubuntu-latest
-    if: true
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -58,7 +57,6 @@ jobs:
 
   publish-frontend:
     runs-on: ubuntu-latest
-    if: true
     steps:
       - name: Checkout
         uses: actions/checkout@v6

@@ -13,7 +13,6 @@ jobs:
   collect:
     name: Collect weekly metrics
     runs-on: ubuntu-latest
-    if: true
 
     steps:
       - name: Checkout repository
@@ -39,11 +38,11 @@ jobs:
             echo "Latest snapshot: $LATEST"
           fi
 
-      - name: Commit metrics (DISABLED - causes conflicts)
-        if: false  # Disabled to prevent automatic commits causing merge conflicts
+      - name: Commit metrics to metrics-data branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B metrics-data
           git add docs/community/metrics/
-          git diff --cached --quiet || git commit -m "docs(metrics): weekly community metrics snapshot"
-          git push
+          git diff --cached --quiet || git commit -m "docs(metrics): weekly snapshot $(date +%Y-%m-%d)"
+          git push origin metrics-data --force

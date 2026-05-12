@@ -16,4 +16,4 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           merge-method: squash
           approve: true
-          skip-verification: true
+          target: minor
