@@ -106,7 +106,12 @@ class RefreshTokenRepository:
 
     @staticmethod
     def _hash_token(token: str) -> str:
-        """Hash a token for storage."""
+        """Hash a token for storage.
+
+        Uses SHA-256 which is appropriate for high-entropy tokens
+        (not user-chosen secrets that need slow hashing like bcrypt).
+        """
+        # nosemgrep: py/weak-sensitive-data-hashing - token is high-entropy random, SHA-256 is appropriate
         return hashlib.sha256(token.encode()).hexdigest()
 
     async def create(
@@ -231,7 +236,12 @@ class PasswordResetTokenRepository:
 
     @staticmethod
     def _hash_token(token: str) -> str:
-        """Hash a token for storage."""
+        """Hash a token for storage.
+
+        Uses SHA-256 which is appropriate for high-entropy reset tokens
+        (not user-chosen secrets that need slow hashing like bcrypt).
+        """
+        # nosemgrep: py/weak-sensitive-data-hashing - token is high-entropy random, SHA-256 is appropriate
         return hashlib.sha256(token.encode()).hexdigest()
 
     async def create(self, user_id: str, token: str, expires_hours: int = 1) -> PasswordResetToken:
@@ -285,7 +295,12 @@ class EmailVerificationTokenRepository:
 
     @staticmethod
     def _hash_token(token: str) -> str:
-        """Hash a token for storage."""
+        """Hash a token for storage.
+
+        Uses SHA-256 which is appropriate for high-entropy tokens
+        (not user-chosen secrets that need slow hashing like bcrypt).
+        """
+        # nosemgrep: py/weak-sensitive-data-hashing - token is high-entropy random, SHA-256 is appropriate
         return hashlib.sha256(token.encode()).hexdigest()
 
     async def create(

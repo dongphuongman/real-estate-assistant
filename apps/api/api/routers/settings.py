@@ -19,6 +19,7 @@ from api.models import (
 from db.database import get_db_context
 from db.repositories import NotificationPreferenceRepository, UserRepository
 from models.provider_factory import ModelProviderFactory
+from utils.sanitization import sanitize_for_logging
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +74,7 @@ async def get_notification_settings(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching settings: {e}")
+        logger.error(f"Error fetching settings: {sanitize_for_logging(e)}")
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
@@ -124,7 +125,7 @@ async def update_notification_settings(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error updating settings: {e}")
+        logger.error(f"Error updating settings: {sanitize_for_logging(e)}")
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
@@ -165,7 +166,7 @@ async def send_notification_preview(
             # Simulate sending notification (in real implementation, would trigger actual notification)
             # For now, just log and return success
             logger.info(
-                f"Preview notification: channel={request.channel}, type={request.notification_type}, user={user.email}"
+                f"Preview notification: channel={request.channel}, type={request.notification_type}, user={sanitize_for_logging(user.email)}"
             )
 
             return NotificationPreviewResponse(
@@ -177,7 +178,7 @@ async def send_notification_preview(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error sending preview notification: {e}")
+        logger.error(f"Error sending preview notification: {sanitize_for_logging(e)}")
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
@@ -216,7 +217,7 @@ async def unsubscribe_by_token(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error processing unsubscribe: {e}")
+        logger.error(f"Error processing unsubscribe: {sanitize_for_logging(e)}")
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
@@ -276,7 +277,7 @@ async def list_model_catalog():
             )
         return providers
     except Exception as e:
-        logger.error(f"Error listing model catalog: {e}")
+        logger.error(f"Error listing model catalog: {sanitize_for_logging(e)}")
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
@@ -312,7 +313,7 @@ async def test_runtime(provider: str = Query(...)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error testing runtime: {e}")
+        logger.error(f"Error testing runtime: {sanitize_for_logging(e)}")
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
@@ -333,7 +334,7 @@ async def get_model_preferences(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
-        logger.error(f"Error fetching model preferences: {e}")
+        logger.error(f"Error fetching model preferences: {sanitize_for_logging(e)}")
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
@@ -403,5 +404,5 @@ async def update_model_preferences(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
-        logger.error(f"Error updating model preferences: {e}")
+        logger.error(f"Error updating model preferences: {sanitize_for_logging(e)}")
         raise HTTPException(status_code=500, detail=str(e)) from e

@@ -268,6 +268,26 @@ def truncate_for_logging(value: str, max_length: int = 200) -> str:
     return value[: max_length - 3] + "..."
 
 
+def sanitize_for_logging(value: Any, max_length: int = 500) -> str:
+    """
+    Sanitize a value for safe logging by stripping injection characters.
+
+    Prevents log injection by removing newline, carriage return, and other
+    control characters that could be used to forge log entries.
+
+    Args:
+        value: Any value to sanitize (converted to string)
+        max_length: Maximum output length
+
+    Returns:
+        Sanitized string safe for logger calls
+    """
+    text = str(value)
+    text = text.translate(CONTROL_CHARS_FILTER)
+    text = text.replace("\n", " ").replace("\r", " ")
+    return truncate_for_logging(text, max_length=max_length)
+
+
 # Patterns for detecting sensitive data that should not be exposed
 # IMPORTANT: Order matters - more specific patterns must come first
 SENSITIVE_PATTERNS = [

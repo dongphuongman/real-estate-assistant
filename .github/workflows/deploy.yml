@@ -2,15 +2,16 @@ name: Deploy to Production
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   workflow_dispatch:
     inputs:
       environment:
         description: "Target environment"
-        required: true
-        default: production
+        required: false
+        default: ""
         type: choice
         options:
+          - ""
           - production
           - staging
 
@@ -26,7 +27,7 @@ env:
 jobs:
   ci-check:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
     steps:
       - uses: actions/checkout@v6
 
@@ -59,8 +60,8 @@ jobs:
       - name: Validate deployment configs
         run: |
           echo "Validating deployment configurations..."
-          # Check required files exist
-          for f in render.yaml vercel.json deploy/docker/Dockerfile.backend deploy/docker/Dockerfile.frontend deploy/compose/docker-compose.yml; do
+          # Check required files exist (Dockerfiles always needed)
+          for f in deploy/docker/Dockerfile.backend deploy/docker/Dockerfile.frontend deploy/compose/docker-compose.yml; do
             if [ ! -f "$f" ]; then
               echo "ERROR: Missing $f"
               exit 1
@@ -68,12 +69,19 @@ jobs:
             echo "  ✓ $f"
           done
 
-          # Check render.yaml has no placeholder secrets
-          if grep -q "REPLACE_WITH" render.yaml; then
-            echo "ERROR: render.yaml contains placeholder values"
-            exit 1
+          # Check render.yaml and vercel.json only on main/dev
+          if [ "${{ github.ref }}" = "refs/heads/main" ] || [ "${{ github.ref }}" = "refs/heads/dev" ]; then
+            for f in render.yaml vercel.json; do
+              if [ ! -f "$f" ]; then
+                echo "WARNING: Missing $f (needed for Render/Vercel deploy)"
+              fi
+            done
+            if [ -f render.yaml ] && grep -q "REPLACE_WITH" render.yaml; then
+              echo "ERROR: render.yaml contains placeholder values"
+              exit 1
+            fi
+            echo "  ✓ Deploy configs validated"
           fi
-          echo "  ✓ render.yaml - no placeholders"
 
           # Check Dockerfiles build successfully (dry-run)
           docker build --check -f deploy/docker/Dockerfile.backend . 2>/dev/null || \
@@ -83,12 +91,14 @@ jobs:
   deploy-backend:
     needs: validate
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || 'production' }}
+    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}
     steps:
       - name: Select Render service
         id: service
         run: |
-          if [ "${{ github.event.inputs.environment }}" = "staging" ]; then
+          DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
+          echo "Deploy environment: $DEPLOY_ENV"
+          if [ "$DEPLOY_ENV" = "staging" ]; then
             echo "id=${{ secrets.RENDER_SERVICE_ID_API_STAGING }}" >> $GITHUB_OUTPUT
             echo "url=${{ secrets.RENDER_BACKEND_URL_STAGING }}" >> $GITHUB_OUTPUT
           else
@@ -137,7 +147,7 @@ jobs:
   deploy-frontend:
     needs: validate
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || 'production' }}
+    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}
     outputs:
       deploy-url: ${{ steps.deploy.outputs.url }}
     steps:
@@ -155,17 +165,32 @@ jobs:
         run: npm i -g vercel@latest
 
       - name: Pull Vercel environment
-        run: vercel pull --yes --environment=${{ github.event.inputs.environment || 'production' }} --token=${{ secrets.VERCEL_TOKEN }}
+        run: |
+          DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
+          VERCEL_ENV="${DEPLOY_ENV}"
+          if [ "$VERCEL_ENV" = "staging" ]; then VERCEL_ENV="preview"; fi
+          vercel pull --yes --environment=${VERCEL_ENV} --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: apps/web
 
       - name: Build
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        run: |
+          DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
+          if [ "$DEPLOY_ENV" = "production" ]; then
+            vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          else
+            vercel build --token=${{ secrets.VERCEL_TOKEN }}
+          fi
         working-directory: apps/web
 
       - name: Deploy to Vercel
         id: deploy
         run: |
-          url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tail -1)
+          DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
+          if [ "$DEPLOY_ENV" = "production" ]; then
+            url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tail -1)
+          else
+            url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tail -1)
+          fi
           echo "url=$url" >> $GITHUB_OUTPUT
           echo "Deployed to: $url"
         working-directory: apps/web
@@ -194,7 +219,8 @@ jobs:
           echo "Running post-deployment smoke tests..."
 
           # Determine backend URL
-          if [ "${{ github.event.inputs.environment }}" = "staging" ]; then
+          DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
+          if [ "$DEPLOY_ENV" = "staging" ]; then
             BACKEND_URL="${{ secrets.RENDER_BACKEND_URL_STAGING }}"
           else
             BACKEND_URL="${{ secrets.RENDER_BACKEND_URL }}"

@@ -5,13 +5,19 @@ This adapter fetches Air Quality Index (AQI) data for property scoring,
 including PM2.5, PM10, and overall air quality metrics.
 """
 
+import ipaddress
 import logging
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
+from urllib.parse import urlparse
 
 import requests
 
+from utils.sanitization import sanitize_for_logging
+
 logger = logging.getLogger(__name__)
+
+ALLOWED_API_DOMAINS = {"api.waqi.info"}
 
 
 # City average AQI values for Poland (fallback data)
@@ -124,6 +130,22 @@ class AirQualityAdapter:
                 "WAQI_API_KEY not configured. Air quality data will use city fallback with reduced confidence."
             )
 
+    def _validate_url(self, url: str) -> None:
+        parsed = urlparse(url)
+        if parsed.scheme != "https":
+            raise ValueError(f"Rejected non-HTTPS URL: {parsed.scheme}")
+        if parsed.hostname not in ALLOWED_API_DOMAINS:
+            raise ValueError(f"Hostname not in allowlist: {parsed.hostname}")
+        import socket
+
+        try:
+            resolved = socket.getaddrinfo(parsed.hostname, None)[0][4][0]
+            addr = ipaddress.ip_address(resolved)
+            if addr.is_private or addr.is_loopback or addr.is_link_local or addr.is_reserved:
+                raise ValueError(f"Rejected private/internal IP: {resolved}")
+        except socket.gaierror:
+            pass
+
     def get_nearest_station(self, lat: float, lon: float) -> Optional[AirQualityStation]:
         """
         Find the nearest air quality monitoring station.
@@ -148,13 +170,16 @@ class AirQualityAdapter:
         params = {"token": self._api_key}
 
         try:
+            self._validate_url(url)
             response = requests.get(url, params=params, timeout=self._timeout)
             response.raise_for_status()
 
             data = response.json()
 
             if data.get("status") != "ok":
-                logger.warning(f"WAQI API returned status: {data.get('status')}")
+                logger.warning(
+                    f"WAQI API returned status: {sanitize_for_logging(data.get('status'))}"
+                )
                 return None
 
             station_data = data.get("data", {})
@@ -182,15 +207,17 @@ class AirQualityAdapter:
             )
 
             self._put_in_cache(cache_key, station)
-            logger.info(f"Found station '{name}' {distance_km:.2f}km away with AQI {aqi}")
+            logger.info(
+                f"Found station '{sanitize_for_logging(name)}' {distance_km:.2f}km away with AQI {aqi}"
+            )
 
             return station
 
         except requests.RequestException as e:
-            logger.error(f"WAQI API request failed: {e}")
+            logger.error(f"WAQI API request failed: {sanitize_for_logging(e)}")
             return None
         except (KeyError, ValueError, TypeError) as e:
-            logger.error(f"Failed to parse WAQI response: {e}")
+            logger.error(f"Failed to parse WAQI response: {sanitize_for_logging(e)}")
             return None
 
     def get_aqi_score(self, lat: float, lon: float, city: Optional[str] = None) -> AirQualityResult:
@@ -234,13 +261,16 @@ class AirQualityAdapter:
         params = {"token": self._api_key}
 
         try:
+            self._validate_url(url)
             response = requests.get(url, params=params, timeout=self._timeout)
             response.raise_for_status()
 
             data = response.json()
 
             if data.get("status") != "ok":
-                logger.warning(f"WAQI API returned status: {data.get('status')}")
+                logger.warning(
+                    f"WAQI API returned status: {sanitize_for_logging(data.get('status'))}"
+                )
                 return None
 
             station_data = data.get("data", {})
@@ -269,15 +299,17 @@ class AirQualityAdapter:
             )
 
             self._put_in_cache(cache_key, result)
-            logger.info(f"WAQI data for {station_name}: AQI={aqi}, PM2.5={pm25}, PM10={pm10}")
+            logger.info(
+                f"WAQI data for {sanitize_for_logging(station_name)}: AQI={aqi}, PM2.5={pm25}, PM10={pm10}"
+            )
 
             return result
 
         except requests.RequestException as e:
-            logger.error(f"WAQI API request failed: {e}")
+            logger.error(f"WAQI API request failed: {sanitize_for_logging(e)}")
             return None
         except (KeyError, ValueError, TypeError) as e:
-            logger.error(f"Failed to parse WAQI response: {e}")
+            logger.error(f"Failed to parse WAQI response: {sanitize_for_logging(e)}")
             return None
 
     def _get_fallback_result(self, city: Optional[str]) -> AirQualityResult:
@@ -310,13 +342,15 @@ class AirQualityAdapter:
             aqi = city_data["aqi"]
             pm25 = city_data["pm25"]
             pm10 = city_data["pm10"]
-            logger.info(f"Using city average for {city}: AQI={aqi}")
+            logger.info(f"Using city average for {sanitize_for_logging(city)}: AQI={aqi}")
         else:
             # Default to moderate air quality
             aqi = 50
             pm25 = 14.0
             pm10 = 22.0
-            logger.info(f"Using default air quality for unknown city '{city}': AQI={aqi}")
+            logger.info(
+                f"Using default air quality for unknown city '{sanitize_for_logging(city)}': AQI={aqi}"
+            )
 
         return AirQualityResult(
             score=self._calculate_aqi_score(aqi),

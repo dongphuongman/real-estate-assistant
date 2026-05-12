@@ -165,6 +165,7 @@ class CitationService:
         ]
 
         canonical = "|".join(hash_components).lower()
+        # nosemgrep: py/weak-sensitive-data-hashing - truncated hash for dedup ID, not security
         return hashlib.sha256(canonical.encode()).hexdigest()[:16]
 
     def deduplicate_citations(

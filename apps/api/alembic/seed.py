@@ -10,7 +10,6 @@ Usage:
     python -m alembic.seed --clear   # Clear existing data first
 """
 
-import hashlib
 import logging
 import uuid
 
@@ -556,8 +555,10 @@ SAMPLE_USERS: list[dict] = [
 
 
 def _hash_password(password: str) -> str:
-    """Hash a password using SHA-256 (placeholder - in production use bcrypt)."""
-    return hashlib.sha256(password.encode()).hexdigest()
+    """Hash a password using bcrypt (via core.password module)."""
+    from core.password import hash_password
+
+    return hash_password(password)
 
 
 def _build_pydantic_properties() -> list[Property]:

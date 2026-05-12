@@ -13,6 +13,8 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
+from utils.sanitization import sanitize_for_logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -160,10 +162,10 @@ class TransportAdapter:
             return stops
 
         except requests.RequestException as e:
-            logger.error(f"Overpass API request failed: {e}")
+            logger.error(f"Overpass API request failed: {sanitize_for_logging(e)}")
             return []
         except Exception as e:
-            logger.error(f"Failed to parse transport data: {e}")
+            logger.error(f"Failed to parse transport data: {sanitize_for_logging(e)}")
             return []
 
     def count_stops(

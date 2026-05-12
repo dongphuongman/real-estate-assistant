@@ -7,7 +7,7 @@ updates:
     schedule:
       interval: weekly
       day: monday
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
     labels:
       - dependencies
       - frontend
@@ -22,6 +22,9 @@ updates:
       minor-updates:
         patterns: ["*"]
         update-types: ["minor"]
+      security-patches:
+        patterns: ["*"]
+        update-types: ["patch"]
 
   # Backend (pip)
   - package-ecosystem: pip
@@ -29,7 +32,7 @@ updates:
     schedule:
       interval: weekly
       day: monday
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
     labels:
       - dependencies
       - backend
@@ -44,6 +47,9 @@ updates:
       minor-updates:
         patterns: ["*"]
         update-types: ["minor"]
+      security-patches:
+        patterns: ["*"]
+        update-types: ["patch"]
 
   # GitHub Actions
   - package-ecosystem: github-actions

@@ -209,6 +209,7 @@ class RBACChecker:
         # Hash the API key for logging
         import hashlib
 
+        # nosemgrep: py/weak-sensitive-data-hashing - truncated hash for logging ID, not security
         client_id = hashlib.sha256(api_key.encode("utf-8")).hexdigest()[:16]
 
         return UserContext(

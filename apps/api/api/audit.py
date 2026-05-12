@@ -200,9 +200,11 @@ class AuditLogger:
         Hash sensitive identifier for PII protection.
 
         Uses SHA-256 to create a consistent but irreversible hash.
+        Truncated to 16 hex chars for log readability (not used for security).
         """
         if not value:
             return None
+        # nosemgrep: py/weak-sensitive-data-hashing - truncated hash for PII-safe logging, not security
         return hashlib.sha256(value.encode("utf-8")).hexdigest()[:16]
 
     def log(self, event: AuditEvent) -> None:

@@ -9,6 +9,7 @@ import logging
 from typing import Any, Callable, Dict, List, Optional, Type
 
 from data.adapters.base import ExternalSourceAdapter
+from utils.sanitization import sanitize_for_logging
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +87,9 @@ class AdapterRegistry:
                 cls._instances[name] = instance
             return instance
         except Exception as e:
-            logger.error(f"Failed to instantiate adapter '{name}': {e}")
+            logger.error(
+                f"Failed to instantiate adapter '{sanitize_for_logging(name)}': {sanitize_for_logging(e)}"
+            )
             return None
 
     @classmethod

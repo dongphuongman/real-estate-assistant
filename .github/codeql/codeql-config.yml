@@ -1,0 +1,24 @@
+name: "Custom CodeQL Configuration"
+
+queries:
+  - uses: security-extended
+
+paths-ignore:
+  - '**/node_modules'
+  - '**/.next'
+  - '**/dist'
+  - '**/build'
+  - '**/coverage'
+  - '**/__pycache__'
+  - '**/venv'
+  - '**/.venv'
+  - '**/.venv_ci'
+  - '**/.history'
+  - '**/migrations'
+  - '**/tests/**'
+  - '**/*.test.js'
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  - '**/*.spec.js'
+  - '**/*.spec.ts'
+  - '**/*.spec.tsx'

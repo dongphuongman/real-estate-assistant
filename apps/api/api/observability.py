@@ -237,6 +237,7 @@ def client_id_from_api_key(api_key: str | None) -> str | None:
     if not api_key:
         return None
     digest = hashlib.sha256(api_key.encode("utf-8")).hexdigest()
+    # nosemgrep: py/weak-sensitive-data-hashing - truncated hash for rate-limit key, not security
     return digest[:12]
 
 

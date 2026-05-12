@@ -307,12 +307,14 @@ class ResponseCache:
             parts.append(body_hash)
 
         key_string = ":".join(parts)
+        # nosemgrep: py/weak-sensitive-data-hashing - truncated hash for cache key, not security
         return hashlib.sha256(key_string.encode()).hexdigest()[:32]
 
     def _hash_request_body(self, body: bytes | str) -> str:
         """Hash request body for cache key generation."""
         if isinstance(body, str):
             body = body.encode("utf-8")
+        # nosemgrep: py/weak-sensitive-data-hashing - truncated hash for cache key, not security
         return hashlib.sha256(body).hexdigest()[:16]
 
     @staticmethod
