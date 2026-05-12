@@ -140,7 +140,7 @@ export const MarketAnomalySchema = z.object({
   severity: z.enum(['low', 'medium', 'high']),
   description: z.string(),
   detected_at: z.string(),
-  data: z.record(z.any()).optional(),
+  data: z.record(z.string(), z.any()).optional(),
 });
 
 // =============================================================================
