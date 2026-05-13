@@ -100,7 +100,7 @@ The AI-powered chat interface allows you to search for properties using natural 
 
 Operator note:
 - Rotate/revoke API keys safely via `API_ACCESS_KEYS` (staged rotation). See `docs/SECURITY.md` for the runbook.
-- For Vercel deployments, the web app expects `NEXT_PUBLIC_API_URL=/api/v1` and proxies server-side to `BACKEND_API_URL` (set this in Vercel env; production requires it and rejects localhost).
+- For production deployments, the web app expects `NEXT_PUBLIC_API_URL=/api/v1` and proxies server-side to `BACKEND_API_URL` (set this in your hosting env; production requires it and rejects localhost).
 - CI runs security checks (Bandit + pip-audit). Local equivalents: `python -m bandit -r api agents ai analytics config data i18n models notifications rules scripts tools utils vector_store workflows -lll -iii` and `python -m pip_audit -r requirements.txt`.
 
 ### How to Use
@@ -190,7 +190,7 @@ For local development, all origins are allowed.
 For production, set:
 ```powershell
 $env:ENVIRONMENT="production"
-$env:CORS_ALLOW_ORIGINS="https://yourapp.com,https://studio.vercel.app"
+$env:CORS_ALLOW_ORIGINS="https://yourapp.com,https://your-app.onrender.com"
 ```
 
 **Production safety:** The backend validates that:

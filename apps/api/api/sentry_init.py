@@ -16,9 +16,12 @@ logger = logging.getLogger(__name__)
 def _get_git_sha() -> str:
     """Get the current git SHA for release tracking."""
     try:
+        import pathlib
+
+        repo_root = pathlib.Path(__file__).resolve().parent.parent.parent.parent
         return subprocess.check_output(
             ["git", "rev-parse", "HEAD"],
-            cwd="E:\\nestlab-repo\\nest-solo\\products\\large\\ai-real-estate-assistant",
+            cwd=str(repo_root),
             text=True,
             timeout=5,
         ).strip()

@@ -7,7 +7,7 @@ Features:
 - Check both registry AND actual system usage
 - Cross-platform support (Windows, macOS, Linux)
 - Service discovery integration
-- Parent NestSolo registry integration
+- Parent registry integration
 
 Usage:
     python port-manager.py --action allocate --category backend
@@ -102,7 +102,7 @@ class PortManager:
             json.dump(self.registry, f, indent=2)
 
     def _get_parent_registry_ports(self, category: str) -> set[int]:
-        """Get ports used in parent NestSolo registry."""
+        """Get ports used in parent registry."""
         used: set[int] = set()
         if self.parent_registry_path.exists():
             try:

@@ -162,7 +162,7 @@ class TestPortManagerSystemCheck:
 
 
 class TestPortManagerParentIntegration:
-    """Tests for parent NestSolo registry integration."""
+    """Tests for parent registry integration."""
 
     def test_get_parent_registry_ports_empty_when_no_parent(
         self, port_manager: PortManager

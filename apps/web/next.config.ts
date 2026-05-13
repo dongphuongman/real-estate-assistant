@@ -45,7 +45,7 @@ const nextConfig: NextConfig = {
           'connect-src': [
             "'self'",
             process.env.NEXT_PUBLIC_API_URL || "'self'",
-            'https://*.vercel.app',
+            'https://*.onrender.com',
             // Push notification services
             'https://fcm.googleapis.com',
             'https://updates.push.services.mozilla.com',

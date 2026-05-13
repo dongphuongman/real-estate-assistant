@@ -286,9 +286,9 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 **Important:** `NEXT_PUBLIC_*` variables are exposed to the browser. Never put secrets here.
 
-### Production Frontend (Vercel)
+### Production Frontend (Render)
 
-Set these in Vercel Dashboard:
+Set these in Render Dashboard:
 
 | Variable | Value | Environment |
 |----------|-------|-------------|

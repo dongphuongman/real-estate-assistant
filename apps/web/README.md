@@ -14,11 +14,13 @@ This is the Next.js frontend for the AI Real Estate Assistant (V4).
 ## Getting Started
 
 1.  **Install Dependencies**:
+
     ```bash
     npm install
     ```
 
 2.  **Run Development Server**:
+
     ```bash
     npm run dev
     ```
@@ -48,25 +50,16 @@ This is the Next.js frontend for the AI Real Estate Assistant (V4).
 
 ## Deployment
 
-### Vercel Deployment
+### Render Deployment
 
-The frontend is deployed to Vercel following industry-standard monorepo practices.
-
-**Configuration (Vercel Dashboard):**
-
-| Setting | Value |
-|---------|-------|
-| **Root Directory** | `frontend` |
-| **Framework** | Next.js (auto-detected) |
-| **Build Command** | `npm run build` |
-| **Output Directory** | `.next` |
+The frontend is deployed to Render using Docker. See [Deployment Guide](../../docs/deployment/DEPLOYMENT.md) for full setup.
 
 **Environment Variables (Server-Side Only):**
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `BACKEND_API_URL` | Deployed backend URL | `https://api.example.com/api/v1` |
-| `API_ACCESS_KEY` | Backend authentication | Your generated key |
+| Variable          | Description            | Example                          |
+| ----------------- | ---------------------- | -------------------------------- |
+| `BACKEND_API_URL` | Deployed backend URL   | `https://api.example.com/api/v1` |
+| `API_ACCESS_KEY`  | Backend authentication | Your generated key               |
 
 **Key Security Design:**
 
@@ -77,6 +70,7 @@ The frontend is deployed to Vercel following industry-standard monorepo practice
 **For complete deployment guide**, see [DEPLOYMENT.md](../DEPLOYMENT.md).
 
 ## Security Notes
+
 - Do not expose secrets in the client. Use server-side env vars and the Next.js `/api/v1/*` proxy to inject `X-API-Key`.
 - In production, authenticate requests server-side; let the backend enforce rate limits and CORS.
 - `NEXT_PUBLIC_*` variables are exposed to the browser - never put secrets there.

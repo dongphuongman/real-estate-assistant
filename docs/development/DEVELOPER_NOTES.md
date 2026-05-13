@@ -31,7 +31,7 @@ in V4.
   - Example:
     ```powershell
     $env:ENVIRONMENT="production"
-    $env:CORS_ALLOW_ORIGINS="https://yourapp.com,https://studio.vercel.app"
+    $env:CORS_ALLOW_ORIGINS="https://yourapp.com,https://your-app.onrender.com"
     ```
 
 ## Configuration

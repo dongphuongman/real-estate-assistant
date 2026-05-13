@@ -36,7 +36,7 @@ $RepoRoot = Find-RepoRoot
 $NestdevPath = Join-Path $RepoRoot "scripts/nestdev/nestdev.mjs"
 
 if (-not $RepoRoot -or -not (Test-Path $NestdevPath)) {
-    Write-Error "❌ Cannot find nestdev — ensure this project is inside the NestSolo meta-repo"
+    Write-Error "Cannot find nestdev — ensure the project has the required dev scripts"
     exit 1
 }
 

@@ -218,7 +218,7 @@ Error adding batch: Expected metadata value of type 'string', 'number', 'boolean
 
 ### Build Fails
 
-**Symptom:** Vercel or local build fails.
+**Symptom:** Build fails locally or in CI.
 
 **Solution:**
 ```bash

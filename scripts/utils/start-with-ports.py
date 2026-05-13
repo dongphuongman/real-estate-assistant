@@ -17,7 +17,7 @@ Features:
     - Auto-detect available ports in configured ranges
     - Cross-platform support (windows, macOS, linux)
     - Service discovery between frontend and backend
-    - Integration with parent NestSolo port registry
+    - Integration with parent port registry
 """
 
 import argparse

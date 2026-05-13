@@ -249,20 +249,6 @@ pytest tests/integration/ --target=green
 # 6. Rollback if needed or keep green as new blue
 ```
 
-### Nginx Configuration
-
-```nginx
-upstream backend {
-    least_conn;
-    server blue:8000 weight 100;
-    server green:8000 weight 0;
-}
-
-# To switch: update weights
-# blue:8000 weight 0;
-# green:8000 weight 100;
-```
-
 ---
 
 ## 7. Monitoring Stack
