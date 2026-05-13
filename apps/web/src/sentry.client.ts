@@ -139,9 +139,6 @@ export function initSentry() {
     // Don't send default PII
     sendDefaultPii: false,
 
-    // Set initial user context from JWT
-    user: getUserContext(),
-
     // Attach stack traces
     attachStacktrace: true,
     maxBreadcrumbs: 50,
@@ -150,6 +147,12 @@ export function initSentry() {
   // Set default tags for all events
   Sentry.setTag('component', 'frontend');
   Sentry.setTag('runtime', 'nextjs');
+
+  // Set initial user context from JWT
+  const user = getUserContext();
+  if (user) {
+    Sentry.setUser(user);
+  }
 
   console.log(`Sentry initialized: env=${environment}`);
 }
