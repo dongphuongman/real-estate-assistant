@@ -7,12 +7,14 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   BarChart3,
   BookOpen,
   Building2,
   FileText,
   Heart,
+  Lock,
   MessageSquare,
   Moon,
   Search,
@@ -20,22 +22,31 @@ import {
   Sun,
   Globe,
   Users,
+  type LucideIcon,
 } from 'lucide-react';
 
 const THEME_STORAGE_KEY = 'theme';
+
+// Routes accessible in demo mode without auth
+const DEMO_OPEN_ROUTES = new Set(['/search', '/city-overview', '/knowledge']);
+// Routes completely hidden in demo mode
+const DEMO_HIDDEN_ROUTES = new Set(['/settings']);
+
+interface RouteConfig {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+}
 
 export function MainNav() {
   const pathname = usePathname();
   const locale = useLocale();
   const t = useTranslations('nav');
+  const tDemo = useTranslations('demo');
   const tCommon = useTranslations('common');
+  const { isDemoMode } = useAuth();
 
-  const routes = [
-    {
-      href: '/',
-      label: t('home'),
-      icon: Building2,
-    },
+  const routes: RouteConfig[] = [
     {
       href: '/search',
       label: t('search'),
@@ -83,12 +94,13 @@ export function MainNav() {
     },
   ];
 
-  // Check if a route is active by comparing the pathname without locale prefix
   const isActiveRoute = (href: string) => {
-    // Remove locale prefix from pathname for comparison
     const pathWithoutLocale = pathname.replace(/^\/(pl|en|ru)/, '') || '/';
     return pathWithoutLocale === href || (href !== '/' && pathWithoutLocale.startsWith(href));
   };
+
+  const isLocked = (href: string) => isDemoMode && !DEMO_OPEN_ROUTES.has(href);
+  const isHidden = (href: string) => isDemoMode && DEMO_HIDDEN_ROUTES.has(href);
 
   const toggleTheme = () => {
     const isDark = document.documentElement.classList.contains('dark');
@@ -111,20 +123,28 @@ export function MainNav() {
         <span>AI Estate</span>
       </Link>
 
-      {routes.map((route) => (
-        <Link
-          key={route.href}
-          href={`/${locale}${route.href}`}
-          aria-current={isActiveRoute(route.href) ? 'page' : undefined}
-          className={cn(
-            'text-sm font-medium transition-colors hover:text-primary flex items-center gap-x-2',
-            isActiveRoute(route.href) ? 'text-foreground' : 'text-muted-foreground'
-          )}
-        >
-          <route.icon className="w-4 h-4" aria-hidden="true" />
-          {route.label}
-        </Link>
-      ))}
+      {routes
+        .filter((route) => !isHidden(route.href))
+        .map((route) => {
+          const locked = isLocked(route.href);
+          return (
+            <Link
+              key={route.href}
+              href={locked ? `/${locale}/auth/login` : `/${locale}${route.href}`}
+              aria-current={!locked && isActiveRoute(route.href) ? 'page' : undefined}
+              title={locked ? tDemo('lockedFeature') : undefined}
+              className={cn(
+                'text-sm font-medium transition-colors hover:text-primary flex items-center gap-x-2',
+                isActiveRoute(route.href) ? 'text-foreground' : 'text-muted-foreground',
+                locked && 'opacity-60'
+              )}
+            >
+              <route.icon className="w-4 h-4" aria-hidden="true" />
+              {route.label}
+              {locked && <Lock className="w-3 h-3 text-muted-foreground" aria-hidden="true" />}
+            </Link>
+          );
+        })}
       <div className="ml-auto flex items-center gap-2">
         <LanguageSwitcher />
         <Button

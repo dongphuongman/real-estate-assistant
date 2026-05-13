@@ -126,3 +126,26 @@ async def get_api_key(
     )
 
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
+
+
+async def get_optional_api_key(
+    request: Request,
+    api_key_header: str = Security(api_key_header),
+) -> str | None:
+    """
+    Optional API key validation that allows demo mode access.
+
+    For GET requests with X-Demo-Mode header or ?demo=true query param,
+    returns None (no auth required). Otherwise, validates the API key normally.
+    Intended for read-only public endpoints (search, city-overview).
+    """
+    # Check demo mode indicators
+    is_demo = request.headers.get("x-demo-mode", "").lower() == "true"
+    if not is_demo:
+        is_demo = request.query_params.get("demo", "").lower() == "true"
+
+    if is_demo and request.method == "GET":
+        return None
+
+    # Fall through to normal API key validation
+    return await get_api_key(request, api_key_header)

@@ -757,5 +757,10 @@
       "plural": "{count} documents expiring soon",
       "description": "The following documents will expire within 30 days:"
     }
+  },
+  "demo": {
+    "banner": "Вы в демо-режиме. Войдите для полного доступа.",
+    "login": "Войти",
+    "lockedFeature": "Войдите, чтобы получить доступ"
   }
 }

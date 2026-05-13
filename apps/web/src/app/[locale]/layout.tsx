@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { MainNav } from '@/components/layout/main-nav';
 import { SkipNav } from '@/components/layout/SkipNav';
+import { DemoBanner } from '@/components/layout/demo-banner';
 import { Providers } from '@/components/providers';
 import { InstallPrompt } from '@/components/pwa/install-prompt';
 import { UpdateBanner } from '@/components/pwa/update-banner';
@@ -172,6 +173,7 @@ export default async function LocaleLayout({
       >
         <NextIntlClientProvider messages={messages}>
           <Providers>
+            <DemoBanner />
             <UpdateBanner />
             <SkipNav />
             <header className="border-b bg-background">

@@ -18,6 +18,7 @@ export interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isDemoMode: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, fullName?: string) => Promise<void>;
@@ -31,6 +32,7 @@ const defaultAuthContext: AuthContextType = {
   user: null,
   isLoading: false,
   isAuthenticated: false,
+  isDemoMode: false,
   error: null,
   login: async () => {
     throw new Error('AuthProvider not found');
@@ -56,6 +58,7 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDemoMode, setIsDemoMode] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch current user on mount
@@ -64,12 +67,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         const currentUser = await authApi.getCurrentUser();
         setUser(currentUser);
+        setIsDemoMode(false);
       } catch (err) {
-        // User is not authenticated or token expired
         if (err instanceof ApiError) {
-          // Don't set error for 401 - just means not logged in
-          if (err.status !== 401) {
+          // 401 = not logged in, 404 = auth endpoint not available (JWT disabled)
+          if (err.status !== 401 && err.status !== 404) {
             setError(err.message);
+          }
+          if (err.status === 404) {
+            setIsDemoMode(true);
           }
         } else {
           setError('Failed to fetch user');
@@ -141,11 +147,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const currentUser = await authApi.getCurrentUser();
       setUser(currentUser);
+      setIsDemoMode(false);
       setError(null);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
-        // Token expired, clear user
+      if (err instanceof ApiError && (err.status === 401 || err.status === 404)) {
         setUser(null);
+        if (err.status === 404) {
+          setIsDemoMode(true);
+        }
       }
       setError(err instanceof Error ? err.message : 'Failed to refresh user');
     }
@@ -159,6 +168,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user,
     isLoading,
     isAuthenticated: !!user,
+    isDemoMode,
     error,
     login,
     register,

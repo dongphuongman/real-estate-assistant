@@ -24,7 +24,7 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from api.auth import get_api_key
+from api.auth import get_api_key, get_optional_api_key
 from api.dependencies import get_vector_store
 from api.health import HealthStatus, get_git_info, get_health_status
 from api.middleware.csrf import add_csrf_middleware
@@ -468,7 +468,7 @@ app.add_middleware(
 )
 
 # Include Routers
-app.include_router(search.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
+app.include_router(search.router, prefix="/api/v1", dependencies=[Depends(get_optional_api_key)])
 app.include_router(chat.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(rag_router.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(settings_router.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])

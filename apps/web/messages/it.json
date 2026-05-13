@@ -764,5 +764,10 @@
       "plural": "{count} documents expiring soon",
       "description": "The following documents will expire within 30 days:"
     }
+  },
+  "demo": {
+    "banner": "Stai navigando in modalità demo. Accedi per tutte le funzionalità.",
+    "login": "Accedi",
+    "lockedFeature": "Accedi per utilizzare questa funzione"
   }
 }
