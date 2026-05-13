@@ -574,23 +574,23 @@ Pipeline health issues are created when jobs fail.
 
 ```bash
 # List recent runs
-gh run list -R NestLab-Tech/ai-real-estate-assistant --limit 10
+gh run list -R AleksNeStu/ai-real-estate-assistant --limit 10
 
 # View specific run
-gh run view -R NestLab-Tech/ai-real-estate-assistant <run_id>
+gh run view -R AleksNeStu/ai-real-estate-assistant <run_id>
 
 # View failed logs
-gh run view -R NestLab-Tech/ai-real-estate-assistant <run_id> --log-failed
+gh run view -R AleksNeStu/ai-real-estate-assistant <run_id> --log-failed
 ```
 
 ### Re-run Failed Jobs
 
 ```bash
 # Re-run specific job
-gh run rerun -R NestLab-Tech/ai-real-estate-assistant <run_id>
+gh run rerun -R AleksNeStu/ai-real-estate-assistant <run_id>
 
 # Re-run all failed jobs
-gh run rerun -R NestLab-Tech/ai-real-estate-assistant <run_id> --failed
+gh run rerun -R AleksNeStu/ai-real-estate-assistant <run_id> --failed
 ```
 
 ### Update Dependencies

@@ -44,50 +44,6 @@ services:
         sync: false
     healthCheckPath: /health
 
-  # Production backend (ver4 branch)
-  - type: web
-    name: realestate-api-prod
-    plan: free
-    branch: ver4
-    runtime: docker
-    dockerfilePath: deploy/docker/Dockerfile.backend
-    dockerContext: .
-    repo: https://github.com/AleksNeStu/ai-real-estate-assistant
-    envVars:
-      - key: PORT
-        value: "10000"
-      - key: ENVIRONMENT
-        value: production
-      - key: DEFAULT_PROVIDER
-        value: zai
-      - key: DEFAULT_MODEL
-        value: glm-4.7-flash
-      - key: ZHIPUAI_API_KEY
-        sync: false
-      - key: DEEPSEEK_API_KEY
-        sync: false
-      - key: GOOGLE_API_KEY
-        sync: false
-      - key: OPENROUTER_API_KEY
-        sync: false
-      - key: API_ACCESS_KEY
-        sync: false
-      - key: CORS_ALLOW_ORIGINS
-        value: https://realestate-web-dz1y.onrender.com
-      - key: AUTH_JWT_ENABLED
-        value: "true"
-      - key: JWT_SECRET_KEY
-        generateValue: true
-      - key: INTERNET_ENABLED
-        value: "false"
-      - key: SEED_ON_STARTUP
-        value: "true"
-      - key: VECTOR_PERSIST_ENABLED
-        value: "false"
-      - key: SENTRY_DSN
-        sync: false
-    healthCheckPath: /health
-
   # Frontend (dev branch — API deploy triggers rebuild for prod via workflow)
   - type: web
     name: realestate-web

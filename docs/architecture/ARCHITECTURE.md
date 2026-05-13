@@ -97,7 +97,7 @@ The digest system bridges raw property data and user notifications.
 - **Vector Store**: ChromaDB 0.5+
 - **Embeddings**: FastEmbed (BGE) or OpenAI embeddings
 - **Testing**: Pytest (Backend), Jest (Frontend)
-- **Deployment**: Docker, Vercel (Frontend), Render/Railway (Backend)
+- **Deployment**: Docker, Render (staging)
 - **CI/CD**: GitHub Actions (ruff, mypy, unit/integration coverage gates; artifacts upload)
 - **CI/CD**: GitHub Actions (ruff, mypy, unit/integration coverage gates; artifacts upload)
 

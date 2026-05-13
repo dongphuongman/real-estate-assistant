@@ -14,7 +14,7 @@ This section contains comprehensive guides for developers working on the AI Real
 
 | Guide | Description |
 |-------|-------------|
-| [Deployment Guide](deployment.md) | Deploy to production (VPS, Docker, Vercel) |
+| [Deployment Guide](deployment.md) | Deploy with Docker |
 | [CI/CD Pipeline](ci-cd.md) | Understand the GitHub Actions workflow |
 | [Troubleshooting](troubleshooting.md) | Common issues and solutions |
 

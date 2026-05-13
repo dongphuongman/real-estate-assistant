@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This guide covers deploying the AI Real Estate Assistant to production environments.
+This guide covers deploying the AI Real Estate Assistant.
 
 ## Table of Contents
 
@@ -8,8 +8,7 @@ This guide covers deploying the AI Real Estate Assistant to production environme
 - [Pre-Deployment Checklist](#pre-deployment-checklist)
 - [Deployment Methods](#deployment-methods)
 - [Docker Deployment](#docker-deployment)
-- [VPS Deployment](#vps-deployment)
-- [Frontend Deployment (Vercel)](#frontend-deployment-vercel)
+- [Render Staging Deployment](#render-staging-deployment)
 - [Post-Deployment](#post-deployment)
 - [Monitoring](#monitoring)
 
@@ -31,15 +30,15 @@ The AI Real Estate Assistant consists of:
                     └────────┬────────┘
                              │
                     ┌────────▼────────┐
-                    │  Vercel (Front) │  ← HTTPS
+                    │  Render (Front) │  ← HTTPS
                     │  Next.js App    │
                     │  /api/v1/*      │
                     └────────┬────────┘
                              │ Server-side proxy
                     ┌────────▼────────┐
-                    │  Backend Host   │  ← HTTPS
+                    │  Render (Back)  │  ← HTTPS
                     │  FastAPI        │
-                    │  Port 8000      │
+                    │  Port 10000     │
                     └─────────────────┘
 ```
 
@@ -82,22 +81,14 @@ CORS_ALLOW_ORIGINS=https://yourdomain.com
 OPENAI_API_KEY=sk-...
 ```
 
-### 5. Domain & SSL
-
-- [ ] Domain configured
-- [ ] SSL/TLS certificates (Let's Encrypt or cloud provider)
-- [ ] DNS records pointing to servers
-
 ---
 
 ## Deployment Methods
 
 | Method | Backend | Frontend | Difficulty |
 |--------|---------|----------|------------|
-| Docker Compose (VPS) | Docker | Docker | Medium |
-| Render + Vercel | Render | Vercel | Easy |
-| Railway + Vercel | Railway | Vercel | Easy |
-| Fly.io + Vercel | Fly.io | Vercel | Medium |
+| Docker Compose | Docker | Docker | Medium |
+| Render (staging) | Render | Render | Easy |
 
 ---
 
@@ -199,229 +190,75 @@ docker run -d --name caddy \
 
 ---
 
-## VPS Deployment
+## Render Staging Deployment
 
-### Server Requirements
+The project includes a `render.yaml` for staging deployment on [Render](https://render.com).
 
-| Resource | Minimum | Recommended |
-|----------|---------|-------------|
-| RAM | 2GB | 4GB |
-| CPU | 2 cores | 4 cores |
-| Storage | 20GB | 40GB SSD |
+### Services
 
-### Step 1: Systemd Service (Backend)
-
-Create `/etc/systemd/system/ai-backend.service`:
-
-```ini
-[Unit]
-Description=AI Real Estate Assistant Backend
-After=network.target
-
-[Service]
-Type=simple
-User=www-data
-WorkingDirectory=/var/www/ai-real-estate-assistant
-Environment="PATH=/var/www/ai-real-estate-assistant/.venv/bin"
-EnvironmentFile=/var/www/ai-real-estate-assistant/.env
-ExecStart=/var/www/ai-real-estate-assistant/.venv/bin/uvicorn api.main:app --host 0.0.0.0 --port 8000
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Enable and start:
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable ai-backend
-sudo systemctl start ai-backend
-sudo systemctl status ai-backend
-```
-
-### Step 2: Systemd Service (Frontend)
-
-Create `/etc/systemd/system/ai-frontend.service`:
-
-```ini
-[Unit]
-Description=AI Real Estate Assistant Frontend
-After=network.target ai-backend.service
-
-[Service]
-Type=simple
-User=www-data
-WorkingDirectory=/var/www/ai-real-estate-assistant/apps/web
-Environment="NODE_ENV=production"
-EnvironmentFile=/var/www/ai-real-estate-assistant/.env
-ExecStart=/usr/bin/npm run start
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-```
-
-### Step 3: Nginx Configuration
-
-Create `/etc/nginx/sites-available/ai-assistant`:
-
-```nginx
-# Frontend
-server {
-    listen 80;
-    server_name yourdomain.com;
-
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
-
-    # API proxy
-    location /api/v1 {
-        proxy_pass http://localhost:8000/api/v1;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-Enable and restart Nginx:
-
-```bash
-sudo ln -s /etc/nginx/sites-available/ai-assistant /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl restart nginx
-```
-
-### Step 4: SSL with Certbot
-
-```bash
-# Install Certbot
-sudo apt install certbot python3-certbot-nginx -y
-
-# Get certificate
-sudo certbot --nginx -d yourdomain.com -d api.yourdomain.com
-
-# Auto-renewal (configured automatically)
-sudo certbot renew --dry-run
-```
-
----
-
-## Frontend Deployment (Vercel)
+| Service | Branch | Purpose |
+|---------|--------|---------|
+| `realestate-api` | `dev` | Backend API (FastAPI) |
+| `realestate-web` | `dev` | Frontend (Next.js) |
 
 ### Step 1: Connect Repository
 
-1. Go to [vercel.com](https://vercel.com)
-2. Click "Add New Project"
-3. Import your GitHub repository
-
-### Step 2: Configure Project
-
-| Setting | Value |
-|---------|-------|
-| Root Directory | `apps/web` |
-| Framework Preset | Next.js |
-| Build Command | `npm run build` |
-| Output Directory | `.next` |
-| Install Command | `npm ci` |
-
-### Step 3: Environment Variables
-
-Add in Vercel Dashboard:
-
-| Name | Value | Environment |
-|------|-------|-------------|
-| `BACKEND_API_URL` | Your production backend URL | Production |
-| `API_ACCESS_KEY` | Your production API key | Production |
-| `NEXT_PUBLIC_API_URL` | `/api/v1` | All |
-
-**Important:** Never use `NEXT_PUBLIC_*` for secrets.
-
-### Step 4: Deploy
-
-Click "Deploy" - Vercel will build and deploy automatically.
-
-### Step 5: Custom Domain (Optional)
-
-1. In Vercel Dashboard → Settings → Domains
-2. Add your custom domain
-3. Configure DNS records as instructed
-
----
-
-## Backend Deployment Options
-
-### Option 1: Render
-
 1. Go to [render.com](https://render.com)
 2. Click "New" → "Web Service"
-3. Connect GitHub repository
-4. Configure:
+3. Connect your GitHub repository (`AleksNeStu/ai-real-estate-assistant`)
+
+### Step 2: Backend Configuration
 
 | Setting | Value |
 |---------|-------|
 | Root Directory | `/` |
+| Branch | `dev` |
 | Build Command | `pip install -r requirements.txt` |
 | Start Command | `uvicorn api.main:app --host 0.0.0.0 --port $PORT` |
 | Python Version | `3.12` |
 
-5. Add environment variables
-6. Deploy
+### Step 3: Frontend Configuration
 
-### Option 2: Railway
+| Setting | Value |
+|---------|-------|
+| Root Directory | `apps/web` |
+| Branch | `dev` |
+| Framework Preset | Next.js |
+| Build Command | `npm run build` |
+| Start Command | `npm run start` |
 
-1. Go to [railway.app](https://railway.app)
-2. Click "New Project" → "Deploy from GitHub repo"
-3. Select repository
-4. Configure environment variables
-5. Deploy
+### Step 4: Environment Variables
 
-### Option 3: Fly.io
+Add in Render Dashboard:
 
-```bash
-# Install Fly CLI
-curl -L https://fly.io/install.sh | sh
+**Backend:**
 
-# Launch
-fly launch
+| Name | Value |
+|------|-------|
+| `ENVIRONMENT` | `production` |
+| `API_ACCESS_KEY` | Your production API key |
+| `OPENAI_API_KEY` | Your OpenAI key |
+| `CORS_ALLOW_ORIGINS` | Your frontend URL |
 
-# Configure fly.toml
-cat > fly.toml << 'EOF'
-[build]
-  builder = "paketobuildpacks/builder:base"
+**Frontend:**
 
-[env]
-  PORT = "8000"
-  ENVIRONMENT = "production"
+| Name | Value |
+|------|-------|
+| `BACKEND_API_URL` | Your Render backend URL |
+| `API_ACCESS_KEY` | Your production API key |
+| `NEXT_PUBLIC_API_URL` | `/api/v1` |
 
-[http_service]
-  internal_port = 8000
-  force_https = true
-  auto_stop_machines = true
-  auto_start_machines = true
-  min_machines_running = 0
-  processes = ["app"]
-EOF
+**Important:** Never use `NEXT_PUBLIC_*` for secrets.
 
-# Set secrets
-fly secrets set API_ACCESS_KEY="your-key"
-fly secrets set OPENAI_API_KEY="sk-..."
-fly secrets set CORS_ALLOW_ORIGINS="https://yourapp.com"
+### Step 5: Deploy
 
-# Deploy
-fly deploy
-```
+Click "Deploy" — Render will build and deploy automatically.
+
+### Known Limitations (Free Tier)
+
+- Cold start ~150s after inactivity (services spin down)
+- First request after idle may return 502 — retry after a few minutes
+- Limited resources (512MB RAM)
 
 ---
 
@@ -491,15 +328,10 @@ docker compose logs -f backend
 docker compose logs > deployment-logs.txt
 ```
 
-For Systemd:
+For Render:
 
-```bash
-# View logs
-sudo journalctl -u ai-backend -f
-
-# View last 100 lines
-sudo journalctl -u ai-backend -n 100
-```
+1. Go to Render Dashboard → Your Service → Logs
+2. Use `render logs` CLI command
 
 ### Metrics
 
@@ -522,18 +354,11 @@ git checkout <previous-tag>
 docker compose up -d --build
 ```
 
-### Vercel Rollback
-
-1. Go to Vercel Dashboard → Deployments
-2. Find previous successful deployment
-3. Click "Promote to Production"
-
 ### Render Rollback
 
-```bash
-# In Render Dashboard
-# Deployments → Select previous deployment → Promote
-```
+1. Go to Render Dashboard → Your Service → Deployments
+2. Find previous successful deployment
+3. Click "Promote to Production"
 
 ---
 
@@ -557,13 +382,9 @@ docker compose up -d --build
 ```bash
 # Check backend status
 docker compose ps
-# or
-sudo systemctl status ai-backend
 
 # Check logs
 docker compose logs backend
-# or
-sudo journalctl -u ai-backend -n 50
 ```
 
 ### Issue: High Memory Usage
@@ -579,6 +400,14 @@ sudo journalctl -u ai-backend -n 50
 1. Enable Redis caching
 2. Check LLM provider latency
 3. Consider using faster model (e.g., gpt-4o-mini)
+
+### Issue: Render Cold Start 502
+
+**Cause:** Free tier services spin down after inactivity.
+
+**Solution:**
+- Wait ~2-3 minutes after first 502, then retry
+- Or use a health check ping service to keep services warm
 
 ---
 

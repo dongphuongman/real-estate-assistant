@@ -31,12 +31,12 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-# Condition: only run on NestLab-Tech repo (skip forks)
+# Condition: only run on AleksNeStu repo (skip forks)
 # Condition: skip Stage 4 on Dependabot PRs (dependency-only changes)
 # Condition: Stage 4 on dev/main/ver4 pushes or manual dispatch
 env:
   STAGE4_CONDITION: >-
-    github.repository_owner == 'NestLab-Tech' &&
+    github.repository_owner == 'AleksNeStu' &&
     github.actor != 'dependabot[bot]' &&
     (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true'))
 
@@ -45,7 +45,7 @@ jobs:
 
   gitleaks:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech'
+    if: github.repository_owner == 'AleksNeStu'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -59,7 +59,7 @@ jobs:
 
   secret-validation:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'NestLab-Tech'
+    if: github.repository_owner == 'AleksNeStu'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -329,7 +329,7 @@ jobs:
 
   codeql-python:
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'NestLab-Tech' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
+    if: ${{ github.repository_owner == 'AleksNeStu' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [security-deps]
     timeout-minutes: 30
     permissions:
@@ -357,7 +357,7 @@ jobs:
 
   codeql-javascript:
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'NestLab-Tech' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
+    if: ${{ github.repository_owner == 'AleksNeStu' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [security-deps]
     timeout-minutes: 30
     permissions:
@@ -385,7 +385,7 @@ jobs:
 
   container-scan:
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'NestLab-Tech' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
+    if: ${{ github.repository_owner == 'AleksNeStu' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [frontend-build]
     steps:
       - name: Checkout
@@ -421,7 +421,7 @@ jobs:
 
   lighthouse:
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'NestLab-Tech' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
+    if: ${{ github.repository_owner == 'AleksNeStu' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [frontend-tests]
     timeout-minutes: 15
     defaults:
@@ -472,7 +472,7 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'NestLab-Tech' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
+    if: ${{ github.repository_owner == 'AleksNeStu' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [frontend-build]
     timeout-minutes: 20
     continue-on-error: true

@@ -135,9 +135,8 @@ User Query → Query Analyzer → Extract filters
 ┌─────────────────────────────────────────┐
 │ Production                               │
 │                                          │
-│  Vercel ──→ Next.js Frontend             │
-│  VPS/Dokploy ──→ FastAPI + PostgreSQL    │
-│  VPS/Dokploy ──→ Redis (cache)           │
+│  Render ──→ Next.js Frontend (staging)      │
+│  Render ──→ FastAPI + SQLite (staging)      │
 │                                          │
 │  AI Providers (external API)             │
 │  - OpenAI, Anthropic, Google, etc.       │

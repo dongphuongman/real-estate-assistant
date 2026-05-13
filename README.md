@@ -133,7 +133,7 @@ cd apps/web && npm install && npm run dev
 | [Contributing](docs/development/CONTRIBUTING.md) | Development workflow |
 | [Testing Guide](docs/testing/TESTING_GUIDE.md) | Writing and running tests |
 | [CI/CD Pipeline](docs/guides/ci-cd.md) | Progressive security pipeline |
-| [Deployment](docs/deployment/DEPLOYMENT.md) | Production deployment |
+| [Deployment](docs/deployment/DEPLOYMENT.md) | Docker & Render staging |
 | [Troubleshooting](docs/development/TROUBLESHOOTING.md) | Common issues |
 | [Changelog](CHANGELOG.md) | Version history |
 
@@ -143,9 +143,8 @@ cd apps/web && npm install && npm run dev
 
 | Branch | Status | Description |
 |--------|--------|-------------|
-| [`dev`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/dev) | 🔥 Active | Current development |
-| [`main`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/main) | 🟢 Stable | Production releases |
-| [`ver3`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/ver3) | ❄️ Archived | Legacy Streamlit version |
+| [`dev`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/dev) | 🔥 Active | Current development & staging |
+| [`main`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/main) | 🟢 Stable | Stable releases |
 
 ---
 
