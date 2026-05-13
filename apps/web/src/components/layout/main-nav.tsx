@@ -103,9 +103,13 @@ export function MainNav() {
       className="flex items-center justify-center space-x-6 lg:space-x-8"
     >
       {/* Logo - absolutely positioned on the left */}
-      <div className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-xl hidden md:block">
-        AI Estate
-      </div>
+      <Link
+        href={`/${locale}`}
+        className="absolute left-4 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-2 font-bold text-xl hover:opacity-80 transition-opacity"
+      >
+        <Building2 className="w-6 h-6 text-primary" aria-hidden="true" />
+        <span>AI Estate</span>
+      </Link>
 
       {routes.map((route) => (
         <Link

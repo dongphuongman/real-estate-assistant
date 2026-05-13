@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Globe } from 'lucide-react';
 import { locales, localeNames, localeFlags, type Locale } from '@/i18n/config';
 
 export function LanguageSwitcher() {
@@ -41,8 +42,14 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Change language">
-          <span className="text-lg">{localeFlags[locale]}</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label="Change language"
+          className="gap-1 px-2 text-xs font-medium uppercase"
+        >
+          <Globe className="w-3.5 h-3.5" aria-hidden="true" />
+          {locale}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
