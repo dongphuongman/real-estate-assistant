@@ -21,7 +21,6 @@ permissions:
 
 env:
   RENDER_SERVICE_ID_API: ${{ secrets.RENDER_SERVICE_ID_API }}
-  RENDER_SERVICE_ID_WEB: ${{ secrets.RENDER_SERVICE_ID_WEB }}
   RENDER_BACKEND_URL: ${{ secrets.RENDER_BACKEND_URL }}
 
 jobs:
@@ -70,13 +69,11 @@ jobs:
             echo "  ✓ $f"
           done
 
-          # Check render.yaml and vercel.json only on main/dev
+          # Check render.yaml on main/dev
           if [ "${{ github.ref }}" = "refs/heads/main" ] || [ "${{ github.ref }}" = "refs/heads/dev" ]; then
-            for f in render.yaml vercel.json; do
-              if [ ! -f "$f" ]; then
-                echo "WARNING: Missing $f (needed for Render/Vercel deploy)"
-              fi
-            done
+            if [ ! -f "render.yaml" ]; then
+              echo "WARNING: Missing render.yaml (needed for Render deploy)"
+            fi
             if [ -f render.yaml ] && grep -q "REPLACE_WITH" render.yaml; then
               echo "ERROR: render.yaml contains placeholder values"
               exit 1
@@ -149,77 +146,64 @@ jobs:
   deploy-frontend:
     needs: validate
     runs-on: ubuntu-latest
-    continue-on-error: true
     environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}
     outputs:
-      deploy-url: ${{ steps.deploy.outputs.url }}
+      deploy-url: ${{ steps.service.outputs.url }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "20"
-          cache: "npm"
-          cache-dependency-path: apps/web/package-lock.json
-
-      - name: Install Vercel CLI
-        run: npm i -g vercel@latest
-
-      - name: Pull Vercel environment
+      - name: Select Render frontend service
+        id: service
         run: |
           DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
-          VERCEL_ENV="${DEPLOY_ENV}"
-          if [ "$VERCEL_ENV" = "staging" ]; then VERCEL_ENV="preview"; fi
-          vercel pull --yes --environment=${VERCEL_ENV} --token=${{ secrets.VERCEL_TOKEN }} --cwd apps/web
-
-      - name: Build
-        run: |
-          DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
-          if [ "$DEPLOY_ENV" = "production" ]; then
-            vercel build --prod --token=${{ secrets.VERCEL_TOKEN }} --cwd apps/web
+          echo "Deploy environment: $DEPLOY_ENV"
+          if [ "$DEPLOY_ENV" = "staging" ]; then
+            echo "id=${{ secrets.RENDER_SERVICE_ID_WEB_STAGING }}" >> $GITHUB_OUTPUT
+            echo "url=${{ secrets.RENDER_FRONTEND_URL_STAGING }}" >> $GITHUB_OUTPUT
           else
-            vercel build --token=${{ secrets.VERCEL_TOKEN }} --cwd apps/web
+            echo "id=${{ secrets.RENDER_SERVICE_ID_WEB }}" >> $GITHUB_OUTPUT
+            echo "url=${{ secrets.RENDER_FRONTEND_URL }}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Deploy to Vercel
-        id: deploy
+      - name: Get previous deploy ID (for rollback)
+        id: prev-deploy
         run: |
-          DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
-          if [ "$DEPLOY_ENV" = "production" ]; then
-            vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} --cwd apps/web > /tmp/vercel-output.txt 2>&1
-          else
-            vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --cwd apps/web > /tmp/vercel-output.txt 2>&1
-          fi
-          echo "=== Vercel deploy output ==="
-          cat /tmp/vercel-output.txt
-          url=$(grep -oE 'https://[a-zA-Z0-9.-]+\.vercel\.app' /tmp/vercel-output.txt | tail -1)
-          if [ -z "$url" ]; then
-            url=$(grep -oE 'https://[a-zA-Z0-9.-]+\.[a-z]+' /tmp/vercel-output.txt | tail -1)
-          fi
-          echo "url=$url" >> $GITHUB_OUTPUT
-          echo "Deployed to: $url"
+          PREV=$(curl -s "https://api.render.com/v1/services/${{ steps.service.outputs.id }}/deploys?limit=1" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" | jq -r '.[0].id // empty')
+          echo "id=$PREV" >> $GITHUB_OUTPUT
 
-      - name: Verify frontend
+      - name: Trigger Render frontend deploy
+        if: steps.service.outputs.id != ''
         run: |
-          sleep 10
-          URL="${{ steps.deploy.outputs.url }}"
-          if [ -z "$URL" ]; then
-            echo "ERROR: No deploy URL captured"
-            exit 1
-          fi
-          status=$(curl -sL -o /dev/null -w "%{http_code}" "$URL")
-          if [ "$status" -ge 200 ] && [ "$status" -lt 400 ]; then
-            echo "Frontend is live at $URL (HTTP $status)"
-          else
-            echo "ERROR: Frontend returned HTTP $status"
-            exit 1
-          fi
+          curl -s -X POST "https://api.render.com/v1/services/${{ steps.service.outputs.id }}/deploys" \
+            -H "Accept: application/json" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -d '{"clearCache": "clear"}' | jq .
+
+      - name: Wait for frontend health
+        run: |
+          echo "Waiting for frontend to become healthy..."
+          for i in $(seq 1 30); do
+            if curl -sf "${{ steps.service.outputs.url }}" -o /dev/null; then
+              echo "Frontend is live!"
+              exit 0
+            fi
+            echo "  Attempt $i/30 - waiting 30s..."
+            sleep 30
+          done
+          echo "ERROR: Frontend health check failed after 15 minutes"
+          exit 1
+
+      - name: Rollback on failure
+        if: failure() && steps.prev-deploy.outputs.id != ''
+        run: |
+          echo "Rolling back to previous deploy: ${{ steps.prev-deploy.outputs.id }}"
+          curl -s -X POST "https://api.render.com/v1/services/${{ steps.service.outputs.id }}/deploys/${{ steps.prev-deploy.outputs.id }}/rollback" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" | jq .
+          echo "Rollback initiated."
 
   smoke-test:
     needs: [deploy-backend, deploy-frontend]
-    if: always() && needs.deploy-backend.result == 'success'
+    if: always() && needs.deploy-backend.result == 'success' && needs.deploy-frontend.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -231,7 +215,7 @@ jobs:
         run: |
           echo "Running post-deployment smoke tests..."
 
-          # Determine backend URL
+          # Determine environment URLs
           DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
           if [ "$DEPLOY_ENV" = "staging" ]; then
             BACKEND_URL="${{ secrets.RENDER_BACKEND_URL_STAGING }}"
@@ -241,6 +225,7 @@ jobs:
 
           echo "Environment: $DEPLOY_ENV"
           echo "Backend: $BACKEND_URL"
+          echo "Frontend: $FRONTEND_URL"
 
           # Backend health
           health=$(curl -sf "${BACKEND_URL}/health" | jq -r '.status')
@@ -250,16 +235,18 @@ jobs:
           fi
           echo "  ✓ Backend healthy"
 
-          # Frontend check (skip if URL empty — Vercel CLI deploy may fail)
+          # Frontend check
           if [ -n "$FRONTEND_URL" ]; then
             status=$(curl -sL -o /dev/null -w "%{http_code}" "${FRONTEND_URL}")
             if [ "$status" -ge 200 ] && [ "$status" -lt 400 ]; then
               echo "  ✓ Frontend live at $FRONTEND_URL (HTTP $status)"
             else
-              echo "  ⚠ Frontend returned HTTP $status (non-critical)"
+              echo "ERROR: Frontend returned HTTP $status"
+              exit 1
             fi
           else
-            echo "  ⚠ Frontend URL not available — deploy via Vercel Git integration"
+            echo "ERROR: Frontend URL not available"
+            exit 1
           fi
 
           echo "Smoke tests completed!"
