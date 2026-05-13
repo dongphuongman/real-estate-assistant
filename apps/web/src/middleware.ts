@@ -56,10 +56,18 @@ export async function middleware(request: NextRequest) {
   // Get the path without locale prefix for route checking
   const pathWithoutLocale = hasLocalePrefix ? '/' + pathSegments.slice(1).join('/') : pathname;
 
-  // Check if this is a public route (auth pages)
+  // Check if this is a public route (auth pages + demo-accessible pages)
   const isAuthRoute = pathWithoutLocale.startsWith('/auth/') || pathWithoutLocale === '/auth';
 
-  if (isAuthRoute) {
+  // Routes accessible without authentication (demo mode)
+  const demoRoutes = ['/', '/search', '/city-overview', '/knowledge'];
+  const isDemoRoute =
+    pathWithoutLocale === '/' ||
+    demoRoutes.some(
+      (r) => r !== '/' && (pathWithoutLocale === r || pathWithoutLocale.startsWith(r + '/'))
+    );
+
+  if (isAuthRoute || isDemoRoute) {
     return intlResponse;
   }
 
