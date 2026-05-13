@@ -38,13 +38,13 @@ const nextConfig: NextConfig = {
     const cspDirectives = isProduction
       ? {
           'default-src': ["'self'"],
-          'script-src': ["'self'"],
+          'script-src': ["'self'", "'unsafe-inline'"],
           'style-src': ["'self'", "'unsafe-inline'"],
           'img-src': ["'self'", 'data:', 'https:', 'blob:'],
           'font-src': ["'self'", 'data:'],
           'connect-src': [
             "'self'",
-            process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1',
+            process.env.NEXT_PUBLIC_API_URL || "'self'",
             'https://*.vercel.app',
             // Push notification services
             'https://fcm.googleapis.com',
