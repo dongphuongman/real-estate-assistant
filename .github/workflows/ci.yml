@@ -255,47 +255,6 @@ jobs:
           name: frontend-coverage
           path: apps/web/coverage
 
-  docs-generation:
-    runs-on: ubuntu-latest
-    needs: [backend-tests]
-    timeout-minutes: 10
-    defaults:
-      run:
-        working-directory: apps/api
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Python
-        uses: ./.github/actions/setup-python
-        with:
-          working-directory: apps/api
-
-      - name: Generate OpenAPI documentation (Task #54)
-        run: |
-          mkdir -p docs/api
-          python ../../scripts/docs/export_openapi.py --output docs/api/openapi.json
-          python ../../scripts/docs/generate_api_reference.py --schema docs/api/openapi.json --output docs/api/API_REFERENCE.generated.md
-
-      - name: Upload OpenAPI documentation
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: openapi-docs
-          path: apps/api/docs/api/
-
-      - name: Docs summary
-        if: always()
-        run: |
-          echo "### OpenAPI Documentation" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Generated files:" >> $GITHUB_STEP_SUMMARY
-          echo "- OpenAPI JSON: docs/api/openapi.json" >> $GITHUB_STEP_SUMMARY
-          echo "- API Markdown: docs/api/API_REFERENCE.generated.md" >> $GITHUB_STEP_SUMMARY
-          if [ -f ../../docs/api/openapi.json ]; then
-            echo "- OpenAPI schema size: $(wc -c < ../../docs/api/openapi.json) bytes" >> $GITHUB_STEP_SUMMARY
-          fi
-
   security-deps:
     runs-on: ubuntu-latest
     needs: [backend-tests]
@@ -579,7 +538,7 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     needs: [gitleaks, secret-validation, backend-lint, backend-tests,
-            frontend-build, security-sast, frontend-tests, docs-generation,
+            frontend-build, security-sast, frontend-tests,
             security-deps, codeql-python, codeql-javascript, container-scan,
             lighthouse, e2e, compose_smoke]
     permissions:
