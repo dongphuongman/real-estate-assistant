@@ -110,42 +110,44 @@ export function MainNav() {
   };
 
   return (
-    <nav
-      aria-label={t('mainNavigation')}
-      className="flex items-center justify-center space-x-6 lg:space-x-8"
-    >
-      {/* Logo - absolutely positioned on the left */}
+    <nav aria-label={t('mainNavigation')} className="flex items-center w-full">
+      {/* Logo - fixed on the left */}
       <Link
         href={`/${locale}`}
-        className="absolute left-4 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-2 font-bold text-xl hover:opacity-80 transition-opacity"
+        className="hidden md:flex items-center gap-2 font-bold text-xl hover:opacity-80 transition-opacity shrink-0 mr-6"
       >
         <Building2 className="w-6 h-6 text-primary" aria-hidden="true" />
         <span>AI Estate</span>
       </Link>
 
-      {routes
-        .filter((route) => !isHidden(route.href))
-        .map((route) => {
-          const locked = isLocked(route.href);
-          return (
-            <Link
-              key={route.href}
-              href={locked ? `/${locale}/auth/login` : `/${locale}${route.href}`}
-              aria-current={!locked && isActiveRoute(route.href) ? 'page' : undefined}
-              title={locked ? tDemo('lockedFeature') : undefined}
-              className={cn(
-                'text-sm font-medium transition-colors hover:text-primary flex items-center gap-x-2',
-                isActiveRoute(route.href) ? 'text-foreground' : 'text-muted-foreground',
-                locked && 'opacity-60'
-              )}
-            >
-              <route.icon className="w-4 h-4" aria-hidden="true" />
-              {route.label}
-              {locked && <Lock className="w-3 h-3 text-muted-foreground" aria-hidden="true" />}
-            </Link>
-          );
-        })}
-      <div className="ml-auto flex items-center gap-2">
+      {/* Centered navigation links */}
+      <div className="flex items-center justify-center flex-1 space-x-4 lg:space-x-6">
+        {routes
+          .filter((route) => !isHidden(route.href))
+          .map((route) => {
+            const locked = isLocked(route.href);
+            return (
+              <Link
+                key={route.href}
+                href={locked ? `/${locale}/auth/login` : `/${locale}${route.href}`}
+                aria-current={!locked && isActiveRoute(route.href) ? 'page' : undefined}
+                title={locked ? tDemo('lockedFeature') : undefined}
+                className={cn(
+                  'text-sm font-medium transition-colors hover:text-primary flex items-center gap-x-1.5 whitespace-nowrap',
+                  isActiveRoute(route.href) ? 'text-foreground' : 'text-muted-foreground',
+                  locked && 'opacity-60'
+                )}
+              >
+                <route.icon className="w-4 h-4" aria-hidden="true" />
+                {route.label}
+                {locked && <Lock className="w-3 h-3 text-muted-foreground" aria-hidden="true" />}
+              </Link>
+            );
+          })}
+      </div>
+
+      {/* Right-side controls */}
+      <div className="flex items-center gap-2 shrink-0 ml-4">
         <LanguageSwitcher />
         <Button
           type="button"

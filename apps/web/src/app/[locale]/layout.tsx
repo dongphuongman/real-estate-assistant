@@ -177,7 +177,7 @@ export default async function LocaleLayout({
             <UpdateBanner />
             <SkipNav />
             <header className="border-b bg-background">
-              <div className="relative flex h-16 items-center px-4 container mx-auto">
+              <div className="flex h-16 items-center px-4 container mx-auto">
                 <MainNav />
               </div>
             </header>
