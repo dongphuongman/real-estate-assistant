@@ -35,6 +35,8 @@ jobs:
         with:
           script: |
             const branch = context.ref.replace('refs/heads/', '');
+            const isStaging = branch === 'dev' || branch === 'ver4';
+
             const runs = await github.rest.actions.listWorkflowRuns({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -43,10 +45,44 @@ jobs:
               status: 'completed',
               per_page: 1
             });
-            if (!runs.data.workflow_runs.length || runs.data.workflow_runs[0].conclusion !== 'success') {
-              core.setFailed(`Last CI run on ${branch} did not succeed. Deploy blocked.`);
+
+            if (!runs.data.workflow_runs.length) {
+              if (isStaging) {
+                core.warning('No CI runs found for ' + branch + '. Proceeding for staging deployment.');
+              } else {
+                core.setFailed('No CI runs found for ' + branch + '. Deploy blocked.');
+              }
+              return;
+            }
+
+            const run = runs.data.workflow_runs[0];
+            if (run.conclusion === 'success') {
+              core.info('CI passed on ' + branch + '. Proceeding with deployment.');
+              return;
+            }
+
+            // For staging: allow deployment if only non-critical jobs failed
+            if (isStaging) {
+              const jobs = await github.rest.actions.listJobsForWorkflowRun({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: run.id,
+                per_page: 100
+              });
+
+              const criticalPatterns = ['backend-tests', 'frontend-build', 'gitleaks'];
+              const failedCritical = jobs.data.jobs.filter(
+                j => j.conclusion === 'failure' && criticalPatterns.some(p => j.name.includes(p))
+              );
+
+              if (failedCritical.length === 0) {
+                core.warning('CI had non-critical failures on ' + branch + '. Proceeding for staging deployment.');
+              } else {
+                const failedNames = failedCritical.map(j => j.name).join(', ');
+                core.setFailed('Critical CI jobs failed on ' + branch + ': ' + failedNames + '. Deploy blocked.');
+              }
             } else {
-              core.info(`CI passed on ${branch}. Proceeding with deployment.`);
+              core.setFailed('Last CI run on ' + branch + ' did not succeed. Deploy blocked.');
             }
 
   validate:

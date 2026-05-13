@@ -237,10 +237,14 @@ def test_admin_ingest_returns_500_on_unhandled_exception(
 def test_admin_reindex_returns_404_when_no_cache(mock_get_settings, mock_load_collection):
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
     mock_load_collection.return_value = None
+    app.dependency_overrides[get_vector_store] = lambda: MagicMock()
 
-    resp = client.post("/api/v1/admin/reindex", json={}, headers=HEADERS)
-    assert resp.status_code == 404
-    assert resp.json()["detail"] == "No data in cache. Run ingestion first."
+    try:
+        resp = client.post("/api/v1/admin/reindex", json={}, headers=HEADERS)
+        assert resp.status_code == 404
+        assert resp.json()["detail"] == "No data in cache. Run ingestion first."
+    finally:
+        app.dependency_overrides.pop(get_vector_store, None)
 
 
 @patch("api.routers.admin.load_collection")

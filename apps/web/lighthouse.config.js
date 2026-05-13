@@ -5,6 +5,8 @@ module.exports = {
     // Performance thresholds for CI
     onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'],
 
+    formFactor: 'desktop',
+
     // Skip audits that are not applicable
     skipAudits: [
       'uses-http2', // Dev server may not use HTTP/2

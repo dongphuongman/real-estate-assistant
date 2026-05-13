@@ -7,7 +7,7 @@ updates:
     schedule:
       interval: weekly
       day: monday
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     labels:
       - dependencies
       - frontend
@@ -16,15 +16,13 @@ updates:
     reviewers:
       - AleksNeStu
     groups:
-      patch-updates:
+      dev-patch-and-minor:
         patterns: ["*"]
-        update-types: ["patch"]
-      minor-updates:
-        patterns: ["*"]
-        update-types: ["minor"]
-      security-patches:
-        patterns: ["*"]
-        update-types: ["patch"]
+        update-types: ["patch", "minor"]
+        exclude-patterns:
+          - "next"
+          - "react"
+          - "react-dom"
 
   # Backend (pip)
   - package-ecosystem: pip
@@ -32,7 +30,7 @@ updates:
     schedule:
       interval: weekly
       day: monday
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     labels:
       - dependencies
       - backend
@@ -41,22 +39,21 @@ updates:
     reviewers:
       - AleksNeStu
     groups:
-      patch-updates:
+      dev-patch-and-minor:
         patterns: ["*"]
-        update-types: ["patch"]
-      minor-updates:
-        patterns: ["*"]
-        update-types: ["minor"]
-      security-patches:
-        patterns: ["*"]
-        update-types: ["patch"]
+        update-types: ["patch", "minor"]
+        exclude-patterns:
+          - "langchain"
+          - "langchain-core"
+          - "langchain-community"
+          - "chromadb"
 
   # GitHub Actions
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
     labels:
       - dependencies
       - ci
