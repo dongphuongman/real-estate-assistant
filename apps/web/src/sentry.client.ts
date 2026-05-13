@@ -191,7 +191,6 @@ export function addBreadcrumb(
  */
 export function captureError(error: Error, context?: Record<string, unknown>) {
   Sentry.captureException(error, {
-    user: getUserContext(),
     extra: context,
   });
 }
