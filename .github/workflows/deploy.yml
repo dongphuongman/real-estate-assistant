@@ -171,15 +171,15 @@ jobs:
           DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
           VERCEL_ENV="${DEPLOY_ENV}"
           if [ "$VERCEL_ENV" = "staging" ]; then VERCEL_ENV="preview"; fi
-          vercel pull --yes --environment=${VERCEL_ENV} --token=${{ secrets.VERCEL_TOKEN }} --cwd apps/web
+          vercel pull --yes --environment=${VERCEL_ENV} --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build
         run: |
           DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
           if [ "$DEPLOY_ENV" = "production" ]; then
-            vercel build --prod --token=${{ secrets.VERCEL_TOKEN }} --cwd apps/web
+            vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
           else
-            vercel build --token=${{ secrets.VERCEL_TOKEN }} --cwd apps/web
+            vercel build --token=${{ secrets.VERCEL_TOKEN }}
           fi
 
       - name: Deploy to Vercel
@@ -187,9 +187,9 @@ jobs:
         run: |
           DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
           if [ "$DEPLOY_ENV" = "production" ]; then
-            url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} --cwd apps/web 2>&1 | tail -1)
+            url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tail -1)
           else
-            url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --cwd apps/web 2>&1 | tail -1)
+            url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tail -1)
           fi
           echo "url=$url" >> $GITHUB_OUTPUT
           echo "Deployed to: $url"
