@@ -187,9 +187,9 @@ jobs:
         run: |
           DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
           if [ "$DEPLOY_ENV" = "production" ]; then
-            url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tail -1)
+            url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | grep -oE 'https://[a-zA-Z0-9.-]+\.vercel\.app' | tail -1)
           else
-            url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tail -1)
+            url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | grep -oE 'https://[a-zA-Z0-9.-]+\.vercel\.app' | tail -1)
           fi
           echo "url=$url" >> $GITHUB_OUTPUT
           echo "Deployed to: $url"
@@ -197,12 +197,18 @@ jobs:
       - name: Verify frontend
         run: |
           sleep 10
-          status=$(curl -s -o /dev/null -w "%{http_code}" "${{ steps.deploy.outputs.url }}")
-          if [ "$status" != "200" ]; then
+          URL="${{ steps.deploy.outputs.url }}"
+          if [ -z "$URL" ]; then
+            echo "ERROR: No deploy URL captured"
+            exit 1
+          fi
+          status=$(curl -sL -o /dev/null -w "%{http_code}" "$URL")
+          if [ "$status" -ge 200 ] && [ "$status" -lt 400 ]; then
+            echo "Frontend is live at $URL (HTTP $status)"
+          else
             echo "ERROR: Frontend returned HTTP $status"
             exit 1
           fi
-          echo "Frontend is live!"
 
   smoke-test:
     needs: [deploy-backend, deploy-frontend]
