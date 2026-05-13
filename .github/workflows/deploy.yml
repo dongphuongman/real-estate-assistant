@@ -148,7 +148,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}
     outputs:
-      deploy-url: ${{ steps.service.outputs.url }}
+      deploy-url: ${{ steps.resolve-url.outputs.url }}
     steps:
       - name: Select Render frontend service
         id: service
@@ -157,11 +157,22 @@ jobs:
           echo "Deploy environment: $DEPLOY_ENV"
           if [ "$DEPLOY_ENV" = "staging" ]; then
             echo "id=${{ secrets.RENDER_SERVICE_ID_WEB_STAGING }}" >> $GITHUB_OUTPUT
-            echo "url=${{ secrets.RENDER_FRONTEND_URL_STAGING }}" >> $GITHUB_OUTPUT
           else
             echo "id=${{ secrets.RENDER_SERVICE_ID_WEB }}" >> $GITHUB_OUTPUT
-            echo "url=${{ secrets.RENDER_FRONTEND_URL }}" >> $GITHUB_OUTPUT
           fi
+
+      - name: Resolve frontend URL
+        id: resolve-url
+        run: |
+          DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
+          if [ "$DEPLOY_ENV" = "staging" ]; then
+            URL="${{ secrets.RENDER_FRONTEND_URL_STAGING }}"
+          else
+            URL="${{ secrets.RENDER_FRONTEND_URL }}"
+          fi
+          # Write URL to a temp file to avoid secret masking, then set output
+          echo "$URL" > /tmp/frontend_url.txt
+          echo "url=$URL" >> $GITHUB_OUTPUT
 
       - name: Get previous deploy ID (for rollback)
         id: prev-deploy
@@ -181,9 +192,10 @@ jobs:
 
       - name: Wait for frontend health
         run: |
-          echo "Waiting for frontend to become healthy..."
+          FRONTEND_URL=$(cat /tmp/frontend_url.txt)
+          echo "Waiting for frontend to become healthy at $FRONTEND_URL..."
           for i in $(seq 1 30); do
-            if curl -sf "${{ steps.service.outputs.url }}" -o /dev/null; then
+            if curl -sf "$FRONTEND_URL" -o /dev/null; then
               echo "Frontend is live!"
               exit 0
             fi
@@ -210,8 +222,6 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Run smoke tests
-        env:
-          FRONTEND_URL: ${{ needs.deploy-frontend.outputs.deploy-url }}
         run: |
           echo "Running post-deployment smoke tests..."
 
@@ -219,13 +229,14 @@ jobs:
           DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
           if [ "$DEPLOY_ENV" = "staging" ]; then
             BACKEND_URL="${{ secrets.RENDER_BACKEND_URL_STAGING }}"
+            FRONTEND_URL="${{ secrets.RENDER_FRONTEND_URL_STAGING }}"
           else
             BACKEND_URL="${{ secrets.RENDER_BACKEND_URL }}"
+            FRONTEND_URL="${{ secrets.RENDER_FRONTEND_URL }}"
           fi
 
           echo "Environment: $DEPLOY_ENV"
           echo "Backend: $BACKEND_URL"
-          echo "Frontend: $FRONTEND_URL"
 
           # Backend health
           health=$(curl -sf "${BACKEND_URL}/health" | jq -r '.status')
@@ -239,7 +250,7 @@ jobs:
           if [ -n "$FRONTEND_URL" ]; then
             status=$(curl -sL -o /dev/null -w "%{http_code}" "${FRONTEND_URL}")
             if [ "$status" -ge 200 ] && [ "$status" -lt 400 ]; then
-              echo "  ✓ Frontend live at $FRONTEND_URL (HTTP $status)"
+              echo "  ✓ Frontend live (HTTP $status)"
             else
               echo "ERROR: Frontend returned HTTP $status"
               exit 1
