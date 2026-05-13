@@ -33,11 +33,19 @@ English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, and Ukr
 OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode auth (API Key + JWT). Progressive 5-stage security pipeline with full scanning on all branches.
 
 <details>
-<summary><strong>📸 More Screenshots</strong></summary>
+<summary><strong>📸 Screenshots</strong></summary>
 
 | Login | Registration |
 |:---:|:---:|
 | ![Login](docs/screenshots/login.png) | ![Register](docs/screenshots/register.png) |
+
+| Language Switcher | Polish UI |
+|:---:|:---:|
+| ![Languages](docs/screenshots/language-switcher.png) | ![Polish](docs/screenshots/polish-nav.png) |
+
+| Mobile (375px) | |
+|:---:|:---:|
+| ![Mobile](docs/screenshots/login-mobile.png) | |
 
 </details>
 
