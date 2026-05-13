@@ -134,7 +134,7 @@ export function initSentry() {
       }),
     ],
 
-    beforeSend: beforeSend as (event: Sentry.Event, hint: Sentry.EventHint) => Sentry.Event | null,
+    beforeSend: beforeSend as Sentry.BrowserOptions['beforeSend'],
 
     // Don't send default PII
     sendDefaultPii: false,
