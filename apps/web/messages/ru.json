@@ -602,5 +602,160 @@
     "min": "Минимальное значение {min}",
     "max": "Максимальное значение {max}",
     "pattern": "Неверный формат"
+  },
+  "agents": {
+    "title": "Find an Agent",
+    "subtitle": "Connect with professional real estate agents",
+    "noAgents": "No agents found",
+    "noAgentsDescription": "Try adjusting your filters or search criteria",
+    "verified": "Verified",
+    "rating": "{rating} rating",
+    "reviews": "{count} reviews",
+    "sales": "{count} sales",
+    "rentals": "{count} rentals",
+    "specialties": "Specialties",
+    "serviceAreas": "Service Areas",
+    "languages": "Languages",
+    "contact": "Contact Agent",
+    "scheduleViewing": "Schedule Viewing",
+    "viewProfile": "View Profile",
+    "filters": {
+      "title": "Filters",
+      "city": "City",
+      "specialty": "Specialty",
+      "minRating": "Minimum Rating",
+      "sortBy": "Sort By",
+      "rating": "Rating",
+      "listings": "Number of Listings",
+      "reviews": "Number of Reviews",
+      "clear": "Clear Filters"
+    },
+    "profile": {
+      "title": "Agent Profile",
+      "about": "About",
+      "listings": "Active Listings",
+      "contactInfo": "Contact Information",
+      "office": "Office",
+      "phone": "Phone",
+      "email": "Email",
+      "license": "License",
+      "agency": "Agency",
+      "noListings": "No active listings"
+    },
+    "contactForm": {
+      "title": "Contact {name}",
+      "name": "Your Name",
+      "email": "Your Email",
+      "phone": "Your Phone",
+      "inquiryType": "Inquiry Type",
+      "general": "General Inquiry",
+      "property": "Property Inquiry",
+      "financing": "Financing Options",
+      "viewing": "Schedule Viewing",
+      "message": "Message",
+      "messagePlaceholder": "Tell us how we can help you...",
+      "submit": "Send Message",
+      "success": "Message sent successfully!",
+      "successDescription": "The agent will get back to you soon."
+    },
+    "viewingForm": {
+      "title": "Schedule a Viewing",
+      "selectDate": "Select Date",
+      "selectTime": "Select Time",
+      "duration": "Duration (minutes)",
+      "notes": "Notes",
+      "notesPlaceholder": "Any special requests or questions?",
+      "submit": "Request Viewing",
+      "success": "Viewing request sent!",
+      "successDescription": "The agent will confirm your appointment soon."
+    },
+    "inquiries": {
+      "title": "Inquiries",
+      "noInquiries": "No inquiries yet",
+      "status": {
+        "new": "New",
+        "read": "Read",
+        "responded": "Responded",
+        "closed": "Closed"
+      }
+    },
+    "appointments": {
+      "title": "Appointments",
+      "noAppointments": "No appointments scheduled",
+      "status": {
+        "requested": "Requested",
+        "confirmed": "Confirmed",
+        "cancelled": "Cancelled",
+        "completed": "Completed"
+      }
+    }
+  },
+  "documents": {
+    "title": "Documents",
+    "description": "Manage your property documents, contracts, and reports",
+    "uploadButton": "Upload Document",
+    "refresh": "Refresh",
+    "emptyState": {
+      "title": "No documents yet",
+      "description": "Upload your first document to start organizing your property-related files.",
+      "uploadFirst": "Upload Your First Document"
+    },
+    "upload": {
+      "title": "Upload Document",
+      "dragDrop": "Drag & drop a file here",
+      "orClick": "or click to browse",
+      "supportedTypes": "Supports: PDF, DOC, DOCX, JPG, PNG (max 10MB)",
+      "category": "Category",
+      "categoryPlaceholder": "Select category (optional)",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional description...",
+      "tags": "Tags",
+      "tagsPlaceholder": "contract, urgent, reviewed (comma-separated)",
+      "expiryDate": "Expiry Date",
+      "uploadButton": "Upload Document",
+      "uploading": "Uploading...",
+      "success": "Upload Successful!",
+      "cancel": "Cancel"
+    },
+    "categories": {
+      "selectCategory": "Select category (optional)",
+      "contract": "Contract",
+      "inspection": "Inspection Report",
+      "photo": "Photo",
+      "financial": "Financial Document",
+      "other": "Other",
+      "allCategories": "All Categories"
+    },
+    "list": {
+      "searchPlaceholder": "Search documents...",
+      "sortByDate": "Sort by Date",
+      "sortByName": "Sort by Name",
+      "sortBySize": "Sort by Size",
+      "ascending": "Ascending",
+      "descending": "Descending",
+      "noResults": "No documents match your filters",
+      "download": "Download",
+      "delete": "Delete",
+      "deleteConfirm": "Delete \"{name}\"? This cannot be undone.",
+      "deleting": "Deleting...",
+      "loadMore": "Load More ({page}/{total})",
+      "loading": "Loading...",
+      "expired": "Expired",
+      "expiringSoon": "Expiring Soon",
+      "expires": "Expires",
+      "added": "Added"
+    },
+    "errors": {
+      "loadFailed": "Failed to Load Documents",
+      "deleteFailed": "Failed to delete document",
+      "invalidType": "Invalid file type",
+      "tooLarge": "File too large. Maximum size: 10MB",
+      "uploadFailed": "Upload failed"
+    },
+    "expiryAlert": {
+      "singular": "{count} document expiring soon",
+      "plural": "{count} documents expiring soon",
+      "description": "The following documents will expire within 30 days:"
+    }
   }
 }

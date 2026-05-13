@@ -187,9 +187,15 @@ jobs:
         run: |
           DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
           if [ "$DEPLOY_ENV" = "production" ]; then
-            url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} --cwd apps/web 2>&1 | grep -oE 'https://[a-zA-Z0-9.-]+\.vercel\.app' | tail -1)
+            vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} --cwd apps/web > /tmp/vercel-output.txt 2>&1
           else
-            url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --cwd apps/web 2>&1 | grep -oE 'https://[a-zA-Z0-9.-]+\.vercel\.app' | tail -1)
+            vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --cwd apps/web > /tmp/vercel-output.txt 2>&1
+          fi
+          echo "=== Vercel deploy output ==="
+          cat /tmp/vercel-output.txt
+          url=$(grep -oE 'https://[a-zA-Z0-9.-]+\.vercel\.app' /tmp/vercel-output.txt | tail -1)
+          if [ -z "$url" ]; then
+            url=$(grep -oE 'https://[a-zA-Z0-9.-]+\.[a-z]+' /tmp/vercel-output.txt | tail -1)
           fi
           echo "url=$url" >> $GITHUB_OUTPUT
           echo "Deployed to: $url"
