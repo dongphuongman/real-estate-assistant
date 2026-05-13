@@ -2,7 +2,7 @@ name: Deploy Pipeline
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main, dev, ver4]
   workflow_dispatch:
     inputs:
       environment:
@@ -26,7 +26,7 @@ env:
 jobs:
   ci-check:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/ver4'
     steps:
       - uses: actions/checkout@v6
 
