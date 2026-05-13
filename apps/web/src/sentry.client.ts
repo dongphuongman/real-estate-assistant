@@ -50,10 +50,11 @@ function beforeSend(event: Sentry.Event, _hint: Sentry.EventHint) {
   }
 
   // Redact from extra context
-  if (event.extra) {
-    Object.keys(event.extra).forEach((key) => {
+  if (event.extra && typeof event.extra === 'object') {
+    const extra = event.extra as Record<string, unknown>;
+    Object.keys(extra).forEach((key) => {
       if (PII_FIELDS.has(key.toLowerCase())) {
-        event.extra[key] = '[Redacted]';
+        extra[key] = '[Redacted]';
       }
     });
   }
