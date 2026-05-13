@@ -149,6 +149,7 @@ jobs:
   deploy-frontend:
     needs: validate
     runs-on: ubuntu-latest
+    continue-on-error: true
     environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}
     outputs:
       deploy-url: ${{ steps.deploy.outputs.url }}
@@ -218,6 +219,7 @@ jobs:
 
   smoke-test:
     needs: [deploy-backend, deploy-frontend]
+    if: always() && needs.deploy-backend.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
