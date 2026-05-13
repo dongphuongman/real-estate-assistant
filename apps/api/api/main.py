@@ -4,7 +4,15 @@ import os
 import signal
 import warnings
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
+
+# Load .env from project root when running from apps/api/
+_root_env = Path(__file__).resolve().parent.parent.parent.parent / ".env"
+if _root_env.exists():
+    from dotenv import load_dotenv
+
+    load_dotenv(_root_env, override=False)
 
 warnings.filterwarnings(
     "ignore",

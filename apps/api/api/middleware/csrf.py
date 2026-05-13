@@ -53,9 +53,9 @@ class CSRFMiddleware(BaseHTTPMiddleware):
         """Process request and validate CSRF token for state-changing requests."""
         import os
 
-        # Skip CSRF in test/local environment
+        # Skip CSRF in non-production environments
         env = os.environ.get("ENVIRONMENT", "").lower()
-        if env in ("test", "local"):
+        if env != "production":
             return await call_next(request)
 
         # Skip CSRF for safe methods
