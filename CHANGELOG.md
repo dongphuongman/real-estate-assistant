@@ -5,7 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.0.0] - 2026-02-08
+## [1.0.0] - 2026-05-15
+
+First production release of AI Real Estate Assistant.
+
+### Added (since v4.0.0-dev)
+
+- Demo mode (`DEMO_MODE=true`) for no-auth staging showcase with MockLLM
+- Free LLM tier with OpenRouter cascade and rate limiting for unauthenticated users
+- Groq, Mistral, Qwen, and OpenCode Go as LLM providers
+- Nemotron 3 Super 120B free model integration
+- Multi-key failover with circuit breaker per provider
+- Task-specific model preferences (chat, search, tools, analysis, embedding)
+- WCAG 2.1 AA accessibility improvements for UI components
+- E2E validation suite with comprehensive user journeys and price history tests
+- SPRAV systematic pre-release acceptance validation framework
+- Dependabot security updates: authlib, langsmith, lodash, picomatch, orjson
+
+### Fixed
+
+- Language switching now uses next-intl navigation API (`defineRouting` + `createNavigation`)
+- Async event loop crashes in hybrid agent context
+- Google OAuth redirect URI configuration (requires env vars on deployment)
+- Logo overlapping nav links with proper flex layout
+- Unauthenticated access to public pages in middleware
+- Auth/me endpoint 404 when JWT is disabled
+- CSP headers allowing inline scripts for Next.js hydration
+
+### Security
+
+- Removed leaked Vercel/devcontainer configs from tracking
+- Resolved 4 MEDIUM defects from SPRAV pre-release validation
+- Removed all personal/infra leaks and deployment references
+- SSRF, log injection, and weak hashing remediation
+- CodeQL and Trivy container scanning in CI
+
+## [4.0.0-dev] - 2026-02-08
 
 ### Added
 - Next.js App Router frontend with React 19 and Tailwind CSS v4
@@ -106,7 +141,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Command-line interface for queries
 - SQLite database for property listings
 
-[4.0.0]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v4.0.0
+[4.0.0-dev]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v4.0.0
 [3.0.0]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v3.0.0
 [2.0.0]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v2.0.0
 [1.0.0]: https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v1.0.0

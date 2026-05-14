@@ -37,7 +37,7 @@ class AppSettings(BaseModel):
     # Application
     app_title: str = "AI Real Estate Assistant - Modern"
     app_icon: str = "🏠"
-    version: str = "4.0.0"
+    version: str = "1.0.0"
     environment: str = Field(default_factory=lambda: os.getenv("ENVIRONMENT", "development"))
 
     # Paths
