@@ -20,7 +20,7 @@ warnings.filterwarnings(
     module=r"langchain_google_genai\.chat_models",
 )
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -520,6 +520,12 @@ if settings.auth_jwt_enabled:
     app.include_router(model_preferences.router, prefix="/api/v1")
     # Task #88: User Profile Management
     app.include_router(profile.router, prefix="/api/v1")
+else:
+    # Fallback /auth/me so frontend gets 401 instead of 404 when JWT is disabled
+    @app.get("/api/v1/auth/me", include_in_schema=False)
+    async def auth_me_fallback():
+        raise HTTPException(status_code=401, detail="JWT authentication is not enabled")
+
 
 # Task #76: Ranking Configuration
 app.include_router(ranking_config.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
