@@ -16,10 +16,13 @@ from .base import (
 from .deepseek import DeepSeekProvider
 from .google import GoogleProvider
 from .grok import GrokProvider
+from .groq import GroqProvider
+from .mistral import MistralProvider
 from .moonshot import MoonshotProvider
 from .ollama import OllamaProvider
 from .openai import OpenAIProvider
 from .openrouter import OpenRouterProvider
+from .qwen import QwenProvider
 from .zai import ZaiProvider
 
 __all__ = [
@@ -35,6 +38,9 @@ __all__ = [
     "GoogleProvider",
     "GrokProvider",
     "DeepSeekProvider",
+    "GroqProvider",
+    "MistralProvider",
+    "QwenProvider",
     "ZaiProvider",
     "MoonshotProvider",
     "OllamaProvider",

@@ -177,6 +177,9 @@ def _set_provider_api_key(provider: str, api_key: str) -> Optional[str]:
         "deepseek": "DEEPSEEK_API_KEY",
         "zai": "ZHIPUAI_API_KEY",
         "moonshot": "MOONSHOT_API_KEY",
+        "groq": "GROQ_API_KEY",
+        "mistral": "MISTRAL_API_KEY",
+        "qwen": "DASHSCOPE_API_KEY",
     }
 
     env_var = env_var_map.get(provider)
@@ -204,6 +207,9 @@ def _restore_provider_api_key(provider: str, old_key: Optional[str]) -> None:
         "deepseek": "DEEPSEEK_API_KEY",
         "zai": "ZHIPUAI_API_KEY",
         "moonshot": "MOONSHOT_API_KEY",
+        "groq": "GROQ_API_KEY",
+        "mistral": "MISTRAL_API_KEY",
+        "qwen": "DASHSCOPE_API_KEY",
     }
 
     env_var = env_var_map.get(provider)

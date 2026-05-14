@@ -63,6 +63,18 @@ class AppSettings(BaseModel):
         default_factory=lambda: os.getenv("MOONSHOT_API_KEY"),
         description="Moonshot AI (Kimi) API key - Chinese LLM provider with long context",
     )
+    groq_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("GROQ_API_KEY"),
+        description="Groq API key - ultra-fast LPU inference",
+    )
+    mistral_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("MISTRAL_API_KEY"),
+        description="Mistral API key - EU-hosted open-weight models",
+    )
+    qwen_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("DASHSCOPE_API_KEY"),
+        description="DashScope API key - Qwen models via Alibaba Cloud",
+    )
 
     # Multi-Provider Failover Configuration
     provider_api_keys: dict[str, list[str]] = Field(
@@ -736,6 +748,9 @@ class AppSettings(BaseModel):
             "deepseek": "DEEPSEEK_API_KEYS",
             "zai": "ZHIPUAI_API_KEYS",
             "moonshot": "MOONSHOT_API_KEYS",
+            "groq": "GROQ_API_KEYS",
+            "mistral": "MISTRAL_API_KEYS",
+            "qwen": "DASHSCOPE_API_KEYS",
         }
 
         # Parse multi-key env vars if provided
@@ -920,6 +935,15 @@ def update_api_key(provider: str, api_key: str) -> None:
     elif provider == "moonshot":
         settings.moonshot_api_key = api_key
         os.environ["MOONSHOT_API_KEY"] = api_key
+    elif provider == "groq":
+        settings.groq_api_key = api_key
+        os.environ["GROQ_API_KEY"] = api_key
+    elif provider == "mistral":
+        settings.mistral_api_key = api_key
+        os.environ["MISTRAL_API_KEY"] = api_key
+    elif provider == "qwen":
+        settings.qwen_api_key = api_key
+        os.environ["DASHSCOPE_API_KEY"] = api_key
 
     # Clear provider cache to pick up new API key
     from models.provider_factory import ModelProviderFactory

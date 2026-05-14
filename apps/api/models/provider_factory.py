@@ -17,10 +17,13 @@ from .providers.base import ModelInfo, ModelProvider
 from .providers.deepseek import DeepSeekProvider
 from .providers.google import GoogleProvider
 from .providers.grok import GrokProvider
+from .providers.groq import GroqProvider
+from .providers.mistral import MistralProvider
 from .providers.moonshot import MoonshotProvider
 from .providers.ollama import OllamaProvider
 from .providers.openai import OpenAIProvider
 from .providers.openrouter import OpenRouterProvider
+from .providers.qwen import QwenProvider
 from .providers.zai import ZaiProvider
 
 logger = logging.getLogger(__name__)
@@ -42,6 +45,9 @@ class ModelProviderFactory:
         "grok": GrokProvider,
         "deepseek": DeepSeekProvider,
         "openrouter": OpenRouterProvider,
+        "groq": GroqProvider,
+        "mistral": MistralProvider,
+        "qwen": QwenProvider,
         "zai": ZaiProvider,
         "moonshot": MoonshotProvider,
         "ollama": OllamaProvider,
@@ -110,6 +116,12 @@ class ModelProviderFactory:
                 config["api_key"] = settings.deepseek_api_key
             elif provider_name == "openrouter":
                 config["api_key"] = settings.openrouter_api_key
+            elif provider_name == "groq":
+                config["api_key"] = settings.groq_api_key
+            elif provider_name == "mistral":
+                config["api_key"] = settings.mistral_api_key
+            elif provider_name == "qwen":
+                config["api_key"] = settings.qwen_api_key
             elif provider_name == "zai":
                 config["api_key"] = settings.zhipuai_api_key
             elif provider_name == "moonshot":
