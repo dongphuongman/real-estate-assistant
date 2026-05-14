@@ -23,6 +23,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+_WORD_BOUNDARY_CACHE: Dict[str, "re.Pattern[str]"] = {}
+
+
+def _word_match(keyword: str, text: str) -> bool:
+    """Match keyword with word boundaries. Short keywords (≤3 chars) require
+    boundaries to prevent false positives like 'or' inside 'mortgage'."""
+    if len(keyword) <= 3:
+        if keyword not in _WORD_BOUNDARY_CACHE:
+            _WORD_BOUNDARY_CACHE[keyword] = re.compile(r"\b" + re.escape(keyword) + r"\b")
+        return bool(_WORD_BOUNDARY_CACHE[keyword].search(text))
+    return keyword in text
+
+
 # =============================================================================
 # INTENT TAXONOMY (Enhanced)
 # =============================================================================
@@ -679,7 +692,7 @@ class QueryAnalyzer:
         matched: Dict[QueryIntent, List[str]] = {}
 
         for intent, keywords in intent_keyword_map.items():
-            matches = [kw for kw in keywords if kw in query_lower]
+            matches = [kw for kw in keywords if _word_match(kw, query_lower)]
             if matches:
                 # Score based on number of matches and keyword specificity
                 # Longer keywords get more weight (more specific)

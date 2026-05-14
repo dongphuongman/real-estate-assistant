@@ -65,6 +65,20 @@ def get_vector_store() -> Optional[ChromaPropertyStore]:
         return None
 
 
+PROVIDER_ENV_VAR_MAP = {
+    "openai": "OPENAI_API_KEY",
+    "anthropic": "ANTHROPIC_API_KEY",
+    "google": "GOOGLE_API_KEY",
+    "grok": "XAI_API_KEY",
+    "deepseek": "DEEPSEEK_API_KEY",
+    "zai": "ZHIPUAI_API_KEY",
+    "moonshot": "MOONSHOT_API_KEY",
+    "groq": "GROQ_API_KEY",
+    "mistral": "MISTRAL_API_KEY",
+    "qwen": "DASHSCOPE_API_KEY",
+}
+
+
 def _create_llm(provider_name: str, model_id: Optional[str]) -> BaseChatModel:
     llm, _resolved_model_id = _create_llm_with_resolved_model_id(
         provider_name=provider_name, model_id=model_id
@@ -162,27 +176,11 @@ def _set_provider_api_key(provider: str, api_key: str) -> Optional[str]:
     """
     Set provider API key in environment and return old value.
 
-    Args:
-        provider: Provider name
-        api_key: New API key value
-
-    Returns:
-        Previous API key value (or None if not set)
+    Note: Mutates os.environ, safe only because create_model() is synchronous
+    (no await between set/restore). For multi-worker deployments, each worker
+    has its own os.environ so no cross-contamination.
     """
-    env_var_map = {
-        "openai": "OPENAI_API_KEY",
-        "anthropic": "ANTHROPIC_API_KEY",
-        "google": "GOOGLE_API_KEY",
-        "grok": "XAI_API_KEY",
-        "deepseek": "DEEPSEEK_API_KEY",
-        "zai": "ZHIPUAI_API_KEY",
-        "moonshot": "MOONSHOT_API_KEY",
-        "groq": "GROQ_API_KEY",
-        "mistral": "MISTRAL_API_KEY",
-        "qwen": "DASHSCOPE_API_KEY",
-    }
-
-    env_var = env_var_map.get(provider)
+    env_var = PROVIDER_ENV_VAR_MAP.get(provider)
     if not env_var:
         return None
 
@@ -192,29 +190,10 @@ def _set_provider_api_key(provider: str, api_key: str) -> Optional[str]:
 
 
 def _restore_provider_api_key(provider: str, old_key: Optional[str]) -> None:
-    """
-    Restore provider API key to previous value.
-
-    Args:
-        provider: Provider name
-        old_key: Previous API key value (None to unset)
-    """
-    env_var_map = {
-        "openai": "OPENAI_API_KEY",
-        "anthropic": "ANTHROPIC_API_KEY",
-        "google": "GOOGLE_API_KEY",
-        "grok": "XAI_API_KEY",
-        "deepseek": "DEEPSEEK_API_KEY",
-        "zai": "ZHIPUAI_API_KEY",
-        "moonshot": "MOONSHOT_API_KEY",
-        "groq": "GROQ_API_KEY",
-        "mistral": "MISTRAL_API_KEY",
-        "qwen": "DASHSCOPE_API_KEY",
-    }
-
-    env_var = env_var_map.get(provider)
+    """Restore provider API key to previous value."""
+    env_var = PROVIDER_ENV_VAR_MAP.get(provider)
     if not env_var:
-        return None
+        return
 
     if old_key is None:
         os.environ.pop(env_var, None)

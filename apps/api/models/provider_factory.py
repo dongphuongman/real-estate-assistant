@@ -58,6 +58,22 @@ class ModelProviderFactory:
     # Cache of instantiated providers
     _instances: Dict[str, ModelProvider] = {}
 
+    # Provider name -> settings attribute for API key lookup
+    _PROVIDER_KEY_MAP: Dict[str, Optional[str]] = {
+        "openai": settings.openai_api_key,
+        "anthropic": settings.anthropic_api_key,
+        "google": settings.google_api_key,
+        "grok": settings.grok_api_key,
+        "deepseek": settings.deepseek_api_key,
+        "openrouter": settings.openrouter_api_key,
+        "groq": settings.groq_api_key,
+        "mistral": settings.mistral_api_key,
+        "qwen": settings.qwen_api_key,
+        "zai": settings.zhipuai_api_key,
+        "moonshot": settings.moonshot_api_key,
+        "opencode": settings.opencode_api_key,
+    }
+
     @classmethod
     def list_providers(cls) -> List[str]:
         """
@@ -106,30 +122,9 @@ class ModelProviderFactory:
 
         # Inject API key from settings if not present
         if "api_key" not in config:
-            if provider_name == "openai":
-                config["api_key"] = settings.openai_api_key
-            elif provider_name == "anthropic":
-                config["api_key"] = settings.anthropic_api_key
-            elif provider_name == "google":
-                config["api_key"] = settings.google_api_key
-            elif provider_name == "grok":
-                config["api_key"] = settings.grok_api_key
-            elif provider_name == "deepseek":
-                config["api_key"] = settings.deepseek_api_key
-            elif provider_name == "openrouter":
-                config["api_key"] = settings.openrouter_api_key
-            elif provider_name == "groq":
-                config["api_key"] = settings.groq_api_key
-            elif provider_name == "mistral":
-                config["api_key"] = settings.mistral_api_key
-            elif provider_name == "qwen":
-                config["api_key"] = settings.qwen_api_key
-            elif provider_name == "zai":
-                config["api_key"] = settings.zhipuai_api_key
-            elif provider_name == "moonshot":
-                config["api_key"] = settings.moonshot_api_key
-            elif provider_name == "opencode":
-                config["api_key"] = settings.opencode_api_key
+            api_key = cls._PROVIDER_KEY_MAP.get(provider_name)
+            if api_key:
+                config["api_key"] = api_key
 
         # Create new instance
         provider_class = cls._PROVIDERS[provider_name]

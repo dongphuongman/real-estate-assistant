@@ -5,7 +5,6 @@ import pytest
 
 from core.jwt import (
     create_access_token,
-    decode_access_token,
     generate_csrf_token,
     generate_password_reset_token,
     generate_refresh_token,
@@ -77,18 +76,18 @@ class TestAccessToken:
         assert "exp" in payload
         assert "iat" in payload
 
-    def test_decode_access_token_without_verification(self):
-        """Test decoding token without verification."""
+    def test_verify_access_token_decodes_payload(self):
+        """Test that verify_access_token decodes a valid token."""
         token = create_access_token(subject="user123")
-        decoded = decode_access_token(token)
+        decoded = verify_access_token(token)
         assert decoded is not None
         assert decoded["sub"] == "user123"
 
-    def test_decode_access_token_invalid_returns_none(self):
-        """Test that decode_access_token returns None for invalid token."""
+    def test_verify_access_token_invalid_raises(self):
+        """Test that verify_access_token raises on invalid token."""
         invalid_token = "not-a-valid-jwt"
-        decoded = decode_access_token(invalid_token)
-        assert decoded is None
+        with pytest.raises(jwt.InvalidTokenError):
+            verify_access_token(invalid_token)
 
 
 class TestRefreshToken:

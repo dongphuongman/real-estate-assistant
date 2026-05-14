@@ -1,6 +1,5 @@
 """JWT token creation and validation."""
 
-import functools
 import secrets
 from datetime import UTC, datetime, timedelta
 from typing import Any, Optional
@@ -135,42 +134,6 @@ def verify_access_token(token: str) -> dict[str, Any]:
         raise jwt.InvalidTokenError("Invalid token type")
 
     return payload
-
-
-def _decode_access_token_unsafe(token: str) -> Optional[dict[str, Any]]:
-    """
-    INTERNAL: Decode a JWT access token WITHOUT signature verification.
-
-    WARNING: This function does NOT verify the token signature.
-    It only decodes the token payload. DO NOT use for authentication.
-    This is intended for internal debugging only.
-
-    Args:
-        token: Encoded JWT token string
-
-    Returns:
-        Decoded token payload or None if invalid
-    """
-    import warnings
-
-    warnings.warn(
-        "decode_access_token is deprecated and will be removed. Use verify_access_token instead.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    try:
-        return jwt.decode(
-            token,
-            get_jwt_secret(),
-            algorithms=[get_jwt_algorithm()],
-            options={"verify_signature": False},
-        )
-    except jwt.PyJWTError:
-        return None
-
-
-# Alias for backwards compatibility (triggers deprecation warning)
-decode_access_token = functools.partial(_decode_access_token_unsafe)
 
 
 def generate_refresh_token() -> str:
