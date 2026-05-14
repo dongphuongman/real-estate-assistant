@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { divIcon, type LatLngBoundsExpression } from "leaflet";
-import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { divIcon, type LatLngBoundsExpression } from 'leaflet';
+import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 
-import { computeBounds, computeCenter, type PropertyMapPoint } from "./property-map-utils";
-import { clusterMapPoints, type ClusteredMapItem } from "./property-map-clustering";
+import { computeBounds, computeCenter, type PropertyMapPoint } from './property-map-utils';
+import { clusterMapPoints, type ClusteredMapItem } from './property-map-clustering';
 
 function FitBounds({ bounds }: { bounds: LatLngBoundsExpression | null }) {
   const map = useMap();
@@ -33,7 +33,7 @@ function ClusterMarker({
   icon,
   children,
 }: {
-  cluster: Extract<ClusteredMapItem, { kind: "cluster" }>;
+  cluster: Extract<ClusteredMapItem, { kind: 'cluster' }>;
   zoom: number;
   icon: ReturnType<typeof divIcon>;
   children: ReactNode;
@@ -68,7 +68,7 @@ export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) 
   const markerIcon = useMemo(
     () =>
       divIcon({
-        className: "",
+        className: '',
         html: `<div style="width:14px;height:14px;background:#2563eb;border-radius:9999px;border:2px solid white;box-shadow:0 1px 2px rgba(0,0,0,0.3)"></div>`,
         iconSize: [14, 14],
         iconAnchor: [7, 7],
@@ -79,7 +79,7 @@ export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) 
   const getClusterIcon = useCallback(
     (count: number) =>
       divIcon({
-        className: "",
+        className: '',
         html: `<div style="min-width:30px;height:30px;padding:0 8px;background:#1d4ed8;color:white;border-radius:9999px;border:2px solid white;box-shadow:0 1px 2px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;line-height:1">${count}</div>`,
         iconSize: [30, 30],
         iconAnchor: [15, 15],
@@ -89,7 +89,7 @@ export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) 
 
   return (
     <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
-      <div className="h-[420px] w-full" aria-label="Property map">
+      <div className="h-[420px] w-full" aria-label="Property map" role="application">
         <MapContainer
           center={[center.lat, center.lon]}
           zoom={12}
@@ -103,18 +103,20 @@ export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) 
           <FitBounds bounds={bounds as LatLngBoundsExpression | null} />
           <ZoomTracker onZoomChange={onZoomChange} />
           {items.map((item) => {
-            if (item.kind === "point") {
+            if (item.kind === 'point') {
               const p = item.point;
               return (
                 <Marker key={p.id} position={[p.lat, p.lon]} icon={markerIcon}>
                   <Popup>
                     <div className="space-y-1">
-                      <div className="font-semibold">{p.title ?? "Untitled Property"}</div>
+                      <div className="font-semibold">{p.title ?? 'Untitled Property'}</div>
                       <div className="text-sm">
-                        {[p.city, p.country].filter(Boolean).join(", ") || "Location unavailable"}
+                        {[p.city, p.country].filter(Boolean).join(', ') || 'Location unavailable'}
                       </div>
                       <div className="text-sm font-medium">
-                        {typeof p.price === "number" ? `$${p.price.toLocaleString()}` : "Price on request"}
+                        {typeof p.price === 'number'
+                          ? `$${p.price.toLocaleString()}`
+                          : 'Price on request'}
                       </div>
                     </div>
                   </Popup>
@@ -123,12 +125,17 @@ export default function PropertyMap({ points }: { points: PropertyMapPoint[] }) 
             }
 
             const titles = item.points
-              .map((p) => p.title ?? "Untitled Property")
+              .map((p) => p.title ?? 'Untitled Property')
               .filter(Boolean)
               .slice(0, 5);
 
             return (
-              <ClusterMarker key={item.id} cluster={item} zoom={zoom} icon={getClusterIcon(item.count)}>
+              <ClusterMarker
+                key={item.id}
+                cluster={item}
+                zoom={zoom}
+                icon={getClusterIcon(item.count)}
+              >
                 <Popup>
                   <div className="space-y-2">
                     <div className="font-semibold">{item.count} properties in this area</div>
