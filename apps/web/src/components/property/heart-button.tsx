@@ -69,6 +69,7 @@ export function HeartButton({
         'disabled:opacity-50 disabled:cursor-not-allowed',
         className
       )}
+      data-testid="favorite-toggle"
       title={showTooltip ? (favorited ? 'Remove from favorites' : 'Add to favorites') : undefined}
       aria-label={favorited ? 'Remove from favorites' : 'Add to favorites'}
       aria-pressed={favorited}

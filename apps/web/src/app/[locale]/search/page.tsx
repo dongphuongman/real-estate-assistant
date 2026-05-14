@@ -336,6 +336,7 @@ function SearchPageContent() {
             <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
+              data-testid="search-input"
               placeholder="Describe what you're looking for (e.g., 2-bed apartment under $500k)..."
               className={[
                 'w-full rounded-md border border-input bg-background',
@@ -353,6 +354,7 @@ function SearchPageContent() {
           </div>
           <button
             type="submit"
+            data-testid="search-submit"
             disabled={loading || !query.trim()}
             className={[
               'inline-flex items-center justify-center rounded-md bg-primary px-8',

@@ -25,6 +25,7 @@ export function PropertyCard({
 
   return (
     <article
+      data-testid="property-card"
       className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden"
       aria-label={property.title || t('untitled')}
     >
