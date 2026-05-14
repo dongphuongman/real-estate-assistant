@@ -370,4 +370,8 @@ screenshots/
 artifacts/e2e-output/
 test-results/
 .kiro/
-.vercel
+.vercel/
+.vercel/project.json
+.devcontainer/
+.rafcache/
+.private/
