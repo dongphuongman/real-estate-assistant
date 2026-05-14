@@ -2,6 +2,9 @@
 __azurite_*
 *.json.lock
 
+# Stack dumps (Windows/Cygwin crash artifacts)
+*.stackdump
+
 # Systemd / Legacy Service Files
 *.service
 
