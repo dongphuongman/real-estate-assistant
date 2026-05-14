@@ -338,6 +338,35 @@ class AppSettings(BaseModel):
     default_max_tokens: int = 4096
     default_k_results: int = 5
 
+    # Free Tier LLM Configuration (Task #89)
+    free_tier_enabled: bool = Field(
+        default_factory=lambda: (
+            os.getenv("FREE_TIER_ENABLED", "true").strip().lower() in {"1", "true", "yes", "on"}
+        ),
+        description="Enable free LLM tier for unauthenticated/demo users",
+    )
+    free_tier_hourly_limit: int = Field(
+        default_factory=lambda: int(os.getenv("FREE_TIER_HOURLY_LIMIT", "20")),
+        description="Max LLM requests per hour for free tier users",
+    )
+    free_tier_daily_limit: int = Field(
+        default_factory=lambda: int(os.getenv("FREE_TIER_DAILY_LIMIT", "200")),
+        description="Max LLM requests per day for free tier users",
+    )
+    free_tier_provider_cascade: list[str] = Field(
+        default_factory=lambda: _parse_csv_list(
+            os.getenv("FREE_TIER_PROVIDER_CASCADE", "openrouter,google,ollama")
+        ),
+        description="Provider cascade order for free tier (comma-separated)",
+    )
+    free_tier_default_model: str = Field(
+        default_factory=lambda: os.getenv(
+            "FREE_TIER_DEFAULT_MODEL",
+            "nvidia/nemotron-3-super-120b-a12b:free",
+        ),
+        description="Default model for free tier (OpenRouter free model ID)",
+    )
+
     # LLM Request Timeouts
     llm_request_timeout_seconds: float = Field(
         default_factory=lambda: float(os.getenv("LLM_REQUEST_TIMEOUT_SECONDS", "120")),

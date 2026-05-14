@@ -470,6 +470,8 @@ app.add_middleware(
 # Include Routers
 app.include_router(search.router, prefix="/api/v1", dependencies=[Depends(get_optional_api_key)])
 app.include_router(chat.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
+# Task #89: Free tier chat (no API key required, rate-limited)
+app.include_router(chat.free_router, prefix="/api/v1")
 app.include_router(rag_router.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(settings_router.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(tools.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
