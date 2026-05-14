@@ -78,7 +78,10 @@ function LoginForm() {
         <div className="grid gap-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password">{t('passwordLabel')}</Label>
-            <Link href={`/${locale}/auth/forgot-password`} className="text-xs text-primary hover:underline">
+            <Link
+              href={`/${locale}/auth/forgot-password`}
+              className="text-xs text-primary hover:underline"
+            >
               {t('forgotPassword')}
             </Link>
           </div>
@@ -95,10 +98,29 @@ function LoginForm() {
 
         <div className="text-sm text-center text-muted-foreground">
           {t('noAccount')}{' '}
-          <Link href={`/${locale}/auth/register`} className="underline underline-offset-4 hover:text-primary">
+          <Link
+            href={`/${locale}/auth/register`}
+            className="underline underline-offset-4 hover:text-primary"
+          >
             {t('signUp')}
           </Link>
         </div>
+
+        <div className="relative my-2">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-card px-2 text-muted-foreground">{t('or')}</span>
+          </div>
+        </div>
+
+        <Link
+          href={`/${locale}`}
+          className="text-sm text-center text-muted-foreground hover:text-primary underline underline-offset-4"
+        >
+          {t('continueAsGuest')}
+        </Link>
       </CardFooter>
     </form>
   );

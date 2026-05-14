@@ -12,7 +12,7 @@ import { LogOut, User, Settings, ChevronDown } from 'lucide-react';
  * Displays when user is authenticated, shows login/register buttons when not.
  */
 export function UserMenu() {
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, isDemoMode, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const locale = useLocale();
@@ -46,6 +46,15 @@ export function UserMenu() {
 
   // Not authenticated - show login/register buttons
   if (!isAuthenticated || !user) {
+    if (isDemoMode) {
+      return (
+        <div className="flex items-center gap-2">
+          <Link href={`/${locale}/auth/login`}>
+            <Button size="sm">{t('signIn')}</Button>
+          </Link>
+        </div>
+      );
+    }
     return (
       <div className="flex items-center gap-2">
         <Link href={`/${locale}/auth/login`}>

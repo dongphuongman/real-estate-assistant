@@ -70,12 +70,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setIsDemoMode(false);
       } catch (err) {
         if (err instanceof ApiError) {
-          // 401 = not logged in, 404 = auth endpoint not available (JWT disabled)
-          if (err.status !== 401 && err.status !== 404) {
-            setError(err.message);
-          }
-          if (err.status === 404) {
+          // 401 = JWT enabled, user not logged in
+          // 404 = JWT completely disabled (auth endpoint doesn't exist)
+          // Both mean: no authenticated user -> demo mode
+          if (err.status === 401 || err.status === 404) {
             setIsDemoMode(true);
+          } else {
+            setError(err.message);
           }
         } else {
           setError('Failed to fetch user');
@@ -152,9 +153,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (err) {
       if (err instanceof ApiError && (err.status === 401 || err.status === 404)) {
         setUser(null);
-        if (err.status === 404) {
-          setIsDemoMode(true);
-        }
+        setIsDemoMode(true);
       }
       setError(err instanceof Error ? err.message : 'Failed to refresh user');
     }

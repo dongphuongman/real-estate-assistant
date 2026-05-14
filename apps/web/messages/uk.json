@@ -70,7 +70,9 @@
       "noAccount": "Don't have an account?",
       "submit": "Sign In",
       "signUp": "Sign up",
-      "orContinueWith": "Or continue with"
+      "orContinueWith": "Or continue with",
+      "or": "або",
+      "continueAsGuest": "Спробувати без акаунта"
     },
     "register": {
       "title": "Create an account",
@@ -566,6 +568,7 @@
     "subtitle": "Intelligent property search, market analytics, and investment insights powered by advanced AI.",
     "startSearching": "Start Searching",
     "askAssistant": "Ask Assistant",
+    "askAssistantDemo": "Увійти для AI-асистента",
     "features": {
       "search": {
         "title": "Smart Search",
@@ -766,8 +769,9 @@
     }
   },
   "demo": {
-    "banner": "Ви в демо-режимі. Увійдіть для повного доступу.",
+    "banner": "Демо-режим — доступний пошук та дані міст",
     "login": "Увійти",
-    "lockedFeature": "Увійдіть, щоб отримати доступ"
+    "lockedFeature": "Увійдіть, щоб отримати доступ",
+    "signInForFull": "Увійдіть для AI-асистента та інших функцій"
   }
 }

@@ -70,7 +70,9 @@
       "noAccount": "Nie masz konta?",
       "submit": "Zaloguj się",
       "signUp": "Zarejestruj się",
-      "orContinueWith": "Lub kontynuuj przez"
+      "orContinueWith": "Lub kontynuuj przez",
+      "or": "lub",
+      "continueAsGuest": "Wypróbuj bez konta"
     },
     "register": {
       "title": "Utwórz konto",
@@ -559,6 +561,7 @@
     "subtitle": "Inteligentne wyszukiwanie nieruchomości, analityka rynkowa i analizy inwestycyjne z wykorzystaniem zaawansowanego AI.",
     "startSearching": "Rozpocznij szukanie",
     "askAssistant": "Zapytaj asystenta",
+    "askAssistantDemo": "Zaloguj się dla AI asystenta",
     "features": {
       "search": {
         "title": "Inteligentne wyszukiwanie",
@@ -759,8 +762,9 @@
     }
   },
   "demo": {
-    "banner": "Przeglądasz w trybie demo. Zaloguj się, aby uzyskać pełny dostęp.",
+    "banner": "Tryb demo — wyszukiwanie i dane miast są dostępne",
     "login": "Zaloguj się",
-    "lockedFeature": "Zaloguj się, aby uzyskać dostęp"
+    "lockedFeature": "Zaloguj się, aby uzyskać dostęp",
+    "signInForFull": "Zaloguj się dla AI asystenta i więcej"
   }
 }

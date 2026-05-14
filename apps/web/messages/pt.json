@@ -70,7 +70,9 @@
       "noAccount": "Don't have an account?",
       "submit": "Sign In",
       "signUp": "Sign up",
-      "orContinueWith": "Or continue with"
+      "orContinueWith": "Or continue with",
+      "or": "ou",
+      "continueAsGuest": "Experimentar sem conta"
     },
     "register": {
       "title": "Create an account",
@@ -566,6 +568,7 @@
     "subtitle": "Intelligent property search, market analytics, and investment insights powered by advanced AI.",
     "startSearching": "Start Searching",
     "askAssistant": "Ask Assistant",
+    "askAssistantDemo": "Entrar para assistente AI",
     "features": {
       "search": {
         "title": "Smart Search",
@@ -766,8 +769,9 @@
     }
   },
   "demo": {
-    "banner": "Você está no modo demo. Entre para acesso completo.",
+    "banner": "Modo demo — pesquisa e dados de cidades disponíveis",
     "login": "Entrar",
-    "lockedFeature": "Entre para acessar este recurso"
+    "lockedFeature": "Entre para acessar este recurso",
+    "signInForFull": "Entre para assistente AI e mais"
   }
 }

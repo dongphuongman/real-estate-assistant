@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { Building2, Loader2, AlertCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const locale = useLocale();
   const { refreshUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -108,10 +110,29 @@ export default function RegisterPage() {
 
           <div className="text-sm text-center text-muted-foreground">
             Already have an account?{' '}
-            <Link href="/auth/login" className="underline underline-offset-4 hover:text-primary">
+            <Link
+              href={`/${locale}/auth/login`}
+              className="underline underline-offset-4 hover:text-primary"
+            >
               Sign in
             </Link>
           </div>
+
+          <div className="relative my-2">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">or</span>
+            </div>
+          </div>
+
+          <Link
+            href={`/${locale}`}
+            className="text-sm text-center text-muted-foreground hover:text-primary underline underline-offset-4"
+          >
+            Explore demo first
+          </Link>
         </CardFooter>
       </form>
     </Card>
