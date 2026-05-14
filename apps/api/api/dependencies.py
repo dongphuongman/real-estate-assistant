@@ -278,7 +278,13 @@ async def get_llm(
     Get Language Model instance.
     Uses settings to determine provider and model.
     Supports multi-key and multi-provider fallback when enabled.
+    Returns MockLLM when DEMO_MODE is enabled.
     """
+    if settings.demo_mode:
+        from core.demo import get_demo_llm
+
+        return get_demo_llm()
+
     default_provider_name = settings.default_provider
     default_model_id = settings.default_model
 
@@ -393,11 +399,12 @@ async def get_llm_for_task(
     Get Language Model instance configured for a specific task type.
 
     Priority order:
-    1. User's task-specific preference (from DB via ModelPreferenceService)
-    2. User's global preference (from legacy UserModelPreferencesManager)
-    3. System default for task type
-    4. Settings default
-    5. Fallback to Ollama
+    1. Demo mode (returns MockLLM if DEMO_MODE=true)
+    2. User's task-specific preference (from DB via ModelPreferenceService)
+    3. User's global preference (from legacy UserModelPreferencesManager)
+    4. System default for task type
+    5. Settings default
+    6. Fallback to Ollama
 
     Args:
         task_type: Task type (chat, search, tools, analysis, embedding)
@@ -407,6 +414,11 @@ async def get_llm_for_task(
     Returns:
         Configured LLM instance
     """
+    if settings.demo_mode:
+        from core.demo import get_demo_llm
+
+        return get_demo_llm()
+
     primary_provider: Optional[str] = None
     primary_model: Optional[str] = None
 
@@ -513,6 +525,11 @@ def get_optional_llm_with_details(
     provider_override: str | None,
     model_override: str | None,
 ) -> tuple[Optional[BaseChatModel], Optional[str], Optional[str]]:
+    if settings.demo_mode:
+        from core.demo import get_demo_llm
+
+        return get_demo_llm(), "demo", "mock"
+
     default_provider_name = settings.default_provider
     default_model_id = settings.default_model
 

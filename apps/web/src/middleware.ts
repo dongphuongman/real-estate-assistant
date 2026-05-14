@@ -101,6 +101,11 @@ export async function middleware(request: NextRequest) {
     return intlResponse;
   }
 
+  // Demo mode: allow all routes without authentication
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+    return intlResponse;
+  }
+
   // Check for access_token cookie (set by backend auth)
   const accessToken = request.cookies.get('access_token')?.value;
 

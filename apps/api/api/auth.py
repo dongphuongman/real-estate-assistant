@@ -28,6 +28,8 @@ async def get_api_key(
     """
     Validate API key from header.
 
+    In demo mode, returns a fixed placeholder key without validation.
+
     Args:
         request: FastAPI request object for accessing request_id
         api_key_header: API key from X-API-Key header
@@ -39,6 +41,9 @@ async def get_api_key(
         HTTPException: If key is invalid or missing
     """
     settings = get_settings()
+
+    if settings.demo_mode:
+        return "demo-mode-key"
 
     candidate = api_key_header.strip() if isinstance(api_key_header, str) else ""
     if not candidate:
@@ -135,11 +140,18 @@ async def get_optional_api_key(
     """
     Optional API key validation that allows demo mode access.
 
+    When DEMO_MODE setting is enabled, always returns the demo key.
     For GET requests with X-Demo-Mode header or ?demo=true query param,
     returns None (no auth required). Otherwise, validates the API key normally.
     Intended for read-only public endpoints (search, city-overview).
     """
-    # Check demo mode indicators
+    settings = get_settings()
+
+    # Server-side demo mode always passes
+    if settings.demo_mode:
+        return "demo-mode-key"
+
+    # Check demo mode indicators from client
     is_demo = request.headers.get("x-demo-mode", "").lower() == "true"
     if not is_demo:
         is_demo = request.query_params.get("demo", "").lower() == "true"

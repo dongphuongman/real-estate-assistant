@@ -371,6 +371,14 @@ class AppSettings(BaseModel):
         description="Default model for free tier (OpenRouter free model ID)",
     )
 
+    # Demo Mode
+    demo_mode: bool = Field(
+        default_factory=lambda: (
+            os.getenv("DEMO_MODE", "false").strip().lower() in {"1", "true", "yes", "on"}
+        ),
+        description="Enable demo mode: bypasses auth, returns mock LLM responses",
+    )
+
     # LLM Request Timeouts
     llm_request_timeout_seconds: float = Field(
         default_factory=lambda: float(os.getenv("LLM_REQUEST_TIMEOUT_SECONDS", "120")),
