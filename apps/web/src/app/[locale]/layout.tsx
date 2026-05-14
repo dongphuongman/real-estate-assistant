@@ -9,7 +9,8 @@ import { Providers } from '@/components/providers';
 import { InstallPrompt } from '@/components/pwa/install-prompt';
 import { UpdateBanner } from '@/components/pwa/update-banner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { locales, type Locale } from '@/i18n/config';
+import type { Locale } from '@/i18n/config';
+import { routing } from '@/i18n/routing';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -28,7 +29,7 @@ const fontTemplar = Cinzel({
 });
 
 export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
+  return routing.locales.map((locale) => ({ locale }));
 }
 
 export async function generateMetadata({

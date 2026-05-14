@@ -1,7 +1,7 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -18,25 +18,13 @@ export function LanguageSwitcher() {
   const router = useRouter();
 
   const switchLocale = (newLocale: Locale) => {
-    // Replace the current locale in the pathname
-    const segments = pathname.split('/').filter(Boolean);
-
-    // Check if the first segment is a locale
-    if (locales.includes(segments[0] as Locale)) {
-      segments[0] = newLocale;
-    } else {
-      // If no locale prefix, add one (shouldn't happen with our middleware)
-      segments.unshift(newLocale);
-    }
-
-    const newPath = '/' + segments.join('/');
-
     // Store preference in cookie before navigation
     const maxAge = 365 * 24 * 60 * 60; // 1 year
     // eslint-disable-next-line react-hooks/immutability -- cookie setting is a side effect needed for locale persistence
     document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=${maxAge};SameSite=Lax`;
 
-    router.push(newPath);
+    // Use next-intl's router.replace with locale override for proper context switch
+    router.replace(pathname, { locale: newLocale });
   };
 
   return (

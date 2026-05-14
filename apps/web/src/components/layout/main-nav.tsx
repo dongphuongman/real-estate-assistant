@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useTranslations, useLocale } from 'next-intl';
+import { Link } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
+import { usePathname } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { UserMenu } from '@/components/auth/UserMenu';
@@ -40,7 +40,6 @@ interface RouteConfig {
 
 export function MainNav() {
   const pathname = usePathname();
-  const locale = useLocale();
   const t = useTranslations('nav');
   const tDemo = useTranslations('demo');
   const tCommon = useTranslations('common');
@@ -95,8 +94,9 @@ export function MainNav() {
   ];
 
   const isActiveRoute = (href: string) => {
-    const pathWithoutLocale = pathname.replace(/^\/(pl|en|ru)/, '') || '/';
-    return pathWithoutLocale === href || (href !== '/' && pathWithoutLocale.startsWith(href));
+    // usePathname from next-intl/navigation returns path without locale prefix
+    const currentPath = pathname || '/';
+    return currentPath === href || (href !== '/' && currentPath.startsWith(href));
   };
 
   const isLocked = (href: string) => isDemoMode && !DEMO_OPEN_ROUTES.has(href);
@@ -113,7 +113,7 @@ export function MainNav() {
     <nav aria-label={t('mainNavigation')} className="flex items-center w-full">
       {/* Logo - fixed on the left */}
       <Link
-        href={`/${locale}`}
+        href="/"
         className="hidden md:flex items-center gap-2 font-bold text-xl hover:opacity-80 transition-opacity shrink-0 mr-6"
       >
         <Building2 className="w-6 h-6 text-primary" aria-hidden="true" />
@@ -129,7 +129,7 @@ export function MainNav() {
             return (
               <Link
                 key={route.href}
-                href={locked ? `/${locale}/auth/login` : `/${locale}${route.href}`}
+                href={locked ? '/auth/login' : route.href}
                 aria-current={!locked && isActiveRoute(route.href) ? 'page' : undefined}
                 title={locked ? tDemo('lockedFeature') : undefined}
                 className={cn(

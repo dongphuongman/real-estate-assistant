@@ -1,6 +1,8 @@
 import createMiddleware from 'next-intl/middleware';
 import { NextResponse, type NextRequest } from 'next/server';
-import { locales, defaultLocale } from './i18n/config';
+import { routing } from './i18n/routing';
+
+const { locales: routingLocales, defaultLocale } = routing;
 
 /**
  * Next.js Middleware for i18n routing and authentication protection.
@@ -21,11 +23,7 @@ import { locales, defaultLocale } from './i18n/config';
  */
 
 // Create the next-intl middleware
-const intlMiddleware = createMiddleware({
-  locales,
-  defaultLocale,
-  localePrefix: 'always', // Always show locale prefix: /pl/search, /en/search
-});
+const intlMiddleware = createMiddleware(routing);
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -50,7 +48,9 @@ export async function middleware(request: NextRequest) {
   // Extract locale from pathname or use default
   const pathSegments = pathname.split('/').filter(Boolean);
   const localeFromPath = pathSegments[0];
-  const hasLocalePrefix = locales.includes(localeFromPath as (typeof locales)[number]);
+  const hasLocalePrefix = routingLocales.includes(
+    localeFromPath as (typeof routingLocales)[number]
+  );
   const currentLocale = hasLocalePrefix ? localeFromPath : defaultLocale;
 
   // Get the path without locale prefix for route checking
@@ -82,7 +82,9 @@ export async function middleware(request: NextRequest) {
       // Extract locale from redirect path
       const redirectSegments = redirectPath.split('/').filter(Boolean);
       const redirectLocale = redirectSegments[0];
-      const redirectPathWithoutLocale = locales.includes(redirectLocale as (typeof locales)[number])
+      const redirectPathWithoutLocale = routingLocales.includes(
+        redirectLocale as (typeof routingLocales)[number]
+      )
         ? '/' + redirectSegments.slice(1).join('/')
         : redirectPath;
 
