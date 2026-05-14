@@ -23,6 +23,7 @@ updates:
           - "next"
           - "react"
           - "react-dom"
+          - "postcss"
 
   # Backend (pip)
   - package-ecosystem: pip
