@@ -22,6 +22,7 @@ from .providers.mistral import MistralProvider
 from .providers.moonshot import MoonshotProvider
 from .providers.ollama import OllamaProvider
 from .providers.openai import OpenAIProvider
+from .providers.opencode import OpenCodeProvider
 from .providers.openrouter import OpenRouterProvider
 from .providers.qwen import QwenProvider
 from .providers.zai import ZaiProvider
@@ -50,6 +51,7 @@ class ModelProviderFactory:
         "qwen": QwenProvider,
         "zai": ZaiProvider,
         "moonshot": MoonshotProvider,
+        "opencode": OpenCodeProvider,
         "ollama": OllamaProvider,
     }
 
@@ -126,6 +128,8 @@ class ModelProviderFactory:
                 config["api_key"] = settings.zhipuai_api_key
             elif provider_name == "moonshot":
                 config["api_key"] = settings.moonshot_api_key
+            elif provider_name == "opencode":
+                config["api_key"] = settings.opencode_api_key
 
         # Create new instance
         provider_class = cls._PROVIDERS[provider_name]

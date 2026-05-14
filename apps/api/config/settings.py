@@ -75,6 +75,10 @@ class AppSettings(BaseModel):
         default_factory=lambda: os.getenv("DASHSCOPE_API_KEY"),
         description="DashScope API key - Qwen models via Alibaba Cloud",
     )
+    opencode_api_key: Optional[str] = Field(
+        default_factory=lambda: os.getenv("OPENCODE_API_KEY"),
+        description="OpenCode Go API key - curated open coding models",
+    )
 
     # Multi-Provider Failover Configuration
     provider_api_keys: dict[str, list[str]] = Field(
@@ -801,6 +805,7 @@ class AppSettings(BaseModel):
                 "openrouter": self.openrouter_api_key,
                 "zai": self.zhipuai_api_key,
                 "moonshot": self.moonshot_api_key,
+                "opencode": self.opencode_api_key,
             }
             for provider, key in single_key_mapping.items():
                 if key:
@@ -973,6 +978,9 @@ def update_api_key(provider: str, api_key: str) -> None:
     elif provider == "qwen":
         settings.qwen_api_key = api_key
         os.environ["DASHSCOPE_API_KEY"] = api_key
+    elif provider == "opencode":
+        settings.opencode_api_key = api_key
+        os.environ["OPENCODE_API_KEY"] = api_key
 
     # Clear provider cache to pick up new API key
     from models.provider_factory import ModelProviderFactory

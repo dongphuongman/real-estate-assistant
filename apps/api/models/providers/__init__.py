@@ -21,6 +21,7 @@ from .mistral import MistralProvider
 from .moonshot import MoonshotProvider
 from .ollama import OllamaProvider
 from .openai import OpenAIProvider
+from .opencode import OpenCodeProvider
 from .openrouter import OpenRouterProvider
 from .qwen import QwenProvider
 from .zai import ZaiProvider
@@ -43,5 +44,6 @@ __all__ = [
     "QwenProvider",
     "ZaiProvider",
     "MoonshotProvider",
+    "OpenCodeProvider",
     "OllamaProvider",
 ]
