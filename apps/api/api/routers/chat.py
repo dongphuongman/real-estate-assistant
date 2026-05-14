@@ -1,3 +1,4 @@
+import asyncio
 import inspect
 import json
 import logging
@@ -183,7 +184,7 @@ async def chat_endpoint(
                     # Add timeout protection for streaming
                     with anyio.fail_after(settings.stream_timeout_seconds):
                         if requires_web:
-                            result = agent.process_query(sanitized_message)
+                            result = await asyncio.to_thread(agent.process_query, sanitized_message)
                             raw_answer = result.get("answer", "")
                             answer_text = (
                                 raw_answer if isinstance(raw_answer, str) else str(raw_answer)
@@ -299,7 +300,7 @@ async def chat_endpoint(
                 },
             )
 
-        result = agent.process_query(sanitized_message)
+        result = await asyncio.to_thread(agent.process_query, sanitized_message)
 
         answer = result.get("answer", "")
         if "sources" in result and isinstance(result.get("sources"), list):
@@ -412,7 +413,7 @@ async def chat_free_endpoint(
         sources_max_content_chars = max(0, int(settings.chat_source_content_max_chars))
         sources_max_total_bytes = max(0, int(settings.chat_sources_max_total_bytes))
 
-        result = agent.process_query(sanitized_message)
+        result = await asyncio.to_thread(agent.process_query, sanitized_message)
 
         answer = result.get("answer", "")
         sources, sources_truncated = serialize_chat_sources(

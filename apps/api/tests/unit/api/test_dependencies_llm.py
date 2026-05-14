@@ -31,13 +31,12 @@ class FakeProvider:
 def _clear_factory_cache():
     from api.dependencies import clear_llm_cache
 
-
     clear_llm_cache()
     yield
     clear_llm_cache()
 
 
-def test_get_llm_uses_default_provider_and_first_model(monkeypatch):
+async def test_get_llm_uses_default_provider_and_first_model(monkeypatch):
     settings.default_provider = "openai"
     settings.default_model = None
     fake = FakeProvider()
@@ -45,13 +44,13 @@ def test_get_llm_uses_default_provider_and_first_model(monkeypatch):
     monkeypatch.setattr(
         ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: fake
     )
-    llm = deps.get_llm()
+    llm = await deps.get_llm()
     assert getattr(llm, "model_id", None) == "model-a"
     assert fake.created and fake.created[0]["model_id"] == "model-a"
     assert "provider_name" not in fake.created[0]["kwargs"]
 
 
-def test_get_llm_raises_when_no_models(monkeypatch):
+async def test_get_llm_raises_when_no_models(monkeypatch):
     settings.default_provider = "openai"
     settings.default_model = None
     fake = FakeProvider()
@@ -60,10 +59,10 @@ def test_get_llm_raises_when_no_models(monkeypatch):
         ModelProviderFactory, "get_provider", lambda name, config=None, use_cache=True: fake
     )
     with pytest.raises(RuntimeError):
-        _ = deps.get_llm()
+        _ = await deps.get_llm()
 
 
-def test_get_llm_uses_user_model_preferences(monkeypatch):
+async def test_get_llm_uses_user_model_preferences(monkeypatch):
     settings.default_provider = "openai"
     settings.default_model = None
 
@@ -82,12 +81,12 @@ def test_get_llm_uses_user_model_preferences(monkeypatch):
             return _Prefs()
 
     monkeypatch.setattr(deps.user_model_preferences, "MODEL_PREFS_MANAGER", _Mgr())
-    llm = deps.get_llm(x_user_email="u1@example.com")
+    llm = await deps.get_llm(x_user_email="u1@example.com")
     assert getattr(llm, "model_id", None) == "model-b"
     assert fake.created and fake.created[0]["model_id"] == "model-b"
 
 
-def test_get_llm_falls_back_when_preferred_model_fails(monkeypatch):
+async def test_get_llm_falls_back_when_preferred_model_fails(monkeypatch):
     settings.default_provider = "ollama"
     settings.default_model = "model-a"
 
@@ -119,12 +118,14 @@ def test_get_llm_falls_back_when_preferred_model_fails(monkeypatch):
             return _Prefs()
 
     monkeypatch.setattr(deps.user_model_preferences, "MODEL_PREFS_MANAGER", _Mgr())
-    llm = deps.get_llm(x_user_email="u1@example.com")
+    llm = await deps.get_llm(x_user_email="u1@example.com")
     assert getattr(llm, "model_id", None) == "model-a"
     assert created and created[0]["model_id"] == "model-a"
 
 
-def test_get_llm_falls_back_to_ollama_when_primary_provider_fails_and_ollama_running(monkeypatch):
+async def test_get_llm_falls_back_to_ollama_when_primary_provider_fails_and_ollama_running(
+    monkeypatch,
+):
     settings.default_provider = "openai"
     settings.default_model = None
     settings.ollama_default_model = "llama3.2:3b"
@@ -147,7 +148,7 @@ def test_get_llm_falls_back_to_ollama_when_primary_provider_fails_and_ollama_run
 
     monkeypatch.setattr(ModelProviderFactory, "get_provider", _get_provider)
 
-    llm = deps.get_llm()
+    llm = await deps.get_llm()
     assert getattr(llm, "model_id", None) == "llama3.2:3b"
     assert ollama.created and ollama.created[0]["model_id"] == "llama3.2:3b"
 
@@ -173,18 +174,20 @@ def test_create_llm_with_resolved_model_id_uses_ollama_default_model_when_missin
     assert getattr(llm, "model_id", None) == "llama3.2:3b"
 
 
-def test_get_optional_llm_returns_none_on_error(monkeypatch):
-    monkeypatch.setattr(
-        deps, "get_llm", lambda x_user_email=None: (_ for _ in ()).throw(RuntimeError("no llm"))
-    )
-    assert deps.get_optional_llm() is None
+async def test_get_optional_llm_returns_none_on_error(monkeypatch):
+    async def _fail(x_user_email=None):
+        raise RuntimeError("no llm")
+
+    monkeypatch.setattr(deps, "get_llm", _fail)
+    assert await deps.get_optional_llm() is None
 
 
-def test_get_optional_llm_returns_llm_when_available(monkeypatch):
-    monkeypatch.setattr(
-        deps, "get_llm", lambda x_user_email=None: types.SimpleNamespace(model_id="m1")
-    )
-    llm = deps.get_optional_llm()
+async def test_get_optional_llm_returns_llm_when_available(monkeypatch):
+    async def _ok(x_user_email=None):
+        return types.SimpleNamespace(model_id="m1")
+
+    monkeypatch.setattr(deps, "get_llm", _ok)
+    llm = await deps.get_optional_llm()
     assert getattr(llm, "model_id", None) == "m1"
 
 

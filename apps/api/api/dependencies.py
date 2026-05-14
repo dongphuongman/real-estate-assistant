@@ -292,7 +292,7 @@ async def _create_llm_with_multi_key_fallback(
         ) from e
 
 
-def get_llm(
+async def get_llm(
     x_user_email: Annotated[str | None, Header(alias="X-User-Email")] = None,
 ) -> BaseChatModel:
     """
@@ -316,10 +316,8 @@ def get_llm(
     primary_provider = preferred_provider or default_provider_name
     primary_model = preferred_model if preferred_provider else (preferred_model or default_model_id)
 
-    # Use multi-key fallback if enabled (async wrapper needed)
+    # Use multi-key fallback if enabled
     if settings.enable_multi_key_fallback:
-        import asyncio
-
         try:
             # Build provider priority list
             providers = settings.provider_priority_order or [
@@ -338,11 +336,7 @@ def get_llm(
             if default_provider_name not in seen:
                 unique_providers.append(default_provider_name)
 
-            # Run async function in sync context
-            loop = asyncio.get_event_loop()
-            return loop.run_until_complete(
-                _create_llm_with_multi_key_fallback(unique_providers, primary_model)
-            )
+            return await _create_llm_with_multi_key_fallback(unique_providers, primary_model)
         except Exception as e:
             logger.error("Multi-key fallback failed, using legacy fallback: %s", e)
             # Fall through to legacy behavior
@@ -369,11 +363,11 @@ def get_llm(
         ) from e
 
 
-def get_optional_llm(
+async def get_optional_llm(
     x_user_email: Annotated[str | None, Header(alias="X-User-Email")] = None,
 ) -> Optional[BaseChatModel]:
     try:
-        return get_llm(x_user_email=x_user_email)
+        return await get_llm(x_user_email=x_user_email)
     except Exception as e:
         logger.warning("LLM unavailable: %s", e)
         return None
