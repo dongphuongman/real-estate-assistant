@@ -434,7 +434,6 @@ jobs:
     if: ${{ github.repository_owner == 'AleksNeStu' && github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [frontend-build]
     timeout-minutes: 20
-    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v6

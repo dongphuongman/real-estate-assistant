@@ -87,12 +87,12 @@ test.describe('Full User Journey @integration @smoke', () => {
         await searchButton.click();
       }
 
-      // Wait for results to appear
-      await page.waitForTimeout(3000);
+      // Wait for results to appear via API response
+      await page.waitForResponse('**/api/v1/search*', { timeout: 10000 }).catch(() => {
+        // Response may already have fired before listener attached
+      });
 
-      // Verify we're still on search page with some content
-      const hasContent = await page.locator('article, .property-card, [data-testid="property-card"]').first().isVisible({ timeout: 10000 }).catch(() => false);
-      // Results may or may not render depending on mock matching — just verify page didn't crash
+      // Verify we're still on search page
       const url = page.url();
       expect(url).toContain('/search');
     });
@@ -104,19 +104,20 @@ test.describe('Full User Journey @integration @smoke', () => {
 
       await page.goto('/search');
 
-      // Wait for content to load
-      await page.waitForTimeout(2000);
+      // Wait for search results to load
+      await page.waitForResponse('**/api/v1/search*', { timeout: 10000 }).catch(() => {
+        // Response may have fired before listener attached
+      });
 
       // Try to click a property card
       const propertyCard = page.locator('[data-testid="property-card"], .property-card, article').first();
       if (await propertyCard.isVisible({ timeout: 10000 }).catch(() => false)) {
         await propertyCard.click();
 
-        // Should navigate to property detail or show modal
-        await page.waitForTimeout(2000);
-        const url = page.url();
-        const navigatedToDetail = url.includes('/property/');
-        expect(navigatedToDetail || true).toBe(true); // Soft assertion — card may not be present
+        // Wait for navigation or modal to appear
+        await page.waitForURL(/\/property\//, { timeout: 5000 }).catch(() => {
+          // Property detail may be a modal overlay, not a URL change
+        });
       }
     });
 
@@ -148,7 +149,9 @@ test.describe('Full User Journey @integration @smoke', () => {
       });
 
       await page.goto('/search');
-      await page.waitForTimeout(2000);
+      await page.waitForResponse('**/api/v1/search*', { timeout: 10000 }).catch(() => {
+        // Response may have fired before listener attached
+      });
 
       // Find and click favorite button on first property card
       const favoriteButton = page.locator('button').filter({ has: page.locator('svg.lucide-heart, svg') }).first();
@@ -174,7 +177,8 @@ test.describe('Full User Journey @integration @smoke', () => {
 
       // Wait for response or loading indicator
       const responseAppeared = await page.locator('.bg-background, .assistant-message, [data-testid="assistant-message"]').first().isVisible({ timeout: 15000 }).catch(() => false);
-      expect(typeof responseAppeared).toBe('boolean');
+      // Chat response or loading indicator should appear within timeout
+      expect(responseAppeared).toBeTruthy();
     });
 
     test('step 8: view market trends', async ({ page }) => {
@@ -209,8 +213,7 @@ test.describe('Full User Journey @integration @smoke', () => {
 
       // Page should load without crashing
       const heading = page.getByRole('heading', { name: /market trends/i });
-      const headingVisible = await heading.isVisible({ timeout: 10000 }).catch(() => false);
-      expect(typeof headingVisible).toBe('boolean');
+      await expect(heading).toBeVisible({ timeout: 10000 });
     });
   });
 });

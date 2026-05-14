@@ -10,6 +10,9 @@ import {
   TEST_MARKET_TRENDS,
   TEST_MARKET_TRENDS_KRAKOW,
   TEST_MARKET_TRENDS_QUARTERLY,
+  TEST_PRICE_HISTORY,
+  TEST_PRICE_HISTORY_EMPTY,
+  TEST_PRICE_ANOMALIES,
 } from '../fixtures/market-data';
 
 /**
@@ -123,4 +126,78 @@ export async function mockMarketIndicatorsDelayed(delayMs: number = 2000) {
     await new Promise((resolve) => setTimeout(resolve, delayMs));
     await mockMarketIndicators(route);
   };
+}
+
+/**
+ * Mock GET /api/v1/market/price-history/:propertyId
+ */
+export async function mockPriceHistory(route: Route): Promise<void> {
+  await route.fulfill({
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+    },
+    body: JSON.stringify(TEST_PRICE_HISTORY),
+  });
+}
+
+/**
+ * Mock GET /api/v1/market/price-history/:propertyId returning empty data.
+ */
+export async function mockPriceHistoryEmpty(route: Route): Promise<void> {
+  await route.fulfill({
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+    },
+    body: JSON.stringify(TEST_PRICE_HISTORY_EMPTY),
+  });
+}
+
+/**
+ * Mock GET /api/v1/market/price-history/:propertyId returning an error.
+ */
+export async function mockPriceHistoryError(
+  route: Route,
+  statusCode: number = 500,
+  message: string = 'Failed to load price history'
+): Promise<void> {
+  await route.fulfill({
+    status: statusCode,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+    },
+    body: JSON.stringify({ detail: message }),
+  });
+}
+
+/**
+ * Mock GET /api/v1/market/anomalies
+ */
+export async function mockAnomalies(route: Route): Promise<void> {
+  await route.fulfill({
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+    },
+    body: JSON.stringify({ anomalies: TEST_PRICE_ANOMALIES }),
+  });
+}
+
+/**
+ * Mock GET /api/v1/market/anomalies returning empty.
+ */
+export async function mockAnomaliesEmpty(route: Route): Promise<void> {
+  await route.fulfill({
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+    },
+    body: JSON.stringify({ anomalies: [] }),
+  });
 }

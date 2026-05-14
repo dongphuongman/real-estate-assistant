@@ -119,6 +119,75 @@ export const TEST_MARKET_TRENDS_KRAKOW: TestMarketTrends = {
   confidence: 'medium',
 };
 
+// Price History types
+export interface TestPriceSnapshot {
+  id: string;
+  property_id: string;
+  price: number;
+  price_per_sqm?: number;
+  currency?: string;
+  source?: string;
+  recorded_at: string;
+}
+
+export interface TestPriceHistory {
+  property_id: string;
+  snapshots: TestPriceSnapshot[];
+  total: number;
+  current_price?: number;
+  first_recorded?: string;
+  last_recorded?: string;
+  price_change_percent?: number;
+  trend: 'increasing' | 'decreasing' | 'stable';
+}
+
+export interface TestMarketAnomaly {
+  id: string;
+  anomaly_type: string;
+  severity: 'low' | 'medium' | 'high';
+  scope_type: string;
+  scope_id: string;
+  description: string;
+  detected_at: string;
+}
+
+export const TEST_PRICE_HISTORY: TestPriceHistory = {
+  property_id: 'prop-001',
+  snapshots: [
+    { id: 'snap-1', property_id: 'prop-001', price: 380000, price_per_sqm: 4750, currency: 'PLN', recorded_at: '2025-07-15T10:00:00Z' },
+    { id: 'snap-2', property_id: 'prop-001', price: 395000, price_per_sqm: 4938, currency: 'PLN', recorded_at: '2025-08-15T10:00:00Z' },
+    { id: 'snap-3', property_id: 'prop-001', price: 410000, price_per_sqm: 5125, currency: 'PLN', recorded_at: '2025-09-15T10:00:00Z' },
+    { id: 'snap-4', property_id: 'prop-001', price: 405000, price_per_sqm: 5063, currency: 'PLN', recorded_at: '2025-10-15T10:00:00Z' },
+    { id: 'snap-5', property_id: 'prop-001', price: 420000, price_per_sqm: 5250, currency: 'PLN', recorded_at: '2025-11-15T10:00:00Z' },
+    { id: 'snap-6', property_id: 'prop-001', price: 435000, price_per_sqm: 5438, currency: 'PLN', recorded_at: '2025-12-15T10:00:00Z' },
+  ],
+  total: 6,
+  current_price: 435000,
+  first_recorded: '2025-07-15T10:00:00Z',
+  last_recorded: '2025-12-15T10:00:00Z',
+  price_change_percent: 14.5,
+  trend: 'increasing',
+};
+
+export const TEST_PRICE_HISTORY_EMPTY: TestPriceHistory = {
+  property_id: 'prop-999',
+  snapshots: [],
+  total: 0,
+  trend: 'stable',
+};
+
+export const TEST_PRICE_ANOMALIES: TestMarketAnomaly[] = [
+  {
+    id: 'anom-1',
+    anomaly_type: 'price_spike',
+    severity: 'medium',
+    scope_type: 'property',
+    scope_id: 'prop-001',
+    description: 'Unusual price increase detected',
+    detected_at: '2025-11-15T10:00:00Z',
+  },
+];
+
 /**
  * Quarterly aggregate trends.
  */
