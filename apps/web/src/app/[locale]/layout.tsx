@@ -72,8 +72,6 @@ export async function generateMetadata({
     viewport: {
       width: 'device-width',
       initialScale: 1,
-      maximumScale: 1,
-      userScalable: false,
     },
     alternates: {
       canonical: `/${locale}`,

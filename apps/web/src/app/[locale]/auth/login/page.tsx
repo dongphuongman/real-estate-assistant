@@ -59,8 +59,11 @@ function LoginForm() {
     <form onSubmit={onSubmit}>
       <CardContent className="grid gap-4">
         {error && (
-          <div className="flex items-center gap-2 rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-            <AlertCircle className="h-4 w-4" />
+          <div
+            className="flex items-center gap-2 rounded-md bg-destructive/15 p-3 text-sm text-destructive"
+            role="alert"
+          >
+            <AlertCircle className="h-4 w-4" aria-hidden="true" />
             <span>{error}</span>
           </div>
         )}
@@ -134,7 +137,7 @@ function LoginCard() {
       <CardHeader className="space-y-1 text-center">
         <div className="flex justify-center mb-2">
           <div className="rounded-full bg-primary/10 p-3">
-            <Building2 className="h-6 w-6 text-primary" />
+            <Building2 className="h-6 w-6 text-primary" aria-hidden="true" />
           </div>
         </div>
         <CardTitle className="text-2xl">{t('title')}</CardTitle>

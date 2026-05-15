@@ -36,8 +36,13 @@ export default function FavoritesPage() {
   // Auth loading state
   if (authLoading) {
     return (
-      <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div
+        className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[400px]"
+        role="status"
+        aria-live="polite"
+      >
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
+        <span className="sr-only">Loading...</span>
       </div>
     );
   }
@@ -47,7 +52,7 @@ export default function FavoritesPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-          <Heart className="h-16 w-16 text-muted-foreground mb-4" />
+          <Heart className="h-16 w-16 text-muted-foreground mb-4" aria-hidden="true" />
           <h1 className="text-2xl font-bold mb-2">Sign in to view your favorites</h1>
           <p className="text-muted-foreground mb-6">
             Save properties you love and access them from any device.
@@ -91,7 +96,10 @@ export default function FavoritesPage() {
 
         {/* Error state */}
         {error && (
-          <div className="flex items-center gap-2 p-4 rounded-lg bg-destructive/10 text-destructive">
+          <div
+            className="flex items-center gap-2 p-4 rounded-lg bg-destructive/10 text-destructive"
+            role="alert"
+          >
             <p>{error}</p>
           </div>
         )}
@@ -101,14 +109,16 @@ export default function FavoritesPage() {
           <div className="space-y-4">
             <div className="rounded-lg border bg-card p-4">
               <h2 className="font-semibold mb-4">Collections</h2>
-              <div className="space-y-2">
+              <div className="space-y-2" role="listbox" aria-label="Collections">
                 <button
                   onClick={() => setSelectedCollection(null)}
-                  className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                  className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                     selectedCollection === null
                       ? 'bg-primary text-primary-foreground'
                       : 'hover:bg-muted'
                   }`}
+                  role="option"
+                  aria-selected={selectedCollection === null}
                 >
                   All Favorites ({favorites.length})
                 </button>
@@ -117,11 +127,13 @@ export default function FavoritesPage() {
                   <button
                     key={collection.id}
                     onClick={() => setSelectedCollection(collection.id)}
-                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                       selectedCollection === collection.id
                         ? 'bg-primary text-primary-foreground'
                         : 'hover:bg-muted'
                     }`}
+                    role="option"
+                    aria-selected={selectedCollection === collection.id}
                   >
                     {collection.name} ({collection.favorite_count})
                   </button>
@@ -133,8 +145,16 @@ export default function FavoritesPage() {
           {/* Favorites Grid */}
           <div className="md:col-span-3">
             {isLoading ? (
-              <div className="flex items-center justify-center min-h-[300px]">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <div
+                className="flex items-center justify-center min-h-[300px]"
+                role="status"
+                aria-live="polite"
+              >
+                <Loader2
+                  className="h-8 w-8 animate-spin text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <span className="sr-only">Loading favorites...</span>
               </div>
             ) : favorites.length === 0 ? (
               <div className="flex flex-col items-center justify-center min-h-[300px] text-center border rounded-lg border-dashed">
@@ -176,15 +196,29 @@ export default function FavoritesPage() {
 
       {/* New Collection Modal */}
       {showNewCollectionModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="new-collection-title"
+        >
           <div className="bg-background rounded-lg p-6 max-w-md w-full mx-4 shadow-lg">
-            <h2 className="text-lg font-semibold mb-4">New Collection</h2>
+            <h2 className="text-lg font-semibold mb-4" id="new-collection-title">
+              New Collection
+            </h2>
+            <label
+              htmlFor="collection-name-input"
+              className="block text-sm font-medium mb-1 sr-only"
+            >
+              Collection name
+            </label>
             <input
+              id="collection-name-input"
               type="text"
               value={newCollectionName}
               onChange={(e) => setNewCollectionName(e.target.value)}
               placeholder="Collection name"
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm mb-4"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm mb-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               autoFocus
             />
             <div className="flex justify-end gap-2">

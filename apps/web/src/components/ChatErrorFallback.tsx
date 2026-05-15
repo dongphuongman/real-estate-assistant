@@ -16,7 +16,10 @@ interface ChatErrorFallbackProps {
 export function ChatErrorFallback({ error, onRetry }: ChatErrorFallbackProps) {
   const t = useTranslations('error');
   return (
-    <div className="flex flex-col items-center justify-center p-8 text-center border rounded-lg bg-muted/50">
+    <div
+      className="flex flex-col items-center justify-center p-8 text-center border rounded-lg bg-muted/50"
+      role="alert"
+    >
       <Bot className="h-10 w-10 text-muted-foreground mb-3" aria-hidden="true" />
       <h3 className="text-base font-semibold mb-1">{t('chatUnavailable')}</h3>
       <p className="text-sm text-muted-foreground mb-4 max-w-sm">
@@ -25,7 +28,7 @@ export function ChatErrorFallback({ error, onRetry }: ChatErrorFallbackProps) {
       {onRetry && (
         <button
           onClick={onRetry}
-          className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+          className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <RefreshCw className="h-4 w-4" aria-hidden="true" />
           {t('retry')}

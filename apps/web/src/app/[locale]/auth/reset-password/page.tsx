@@ -90,7 +90,10 @@ function ResetPasswordForm() {
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">
             <div className="rounded-full bg-green-100 dark:bg-green-900/20 p-3">
-              <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <CheckCircle2
+                className="h-6 w-6 text-green-600 dark:text-green-400"
+                aria-hidden="true"
+              />
             </div>
           </div>
           <CardTitle className="text-2xl">{t('resetPassword.title')}</CardTitle>
@@ -115,7 +118,7 @@ function ResetPasswordForm() {
       <CardHeader className="space-y-1 text-center">
         <div className="flex justify-center mb-2">
           <div className="rounded-full bg-primary/10 p-3">
-            <Building2 className="h-6 w-6 text-primary" />
+            <Building2 className="h-6 w-6 text-primary" aria-hidden="true" />
           </div>
         </div>
         <CardTitle className="text-2xl">{t('resetPassword.title')}</CardTitle>
@@ -124,7 +127,9 @@ function ResetPasswordForm() {
       <form onSubmit={onSubmit}>
         <CardContent className="grid gap-4">
           {error && (
-            <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">{error}</div>
+            <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive" role="alert">
+              {error}
+            </div>
           )}
           <div className="grid gap-2">
             <Label htmlFor="password">{t('resetPassword.newPasswordLabel')}</Label>
@@ -165,7 +170,7 @@ function ResetPasswordForm() {
               href="/auth/login"
               className="inline-flex items-center gap-1 text-primary hover:underline"
             >
-              <ArrowLeft className="h-3 w-3" />
+              <ArrowLeft className="h-3 w-3" aria-hidden="true" />
               {t('forgotPassword.backToLogin')}
             </Link>
           </div>

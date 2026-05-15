@@ -43,7 +43,10 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       }
 
       return (
-        <div className="flex flex-col items-center justify-center min-h-[200px] p-8 text-center">
+        <div
+          className="flex flex-col items-center justify-center min-h-[200px] p-8 text-center"
+          role="alert"
+        >
           <AlertTriangle className="h-12 w-12 text-destructive mb-4" aria-hidden="true" />
           <h2 className="text-lg font-semibold mb-2">Something went wrong</h2>
           <p className="text-sm text-muted-foreground mb-4 max-w-md">
@@ -51,7 +54,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
           </p>
           <button
             onClick={this.handleRetry}
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <RefreshCw className="h-4 w-4" aria-hidden="true" />
             Try again

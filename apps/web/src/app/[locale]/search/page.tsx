@@ -742,7 +742,11 @@ function SearchPageContent() {
                   <>
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-4">
-                        <div className="inline-flex rounded-md border bg-background p-1">
+                        <div
+                          className="inline-flex rounded-md border bg-background p-1"
+                          role="group"
+                          aria-label="View mode"
+                        >
                           <button
                             type="button"
                             onClick={() => setViewMode('list')}
@@ -752,6 +756,7 @@ function SearchPageContent() {
                               'disabled:opacity-50',
                             ].join(' ')}
                             aria-pressed={viewMode === 'list'}
+                            aria-label="List view"
                           >
                             List
                           </button>
@@ -764,6 +769,7 @@ function SearchPageContent() {
                               'disabled:opacity-50',
                             ].join(' ')}
                             aria-pressed={viewMode === 'map'}
+                            aria-label="Map view"
                           >
                             Map
                           </button>

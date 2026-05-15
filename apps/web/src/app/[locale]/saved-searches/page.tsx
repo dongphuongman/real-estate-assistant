@@ -125,8 +125,13 @@ export default function SavedSearchesPage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div
+          className="flex items-center justify-center min-h-[400px]"
+          role="status"
+          aria-live="polite"
+        >
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
+          <span className="sr-only">Loading saved searches...</span>
         </div>
       </div>
     );
@@ -136,7 +141,7 @@ export default function SavedSearchesPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <Bookmark className="h-8 w-8 text-primary" />
+          <Bookmark className="h-8 w-8 text-primary" aria-hidden="true" />
           <div>
             <h1 className="text-3xl font-bold">Saved Searches</h1>
             <p className="text-muted-foreground">
@@ -144,15 +149,23 @@ export default function SavedSearchesPage() {
             </p>
           </div>
         </div>
-        <Button variant="outline" onClick={fetchSearches} disabled={loading}>
-          <RefreshCw className="h-4 w-4 mr-2" />
+        <Button
+          variant="outline"
+          onClick={fetchSearches}
+          disabled={loading}
+          aria-label="Refresh saved searches"
+        >
+          <RefreshCw className="h-4 w-4 mr-2" aria-hidden="true" />
           Refresh
         </Button>
       </div>
 
       {error && (
-        <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-md mb-6 flex items-center gap-2">
-          <AlertCircle className="h-5 w-5" />
+        <div
+          className="bg-destructive/10 text-destructive px-4 py-3 rounded-md mb-6 flex items-center gap-2"
+          role="alert"
+        >
+          <AlertCircle className="h-5 w-5" aria-hidden="true" />
           {error}
         </div>
       )}
@@ -160,7 +173,7 @@ export default function SavedSearchesPage() {
       {searches.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Search className="h-12 w-12 text-muted-foreground mb-4" />
+            <Search className="h-12 w-12 text-muted-foreground mb-4" aria-hidden="true" />
             <h3 className="text-lg font-semibold">No saved searches yet</h3>
             <p className="text-muted-foreground mt-2 text-center max-w-md">
               Save searches from the search page to get notified about new properties that match
@@ -193,13 +206,15 @@ export default function SavedSearchesPage() {
                     onClick={() => handleToggleAlert(search.id, search.is_active)}
                     disabled={actionLoading === search.id}
                     title={search.is_active ? 'Pause alerts' : 'Resume alerts'}
+                    aria-label={search.is_active ? 'Pause alerts' : 'Resume alerts'}
+                    aria-pressed={search.is_active}
                   >
                     {actionLoading === search.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                     ) : search.is_active ? (
-                      <Bell className="h-4 w-4" />
+                      <Bell className="h-4 w-4" aria-hidden="true" />
                     ) : (
-                      <BellOff className="h-4 w-4" />
+                      <BellOff className="h-4 w-4" aria-hidden="true" />
                     )}
                     <span className="ml-2 hidden sm:inline">
                       {formatFrequency(search.alert_frequency)}
