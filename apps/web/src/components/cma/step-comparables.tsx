@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { findComparables } from '@/lib/api';
 import type { CMAComparable, Property } from '@/lib/types';
@@ -23,6 +24,7 @@ export function StepComparables({
   onNext,
   onPrev,
 }: StepComparablesProps) {
+  const t = useTranslations('cma.comparables');
   const [suggestedComparables, setSuggestedComparables] = useState<CMAComparable[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -91,11 +93,10 @@ export function StepComparables({
       {/* Header */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Select {MIN_COMPARABLES}-{MAX_COMPARABLES} comparable properties. Drag to reorder by
-          relevance.
+          {t('selectRange', { min: MIN_COMPARABLES, max: MAX_COMPARABLES })}
         </p>
         <Button variant="outline" size="sm" onClick={fetchComparables} disabled={isLoading}>
-          Refresh
+          {t('refresh')}
         </Button>
       </div>
 
@@ -106,7 +107,7 @@ export function StepComparables({
             className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
             aria-hidden="true"
           ></div>
-          <span className="ml-3 text-muted-foreground">Finding similar properties...</span>
+          <span className="ml-3 text-muted-foreground">{t('finding')}</span>
         </div>
       )}
 
@@ -120,11 +121,11 @@ export function StepComparables({
       {/* Selected count */}
       <div className="flex items-center gap-4">
         <span className="text-sm">
-          Selected: <strong>{selectedComparables.length}</strong> / {MAX_COMPARABLES}
+          {t('selected')} <strong>{selectedComparables.length}</strong> / {MAX_COMPARABLES}
         </span>
         {selectedComparables.length < MIN_COMPARABLES && (
           <span className="text-xs text-yellow-600">
-            Select at least {MIN_COMPARABLES - selectedComparables.length} more
+            {t('selectMore', { count: MIN_COMPARABLES - selectedComparables.length })}
           </span>
         )}
       </div>
@@ -155,12 +156,14 @@ export function StepComparables({
                     />
                     <div>
                       <p className="font-medium text-sm">
-                        {property.address || `Property ${comp.property_id.slice(0, 8)}`}
+                        {property.address || t('property', { id: comp.property_id.slice(0, 8) })}
                       </p>
                       <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
                         <span>{formatPrice(comp.adjusted_price)}</span>
                         <span>{property.area_sqm ? `${property.area_sqm} m²` : '-'}</span>
-                        <span>{property.rooms ? `${property.rooms} rooms` : '-'}</span>
+                        <span>
+                          {property.rooms ? t('roomsCount', { count: property.rooms }) : '-'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -168,7 +171,7 @@ export function StepComparables({
                     <span className={`text-sm font-medium ${getScoreColor(comp.similarity_score)}`}>
                       {comp.similarity_score.toFixed(0)}%
                     </span>
-                    <p className="text-xs text-muted-foreground">Similarity</p>
+                    <p className="text-xs text-muted-foreground">{t('similarity')}</p>
                   </div>
                 </div>
               </div>
@@ -179,15 +182,13 @@ export function StepComparables({
 
       {/* Empty state */}
       {!isLoading && !error && suggestedComparables.length === 0 && (
-        <div className="text-center py-8 text-muted-foreground">
-          No comparable properties found. Try adjusting your search criteria.
-        </div>
+        <div className="text-center py-8 text-muted-foreground">{t('noComparables')}</div>
       )}
 
       {/* Selected comparables summary */}
       {selectedComparables.length > 0 && (
         <div className="border-t pt-4">
-          <h4 className="text-sm font-medium mb-2">Selected Comparables</h4>
+          <h4 className="text-sm font-medium mb-2">{t('selectedComparables')}</h4>
           <div className="flex flex-wrap gap-2">
             {selectedComparables.map((comp, index) => (
               <span

@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { useAuth } from '@/hooks/useAuth';
 
@@ -29,6 +30,7 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children, redirectTo = '/auth/login' }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+  const t = useTranslations('auth');
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -41,7 +43,7 @@ export function ProtectedRoute({ children, redirectTo = '/auth/login' }: Protect
       <div className="flex h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <p className="text-sm text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
     );

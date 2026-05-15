@@ -21,6 +21,15 @@
     "testing": "Testing...",
     "error": "Error",
     "success": "Success",
+    "installApp": "Install App",
+    "installAppDescription": "Install this app on your device for quick access and a better experience.",
+    "later": "Later",
+    "installing": "Installing...",
+    "install": "Install",
+    "backOnline": "You're back online",
+    "offlineMessage": "You are offline. Some features may be unavailable.",
+    "newVersionAvailable": "A new version is available!",
+    "dismissUpdate": "Dismiss",
     "toggleTheme": "Toggle theme",
     "close": "Close",
     "back": "Back",
@@ -57,6 +66,7 @@
     "signIn": "Sign In",
     "signUp": "Sign Up",
     "signOut": "Sign Out",
+    "loading": "Loading...",
     "profile": "Profile",
     "settings": "Settings",
     "user": "User",
@@ -106,7 +116,19 @@
       "description": "We've sent a verification link to your email",
       "checkInbox": "Please check your inbox and click the verification link.",
       "resend": "Resend verification email",
-      "verified": "Email verified successfully"
+      "verified": "Email verified successfully",
+      "invalidToken": "Invalid or missing verification token",
+      "failed": "Failed to verify email",
+      "verifying": "Verifying your email...",
+      "verifiedDescription": "Your email has been verified successfully",
+      "canLogin": "You can now log in to your account.",
+      "goToLogin": "Go to login",
+      "failedTitle": "Verification failed",
+      "failedDescription": "Failed to verify your email",
+      "linkExpired": "The verification link may be expired or invalid.",
+      "requestNew": "Request new verification email",
+      "backToLogin": "Back to login",
+      "loading": "Loading..."
     },
     "errors": {
       "invalidCredentials": "Invalid email or password",
@@ -236,13 +258,25 @@
     "interestRate": "Interest Rate (%)",
     "loanTerm": "Loan Term (Years)",
     "calculate": "Calculate",
+    "emptyDescription": "Fill in the property details to calculate your mortgage payments.",
+    "emptyHint": "Results will appear here after calculation.",
+    "hideTcoOptions": "Hide TCO options",
+    "showTcoOptions": "Show TCO options",
+    "tcoOptionsTitle": "Total Cost of Ownership Options",
+    "calculationFailed": "Calculation failed",
+    "retry": "Retry",
+    "exportToPdf": "Export to PDF",
+    "hideComparison": "Hide comparison",
+    "compareScenarios": "Compare scenarios",
     "results": {
       "title": "Mortgage Results",
       "monthlyPayment": "Monthly Payment",
       "totalInterest": "Total Interest",
       "totalCost": "Total Cost",
       "loanAmount": "Loan Amount",
-      "downPaymentAmount": "Down Payment Amount"
+      "downPaymentAmount": "Down Payment Amount",
+      "description": "Your estimated mortgage payments",
+      "monthlyBreakdown": "Monthly Payment Breakdown"
     },
     "tco": {
       "title": "Total Cost of Ownership",
@@ -252,7 +286,55 @@
       "maintenanceHint": "Common rule: 1-2% of property value per year",
       "propertyTax": "Property Tax",
       "insurance": "Insurance",
-      "utilities": "Utilities"
+      "utilities": "Utilities",
+      "monthlyHoa": "Monthly HOA",
+      "annualPropertyTax": "Annual Property Tax",
+      "annualInsurance": "Annual Insurance",
+      "monthlyUtilities": "Monthly Utilities",
+      "monthlyInternet": "Monthly Internet",
+      "monthlyParking": "Monthly Parking",
+      "maintenancePercent": "Maintenance (% of value)",
+      "description": "Total cost including all expenses",
+      "totalOverYears": "Total over {years} years",
+      "allInCost": "All-in Monthly Cost",
+      "monthlyCostBreakdown": "Monthly Cost Breakdown",
+      "mortgage": "Mortgage",
+      "hoa": "HOA"
+    },
+    "charts": {
+      "breakdown": {
+        "title": "Monthly Cost Breakdown",
+        "description": "Distribution of ownership costs",
+        "categories": {
+          "mortgage": "Mortgage",
+          "propertyTax": "Property Tax",
+          "insurance": "Insurance",
+          "hoa": "HOA",
+          "utilities": "Utilities",
+          "internet": "Internet",
+          "parking": "Parking",
+          "maintenance": "Maintenance"
+        },
+        "perMonth": "{value}/month",
+        "percentOfTotal": "{percent}% of total",
+        "fixedCosts": "Fixed Costs",
+        "variableCosts": "Variable Costs",
+        "discretionary": "Discretionary"
+      },
+      "projection": {
+        "title": "Ownership Projections",
+        "description": "Cumulative costs, equity built, and property value over time",
+        "ariaLabel": "Ownership projection line chart showing cumulative costs, equity built, property value, and loan balance over time",
+        "year": "Year {year}",
+        "years": "Years",
+        "totalCost": "Total Cost",
+        "equityBuilt": "Equity Built",
+        "propertyValue": "Property Value",
+        "loanBalance": "Loan Balance",
+        "cost": "Cost:",
+        "equity": "Equity:",
+        "value": "Value:"
+      }
     }
   },
   "investment": {
@@ -264,6 +346,12 @@
     "vacancyRate": "Vacancy Rate (%)",
     "appreciationRate": "Appreciation Rate (%)",
     "analyze": "Analyze",
+    "emptyDescription": "Enter property details to analyze the investment potential.",
+    "emptyHint": "Results will appear here after analysis.",
+    "scoreExcellent": "Excellent",
+    "scoreGood": "Good",
+    "scoreFair": "Fair",
+    "scorePoor": "Poor",
     "results": {
       "title": "Investment Analysis",
       "capRate": "Cap Rate",
@@ -281,6 +369,52 @@
       "sellingCosts": "Selling Costs (%)",
       "incomeGrowth": "Income Growth (%)",
       "expenseGrowth": "Expense Growth (%)"
+    },
+    "charts": {
+      "cashFlow": {
+        "title": "Cash Flow Projection",
+        "description": "Yearly cash flow and cumulative returns",
+        "ariaLabel": "Cash flow projection chart showing yearly cash flow and cumulative returns over time",
+        "annualCashFlow": "Annual Cash Flow",
+        "cumulativeCashFlow": "Cumulative Cash Flow",
+        "equity": "Equity",
+        "propertyValue": "Property Value",
+        "totalCashFlow": "Total Cash Flow",
+        "finalEquity": "Final Equity"
+      },
+      "diversification": {
+        "title": "Portfolio Diversification",
+        "description": "Geographic and property type distribution analysis",
+        "byCity": "By City",
+        "geographicAria": "Geographic distribution pie chart showing portfolio allocation by city",
+        "geographicScore": "Geographic Score",
+        "byPropertyType": "By Property Type",
+        "typeAria": "Property type distribution pie chart showing portfolio allocation by property type",
+        "typeScore": "Type Score",
+        "value": "Value",
+        "concentrationRisk": "Concentration Risk",
+        "largestHolding": "Largest Holding"
+      },
+      "risk": {
+        "title": "Risk Assessment",
+        "description": "Investment risk analysis and recommendations",
+        "ariaLabel": "Risk score: {score} out of 100, {level}",
+        "outOf100": "out of 100",
+        "lowRisk": "Low Risk",
+        "moderateRisk": "Moderate Risk",
+        "elevatedRisk": "Elevated Risk",
+        "highRisk": "High Risk",
+        "riskFactors": "Risk Factors",
+        "recommendations": "Recommendations"
+      },
+      "scenario": {
+        "title": "Appreciation Scenarios",
+        "description": "Property value projections under different market conditions",
+        "ariaLabel": "Appreciation scenarios line chart showing property value projections under pessimistic, realistic, and optimistic conditions",
+        "value": "Value",
+        "perYear": "{rate}%/year",
+        "total": "Total:"
+      }
     }
   },
   "portfolio": {
@@ -315,6 +449,185 @@
       "publicTransport": "Public Transport",
       "restaurants": "Restaurants",
       "shopping": "Shopping"
+    },
+    "factorBreakdown": {
+      "title": "Quality Factors Breakdown",
+      "overall": "Overall:",
+      "per100": "/ 100",
+      "dataConfidence": "Data confidence:",
+      "confidenceHigh": "High",
+      "confidenceMedium": "Medium",
+      "confidenceLow": "Low",
+      "scoreRanges": "Score ranges:",
+      "excellent": "85+ Excellent",
+      "good": "70-84 Good",
+      "fair": "55-69 Fair",
+      "poor": "40-54 Poor",
+      "veryPoor": "<40 Very Poor",
+      "factors": {
+        "safety": {
+          "label": "Safety",
+          "weight": "15%",
+          "description": "Crime rate and police proximity"
+        },
+        "schools": {
+          "label": "Schools",
+          "weight": "15%",
+          "description": "School quality and proximity"
+        },
+        "amenities": {
+          "label": "Amenities",
+          "weight": "15%",
+          "description": "Shops, restaurants, services"
+        },
+        "walkability": {
+          "label": "Walkability",
+          "weight": "15%",
+          "description": "Pedestrian-friendly infrastructure"
+        },
+        "greenSpace": {
+          "label": "Green Space",
+          "weight": "10%",
+          "description": "Parks and natural areas"
+        },
+        "airQuality": {
+          "label": "Air Quality",
+          "weight": "10%",
+          "description": "Air pollution index (AQI)"
+        },
+        "noiseLevel": {
+          "label": "Noise Level",
+          "weight": "10%",
+          "description": "Ambient noise levels"
+        },
+        "publicTransport": {
+          "label": "Public Transport",
+          "weight": "10%",
+          "description": "Transit accessibility"
+        }
+      }
+    },
+    "whatsNearby": {
+      "title": "What's Nearby",
+      "description": "Points of interest in the neighborhood",
+      "descriptionWalking": "Points of interest within walking distance",
+      "dataNotAvailable": "Nearby places data not available for this location.",
+      "nearestPlace": "Nearest Place",
+      "placesNearby": "{count} places nearby",
+      "noFoundNearby": "No {category} found nearby",
+      "openInMaps": "Open in Google Maps",
+      "mapComingSoon": "Map integration coming soon",
+      "location": "Location:",
+      "categories": {
+        "schools": {
+          "label": "Schools",
+          "description": "Educational institutions nearby"
+        },
+        "amenities": {
+          "label": "Amenities",
+          "description": "Shops, restaurants, and services"
+        },
+        "greenSpaces": {
+          "label": "Green Spaces",
+          "description": "Parks and recreational areas"
+        },
+        "transport": {
+          "label": "Transport",
+          "description": "Public transport access points"
+        },
+        "safety": {
+          "label": "Safety",
+          "description": "Police and emergency services"
+        }
+      }
+    },
+    "cityComparison": {
+      "title": "City Comparison",
+      "description": "How this neighborhood compares to the city average",
+      "descriptionCity": "How this neighborhood compares to {city} average",
+      "dataNotAvailable": "City comparison data not available for this location.",
+      "percentile": "percentile",
+      "outstanding": "Outstanding",
+      "excellent": "Excellent",
+      "aboveAverage": "Above Average",
+      "average": "Average",
+      "belowAverage": "Below Average",
+      "poor": "Poor",
+      "scoresHigherThan": "This neighborhood scores higher than {percentile}% of areas in {city}",
+      "cityAverage": "City Average:",
+      "scoreComparison": "Score Comparison",
+      "thisArea": "This Area",
+      "cityAvg": "City Avg",
+      "score": "Score",
+      "betterThanAverage": "Better Than Average",
+      "belowAverage": "Below Average",
+      "averageAcross": "This neighborhood scores close to the city average across all factors.",
+      "pointsAbove": "{count} points above average",
+      "pointsBelow": "{count} points below average",
+      "equalToAverage": "Equal to city average"
+    },
+    "details": {
+      "quality": "Neighborhood Quality",
+      "noData": "No neighborhood data available",
+      "assessment": "Neighborhood Quality Assessment",
+      "loading": "Loading neighborhood data...",
+      "failedToLoad": "Failed to load neighborhood data",
+      "tryAgain": "Try Again",
+      "overview": "Overview",
+      "allFactors": "All Factors",
+      "extended": "Extended",
+      "nearby": "Nearby",
+      "dataSources": "Data Sources",
+      "detailedFactorInfo": "Detailed Factor Information",
+      "detailedFactorDescription": "Raw values and data sources for each factor",
+      "factor": "Factor",
+      "score": "Score",
+      "rawValue": "Raw Value",
+      "confidence": "Confidence",
+      "source": "Source",
+      "dataFreshness": "Data freshness:",
+      "safety": "Safety",
+      "schools": "Schools",
+      "walkability": "Walkability",
+      "greenSpace": "Green Space",
+      "amenities": "Amenities",
+      "airQuality": "Air Quality",
+      "noiseLevel": "Noise Level",
+      "publicTransport": "Public Transport"
+    },
+    "newFactors": {
+      "title": "Extended Quality Factors",
+      "description": "Additional environmental and accessibility metrics for a complete neighborhood assessment",
+      "source": "Source:",
+      "confidence": "Confidence:",
+      "airQuality": {
+        "label": "Air Quality",
+        "description": "Measures air pollution levels using the Air Quality Index (AQI). Lower values indicate cleaner air."
+      },
+      "noiseLevel": {
+        "label": "Noise Level",
+        "description": "Average ambient noise level in decibels. Lower values indicate a quieter environment."
+      },
+      "publicTransport": {
+        "label": "Public Transport",
+        "description": "Number of public transport stops within 1km. Higher values indicate better accessibility."
+      },
+      "ratings": {
+        "good": "Good",
+        "moderate": "Moderate",
+        "unhealthySensitive": "Unhealthy for Sensitive",
+        "unhealthy": "Unhealthy",
+        "veryUnhealthy": "Very Unhealthy",
+        "quiet": "Quiet",
+        "noisy": "Noisy",
+        "veryNoisy": "Very Noisy",
+        "excellent": "Excellent",
+        "fair": "Fair",
+        "limited": "Limited",
+        "unknown": "Unknown"
+      },
+      "dataFreshness": "Data freshness: Air Quality updated {airQuality}, Noise Level updated {noiseLevel}, Transport updated {transport}",
+      "stopsWithin1km": "{count} stops within 1km"
     }
   },
   "settings": {
@@ -342,7 +655,62 @@
       "pushNotifications": "Push Notifications",
       "savedSearchAlerts": "Saved Search Alerts",
       "priceDropAlerts": "Price Drop Alerts",
-      "newListingAlerts": "New Listing Alerts"
+      "newListingAlerts": "New Listing Alerts",
+      "loadFailed": "Failed to load settings. Please try again.",
+      "loadingSettings": "Loading settings...",
+      "somethingWentWrong": "Something went wrong",
+      "retry": "Retry",
+      "notificationTypes": "Notification Types",
+      "notificationTypesDesc": "Choose which notifications you want to receive.",
+      "priceAlerts": "Price Alerts",
+      "priceAlertsDesc": "Get notified when property prices change.",
+      "newListings": "New Listings",
+      "newListingsDesc": "Receive alerts for new property listings.",
+      "savedSearchUpdates": "Saved Search Updates",
+      "savedSearchUpdatesDesc": "Updates on your saved search queries.",
+      "marketUpdates": "Market Updates",
+      "marketUpdatesDesc": "Weekly market trend summaries.",
+      "channels": "Notification Channels",
+      "channelsDesc": "Manage how you receive notifications.",
+      "emailChannel": "Email",
+      "emailChannelDesc": "Receive notifications via email.",
+      "pushChannel": "Push Notifications",
+      "pushChannelDesc": "Browser push notifications.",
+      "enablePushBrowser": "Enable push notifications in your browser to receive alerts.",
+      "enablePush": "Enable Push",
+      "pushBlocked": "Push notifications are blocked. Please enable them in your browser settings.",
+      "inAppChannel": "In-App",
+      "inAppChannelDesc": "Notifications within the application.",
+      "frequencyDigest": "Email Digests",
+      "frequencyDigestDesc": "Choose how often to receive email digests.",
+      "alertFrequency": "Alert Frequency",
+      "instant": "Instant",
+      "dailyDigest": "Daily Digest",
+      "weeklyDigest": "Weekly Digest",
+      "dailyDigestTime": "Daily Digest Time",
+      "weeklyDigestDay": "Weekly Digest Day",
+      "advancedSettings": "Advanced Settings",
+      "advancedSettingsDesc": "Fine-tune your notification preferences.",
+      "quietHoursStart": "Quiet Hours Start",
+      "quietHoursEnd": "Quiet Hours End",
+      "priceDropThreshold": "Price Drop Threshold (%)",
+      "priceDropThresholdDesc": "Only notify when price drops exceed this percentage.",
+      "expertMode": "Expert Mode",
+      "expertModeDesc": "Show advanced notification options.",
+      "productUpdates": "Product Updates",
+      "productUpdatesDesc": "News about new features and improvements.",
+      "testNotifications": "Test Notifications",
+      "testNotificationsDesc": "Send a test notification to verify your settings.",
+      "testEmail": "Test Email",
+      "testPush": "Test Push",
+      "testInApp": "Test In-App",
+      "unsubscribe": "Unsubscribe",
+      "unsubscribeDesc": "Manage your subscription preferences.",
+      "unsubscribeLinkText": "Click here to unsubscribe from all notifications.",
+      "unsubscribedOn": "Unsubscribed on",
+      "saving": "Saving...",
+      "savePreferences": "Save Preferences",
+      "sendPreviewFailed": "Failed to send test notification."
     },
     "models": {
       "title": "Models",
@@ -362,7 +730,103 @@
       }
     },
     "saved": "Settings saved successfully.",
-    "error": "Failed to save settings."
+    "error": "Failed to save settings.",
+    "privacy": {
+      "exportStatusFailed": "Failed to check export status",
+      "loadFailed": "Failed to load privacy settings. Please try again.",
+      "loadingPrivacy": "Loading privacy settings...",
+      "privacyControls": "Privacy Controls",
+      "privacyControlsDesc": "Manage your privacy and visibility settings.",
+      "publicProfile": "Public Profile",
+      "publicProfileDesc": "Allow others to see your profile information.",
+      "activityVisibility": "Activity Visibility",
+      "activityVisibilityDesc": "Show your recent activity on your profile.",
+      "showEmail": "Show Email",
+      "showEmailDesc": "Display your email address on your public profile.",
+      "showPhone": "Show Phone",
+      "showPhoneDesc": "Display your phone number on your public profile.",
+      "allowContact": "Allow Contact",
+      "allowContactDesc": "Allow other users to contact you directly.",
+      "dataExportGdpr": "Data Export (GDPR)",
+      "dataExportGdprDesc": "Download a copy of your personal data in compliance with GDPR regulations.",
+      "exportIncludes": "Your export will include:",
+      "exportProfileInfo": "Profile information",
+      "exportFavorites": "Saved favorites",
+      "exportSearchHistory": "Search history",
+      "exportDocuments": "Uploaded documents",
+      "exportProcessingInfo": "Export processing may take a few minutes. You'll receive a download link when it's ready.",
+      "exportStatus": "Export Status",
+      "progress": "Progress",
+      "exportProgressLabel": "{percent}% complete",
+      "downloadYourData": "Download Your Data",
+      "linkExpires": "Download link expires in 24 hours.",
+      "startingExport": "Starting export...",
+      "processing": "Processing...",
+      "requestDataExport": "Request Data Export",
+      "gdprConsentGiven": "GDPR consent given",
+      "saving": "Saving...",
+      "savePrivacySettings": "Save Privacy Settings",
+      "exportStarted": "Data export started. You'll receive a download link shortly.",
+      "exportStartFailed": "Failed to start data export. Please try again."
+    },
+    "profile": {
+      "loadFailed": "Failed to load profile. Please try again.",
+      "loadingProfile": "Loading profile...",
+      "somethingWentWrong": "Something went wrong",
+      "retry": "Retry",
+      "invalidFileType": "Invalid file type. Please upload an image.",
+      "fileTooLarge": "File too large. Maximum size is 2MB.",
+      "avatarUploaded": "Avatar uploaded successfully.",
+      "avatarUploadFailed": "Failed to upload avatar.",
+      "avatarDeleted": "Avatar removed.",
+      "avatarDeleteFailed": "Failed to remove avatar.",
+      "profilePicture": "Profile Picture",
+      "profilePictureDesc": "Upload a photo for your profile.",
+      "profile": "Profile",
+      "uploading": "Uploading...",
+      "uploadPhoto": "Upload Photo",
+      "remove": "Remove",
+      "profileInformation": "Profile Information",
+      "profileInformationDesc": "Update your personal details.",
+      "email": "Email",
+      "emailCannotChange": "Email cannot be changed",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "Enter your full name",
+      "phone": "Phone",
+      "bio": "Bio",
+      "bioPlaceholder": "Tell us about yourself...",
+      "charactersCount": "{count}/{max} characters",
+      "preferences": "Preferences",
+      "preferencesDesc": "Set your display preferences.",
+      "timezone": "Timezone",
+      "language": "Language",
+      "accountInformation": "Account Information",
+      "accountInformationDesc": "Your account details.",
+      "role": "Role",
+      "status": "Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "verified": "Verified",
+      "yes": "Yes",
+      "pending": "Pending",
+      "memberSince": "Member since",
+      "na": "N/A",
+      "lastLogin": "Last login",
+      "saving": "Saving...",
+      "saveProfile": "Save Profile"
+    },
+    "taskModel": {
+      "selectBoth": "Please select both a provider and model.",
+      "saved": "Model preference saved.",
+      "failedToSave": "Failed to save model preference.",
+      "resetToDefault": "Reset to system default.",
+      "failedToReset": "Failed to reset model preference.",
+      "systemDefault": "System Default",
+      "provider": "Provider",
+      "model": "Model",
+      "save": "Save",
+      "reset": "Reset"
+    }
   },
   "chat": {
     "title": "AI Assistant",
@@ -549,6 +1013,132 @@
     "affordabilityCalculator": "Affordability Calculator",
     "comparisonTool": "Property Comparison"
   },
+  "cma": {
+    "steps": {
+      "subject": {
+        "title": "Subject Property",
+        "description": "Select the property to evaluate"
+      },
+      "comparables": {
+        "title": "Comparables",
+        "description": "Choose similar properties"
+      },
+      "adjustments": {
+        "title": "Adjustments",
+        "description": "Review value adjustments"
+      },
+      "preview": {
+        "title": "Preview",
+        "description": "Review the report"
+      },
+      "export": {
+        "title": "Export",
+        "description": "Download or share"
+      }
+    },
+    "subject": {
+      "searchPlaceholder": "Search by address, city, or property ID...",
+      "searchAriaLabel": "Search properties",
+      "searchButton": "Search",
+      "searching": "Searching...",
+      "selectedSubject": "Selected Subject Property",
+      "selected": "Selected",
+      "price": "Price:",
+      "area": "Area:",
+      "rooms": "Rooms:",
+      "type": "Type:",
+      "searchResults": "Search Results ({count})",
+      "property": "Property",
+      "roomsCount": "{count} rooms",
+      "nextComparables": "Next: Select Comparables"
+    },
+    "comparables": {
+      "selectRange": "Select {min}-{max} comparable properties. Drag to reorder by relevance.",
+      "refresh": "Refresh",
+      "finding": "Finding similar properties...",
+      "selected": "Selected:",
+      "selectMore": "Select at least {count} more",
+      "similarity": "Similarity",
+      "noComparables": "No comparable properties found. Try adjusting your search criteria.",
+      "selectedComparables": "Selected Comparables",
+      "roomsCount": "{count} rooms",
+      "property": "Property {id}",
+      "back": "Back",
+      "nextAdjustments": "Next: Review Adjustments"
+    },
+    "adjustments": {
+      "description": "Review and adjust the valuation factors for each comparable property. Positive adjustments increase the comparable's value; negative adjustments decrease it.",
+      "comparable": "Comparable {index}",
+      "similarity": "Similarity:",
+      "factor": "Factor",
+      "subject": "Subject",
+      "comparableLabel": "Comparable",
+      "adjPercent": "Adj. %",
+      "amount": "Amount",
+      "totalAdjustments": "Total Adjustments",
+      "adjustedPrice": "Adjusted Price:",
+      "adjustmentSummary": "Adjustment Summary",
+      "avgAdjustment": "Avg Adjustment",
+      "priceRange": "Price Range",
+      "medianPrice": "Median Price",
+      "back": "Back",
+      "nextPreview": "Next: Preview Report"
+    },
+    "preview": {
+      "noSubject": "No subject property selected",
+      "generating": "Generating CMA report...",
+      "generateReport": "Generate Report",
+      "noReport": "No report generated yet. Click Generate to create the CMA report.",
+      "tryAgain": "Try Again",
+      "back": "Back",
+      "nextExport": "Next: Export Options",
+      "executiveSummary": "Executive Summary",
+      "estimatedValue": "Estimated Market Value",
+      "range": "Range:",
+      "confidenceScore": "Confidence Score",
+      "confidenceHigh": "High",
+      "confidenceMedium": "Medium",
+      "confidenceLow": "Low",
+      "pricePerSqm": "Price per m²",
+      "subjectProperty": "Subject Property",
+      "location": "Location",
+      "area": "Area",
+      "rooms": "Rooms",
+      "type": "Type",
+      "comparables": "Comparables ({count})",
+      "property": "Property",
+      "score": "Score:",
+      "marketContext": "Market Context",
+      "avgPricePerSqm": "Avg Price/m²",
+      "medianPrice": "Median Price",
+      "trend": "Trend",
+      "inventory": "Inventory",
+      "listings": "{count} listings",
+      "failedGenerate": "Failed to generate report"
+    },
+    "export": {
+      "noReport": "No report available. Please go back and generate a report first.",
+      "back": "Back",
+      "reportGenerated": "Report Generated Successfully",
+      "reportReady": "Your Comparative Market Analysis report is ready for export.",
+      "pdfReport": "PDF Report",
+      "professionalFormat": "Professional format",
+      "downloading": "Downloading...",
+      "downloadPdf": "Download PDF",
+      "jsonData": "JSON Data",
+      "rawDataExport": "Raw data export",
+      "downloadJson": "Download JSON",
+      "shareLink": "Share Link",
+      "copyShareableUrl": "Copy shareable URL",
+      "copied": "Copied!",
+      "copyLink": "Copy Link",
+      "reportId": "Report ID:",
+      "created": "Created:",
+      "expires": "Expires:",
+      "createNew": "Create New Report",
+      "failedDownload": "Failed to download PDF"
+    }
+  },
   "admin": {
     "dataSources": {
       "title": "Data Sources",
@@ -560,7 +1150,51 @@
       },
       "lastSync": "Last Sync",
       "syncNow": "Sync Now",
-      "configure": "Configure"
+      "configure": "Configure",
+      "actionsMenu": "Actions menu",
+      "edit": "Edit",
+      "syncing": "Syncing...",
+      "justNow": "Just now",
+      "minutesAgo": "{count}m ago",
+      "hoursAgo": "{count}h ago",
+      "daysAgo": "{count}d ago",
+      "neverSynced": "Never synced",
+      "records": "{count} records",
+      "autoSync": "Auto-sync: {schedule}",
+      "autoSyncEnabled": "Auto-sync: Enabled",
+      "sourceTypes": {
+        "fileUpload": "File Upload",
+        "url": "URL",
+        "portalApi": "Portal API",
+        "json": "JSON"
+      },
+      "health": {
+        "error": "Error",
+        "syncing": "Syncing...",
+        "pending": "Pending",
+        "healthy": "Healthy",
+        "degraded": "Degraded",
+        "unhealthy": "Unhealthy"
+      },
+      "loadingSources": "Loading data sources...",
+      "configuredSources": "Configured Sources ({count})",
+      "addSource": "Add Source",
+      "noSources": "No data sources configured yet.",
+      "addFirstSource": "Add Your First Source",
+      "deleteTitle": "Delete Data Source",
+      "deleteConfirm": "Are you sure you want to delete {name}? This will also delete all sync history and cannot be undone.",
+      "deleteNote": "Records already imported from this source will remain in the system.",
+      "deleting": "Deleting..."
+    },
+    "systemHealth": {
+      "title": "System Health",
+      "loading": "Loading...",
+      "errorPrefix": "Error:",
+      "version": "Version",
+      "uptime": "Uptime",
+      "dependencies": "Dependencies",
+      "fetchError": "Failed to fetch health",
+      "unknownError": "Unknown error"
     }
   },
   "home": {
@@ -602,6 +1236,9 @@
     "forbidden": "Access forbidden",
     "serverError": "Server error",
     "tryAgain": "Please try again later",
+    "chatUnavailable": "Chat is temporarily unavailable",
+    "chatErrorFallback": "An unexpected error occurred. Please try again.",
+    "retry": "Retry",
     "goHome": "Go to homepage"
   },
   "validation": {

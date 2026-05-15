@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Building2, Loader2, AlertCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ import { useAuth } from '@/hooks/useAuth';
 export default function RegisterPage() {
   const router = useRouter();
   const locale = useLocale();
+  const t = useTranslations('auth');
   const { refreshUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,8 +62,8 @@ export default function RegisterPage() {
             <Building2 className="h-6 w-6 text-primary" />
           </div>
         </div>
-        <CardTitle className="text-2xl">Create an account</CardTitle>
-        <CardDescription>Enter your information to create your account</CardDescription>
+        <CardTitle className="text-2xl">{t('register.title')}</CardTitle>
+        <CardDescription>{t('register.description')}</CardDescription>
       </CardHeader>
       <form onSubmit={onSubmit}>
         <CardContent className="grid gap-4">
@@ -73,11 +74,11 @@ export default function RegisterPage() {
             </div>
           )}
           <div className="grid gap-2">
-            <Label htmlFor="fullName">Full Name</Label>
+            <Label htmlFor="fullName">{t('register.fullNameLabel')}</Label>
             <Input id="fullName" name="fullName" placeholder="John Doe" disabled={isLoading} />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('register.emailLabel')}</Label>
             <Input
               id="email"
               name="email"
@@ -88,7 +89,7 @@ export default function RegisterPage() {
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t('register.passwordLabel')}</Label>
             <Input
               id="password"
               name="password"
@@ -103,18 +104,18 @@ export default function RegisterPage() {
         <CardFooter className="flex flex-col gap-4">
           <Button className="w-full" type="submit" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Create Account
+            {t('register.submit')}
           </Button>
 
           <OAuthButtons isLoading={isLoading} />
 
           <div className="text-sm text-center text-muted-foreground">
-            Already have an account?{' '}
+            {t('register.haveAccount')}{' '}
             <Link
               href={`/${locale}/auth/login`}
               className="underline underline-offset-4 hover:text-primary"
             >
-              Sign in
+              {t('login.submit')}
             </Link>
           </div>
 
@@ -123,7 +124,7 @@ export default function RegisterPage() {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">or</span>
+              <span className="bg-card px-2 text-muted-foreground">{t('login.or')}</span>
             </div>
           </div>
 

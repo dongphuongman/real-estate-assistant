@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { RefreshCw, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -15,6 +16,7 @@ interface UpdateBannerProps {
  */
 export function UpdateBanner({ className }: UpdateBannerProps) {
   const [showBanner, setShowBanner] = useState(false);
+  const t = useTranslations('common');
 
   useEffect(() => {
     const handleUpdateAvailable = () => {
@@ -51,16 +53,16 @@ export function UpdateBanner({ className }: UpdateBannerProps) {
     >
       <div className="flex items-center justify-center gap-3">
         <RefreshCw className="h-4 w-4" aria-hidden="true" />
-        <span>A new version is available. Refresh to update.</span>
+        <span>{t('newVersionAvailable')}</span>
         <Button variant="secondary" size="sm" onClick={handleUpdate} className="ml-2">
-          Refresh
+          {t('refresh')}
         </Button>
         <Button
           variant="ghost"
           size="sm"
           onClick={handleDismiss}
           className="text-white hover:text-white"
-          aria-label="Dismiss update notification"
+          aria-label={t('dismissUpdate')}
         >
           <X className="h-4 w-4" aria-hidden="true" />
         </Button>

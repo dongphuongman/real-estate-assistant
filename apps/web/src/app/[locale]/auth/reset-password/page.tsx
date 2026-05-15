@@ -3,6 +3,7 @@
 import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Building2, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ import { resetPassword } from '@/lib/auth';
 function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations('auth');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -91,8 +93,8 @@ function ResetPasswordForm() {
               <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
           </div>
-          <CardTitle className="text-2xl">Password reset</CardTitle>
-          <CardDescription>Your password has been reset successfully</CardDescription>
+          <CardTitle className="text-2xl">{t('resetPassword.title')}</CardTitle>
+          <CardDescription>{t('resetPassword.success')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-center text-muted-foreground">
@@ -116,8 +118,8 @@ function ResetPasswordForm() {
             <Building2 className="h-6 w-6 text-primary" />
           </div>
         </div>
-        <CardTitle className="text-2xl">Reset password</CardTitle>
-        <CardDescription>Enter your new password below</CardDescription>
+        <CardTitle className="text-2xl">{t('resetPassword.title')}</CardTitle>
+        <CardDescription>{t('resetPassword.description')}</CardDescription>
       </CardHeader>
       <form onSubmit={onSubmit}>
         <CardContent className="grid gap-4">
@@ -125,7 +127,7 @@ function ResetPasswordForm() {
             <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">{error}</div>
           )}
           <div className="grid gap-2">
-            <Label htmlFor="password">New Password</Label>
+            <Label htmlFor="password">{t('resetPassword.newPasswordLabel')}</Label>
             <Input
               id="password"
               type="password"
@@ -137,7 +139,7 @@ function ResetPasswordForm() {
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Label htmlFor="confirmPassword">{t('resetPassword.confirmPasswordLabel')}</Label>
             <Input
               id="confirmPassword"
               type="password"
@@ -156,7 +158,7 @@ function ResetPasswordForm() {
             disabled={isLoading || !token || !password || !confirmPassword}
           >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Reset password
+            {t('resetPassword.submit')}
           </Button>
           <div className="text-sm text-center text-muted-foreground">
             <Link
@@ -164,7 +166,7 @@ function ResetPasswordForm() {
               className="inline-flex items-center gap-1 text-primary hover:underline"
             >
               <ArrowLeft className="h-3 w-3" />
-              Back to login
+              {t('forgotPassword.backToLogin')}
             </Link>
           </div>
         </CardFooter>

@@ -2,6 +2,7 @@
 
 import { useReducer, useEffect, useSyncExternalStore } from 'react';
 import { WifiOff, Wifi } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
 interface OfflineBannerProps {
@@ -58,6 +59,7 @@ function bannerReducer(state: BannerState, action: BannerAction): BannerState {
 export function OfflineBanner({ className }: OfflineBannerProps) {
   const isOnline = useOnlineStatus();
   const [bannerState, dispatch] = useReducer(bannerReducer, 'hidden');
+  const t = useTranslations('common');
 
   // Handle online/offline transitions
   useEffect(() => {
@@ -91,7 +93,7 @@ export function OfflineBanner({ className }: OfflineBannerProps) {
       >
         <div className="flex items-center justify-center gap-2">
           <Wifi className="h-4 w-4" aria-hidden="true" />
-          <span>Back online! Your data is synced.</span>
+          <span>{t('backOnline')}</span>
         </div>
       </div>
     );
@@ -110,7 +112,7 @@ export function OfflineBanner({ className }: OfflineBannerProps) {
       >
         <div className="flex items-center justify-center gap-2">
           <WifiOff className="h-4 w-4" aria-hidden="true" />
-          <span>You are offline. Some features may be limited.</span>
+          <span>{t('offlineMessage')}</span>
         </div>
       </div>
     );

@@ -1,6 +1,7 @@
 'use client';
 
 import { Heart, ExternalLink, BedDouble, Maximize, MapPin } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { PropertyMapPoint } from './property-map-utils';
 
 interface PropertyMapPopupProps {
@@ -24,6 +25,8 @@ export function PropertyMapPopup({
   onToggleFavorite,
   isFavorited = false,
 }: PropertyMapPopupProps) {
+  const t = useTranslations('property');
+  const tSearch = useTranslations('search');
   const handleViewDetails = () => {
     onViewDetails?.(point.id);
   };
@@ -37,20 +40,20 @@ export function PropertyMapPopup({
     <div
       className="min-w-[220px] max-w-[280px]"
       role="dialog"
-      aria-label={point.title || 'Property details'}
+      aria-label={point.title || t('details.title')}
     >
       {/* Image placeholder */}
       <div
         className="w-full h-24 bg-muted rounded-t-md flex items-center justify-center"
         aria-hidden="true"
       >
-        <span className="text-xs text-muted-foreground">Property image</span>
+        <span className="text-xs text-muted-foreground">{t('card.imagePlaceholder')}</span>
       </div>
 
       {/* Content */}
       <div className="p-3 space-y-2">
         {/* Title */}
-        <h4 className="font-semibold text-sm line-clamp-1">{point.title || 'Untitled Property'}</h4>
+        <h4 className="font-semibold text-sm line-clamp-1">{point.title || t('card.untitled')}</h4>
 
         {/* Location */}
         <div className="flex items-center gap-1 text-xs text-muted-foreground">

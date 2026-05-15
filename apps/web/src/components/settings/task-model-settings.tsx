@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -45,6 +46,7 @@ interface TaskRowProps {
   onSave: (taskType: TaskType, provider: string, modelName: string) => Promise<void>;
   onReset: (taskType: TaskType, preferenceId: string) => Promise<void>;
   loading: boolean;
+  t: ReturnType<typeof useTranslations>;
 }
 
 function TaskRow({
@@ -56,6 +58,7 @@ function TaskRow({
   onSave,
   onReset,
   loading,
+  t,
 }: TaskRowProps) {
   const [provider, setProvider] = useState(preference?.provider || systemDefault?.provider || '');
   const [modelName, setModelName] = useState(
@@ -87,7 +90,7 @@ function TaskRow({
 
   const handleSave = async () => {
     if (!provider || !modelName) {
-      setError('Select both provider and model');
+      setError(t('taskModel.selectBoth'));
       return;
     }
     setSaving(true);
@@ -95,10 +98,10 @@ function TaskRow({
     setSuccess(null);
     try {
       await onSave(taskType, provider, modelName);
-      setSuccess('Saved');
+      setSuccess(t('taskModel.saved'));
       setTimeout(() => setSuccess(null), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save');
+      setError(err instanceof Error ? err.message : t('taskModel.failedToSave'));
     } finally {
       setSaving(false);
     }
@@ -114,10 +117,10 @@ function TaskRow({
         setProvider(systemDefault.provider);
         setModelName(systemDefault.model_name);
       }
-      setSuccess('Reset to system default');
+      setSuccess(t('taskModel.resetToDefault'));
       setTimeout(() => setSuccess(null), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to reset');
+      setError(err instanceof Error ? err.message : t('taskModel.failedToReset'));
     } finally {
       setSaving(false);
     }
@@ -134,7 +137,9 @@ function TaskRow({
         <div className="flex items-center gap-2">
           <span className="font-medium">{TASK_TYPE_LABELS[taskType]}</span>
           {isUsingDefault && (
-            <span className="text-xs bg-muted px-2 py-0.5 rounded">System Default</span>
+            <span className="text-xs bg-muted px-2 py-0.5 rounded">
+              {t('taskModel.systemDefault')}
+            </span>
           )}
         </div>
         <p className="text-sm text-muted-foreground">{TASK_TYPE_DESCRIPTIONS[taskType]}</p>
@@ -148,7 +153,7 @@ function TaskRow({
           disabled={loading || saving}
           aria-label={`${TASK_TYPE_LABELS[taskType]} provider`}
         >
-          <option value="">Provider</option>
+          <option value="">{t('taskModel.provider')}</option>
           {providers.map((p) => (
             <option key={p} value={p}>
               {p}
@@ -163,7 +168,7 @@ function TaskRow({
           disabled={loading || saving || !provider}
           aria-label={`${TASK_TYPE_LABELS[taskType]} model`}
         >
-          <option value="">Model</option>
+          <option value="">{t('taskModel.model')}</option>
           {modelsForProvider.map((m) => (
             <option key={m} value={m}>
               {m}
@@ -172,12 +177,12 @@ function TaskRow({
         </select>
 
         <Button size="sm" onClick={handleSave} disabled={loading || saving || !hasChanges}>
-          {saving ? '...' : 'Save'}
+          {saving ? '...' : t('taskModel.save')}
         </Button>
 
         {preference && (
           <Button size="sm" variant="outline" onClick={handleReset} disabled={loading || saving}>
-            Reset
+            {t('taskModel.reset')}
           </Button>
         )}
       </div>
@@ -194,6 +199,7 @@ interface TaskModelSettingsProps {
 }
 
 export function TaskModelSettings({ catalog, userEmail }: TaskModelSettingsProps) {
+  const t = useTranslations('settings');
   const [loading, setLoading] = useState(true);
   const [preferences, setPreferences] = useState<TaskModelPreference[]>([]);
   const [systemDefaults, setSystemDefaults] = useState<SystemDefaultsResponse | null>(null);
@@ -314,6 +320,7 @@ export function TaskModelSettings({ catalog, userEmail }: TaskModelSettingsProps
                 onSave={handleSave}
                 onReset={handleReset}
                 loading={loading}
+                t={t}
               />
             ))}
           </div>

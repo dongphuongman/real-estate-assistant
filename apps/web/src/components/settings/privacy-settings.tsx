@@ -13,6 +13,7 @@ import {
   FileText,
   Clock,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Label } from '../ui/label';
@@ -30,6 +31,7 @@ export function PrivacySettings() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const t = useTranslations('settings');
 
   // Privacy settings state
   const [settings, setSettings] = useState<PrivacySettingsType>({
@@ -70,7 +72,7 @@ export function PrivacySettings() {
         }
       } catch {
         setPollingExport(false);
-        setError('Failed to check export status.');
+        setError(t('privacy.exportStatusFailed'));
       }
     }, 2000);
 
@@ -92,14 +94,14 @@ export function PrivacySettings() {
       }
       setError(null);
     } catch {
-      setError('Failed to load privacy settings. Please try again.');
+      setError(t('privacy.loadFailed'));
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) {
-    return <div className="p-4 text-center">Loading privacy settings...</div>;
+    return <div className="p-4 text-center">{t('privacy.loadingPrivacy')}</div>;
   }
 
   const handleSave = async () => {
@@ -110,9 +112,9 @@ export function PrivacySettings() {
     try {
       const updated = await updatePrivacySettings(settings);
       setProfile(updated);
-      setSuccess('Privacy settings saved successfully.');
+      setSuccess(t('saved'));
     } catch {
-      setError('Failed to save privacy settings. Please try again.');
+      setError(t('error'));
     } finally {
       setSaving(false);
     }
@@ -146,9 +148,9 @@ export function PrivacySettings() {
         completed_at: null,
       });
       setPollingExport(true);
-      setSuccess('Data export started. You will be able to download shortly.');
+      setSuccess(t('privacy.exportStarted'));
     } catch {
-      setError('Failed to start data export. Please try again.');
+      setError(t('privacy.exportStartFailed'));
     } finally {
       setExporting(false);
     }
@@ -167,9 +169,9 @@ export function PrivacySettings() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-primary" aria-hidden="true" />
-            <CardTitle>Privacy Controls</CardTitle>
+            <CardTitle>{t('privacy.privacyControls')}</CardTitle>
           </div>
-          <CardDescription>Control what information is visible to others.</CardDescription>
+          <CardDescription>{t('privacy.privacyControlsDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between space-x-2">
@@ -180,10 +182,10 @@ export function PrivacySettings() {
                 ) : (
                   <EyeOff className="h-4 w-4" aria-hidden="true" />
                 )}
-                <span>Public Profile</span>
+                <span>{t('privacy.publicProfile')}</span>
               </div>
               <span className="font-normal text-muted-foreground">
-                Allow others to see your profile information.
+                {t('privacy.publicProfileDesc')}
               </span>
             </Label>
             <input
@@ -203,10 +205,10 @@ export function PrivacySettings() {
                 ) : (
                   <EyeOff className="h-4 w-4" aria-hidden="true" />
                 )}
-                <span>Activity Visibility</span>
+                <span>{t('privacy.activityVisibility')}</span>
               </div>
               <span className="font-normal text-muted-foreground">
-                Show your activity (searches, favorites) to others.
+                {t('privacy.activityVisibilityDesc')}
               </span>
             </Label>
             <input
@@ -222,10 +224,10 @@ export function PrivacySettings() {
             <Label htmlFor="show_email" className="flex flex-col space-y-1">
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4" aria-hidden="true" />
-                <span>Show Email</span>
+                <span>{t('privacy.showEmail')}</span>
               </div>
               <span className="font-normal text-muted-foreground">
-                Display your email address on your public profile.
+                {t('privacy.showEmailDesc')}
               </span>
             </Label>
             <input
@@ -241,10 +243,10 @@ export function PrivacySettings() {
             <Label htmlFor="show_phone" className="flex flex-col space-y-1">
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4" aria-hidden="true" />
-                <span>Show Phone</span>
+                <span>{t('privacy.showPhone')}</span>
               </div>
               <span className="font-normal text-muted-foreground">
-                Display your phone number on your public profile.
+                {t('privacy.showPhoneDesc')}
               </span>
             </Label>
             <input
@@ -260,10 +262,10 @@ export function PrivacySettings() {
             <Label htmlFor="allow_contact" className="flex flex-col space-y-1">
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-4 w-4" aria-hidden="true" />
-                <span>Allow Contact</span>
+                <span>{t('privacy.allowContact')}</span>
               </div>
               <span className="font-normal text-muted-foreground">
-                Allow other users to send you messages.
+                {t('privacy.allowContactDesc')}
               </span>
             </Label>
             <input
@@ -282,35 +284,27 @@ export function PrivacySettings() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" aria-hidden="true" />
-            <CardTitle>Data Export (GDPR)</CardTitle>
+            <CardTitle>{t('privacy.dataExportGdpr')}</CardTitle>
           </div>
-          <CardDescription>
-            Request a copy of your personal data in compliance with GDPR regulations.
-          </CardDescription>
+          <CardDescription>{t('privacy.dataExportGdprDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-sm text-muted-foreground">
-            <p className="mb-2">
-              You can request an export of all your personal data stored in our system. This
-              includes:
-            </p>
+            <p className="mb-2">{t('privacy.exportIncludes')}</p>
             <ul className="list-disc list-inside space-y-1 ml-2">
-              <li>Profile information</li>
-              <li>Saved favorites</li>
-              <li>Search history</li>
-              <li>Uploaded documents</li>
+              <li>{t('privacy.exportProfileInfo')}</li>
+              <li>{t('privacy.exportFavorites')}</li>
+              <li>{t('privacy.exportSearchHistory')}</li>
+              <li>{t('privacy.exportDocuments')}</li>
             </ul>
-            <p className="mt-2">
-              Export requests are processed in the background and may take a few minutes. Download
-              links expire after 24 hours.
-            </p>
+            <p className="mt-2">{t('privacy.exportProcessingInfo')}</p>
           </div>
 
           {/* Export Status */}
           {exportJob && (
             <div className="rounded-md bg-muted p-4 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Export Status</span>
+                <span className="text-sm font-medium">{t('privacy.exportStatus')}</span>
                 <span
                   className={`text-sm ${
                     exportJob.status === 'completed'
@@ -327,7 +321,7 @@ export function PrivacySettings() {
               {exportJob.status === 'processing' && (
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>Progress</span>
+                    <span>{t('privacy.progress')}</span>
                     <span>{exportJob.progress_percent}%</span>
                   </div>
                   <div
@@ -336,7 +330,9 @@ export function PrivacySettings() {
                     aria-valuenow={exportJob.progress_percent}
                     aria-valuemin={0}
                     aria-valuemax={100}
-                    aria-label={`Export progress: ${exportJob.progress_percent}%`}
+                    aria-label={t('privacy.exportProgressLabel', {
+                      percent: exportJob.progress_percent,
+                    })}
                   >
                     <div
                       className="h-full bg-primary transition-all duration-300"
@@ -349,7 +345,7 @@ export function PrivacySettings() {
               {exportJob.status === 'completed' && exportJob.download_url && (
                 <Button onClick={handleDownload} className="w-full">
                   <Download className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Download Your Data
+                  {t('privacy.downloadYourData')}
                 </Button>
               )}
 
@@ -360,7 +356,11 @@ export function PrivacySettings() {
               {exportJob.expires_at && (
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Clock className="h-3 w-3" aria-hidden="true" />
-                  <span>Link expires: {new Date(exportJob.expires_at).toLocaleString()}</span>
+                  <span>
+                    {t('privacy.linkExpires', {
+                      date: new Date(exportJob.expires_at).toLocaleString(),
+                    })}
+                  </span>
                 </div>
               )}
             </div>
@@ -378,15 +378,17 @@ export function PrivacySettings() {
               <Download className="mr-2 h-4 w-4" aria-hidden="true" />
             )}
             {exporting
-              ? 'Starting Export...'
+              ? t('privacy.startingExport')
               : pollingExport
-                ? 'Processing...'
-                : 'Request Data Export'}
+                ? t('privacy.processing')
+                : t('privacy.requestDataExport')}
           </Button>
 
           {profile?.gdpr_consent_at && (
             <p className="text-xs text-muted-foreground">
-              GDPR consent given on {new Date(profile.gdpr_consent_at).toLocaleDateString()}
+              {t('privacy.gdprConsentGiven', {
+                date: new Date(profile.gdpr_consent_at).toLocaleDateString(),
+              })}
             </p>
           )}
         </CardContent>
@@ -397,7 +399,7 @@ export function PrivacySettings() {
         {success && <span className="text-green-600 text-sm">{success}</span>}
         {error && <span className="text-red-600 text-sm">{error}</span>}
         <Button onClick={handleSave} disabled={saving}>
-          {saving ? 'Saving...' : 'Save Privacy Settings'}
+          {saving ? t('privacy.saving') : t('privacy.savePrivacySettings')}
         </Button>
       </div>
     </div>

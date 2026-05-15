@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Building2, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ import {
 import { forgotPassword } from '@/lib/auth';
 
 export default function ForgotPasswordPage() {
+  const t = useTranslations('auth');
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
@@ -47,15 +49,12 @@ export default function ForgotPasswordPage() {
               <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
           </div>
-          <CardTitle className="text-2xl">Check your email</CardTitle>
-          <CardDescription>
-            We sent a password reset link to <span className="font-medium">{email}</span>
-          </CardDescription>
+          <CardTitle className="text-2xl">{t('forgotPassword.checkEmail')}</CardTitle>
+          <CardDescription>{t('forgotPassword.resetSent')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-center text-muted-foreground">
-            If the email exists, you will receive a password reset link shortly. The link will
-            expire in 1 hour.
+            {t('forgotPassword.checkInbox')}
           </p>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
@@ -67,7 +66,7 @@ export default function ForgotPasswordPage() {
               setEmail('');
             }}
           >
-            Send another email
+            {t('forgotPassword.resend')}
           </Button>
           <div className="text-sm text-center text-muted-foreground">
             <Link
@@ -75,7 +74,7 @@ export default function ForgotPasswordPage() {
               className="inline-flex items-center gap-1 text-primary hover:underline"
             >
               <ArrowLeft className="h-3 w-3" />
-              Back to login
+              {t('forgotPassword.backToLogin')}
             </Link>
           </div>
         </CardFooter>
@@ -91,8 +90,8 @@ export default function ForgotPasswordPage() {
             <Building2 className="h-6 w-6 text-primary" />
           </div>
         </div>
-        <CardTitle className="text-2xl">Forgot password?</CardTitle>
-        <CardDescription>Enter your email and we will send you a reset link</CardDescription>
+        <CardTitle className="text-2xl">{t('forgotPassword.title')}</CardTitle>
+        <CardDescription>{t('forgotPassword.description')}</CardDescription>
       </CardHeader>
       <form onSubmit={onSubmit}>
         <CardContent className="grid gap-4">
@@ -100,7 +99,7 @@ export default function ForgotPasswordPage() {
             <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">{error}</div>
           )}
           <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('forgotPassword.emailLabel')}</Label>
             <Input
               id="email"
               name="email"
@@ -116,7 +115,7 @@ export default function ForgotPasswordPage() {
         <CardFooter className="flex flex-col gap-4">
           <Button className="w-full" type="submit" disabled={isLoading || !email}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Send reset link
+            {t('forgotPassword.submit')}
           </Button>
           <div className="text-sm text-center text-muted-foreground">
             <Link
@@ -124,7 +123,7 @@ export default function ForgotPasswordPage() {
               className="inline-flex items-center gap-1 text-primary hover:underline"
             >
               <ArrowLeft className="h-3 w-3" />
-              Back to login
+              {t('forgotPassword.backToLogin')}
             </Link>
           </div>
         </CardFooter>

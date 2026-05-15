@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -37,14 +38,15 @@ const getScoreColor = (score: number): string => {
   return 'text-red-600';
 };
 
-const getScoreLabel = (score: number): string => {
-  if (score >= 80) return 'Excellent';
-  if (score >= 60) return 'Good';
-  if (score >= 40) return 'Fair';
-  return 'Poor';
+const getScoreLabel = (score: number, t: (key: string) => string): string => {
+  if (score >= 80) return t('scoreExcellent');
+  if (score >= 60) return t('scoreGood');
+  if (score >= 40) return t('scoreFair');
+  return t('scorePoor');
 };
 
 export function InvestmentAnalyzer() {
+  const t = useTranslations('investment');
   const [loading, setLoading] = useState(false);
   const [errorState, setErrorState] = useState<ErrorState | null>(null);
   const [result, setResult] = useState<InvestmentAnalysisResult | null>(null);
@@ -135,14 +137,11 @@ export function InvestmentAnalyzer() {
               <TrendingUp className="h-8 w-8 text-primary" aria-hidden="true" />
             </div>
           </div>
-          <h3 className="text-lg font-semibold mb-2">Investment Property Analyzer</h3>
+          <h3 className="text-lg font-semibold mb-2">{t('title')}</h3>
           <p className="text-sm text-muted-foreground max-w-md mx-auto mb-3">
-            Analyze investment properties with comprehensive metrics including ROI, cap rate, cash
-            flow, and rental yield.
+            {t('emptyDescription')}
           </p>
-          <p className="text-xs text-muted-foreground">
-            Enter property and rental details below to calculate investment returns and scores.
-          </p>
+          <p className="text-xs text-muted-foreground">{t('emptyHint')}</p>
         </div>
       )}
 

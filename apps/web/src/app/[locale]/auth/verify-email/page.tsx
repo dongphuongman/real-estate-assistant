@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useReducer } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Loader2, CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -37,6 +38,7 @@ function reducer(_state: State, action: Action): State {
 function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations('auth');
 
   // Get token and derive initial validation state
   const token = searchParams.get('token');
@@ -45,7 +47,7 @@ function VerifyEmailContent() {
   // Use reducer to avoid setState in effect
   const [state, dispatch] = useReducer(reducer, {
     status: hasValidToken ? 'loading' : 'error',
-    error: hasValidToken ? null : 'Invalid or missing verification token',
+    error: hasValidToken ? null : t('verifyEmail.invalidToken'),
   });
 
   // Only make API call if we have a valid token
@@ -66,7 +68,7 @@ function VerifyEmailContent() {
         if (!cancelled) {
           dispatch({
             type: 'ERROR',
-            error: err instanceof Error ? err.message : 'Failed to verify email',
+            error: err instanceof Error ? err.message : t('verifyEmail.failed'),
           });
         }
       });
@@ -81,7 +83,7 @@ function VerifyEmailContent() {
       <Card className="w-full max-w-sm">
         <CardContent className="flex flex-col items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="mt-4 text-sm text-muted-foreground">Verifying your email...</p>
+          <p className="mt-4 text-sm text-muted-foreground">{t('verifyEmail.verifying')}</p>
         </CardContent>
       </Card>
     );
@@ -96,17 +98,15 @@ function VerifyEmailContent() {
               <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
           </div>
-          <CardTitle className="text-2xl">Email verified</CardTitle>
-          <CardDescription>Your email has been verified successfully</CardDescription>
+          <CardTitle className="text-2xl">{t('verifyEmail.verified')}</CardTitle>
+          <CardDescription>{t('verifyEmail.verifiedDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-center text-muted-foreground">
-            You can now log in to your account.
-          </p>
+          <p className="text-sm text-center text-muted-foreground">{t('verifyEmail.canLogin')}</p>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
           <Button className="w-full" onClick={() => router.push('/auth/login')}>
-            Go to login
+            {t('verifyEmail.goToLogin')}
           </Button>
         </CardFooter>
       </Card>
@@ -121,17 +121,15 @@ function VerifyEmailContent() {
             <XCircle className="h-6 w-6 text-destructive" />
           </div>
         </div>
-        <CardTitle className="text-2xl">Verification failed</CardTitle>
-        <CardDescription>{state.error || 'Failed to verify your email'}</CardDescription>
+        <CardTitle className="text-2xl">{t('verifyEmail.failedTitle')}</CardTitle>
+        <CardDescription>{state.error || t('verifyEmail.failedDescription')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-center text-muted-foreground">
-          The verification link may be expired or invalid.
-        </p>
+        <p className="text-sm text-center text-muted-foreground">{t('verifyEmail.linkExpired')}</p>
       </CardContent>
       <CardFooter className="flex flex-col gap-4">
         <Button className="w-full" variant="outline" onClick={() => router.push('/auth/register')}>
-          Request new verification email
+          {t('verifyEmail.requestNew')}
         </Button>
         <div className="text-sm text-center text-muted-foreground">
           <Link
@@ -139,7 +137,7 @@ function VerifyEmailContent() {
             className="inline-flex items-center gap-1 text-primary hover:underline"
           >
             <ArrowLeft className="h-3 w-3" />
-            Back to login
+            {t('verifyEmail.backToLogin')}
           </Link>
         </div>
       </CardFooter>
@@ -148,13 +146,15 @@ function VerifyEmailContent() {
 }
 
 export default function VerifyEmailPage() {
+  const t = useTranslations('auth');
+
   return (
     <Suspense
       fallback={
         <Card className="w-full max-w-sm">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="mt-4 text-sm text-muted-foreground">Loading...</p>
+            <p className="mt-4 text-sm text-muted-foreground">{t('verifyEmail.loading')}</p>
           </CardContent>
         </Card>
       }

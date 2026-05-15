@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { User, Camera, Trash2, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
@@ -44,6 +45,7 @@ export function ProfileSettings() {
   const [success, setSuccess] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const t = useTranslations('settings');
 
   // Form state
   const [fullName, setFullName] = useState('');
@@ -67,22 +69,22 @@ export function ProfileSettings() {
       setLanguage(data.language || 'en');
       setError(null);
     } catch {
-      setError('Failed to load profile. Please try again.');
+      setError(t('profile.loadFailed'));
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) {
-    return <div className="p-4 text-center">Loading profile...</div>;
+    return <div className="p-4 text-center">{t('profile.loadingProfile')}</div>;
   }
 
   if (!profile) {
     return (
       <div className="p-4 text-center text-red-500">
-        {error || 'Something went wrong.'}
+        {error || t('profile.somethingWentWrong')}
         <Button onClick={fetchProfile} className="ml-4">
-          Retry
+          {t('profile.retry')}
         </Button>
       </div>
     );
@@ -103,9 +105,9 @@ export function ProfileSettings() {
       };
       const updated = await updateProfile(updateData);
       setProfile(updated);
-      setSuccess('Profile saved successfully.');
+      setSuccess(t('saved'));
     } catch {
-      setError('Failed to save profile. Please try again.');
+      setError(t('error'));
     } finally {
       setSaving(false);
     }
@@ -118,13 +120,13 @@ export function ProfileSettings() {
     // Validate file type
     const allowedTypes = ['image/png', 'image/jpeg', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-      setError('Invalid file type. Allowed: PNG, JPG, WEBP');
+      setError(t('profile.invalidFileType'));
       return;
     }
 
     // Validate file size (2MB max)
     if (file.size > 2 * 1024 * 1024) {
-      setError('File too large. Maximum size is 2MB.');
+      setError(t('profile.fileTooLarge'));
       return;
     }
 
@@ -134,9 +136,9 @@ export function ProfileSettings() {
     try {
       const result = await uploadAvatar(file);
       setProfile({ ...profile, avatar_url: result.avatar_url });
-      setSuccess('Avatar uploaded successfully.');
+      setSuccess(t('profile.avatarUploaded'));
     } catch {
-      setError('Failed to upload avatar. Please try again.');
+      setError(t('profile.avatarUploadFailed'));
     } finally {
       setUploadingAvatar(false);
       // Reset file input
@@ -153,9 +155,9 @@ export function ProfileSettings() {
     try {
       await deleteAvatar();
       setProfile({ ...profile, avatar_url: null });
-      setSuccess('Avatar deleted successfully.');
+      setSuccess(t('profile.avatarDeleted'));
     } catch {
-      setError('Failed to delete avatar. Please try again.');
+      setError(t('profile.avatarDeleteFailed'));
     } finally {
       setUploadingAvatar(false);
     }
@@ -168,9 +170,9 @@ export function ProfileSettings() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Camera className="h-5 w-5 text-primary" aria-hidden="true" />
-            <CardTitle>Profile Picture</CardTitle>
+            <CardTitle>{t('profile.profilePicture')}</CardTitle>
           </div>
-          <CardDescription>Upload a profile picture (PNG, JPG, or WEBP, max 2MB).</CardDescription>
+          <CardDescription>{t('profile.profilePictureDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-6">
@@ -178,7 +180,7 @@ export function ProfileSettings() {
               {profile.avatar_url ? (
                 <img
                   src={profile.avatar_url}
-                  alt="Profile"
+                  alt={t('profile.profile')}
                   className="h-24 w-24 rounded-full object-cover border-2 border-muted"
                 />
               ) : (
@@ -206,7 +208,7 @@ export function ProfileSettings() {
                 ) : (
                   <Camera className="mr-2 h-4 w-4" aria-hidden="true" />
                 )}
-                {uploadingAvatar ? 'Uploading...' : 'Upload Photo'}
+                {uploadingAvatar ? t('profile.uploading') : t('profile.uploadPhoto')}
               </Button>
               {profile.avatar_url && (
                 <Button
@@ -217,7 +219,7 @@ export function ProfileSettings() {
                   className="text-destructive hover:bg-destructive/10"
                 >
                   <Trash2 className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Remove
+                  {t('profile.remove')}
                 </Button>
               )}
             </div>
@@ -230,32 +232,30 @@ export function ProfileSettings() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <User className="h-5 w-5 text-primary" aria-hidden="true" />
-            <CardTitle>Profile Information</CardTitle>
+            <CardTitle>{t('profile.profileInformation')}</CardTitle>
           </div>
-          <CardDescription>Update your personal information.</CardDescription>
+          <CardDescription>{t('profile.profileInformationDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('profile.email')}</Label>
             <Input id="email" type="email" value={profile.email} disabled className="bg-muted" />
-            <span className="text-xs text-muted-foreground">
-              Email cannot be changed. Contact support if needed.
-            </span>
+            <span className="text-xs text-muted-foreground">{t('profile.emailCannotChange')}</span>
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="full_name">Full Name</Label>
+            <Label htmlFor="full_name">{t('profile.fullName')}</Label>
             <Input
               id="full_name"
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="Enter your full name"
+              placeholder={t('profile.fullNamePlaceholder')}
             />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="phone">Phone</Label>
+            <Label htmlFor="phone">{t('profile.phone')}</Label>
             <Input
               id="phone"
               type="tel"
@@ -266,17 +266,19 @@ export function ProfileSettings() {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="bio">Bio</Label>
+            <Label htmlFor="bio">{t('profile.bio')}</Label>
             <textarea
               id="bio"
               className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder="Tell us a bit about yourself..."
+              placeholder={t('profile.bioPlaceholder')}
               rows={3}
               maxLength={500}
             />
-            <span className="text-xs text-muted-foreground">{bio.length}/500 characters</span>
+            <span className="text-xs text-muted-foreground">
+              {t('profile.charactersCount', { count: bio.length })}
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -284,12 +286,12 @@ export function ProfileSettings() {
       {/* Preferences Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Preferences</CardTitle>
-          <CardDescription>Configure your regional and language preferences.</CardDescription>
+          <CardTitle>{t('profile.preferences')}</CardTitle>
+          <CardDescription>{t('profile.preferencesDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
-            <Label htmlFor="timezone">Timezone</Label>
+            <Label htmlFor="timezone">{t('profile.timezone')}</Label>
             <select
               id="timezone"
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -305,7 +307,7 @@ export function ProfileSettings() {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="language">Language</Label>
+            <Label htmlFor="language">{t('profile.language')}</Label>
             <select
               id="language"
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -325,38 +327,40 @@ export function ProfileSettings() {
       {/* Account Info Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Account Information</CardTitle>
-          <CardDescription>Details about your account status.</CardDescription>
+          <CardTitle>{t('profile.accountInformation')}</CardTitle>
+          <CardDescription>{t('profile.accountInformationDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-muted-foreground">Role:</span>
+              <span className="text-muted-foreground">{t('profile.role')}:</span>
               <span className="ml-2 capitalize">{profile.role}</span>
             </div>
             <div>
-              <span className="text-muted-foreground">Status:</span>
+              <span className="text-muted-foreground">{t('profile.status')}:</span>
               <span className={`ml-2 ${profile.is_active ? 'text-green-600' : 'text-red-600'}`}>
-                {profile.is_active ? 'Active' : 'Inactive'}
+                {profile.is_active ? t('profile.active') : t('profile.inactive')}
               </span>
             </div>
             <div>
-              <span className="text-muted-foreground">Verified:</span>
+              <span className="text-muted-foreground">{t('profile.verified')}:</span>
               <span
                 className={`ml-2 ${profile.is_verified ? 'text-green-600' : 'text-yellow-600'}`}
               >
-                {profile.is_verified ? 'Yes' : 'Pending'}
+                {profile.is_verified ? t('profile.yes') : t('profile.pending')}
               </span>
             </div>
             <div>
-              <span className="text-muted-foreground">Member since:</span>
+              <span className="text-muted-foreground">{t('profile.memberSince')}:</span>
               <span className="ml-2">
-                {profile.created_at ? new Date(profile.created_at).toLocaleDateString() : 'N/A'}
+                {profile.created_at
+                  ? new Date(profile.created_at).toLocaleDateString()
+                  : t('profile.na')}
               </span>
             </div>
             {profile.last_login_at && (
               <div className="col-span-2">
-                <span className="text-muted-foreground">Last login:</span>
+                <span className="text-muted-foreground">{t('profile.lastLogin')}:</span>
                 <span className="ml-2">{new Date(profile.last_login_at).toLocaleString()}</span>
               </div>
             )}
@@ -369,7 +373,7 @@ export function ProfileSettings() {
         {success && <span className="text-green-600 text-sm">{success}</span>}
         {error && <span className="text-red-600 text-sm">{error}</span>}
         <Button onClick={handleSave} disabled={saving}>
-          {saving ? 'Saving...' : 'Save Profile'}
+          {saving ? t('profile.saving') : t('profile.saveProfile')}
         </Button>
       </div>
     </div>

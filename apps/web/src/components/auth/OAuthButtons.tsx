@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { oauthLogin } from '@/lib/auth';
@@ -13,6 +14,7 @@ interface OAuthButtonsProps {
 
 export function OAuthButtons({ isLoading = false, className }: OAuthButtonsProps) {
   const [isRedirecting, setIsRedirecting] = useState<'google' | 'apple' | null>(null);
+  const t = useTranslations('auth');
 
   const handleOAuthLogin = async (provider: 'google' | 'apple') => {
     setIsRedirecting(provider);
@@ -31,7 +33,9 @@ export function OAuthButtons({ isLoading = false, className }: OAuthButtonsProps
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+          <span className="bg-background px-2 text-muted-foreground">
+            {t('login.orContinueWith')}
+          </span>
         </div>
       </div>
       <div className="flex gap-2 mt-4">

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Bell, Smartphone, Mail, Monitor, Clock, Send } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Label } from '../ui/label';
@@ -33,6 +34,7 @@ export function NotificationSettings() {
     null
   );
   const [sendingPreview, setSendingPreview] = useState(false);
+  const t = useTranslations('settings');
 
   useEffect(() => {
     fetchSettings();
@@ -45,7 +47,7 @@ export function NotificationSettings() {
       setSettings(data);
       setError(null);
     } catch {
-      setError('Failed to load settings. Please try again.');
+      setError(t('notifications.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -59,15 +61,15 @@ export function NotificationSettings() {
   };
 
   if (loading) {
-    return <div className="p-4 text-center">Loading settings...</div>;
+    return <div className="p-4 text-center">{t('notifications.loadingSettings')}</div>;
   }
 
   if (!settings) {
     return (
       <div className="p-4 text-center text-red-500">
-        {error || 'Something went wrong.'}
+        {error || t('notifications.somethingWentWrong')}
         <Button onClick={fetchSettings} className="ml-4">
-          Retry
+          {t('notifications.retry')}
         </Button>
       </div>
     );
@@ -98,9 +100,9 @@ export function NotificationSettings() {
       };
       const updated = await updateNotificationSettings(updateData);
       setSettings(updated);
-      setSuccess('Settings saved successfully.');
+      setSuccess(t('saved'));
     } catch {
-      setError('Failed to save settings. Please try again.');
+      setError(t('error'));
     } finally {
       setSaving(false);
     }
@@ -142,7 +144,7 @@ export function NotificationSettings() {
         setError(result.message);
       }
     } catch {
-      setError('Failed to send preview notification.');
+      setError(t('notifications.sendPreviewFailed'));
     } finally {
       setSendingPreview(false);
     }
@@ -155,16 +157,16 @@ export function NotificationSettings() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Bell className="h-5 w-5 text-primary" aria-hidden="true" />
-            <CardTitle>Notification Types</CardTitle>
+            <CardTitle>{t('notifications.notificationTypes')}</CardTitle>
           </div>
-          <CardDescription>Choose which notifications you want to receive.</CardDescription>
+          <CardDescription>{t('notifications.notificationTypesDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between space-x-2">
             <Label htmlFor="price_alerts" className="flex flex-col space-y-1">
-              <span>Price Alerts</span>
+              <span>{t('notifications.priceAlerts')}</span>
               <span className="font-normal text-muted-foreground">
-                Get notified when property prices drop.
+                {t('notifications.priceAlertsDesc')}
               </span>
             </Label>
             <input
@@ -178,9 +180,9 @@ export function NotificationSettings() {
 
           <div className="flex items-center justify-between space-x-2">
             <Label htmlFor="new_listings" className="flex flex-col space-y-1">
-              <span>New Listings</span>
+              <span>{t('notifications.newListings')}</span>
               <span className="font-normal text-muted-foreground">
-                Get notified about new properties matching your criteria.
+                {t('notifications.newListingsDesc')}
               </span>
             </Label>
             <input
@@ -194,9 +196,9 @@ export function NotificationSettings() {
 
           <div className="flex items-center justify-between space-x-2">
             <Label htmlFor="saved_search" className="flex flex-col space-y-1">
-              <span>Saved Search Updates</span>
+              <span>{t('notifications.savedSearchUpdates')}</span>
               <span className="font-normal text-muted-foreground">
-                Get updates about changes to your saved searches.
+                {t('notifications.savedSearchUpdatesDesc')}
               </span>
             </Label>
             <input
@@ -210,9 +212,9 @@ export function NotificationSettings() {
 
           <div className="flex items-center justify-between space-x-2">
             <Label htmlFor="market_updates" className="flex flex-col space-y-1">
-              <span>Market Updates</span>
+              <span>{t('notifications.marketUpdates')}</span>
               <span className="font-normal text-muted-foreground">
-                Receive market trends and analysis updates.
+                {t('notifications.marketUpdatesDesc')}
               </span>
             </Label>
             <input
@@ -229,18 +231,18 @@ export function NotificationSettings() {
       {/* Notification Channels Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Notification Channels</CardTitle>
-          <CardDescription>Choose how you want to receive notifications.</CardDescription>
+          <CardTitle>{t('notifications.channels')}</CardTitle>
+          <CardDescription>{t('notifications.channelsDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between space-x-2">
             <Label htmlFor="email_channel" className="flex flex-col space-y-1">
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4" aria-hidden="true" />
-                <span>Email</span>
+                <span>{t('notifications.emailChannel')}</span>
               </div>
               <span className="font-normal text-muted-foreground">
-                Receive notifications via email.
+                {t('notifications.emailChannelDesc')}
               </span>
             </Label>
             <input
@@ -256,10 +258,10 @@ export function NotificationSettings() {
             <Label htmlFor="push_channel" className="flex flex-col space-y-1">
               <div className="flex items-center gap-2">
                 <Smartphone className="h-4 w-4" aria-hidden="true" />
-                <span>Push Notifications</span>
+                <span>{t('notifications.pushChannel')}</span>
               </div>
               <span className="font-normal text-muted-foreground">
-                Get instant alerts on your device.
+                {t('notifications.pushChannelDesc')}
               </span>
             </Label>
             <input
@@ -274,17 +276,17 @@ export function NotificationSettings() {
 
           {pushPermissionStatus === 'default' && settings.push_enabled && (
             <div className="rounded-md bg-muted p-3 text-sm">
-              <p className="mb-2">Enable push notifications in your browser to receive alerts.</p>
+              <p className="mb-2">{t('notifications.enablePushBrowser')}</p>
               <Button size="sm" onClick={handleEnablePush}>
                 <Bell className="mr-2 h-4 w-4" aria-hidden="true" />
-                Enable Push
+                {t('notifications.enablePush')}
               </Button>
             </div>
           )}
 
           {pushPermissionStatus === 'denied' && (
             <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-              Push notifications are blocked. Please enable them in your browser settings.
+              {t('notifications.pushBlocked')}
             </div>
           )}
 
@@ -292,10 +294,10 @@ export function NotificationSettings() {
             <Label htmlFor="in_app_channel" className="flex flex-col space-y-1">
               <div className="flex items-center gap-2">
                 <Monitor className="h-4 w-4" aria-hidden="true" />
-                <span>In-App Notifications</span>
+                <span>{t('notifications.inAppChannel')}</span>
               </div>
               <span className="font-normal text-muted-foreground">
-                Show notifications within the app.
+                {t('notifications.inAppChannelDesc')}
               </span>
             </Label>
             <input
@@ -312,12 +314,12 @@ export function NotificationSettings() {
       {/* Frequency & Digest Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Frequency & Digest</CardTitle>
-          <CardDescription>Configure how often you receive notification digests.</CardDescription>
+          <CardTitle>{t('notifications.frequencyDigest')}</CardTitle>
+          <CardDescription>{t('notifications.frequencyDigestDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
-            <Label htmlFor="alert_frequency">Alert Frequency</Label>
+            <Label htmlFor="alert_frequency">{t('notifications.alertFrequency')}</Label>
             <select
               id="alert_frequency"
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -326,14 +328,14 @@ export function NotificationSettings() {
                 updateSetting('alert_frequency', e.target.value as 'instant' | 'daily' | 'weekly')
               }
             >
-              <option value="instant">Instant</option>
-              <option value="daily">Daily Digest</option>
-              <option value="weekly">Weekly Digest</option>
+              <option value="instant">{t('notifications.instant')}</option>
+              <option value="daily">{t('notifications.dailyDigest')}</option>
+              <option value="weekly">{t('notifications.weeklyDigest')}</option>
             </select>
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="daily_digest_time">Daily Digest Time</Label>
+            <Label htmlFor="daily_digest_time">{t('notifications.dailyDigestTime')}</Label>
             <input
               type="time"
               id="daily_digest_time"
@@ -344,7 +346,7 @@ export function NotificationSettings() {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="weekly_digest_day">Weekly Digest Day</Label>
+            <Label htmlFor="weekly_digest_day">{t('notifications.weeklyDigestDay')}</Label>
             <select
               id="weekly_digest_day"
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -366,14 +368,14 @@ export function NotificationSettings() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-primary" aria-hidden="true" />
-            <CardTitle>Advanced Settings</CardTitle>
+            <CardTitle>{t('notifications.advancedSettings')}</CardTitle>
           </div>
-          <CardDescription>Fine-tune your notification preferences.</CardDescription>
+          <CardDescription>{t('notifications.advancedSettingsDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="quiet_hours_start">Quiet Hours Start</Label>
+              <Label htmlFor="quiet_hours_start">{t('notifications.quietHoursStart')}</Label>
               <input
                 type="time"
                 id="quiet_hours_start"
@@ -383,7 +385,7 @@ export function NotificationSettings() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="quiet_hours_end">Quiet Hours End</Label>
+              <Label htmlFor="quiet_hours_end">{t('notifications.quietHoursEnd')}</Label>
               <input
                 type="time"
                 id="quiet_hours_end"
@@ -395,7 +397,7 @@ export function NotificationSettings() {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="price_drop_threshold">Price Drop Threshold (%)</Label>
+            <Label htmlFor="price_drop_threshold">{t('notifications.priceDropThreshold')}</Label>
             <input
               type="number"
               id="price_drop_threshold"
@@ -407,15 +409,15 @@ export function NotificationSettings() {
               onChange={(e) => updateSetting('price_drop_threshold', parseFloat(e.target.value))}
             />
             <span className="text-xs text-muted-foreground">
-              Only notify when price drops by at least this percentage.
+              {t('notifications.priceDropThresholdDesc')}
             </span>
           </div>
 
           <div className="flex items-center justify-between space-x-2">
             <Label htmlFor="expert_mode" className="flex flex-col space-y-1">
-              <span>Expert Mode</span>
+              <span>{t('notifications.expertMode')}</span>
               <span className="font-normal text-muted-foreground">
-                Include market trends, indices, and yield analysis.
+                {t('notifications.expertModeDesc')}
               </span>
             </Label>
             <input
@@ -429,9 +431,9 @@ export function NotificationSettings() {
 
           <div className="flex items-center justify-between space-x-2">
             <Label htmlFor="marketing_emails" className="flex flex-col space-y-1">
-              <span>Product Updates</span>
+              <span>{t('notifications.productUpdates')}</span>
               <span className="font-normal text-muted-foreground">
-                Receive occasional emails about new features.
+                {t('notifications.productUpdatesDesc')}
               </span>
             </Label>
             <input
@@ -450,9 +452,9 @@ export function NotificationSettings() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Send className="h-5 w-5 text-primary" aria-hidden="true" />
-            <CardTitle>Test Notifications</CardTitle>
+            <CardTitle>{t('notifications.testNotifications')}</CardTitle>
           </div>
-          <CardDescription>Send a test notification to verify your settings.</CardDescription>
+          <CardDescription>{t('notifications.testNotificationsDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
@@ -463,7 +465,7 @@ export function NotificationSettings() {
               disabled={sendingPreview || !settings.email_enabled}
             >
               <Mail className="mr-2 h-4 w-4" aria-hidden="true" />
-              Test Email
+              {t('notifications.testEmail')}
             </Button>
             <Button
               variant="outline"
@@ -472,7 +474,7 @@ export function NotificationSettings() {
               disabled={sendingPreview || !settings.push_enabled}
             >
               <Smartphone className="mr-2 h-4 w-4" aria-hidden="true" />
-              Test Push
+              {t('notifications.testPush')}
             </Button>
             <Button
               variant="outline"
@@ -481,7 +483,7 @@ export function NotificationSettings() {
               disabled={sendingPreview || !settings.in_app_enabled}
             >
               <Monitor className="mr-2 h-4 w-4" aria-hidden="true" />
-              Test In-App
+              {t('notifications.testInApp')}
             </Button>
           </div>
         </CardContent>
@@ -491,19 +493,21 @@ export function NotificationSettings() {
       {settings.unsubscribe_token && (
         <Card>
           <CardHeader>
-            <CardTitle>Unsubscribe</CardTitle>
-            <CardDescription>Manage your subscription preferences.</CardDescription>
+            <CardTitle>{t('notifications.unsubscribe')}</CardTitle>
+            <CardDescription>{t('notifications.unsubscribeDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Use this link to unsubscribe from all notifications:{' '}
+              {t('notifications.unsubscribeLinkText')}{' '}
               <code className="text-xs bg-muted px-1 py-0.5 rounded">
                 /unsubscribe/{settings.unsubscribe_token}
               </code>
             </p>
             {settings.unsubscribed_at && (
               <p className="mt-2 text-sm text-destructive">
-                You unsubscribed on {new Date(settings.unsubscribed_at).toLocaleDateString()}
+                {t('notifications.unsubscribedOn', {
+                  date: new Date(settings.unsubscribed_at).toLocaleDateString(),
+                })}
               </p>
             )}
           </CardContent>
@@ -515,7 +519,7 @@ export function NotificationSettings() {
         {success && <span className="text-green-600 text-sm">{success}</span>}
         {error && <span className="text-red-600 text-sm">{error}</span>}
         <Button onClick={handleSave} disabled={saving}>
-          {saving ? 'Saving...' : 'Save Preferences'}
+          {saving ? t('notifications.saving') : t('notifications.savePreferences')}
         </Button>
       </div>
     </div>

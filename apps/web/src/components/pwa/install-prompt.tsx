@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Download } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
@@ -16,6 +17,7 @@ interface InstallPromptProps {
 export function InstallPrompt({ className }: InstallPromptProps) {
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
+  const t = useTranslations('common');
 
   useEffect(() => {
     // Check if already installed
@@ -81,17 +83,15 @@ export function InstallPrompt({ className }: InstallPromptProps) {
           </div>
         </div>
         <div className="flex-1">
-          <p className="text-sm font-medium text-foreground">Install App</p>
-          <p className="text-xs text-muted">
-            Install this app on your device for quick access and offline support.
-          </p>
+          <p className="text-sm font-medium text-foreground">{t('installApp')}</p>
+          <p className="text-xs text-muted">{t('installAppDescription')}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={handleLater} className="text-muted">
-            Later
+            {t('later')}
           </Button>
           <Button size="sm" onClick={handleInstall} disabled={isInstalling}>
-            {isInstalling ? 'Installing...' : 'Install'}
+            {isInstalling ? t('installing') : t('install')}
           </Button>
         </div>
       </div>
