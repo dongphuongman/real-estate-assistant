@@ -2,12 +2,16 @@
 
 This guide covers setting up a local development environment for the AI Real Estate Assistant project.
 
+> **New here?** Start with the [5-Minute Quickstart](../QUICKSTART_5MIN.md) for the fastest path to a running app.
+> This guide goes deeper into Docker profiles, local non-Docker setup, and development workflows.
+
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
 - [Docker Development](#docker-development)
 - [Local Development (Non-Docker)](#local-development-non-docker)
+- [Bring Your Own Key (BYOK)](#bring-your-own-key-byok)
 - [Development Workflow](#development-workflow)
 - [IDE Setup](#ide-setup)
 - [Validation](#validation)
@@ -321,6 +325,51 @@ ollama pull llama3.2:3b
 # Configure in .env
 # OLLAMA_API_BASE=http://localhost:11434
 ```
+
+---
+
+## Bring Your Own Key (BYOK)
+
+The AI Real Estate Assistant supports multiple LLM providers. You only need **one** key to get started.
+
+### Supported Providers
+
+| Provider | Environment Variable | Cost | Get Key |
+|----------|---------------------|------|---------|
+| OpenAI | `OPENAI_API_KEY` | Paid | <https://platform.openai.com/api-keys> |
+| Anthropic | `ANTHROPIC_API_KEY` | Paid | <https://console.anthropic.com/settings/keys> |
+| Google Gemini | `GOOGLE_API_KEY` | **Free tier** | <https://aistudio.google.com/app/apikey> |
+| xAI Grok | `XAI_API_KEY` | Paid | <https://console.x.ai> |
+| DeepSeek | `DEEPSEEK_API_KEY` | Paid | <https://platform.deepseek.com> |
+| Ollama (local) | `OLLAMA_API_BASE` | **Free** | <https://ollama.com> |
+
+### Zero-Cost Setup (Ollama)
+
+Run entirely offline with no API keys:
+
+```bash
+# 1. Install Ollama
+curl -fsSL https://ollama.com/install.sh | sh
+
+# 2. Pull a model
+ollama pull llama3.2:3b
+
+# 3. Configure .env
+# DEFAULT_PROVIDER=ollama
+# OLLAMA_API_BASE=http://localhost:11434
+
+# 4. Start with Ollama profile (Docker)
+docker compose -f deploy/compose/docker-compose.yml --profile local-llm up --build
+```
+
+### Port Reference
+
+| Mode | Frontend | Backend API | API Docs |
+|------|----------|-------------|----------|
+| Docker (compose) | `localhost:3082` | `localhost:8082` | `localhost:8082/docs` |
+| Local (native) | `localhost:3000` | `localhost:8000` | `localhost:8000/docs` |
+
+Docker ports are configured in `deploy/compose/.env` (`WEB_PORT` and `BACKEND_PORT`).
 
 ---
 

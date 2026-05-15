@@ -150,7 +150,10 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full system design.
 ### Docker (recommended)
 
 ```bash
-cp .env.example .env          # Add your API keys
+git clone https://github.com/AleksNeStu/ai-real-estate-assistant.git
+cd ai-real-estate-assistant
+cp deploy/compose/.env.example deploy/compose/.env
+# Edit deploy/compose/.env — add one API key (or use Ollama for free local LLM)
 docker compose -f deploy/compose/docker-compose.yml up --build
 # Frontend: http://localhost:3082 · API: http://localhost:8082/docs
 ```
