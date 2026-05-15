@@ -28,6 +28,7 @@ from api.models import (
 )
 from config.settings import settings
 from data.csv_loader import DataLoaderCsv, DataLoaderExcel
+from data.excel_loader import ExcelDataLoader
 from data.schemas import Property, PropertyCollection
 from db.database import get_db
 from notifications.alert_storage_stats import load_alert_storage_summary
@@ -102,23 +103,20 @@ async def ingest_data(request: IngestRequest, http_request: Request):
                 source_type = DataLoaderExcel.detect_source_type(url)
                 source_name = request.source_name or url
 
-                # Declare loader type - DataLoaderExcel extends DataLoaderCsv
-                loader: DataLoaderCsv
+                remaining_capacity = max(0, max_properties - len(all_properties))
+
                 if source_type == "excel":
-                    loader = DataLoaderExcel(
+                    excel_ldr = ExcelDataLoader(
                         url,
                         sheet_name=request.sheet_name,
-                        header_row=request.header_row,
-                        source_type="excel",
+                        header_row=request.header_row or 0,
+                        max_rows=remaining_capacity,
                     )
+                    df_formatted = excel_ldr.load_normalized()
                 else:
                     loader = DataLoaderCsv(url)
-
-                df = loader.load_df()
-                # Enforce max_properties limit via rows_count parameter
-                # Calculate remaining capacity to stay within limit
-                remaining_capacity = max(0, max_properties - len(all_properties))
-                df_formatted = loader.load_format_df(df, rows_count=remaining_capacity)
+                    df = loader.load_df()
+                    df_formatted = loader.load_format_df(df, rows_count=remaining_capacity)
 
                 # Convert to Property objects
                 # We use to_dict('records') and validate with Pydantic
@@ -208,17 +206,15 @@ async def get_excel_sheets(request: ExcelSheetsRequest):
     Returns available sheets and their row counts for sheet selection UI.
     """
     try:
-        loader = DataLoaderExcel(request.file_url)
+        loader = ExcelDataLoader(request.file_url)
         sheet_names = loader.get_sheet_names()
         row_counts = {}
 
         # Get row count for each sheet
         for sheet in sheet_names:
             try:
-                sheet_loader = DataLoaderExcel(
-                    request.file_url, sheet_name=sheet, source_type="excel"
-                )
-                df = sheet_loader.load_df()
+                sheet_loader = ExcelDataLoader(request.file_url, sheet_name=sheet)
+                df = sheet_loader.load()
                 row_counts[sheet] = len(df)
             except Exception as e:
                 logger.warning(f"Could not read sheet '{sheet}': {e}")
@@ -284,15 +280,15 @@ async def get_excel_sheets_upload(
         tmp_path = tmp.name
 
     try:
-        loader = DataLoaderExcel(tmp_path)
+        loader = ExcelDataLoader(tmp_path)
         sheet_names = loader.get_sheet_names()
         row_counts = {}
 
         # Get row count for each sheet
         for sheet in sheet_names:
             try:
-                sheet_loader = DataLoaderExcel(tmp_path, sheet_name=sheet, source_type="excel")
-                df = sheet_loader.load_df()
+                sheet_loader = ExcelDataLoader(tmp_path, sheet_name=sheet)
+                df = sheet_loader.load()
                 row_counts[sheet] = len(df)
             except Exception as e:
                 logger.warning(f"Could not read sheet '{sheet}': {e}")
@@ -370,21 +366,21 @@ async def ingest_file_upload(
         source_type = "excel" if suffix in {".xlsx", ".xls", ".ods"} else "csv"
         source_name_val = source_name or file.filename
 
-        # Create appropriate loader
+        # Load and format data
+        max_properties = settings.max_properties
+
         if source_type == "excel":
-            loader = DataLoaderExcel(
+            excel_loader = ExcelDataLoader(
                 tmp_path,
                 sheet_name=sheet_name,
                 header_row=header_row,
-                source_type=source_type,
+                max_rows=max_properties,
             )
+            df_formatted = excel_loader.load_normalized()
         else:
             loader = DataLoaderCsv(tmp_path)
-
-        # Load and format data
-        df = loader.load_df()
-        max_properties = settings.max_properties
-        df_formatted = loader.load_format_df(df, rows_count=max_properties)
+            df = loader.load_df()
+            df_formatted = loader.load_format_df(df, rows_count=max_properties)
 
         # Convert to Property objects
         records = df_formatted.to_dict(orient="records")

@@ -454,10 +454,10 @@ def test_admin_notifications_stats_reads_alert_storage_and_scheduler_state(
     assert data["pending_alerts_by_type"]["new_property"] == 1
 
 
-@patch("api.routers.admin.DataLoaderExcel")
+@patch("api.routers.admin.ExcelDataLoader")
 @patch("api.auth.get_settings")
 def test_admin_excel_sheets_returns_rows_and_default_sheet(
-    mock_get_settings, mock_loader_excel_cls
+    mock_get_settings, mock_excel_loader_cls
 ):
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
     sheet_names = ["SheetA", "SheetB"]
@@ -466,10 +466,10 @@ def test_admin_excel_sheets_returns_rows_and_default_sheet(
     root_loader.get_sheet_names.return_value = sheet_names
 
     sheet_a_loader = MagicMock()
-    sheet_a_loader.load_df.return_value = pd.DataFrame([{"city": "Warsaw"}])
+    sheet_a_loader.load.return_value = pd.DataFrame([{"city": "Warsaw"}])
 
     sheet_b_loader = MagicMock()
-    sheet_b_loader.load_df.return_value = pd.DataFrame([])
+    sheet_b_loader.load.return_value = pd.DataFrame([])
 
     def _loader_factory(_url, sheet_name=None, **_kwargs):
         if sheet_name is None:
@@ -478,7 +478,7 @@ def test_admin_excel_sheets_returns_rows_and_default_sheet(
             return sheet_a_loader
         return sheet_b_loader
 
-    mock_loader_excel_cls.side_effect = _loader_factory
+    mock_excel_loader_cls.side_effect = _loader_factory
 
     resp = client.post(
         "/api/v1/admin/excel/sheets",
@@ -493,13 +493,11 @@ def test_admin_excel_sheets_returns_rows_and_default_sheet(
     assert data["row_count"]["SheetB"] == 0
 
 
-@patch("api.routers.admin.DataLoaderExcel")
+@patch("api.routers.admin.ExcelDataLoader")
 @patch("api.auth.get_settings")
-def test_admin_excel_sheets_returns_400_on_import_error(mock_get_settings, mock_loader_excel_cls):
+def test_admin_excel_sheets_returns_400_on_import_error(mock_get_settings, mock_excel_loader_cls):
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
-    loader = MagicMock()
-    loader.get_sheet_names.side_effect = ImportError("missing")
-    mock_loader_excel_cls.return_value = loader
+    mock_excel_loader_cls.side_effect = ImportError("missing")
 
     resp = client.post(
         "/api/v1/admin/excel/sheets",
@@ -711,6 +709,7 @@ def test_admin_version_uses_real_python_version(mock_get_settings, mock_settings
     assert isinstance(data["platform"], str)
 
 
+@patch("api.routers.admin.ExcelDataLoader")
 @patch("api.routers.admin.DataLoaderExcel")
 @patch("api.routers.admin.DataLoaderCsv")
 @patch("api.routers.admin.save_collection")
@@ -722,16 +721,16 @@ def test_admin_ingest_excel_path_includes_sheet_and_header(
     mock_save_collection,
     mock_loader_csv_cls,
     mock_loader_excel_cls,
+    mock_excel_loader_cls,
 ):
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
     mock_settings.default_datasets = ["http://example.com/test.xlsx"]
     mock_settings.max_properties = 50
     mock_loader_excel_cls.detect_source_type.return_value = "excel"
 
-    loader = MagicMock()
-    loader.load_df.return_value = pd.DataFrame([{"city": "Warsaw"}])
-    loader.load_format_df.side_effect = lambda df, rows_count=None: df
-    mock_loader_excel_cls.return_value = loader
+    excel_loader = MagicMock()
+    excel_loader.load_normalized.return_value = pd.DataFrame([{"city": "Warsaw"}])
+    mock_excel_loader_cls.return_value = excel_loader
 
     resp = client.post(
         "/api/v1/admin/ingest",
@@ -740,15 +739,15 @@ def test_admin_ingest_excel_path_includes_sheet_and_header(
     )
 
     assert resp.status_code == 200
-    assert mock_loader_excel_cls.called
+    assert mock_excel_loader_cls.called
     mock_loader_csv_cls.assert_not_called()
     assert mock_save_collection.called
 
 
-@patch("api.routers.admin.DataLoaderExcel")
+@patch("api.routers.admin.ExcelDataLoader")
 @patch("api.auth.get_settings")
 def test_admin_excel_sheets_defaults_to_first_sheet_when_all_empty(
-    mock_get_settings, mock_loader_excel_cls
+    mock_get_settings, mock_excel_loader_cls
 ):
     mock_get_settings.return_value = MagicMock(api_access_key="test-key")
     sheet_names = ["SheetA", "SheetB"]
@@ -757,14 +756,14 @@ def test_admin_excel_sheets_defaults_to_first_sheet_when_all_empty(
     root_loader.get_sheet_names.return_value = sheet_names
 
     failing_loader = MagicMock()
-    failing_loader.load_df.side_effect = RuntimeError("read error")
+    failing_loader.load.side_effect = RuntimeError("read error")
 
     def _loader_factory(_url, sheet_name=None, **_kwargs):
         if sheet_name is None:
             return root_loader
         return failing_loader
 
-    mock_loader_excel_cls.side_effect = _loader_factory
+    mock_excel_loader_cls.side_effect = _loader_factory
 
     resp = client.post(
         "/api/v1/admin/excel/sheets",
