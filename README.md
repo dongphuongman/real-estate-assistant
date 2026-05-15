@@ -9,8 +9,22 @@
 [![CI](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/Tests-4000+-green?style=flat)](docs/testing/TESTING_GUIDE.md)
+[![Live Demo](https://img.shields.io/badge/Demo-Live-success?style=flat&logo=render)](https://realestate-web-dz1y.onrender.com/)
+[![Deploy](https://img.shields.io/badge/Deploy-Render-46E3B7?style=flat&logo=render&logoColor=white)](https://render.com)
+
+> **[Try the Live Demo](https://realestate-web-dz1y.onrender.com/)** — no signup required. Explore property search, AI chat, and financial tools in demo mode.
 
 ![AI Real Estate Assistant](assets/image.png)
+
+## 🎮 What You Can Try (Demo Mode)
+
+No account or API keys needed — the deployed demo includes:
+
+- **AI Property Search** — ask questions in natural language, get matched listings
+- **9-Language Interface** — switch between English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, and Ukrainian
+- **Financial Calculators** — mortgage, rent-vs-buy, ROI, and TCO tools
+- **Interactive Maps** — clustered property markers with area analytics
+- **Demo mode** uses simulated AI responses — perfect for exploring without setup
 
 ## ✨ Features
 
@@ -35,6 +49,14 @@ OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode
 <details>
 <summary><strong>📸 Screenshots</strong></summary>
 
+| Demo Home | Property Search |
+|:---:|:---:|
+| ![Demo Home](docs/screenshots/demo-home.png) | ![Search Results](docs/screenshots/search-results.png) |
+
+| AI Chat | Local Home View |
+|:---:|:---:|
+| ![AI Chat](docs/screenshots/local-chat.png) | ![Local Home](docs/screenshots/local-home.png) |
+
 | Login | Registration |
 |:---:|:---:|
 | ![Login](docs/screenshots/login.png) | ![Register](docs/screenshots/register.png) |
@@ -43,9 +65,9 @@ OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode
 |:---:|:---:|
 | ![Languages](docs/screenshots/language-switcher.png) | ![Polish](docs/screenshots/polish-nav.png) |
 
-| Mobile (375px) | |
+| Mobile (375px) | Profile |
 |:---:|:---:|
-| ![Mobile](docs/screenshots/login-mobile.png) | |
+| ![Mobile](docs/screenshots/login-mobile.png) | ![Profile](docs/screenshots/profile-check.png) |
 
 </details>
 
@@ -153,6 +175,17 @@ cd apps/web && npm install && npm run dev
 |--------|--------|-------------|
 | [`dev`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/dev) | 🔥 Active | Current development & staging |
 | [`main`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/main) | 🟢 Stable | Stable releases |
+
+---
+
+## 🚢 Deployment
+
+- **Staging:** [realestate-web-dz1y.onrender.com](https://realestate-web-dz1y.onrender.com/) — auto-deploys from `dev` branch
+- **Production:** deploys from `main` via `deploy.yml` workflow
+
+> **Note:** Render free tier services spin down after inactivity. First visit may take ~30-60s to cold start.
+
+See [Deployment Guide](docs/deployment/DEPLOYMENT.md) for Docker, Render, and Kubernetes setup.
 
 ---
 
