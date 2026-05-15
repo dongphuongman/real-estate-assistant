@@ -8,6 +8,7 @@ that have been decomposed into domain-focused modules:
 - investment_tools: Investment analyzer, Advanced investment analyzer
 - comparison_tools: Property comparison, price analysis, location analysis, commute tools
 - neighborhood_tools: Neighborhood quality index
+- commute_tool: OSRM-based commute analysis (free, no API key required)
 
 The create_property_tools() factory function remains here for convenience.
 """
@@ -15,6 +16,17 @@ The create_property_tools() factory function remains here for convenience.
 from typing import Any, List
 
 from langchain_core.tools import BaseTool
+
+# Re-export OSRM commute tools (Task #114)
+from tools.commute_tool import (  # noqa: F401
+    CommuteAnalysisInput,
+    CommuteTool,
+    MultiCommuteInput,
+    MultiOriginCommuteTool,
+    OSRMCommuteClient,
+    calculate_commute,
+    get_osrm_client,
+)
 
 # Re-export comparison tools
 from tools.comparison_tools import (  # noqa: F401
@@ -104,6 +116,9 @@ def create_property_tools(vector_store: Any = None) -> List[BaseTool]:
         # TASK-021: Commute Time Analysis
         CommuteTimeAnalysisTool(vector_store=vector_store),
         CommuteRankingTool(vector_store=vector_store),
+        # Task #114: OSRM-based commute analysis (free, no API key)
+        CommuteTool(),
+        MultiOriginCommuteTool(),
         # TASK-023: AI Listing Generator
         PropertyDescriptionGeneratorTool(),
         HeadlineGeneratorTool(),

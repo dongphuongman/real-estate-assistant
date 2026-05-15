@@ -2,7 +2,7 @@ from typing import Annotated, List, Optional
 import statistics
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from api.dependencies import (
     get_crm_connector,
@@ -918,6 +918,75 @@ async def commute_ranking(
         fastest_duration_seconds=fastest_duration,
         slowest_duration_seconds=slowest_duration,
     )
+
+
+# ============================================================================
+# Task #114: OSRM-based Commute Analysis (free, no API key)
+# ============================================================================
+
+
+class OSRMCommuteRequest(BaseModel):
+    """Request model for OSRM commute analysis."""
+
+    origin_lat: float = Field(..., ge=-90, le=90, description="Origin latitude")
+    origin_lon: float = Field(..., ge=-180, le=180, description="Origin longitude")
+    destination_lat: float = Field(..., ge=-90, le=90, description="Destination latitude")
+    destination_lon: float = Field(..., ge=-180, le=180, description="Destination longitude")
+    mode: str = Field(
+        default="car",
+        description="Travel mode: 'car'/'driving', 'bike'/'bicycling', or 'foot'/'walking'",
+    )
+    destination_name: Optional[str] = Field(None, description="Human-readable destination name")
+
+
+class OSRMCommuteResponse(BaseModel):
+    """Response model for OSRM commute analysis."""
+
+    duration_seconds: int = Field(..., description="Travel time in seconds")
+    duration_minutes: int = Field(..., description="Travel time in minutes")
+    distance_km: float = Field(..., description="Distance in kilometers")
+    mode: str
+    destination_name: Optional[str] = None
+    data_source: str = Field(..., description="Data source used: 'osrm' or 'haversine' (fallback)")
+    geometry: Optional[str] = Field(None, description="Route geometry (GeoJSON coordinates)")
+
+
+@router.post("/tools/commute", response_model=OSRMCommuteResponse, tags=["Tools"])
+async def osrm_commute_analysis(request: OSRMCommuteRequest):
+    """
+    Calculate commute time using OSRM (Open Source Routing Machine).
+
+    Free alternative to Google Routes API -- no API key required.
+    Supports car, bike, and foot travel modes.
+    Falls back to Haversine estimation when OSRM is unavailable.
+    """
+    try:
+        from tools.commute_tool import calculate_commute
+
+        result = await calculate_commute(
+            origin_lat=request.origin_lat,
+            origin_lon=request.origin_lon,
+            destination_lat=request.destination_lat,
+            destination_lon=request.destination_lon,
+            mode=request.mode,
+        )
+
+        return OSRMCommuteResponse(
+            duration_seconds=result["duration_seconds"],
+            duration_minutes=result["duration_seconds"] // 60,
+            distance_km=result["distance_km"],
+            mode=request.mode,
+            destination_name=request.destination_name,
+            data_source=result.get("data_source", "osrm"),
+            geometry=result.get("geometry"),
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Commute analysis failed: {str(e)}",
+        ) from e
 
 
 # ============================================================================
