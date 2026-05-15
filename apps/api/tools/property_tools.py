@@ -9,6 +9,7 @@ that have been decomposed into domain-focused modules:
 - comparison_tools: Property comparison, price analysis, location analysis, commute tools
 - neighborhood_tools: Neighborhood quality index
 - commute_tool: OSRM-based commute analysis (free, no API key required)
+- negotiation_tool: Negotiation helper with price band analysis and outreach emails
 
 The create_property_tools() factory function remains here for convenience.
 """
@@ -66,6 +67,12 @@ from tools.mortgage_tools import (  # noqa: F401
     MortgageResult,
 )
 
+# Re-export negotiation tools (Task #115)
+from tools.negotiation_tool import (  # noqa: F401
+    NegotiationInput,
+    NegotiationTool,
+)
+
 # Re-export neighborhood tools
 from tools.neighborhood_tools import (  # noqa: F401
     NeighborhoodQualityIndexTool,
@@ -119,6 +126,8 @@ def create_property_tools(vector_store: Any = None) -> List[BaseTool]:
         # Task #114: OSRM-based commute analysis (free, no API key)
         CommuteTool(),
         MultiOriginCommuteTool(),
+        # Task #115: Negotiation helper with price band analysis
+        NegotiationTool(vector_store=vector_store),
         # TASK-023: AI Listing Generator
         PropertyDescriptionGeneratorTool(),
         HeadlineGeneratorTool(),

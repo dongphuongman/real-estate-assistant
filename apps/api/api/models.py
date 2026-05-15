@@ -244,9 +244,7 @@ class RagQaRequest(BaseModel):
     citation_format: str = Field(
         default="inline", description="Citation format style: inline, footnote, or endnote"
     )
-    stream: bool = Field(
-        default=False, description="Enable SSE streaming of response chunks"
-    )
+    stream: bool = Field(default=False, description="Enable SSE streaming of response chunks")
 
 
 class RagQaResponse(BaseModel):
@@ -1145,9 +1143,7 @@ class BulkJobStatus(str, Enum):
 class BulkImportRequest(BaseModel):
     """Request model for starting a bulk import job."""
 
-    source_type: BulkJobSourceType = Field(
-        ..., description="Type of import source"
-    )
+    source_type: BulkJobSourceType = Field(..., description="Type of import source")
     config: Dict[str, Any] = Field(
         ...,
         description=(
@@ -1156,17 +1152,13 @@ class BulkImportRequest(BaseModel):
             "For portal_api: {portal, city, filters?}"
         ),
     )
-    source_name: Optional[str] = Field(
-        None, description="Optional name for tracking the import"
-    )
+    source_name: Optional[str] = Field(None, description="Optional name for tracking the import")
 
 
 class BulkExportRequest(BaseModel):
     """Request model for starting a bulk export job."""
 
-    format: str = Field(
-        ..., description="Export format: csv, json, excel, parquet, markdown, pdf"
-    )
+    format: str = Field(..., description="Export format: csv, json, excel, parquet, markdown, pdf")
     source_type: BulkJobSourceType = Field(
         default=BulkJobSourceType.SEARCH, description="Source type for export"
     )
@@ -1177,9 +1169,7 @@ class BulkExportRequest(BaseModel):
             "For property_ids: {property_ids}"
         ),
     )
-    columns: Optional[List[str]] = Field(
-        None, description="Columns to include in export"
-    )
+    columns: Optional[List[str]] = Field(None, description="Columns to include in export")
     include_header: bool = Field(default=True, description="Include header row")
 
 
@@ -1220,3 +1210,58 @@ class BulkJobCreateResponse(BaseModel):
     status: str
     message: str
     created_at: datetime
+
+
+# ============================================================================
+# Task #115: Negotiation Helper
+# ============================================================================
+
+
+class NegotiationRequest(BaseModel):
+    """Request model for negotiation analysis."""
+
+    property_identifier: str = Field(
+        ...,
+        min_length=1,
+        description="Property ID or address to analyse",
+    )
+    user_budget: Optional[float] = Field(
+        default=None,
+        gt=0,
+        description="Buyer's maximum budget",
+    )
+    tone: str = Field(
+        default="formal",
+        description="Tone for outreach template: formal, friendly, or assertive",
+    )
+
+
+class NegotiationPriceBand(BaseModel):
+    """Suggested price band."""
+
+    lower: Optional[float] = None
+    mid: Optional[float] = None
+    upper: Optional[float] = None
+    user_budget: Optional[float] = None
+
+
+class NegotiationPropertyInfo(BaseModel):
+    """Summary of the analysed property."""
+
+    id: Optional[str] = None
+    city: Optional[str] = None
+    property_type: Optional[str] = None
+    rooms: Optional[Any] = None
+    area_sqm: Optional[float] = None
+    asking_price: Optional[float] = None
+
+
+class NegotiationResponse(BaseModel):
+    """Response model for negotiation analysis."""
+
+    property: NegotiationPropertyInfo
+    price_band: NegotiationPriceBand
+    opening_offer: Optional[float] = None
+    arguments: List[str] = []
+    email_template: Optional[str] = None
+    disclaimer: str

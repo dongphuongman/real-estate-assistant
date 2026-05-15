@@ -29,6 +29,10 @@ from api.models import (
     LegalCheckResponse,
     LocationAnalysisRequest,
     LocationAnalysisResponse,
+    NegotiationRequest,
+    NegotiationResponse,
+    NegotiationPriceBand,
+    NegotiationPropertyInfo,
     NeighborhoodQualityResponse,
     PriceAnalysisRequest,
     PriceAnalysisResponse,
@@ -59,6 +63,7 @@ from tools.property_tools import (
     create_property_tools,
 )
 from data.location_defaults import get_location_defaults, get_available_locations
+from tools.negotiation_tool import NegotiationTool
 from tools.portfolio_tools import (
     PortfolioAnalysisInput,
     PortfolioAnalysisResult,
@@ -1209,6 +1214,66 @@ async def generate_listing(
         social_content=social_content,
         char_counts=char_counts,
         error=error,
+    )
+
+
+# ============================================================================
+# Task #115: Negotiation Helper
+# ============================================================================
+
+
+@router.post("/tools/negotiate", response_model=NegotiationResponse, tags=["Tools"])
+async def negotiate(
+    request: NegotiationRequest,
+    store: Annotated[Optional[ChromaPropertyStore], Depends(get_vector_store)],
+):
+    """
+    Analyse market data for a property and suggest a negotiation strategy.
+
+    Returns:
+    - Fair price band (lower / mid / upper)
+    - Recommended opening offer
+    - Key negotiation arguments
+    - Outreach email template based on selected tone
+    - Legal disclaimer
+    """
+    if not store:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Vector store unavailable",
+        )
+
+    identifier = request.property_identifier.strip()
+    if not identifier:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="property_identifier is required",
+        )
+
+    valid_tones = {"formal", "friendly", "assertive"}
+    if request.tone not in valid_tones:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid tone. Supported: {', '.join(sorted(valid_tones))}",
+        )
+
+    tool = NegotiationTool(vector_store=store)
+    target, comparables = tool._fetch_property_and_comps(identifier)
+
+    result = NegotiationTool.analyse(
+        target=target,
+        comparables=comparables,
+        user_budget=request.user_budget,
+        tone=request.tone,
+    )
+
+    return NegotiationResponse(
+        property=NegotiationPropertyInfo(**result["property"]),
+        price_band=NegotiationPriceBand(**result["price_band"]),
+        opening_offer=result.get("opening_offer"),
+        arguments=result.get("arguments", []),
+        email_template=result.get("email_template"),
+        disclaimer=result["disclaimer"],
     )
 
 
