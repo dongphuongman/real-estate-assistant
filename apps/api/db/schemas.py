@@ -2449,3 +2449,105 @@ class RelevanceMetrics(BaseModel):
     ratings_by_score: dict[str, int] = Field(
         default_factory=dict, description="Count of ratings grouped by score (1-5)"
     )
+
+
+# =============================================================================
+# Task #113: Prioritized Lead Scoring Schemas
+# =============================================================================
+
+
+class LeadScoreInputSchema(BaseModel):
+    """Schema for scoring a lead with budget fit and urgency."""
+
+    budget_min: Optional[float] = Field(None, ge=0, description="Lead minimum budget")
+    budget_max: Optional[float] = Field(None, ge=0, description="Lead maximum budget")
+    target_price_min: Optional[float] = Field(None, ge=0, description="Target property min price")
+    target_price_max: Optional[float] = Field(None, ge=0, description="Target property max price")
+    searches: int = Field(0, ge=0, description="Number of searches performed")
+    property_views: int = Field(0, ge=0, description="Number of properties viewed")
+    favorites: int = Field(0, ge=0, description="Number of favorited properties")
+    inquiries: int = Field(0, ge=0, description="Number of inquiries submitted")
+    contact_requests: int = Field(0, ge=0, description="Number of contact requests")
+    desired_move_date: Optional[str] = Field(
+        None,
+        max_length=100,
+        description="Desired move timeline (e.g., 'asap', '1-3 months', ISO date)",
+    )
+    days_since_first_seen: int = Field(0, ge=0, description="Days since first seen")
+    days_since_last_activity: int = Field(999, ge=0, description="Days since last activity")
+    has_email: bool = Field(False, description="Lead has provided email")
+    has_phone: bool = Field(False, description="Lead has provided phone")
+    has_name: bool = Field(False, description="Lead has provided name")
+    source: Optional[str] = Field(None, max_length=100, description="Lead source")
+    agent_id: Optional[str] = Field(None, max_length=36, description="Assigned agent ID")
+    property_id: Optional[str] = Field(None, max_length=255, description="Linked property ID")
+
+    @field_validator("budget_max")
+    @classmethod
+    def validate_budget_range(cls, v: Optional[float], info) -> Optional[float]:
+        """Ensure budget_max >= budget_min when both provided."""
+        return v
+
+
+class PrioritizedScoreResponse(BaseModel):
+    """Schema for the prioritized lead scoring response."""
+
+    score: float = Field(..., ge=0, le=100, description="Composite score (0-100)")
+    budget_fit: float = Field(..., ge=0, le=100, description="Budget fit score (0-100)")
+    urgency: float = Field(..., ge=0, le=100, description="Urgency score (0-100)")
+    engagement: float = Field(..., ge=0, le=100, description="Engagement score (0-100)")
+    priority_tier: str = Field(..., description="Priority tier: hot, warm, cool, cold")
+    factors: dict[str, Any] = Field(default_factory=dict, description="Scoring factors used")
+    recommendations: list[str] = Field(
+        default_factory=list, description="Actionable recommendations"
+    )
+
+
+class CreateAndScoreLeadRequest(BaseModel):
+    """Schema for creating a lead and immediately scoring it."""
+
+    visitor_id: str = Field(
+        ..., min_length=1, max_length=36, description="Visitor UUID from cookie"
+    )
+    user_id: Optional[str] = Field(None, description="Linked user ID if registered")
+    email: Optional[EmailStr] = Field(None, description="Lead email address")
+    phone: Optional[str] = Field(None, max_length=50, description="Lead phone number")
+    name: Optional[str] = Field(None, max_length=255, description="Lead name")
+    source: Optional[str] = Field(None, max_length=100, description="Lead source")
+    consent_given: bool = Field(default=False, description="GDPR consent status")
+    # Scoring inputs
+    budget_min: Optional[float] = Field(None, ge=0)
+    budget_max: Optional[float] = Field(None, ge=0)
+    target_price_min: Optional[float] = Field(None, ge=0)
+    target_price_max: Optional[float] = Field(None, ge=0)
+    desired_move_date: Optional[str] = Field(None, max_length=100)
+    agent_id: Optional[str] = Field(None, max_length=36)
+    property_id: Optional[str] = Field(None, max_length=255)
+
+
+class LeadWithPriorityScoreResponse(LeadResponse):
+    """Lead response with prioritized score breakdown."""
+
+    priority_score: Optional[PrioritizedScoreResponse] = None
+
+
+class AgentFunnelResponse(BaseModel):
+    """Schema for agent lead funnel visualization."""
+
+    agent_id: str
+    total_leads: int
+    by_priority: dict[str, int] = Field(
+        default_factory=lambda: {"hot": 0, "warm": 0, "cool": 0, "cold": 0},
+        description="Lead counts by priority tier",
+    )
+    by_status: dict[str, int] = Field(
+        default_factory=lambda: {
+            "new": 0,
+            "contacted": 0,
+            "qualified": 0,
+            "converted": 0,
+            "lost": 0,
+        },
+        description="Lead counts by status",
+    )
+    average_score: float = Field(0.0, description="Average lead score")

@@ -5,11 +5,13 @@ This service implements the lead scoring algorithm with:
 - Search activity scoring
 - Engagement scoring
 - Intent scoring
+- Budget fit analysis (Task #113)
+- Urgency scoring from timeline signals (Task #113)
 - Composite scoring with explainability
 """
 
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any, Optional
 
@@ -575,3 +577,412 @@ class LeadScoringService:
             "model_version": CURRENT_MODEL_VERSION,
             "weights": SCORING_WEIGHTS,
         }
+
+
+# =============================================================================
+# Task #113: Prioritized Lead Scoring (budget fit, urgency, engagement)
+# =============================================================================
+
+
+@dataclass
+class LeadScoringInput:
+    """Input data for scoring a lead by budget fit, urgency, and engagement."""
+
+    # Budget range
+    budget_min: Optional[float] = None
+    budget_max: Optional[float] = None
+
+    # Target property price range (from search/market)
+    target_price_min: Optional[float] = None
+    target_price_max: Optional[float] = None
+
+    # Engagement signals
+    searches: int = 0
+    property_views: int = 0
+    favorites: int = 0
+    inquiries: int = 0
+    contact_requests: int = 0
+
+    # Urgency / timeline
+    desired_move_date: Optional[str] = None  # ISO date or "asap", "1-3 months", etc.
+    days_since_first_seen: int = 0
+    days_since_last_activity: int = 999
+
+    # Profile completeness
+    has_email: bool = False
+    has_phone: bool = False
+    has_name: bool = False
+
+    # Source quality
+    source: Optional[str] = None  # organic, referral, ads, direct
+
+    # Additional context
+    agent_id: Optional[str] = None
+    property_id: Optional[str] = None
+
+
+@dataclass
+class PrioritizedScoreResult:
+    """Result of prioritized lead scoring."""
+
+    score: float  # 0-100 composite
+    budget_fit: float  # 0-100
+    urgency: float  # 0-100
+    engagement: float  # 0-100
+    factors: dict[str, Any] = field(default_factory=dict)
+    recommendations: list[str] = field(default_factory=list)
+
+    @property
+    def priority_tier(self) -> str:
+        """Classify lead into priority tier."""
+        if self.score >= 80:
+            return "hot"
+        if self.score >= 60:
+            return "warm"
+        if self.score >= 40:
+            return "cool"
+        return "cold"
+
+
+# Weights for the three scoring components
+PRIORITY_WEIGHTS = {
+    "budget_fit": 0.35,
+    "urgency": 0.30,
+    "engagement": 0.35,
+}
+
+
+class PrioritizedLeadScoringService:
+    """Score leads by budget fit, urgency, and engagement for agent prioritization.
+
+    This service provides the ``score_lead(lead_data)`` method that accepts
+    a :class:`LeadScoringInput` dataclass and returns a
+    :class:`PrioritizedScoreResult` with a composite 0-100 score broken
+    down into budget_fit, urgency, and engagement components.
+    """
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    def score_lead(self, lead_data: LeadScoringInput) -> PrioritizedScoreResult:
+        """Score a lead based on budget fit, urgency, and engagement.
+
+        Args:
+            lead_data: Structured input with budget, timeline, and activity data.
+
+        Returns:
+            PrioritizedScoreResult with composite score (0-100) and breakdown.
+        """
+        budget_fit = self._calculate_budget_fit(lead_data)
+        urgency = self._calculate_urgency(lead_data)
+        engagement = self._calculate_engagement(lead_data)
+
+        composite = (
+            budget_fit * PRIORITY_WEIGHTS["budget_fit"]
+            + urgency * PRIORITY_WEIGHTS["urgency"]
+            + engagement * PRIORITY_WEIGHTS["engagement"]
+        )
+        composite = min(100.0, max(0.0, round(composite, 1)))
+
+        factors = {
+            "budget_min": lead_data.budget_min,
+            "budget_max": lead_data.budget_max,
+            "target_price_min": lead_data.target_price_min,
+            "target_price_max": lead_data.target_price_max,
+            "searches": lead_data.searches,
+            "property_views": lead_data.property_views,
+            "favorites": lead_data.favorites,
+            "inquiries": lead_data.inquiries,
+            "desired_move_date": lead_data.desired_move_date,
+            "days_since_last_activity": lead_data.days_since_last_activity,
+            "source": lead_data.source,
+        }
+
+        recommendations = self._generate_recommendations(lead_data, budget_fit, urgency, engagement)
+
+        return PrioritizedScoreResult(
+            score=composite,
+            budget_fit=round(budget_fit, 1),
+            urgency=round(urgency, 1),
+            engagement=round(engagement, 1),
+            factors=factors,
+            recommendations=recommendations,
+        )
+
+    # ------------------------------------------------------------------
+    # Budget fit scoring (0-100)
+    # ------------------------------------------------------------------
+
+    def _calculate_budget_fit(self, data: LeadScoringInput) -> float:
+        """Score how well the lead's budget matches target property prices."""
+        score = 50.0  # Neutral baseline when no budget info available
+
+        budget_min = data.budget_min
+        budget_max = data.budget_max
+        target_min = data.target_price_min
+        target_max = data.target_price_max
+
+        # If budget is specified but no target price, give partial credit
+        if budget_min is not None or budget_max is not None:
+            if target_min is None and target_max is None:
+                # Has budget intent but no target — moderate score
+                if budget_min is not None and budget_max is not None:
+                    score = 60.0  # Defined budget range shows seriousness
+                else:
+                    score = 45.0  # Only one bound, less specific
+            else:
+                # Both budget and target available — compute overlap
+                score = self._compute_budget_overlap(budget_min, budget_max, target_min, target_max)
+
+        # Source quality bonus for budget-fit
+        if data.source == "referral":
+            score = min(100.0, score + 10)
+        elif data.source == "direct":
+            score = min(100.0, score + 5)
+
+        return min(100.0, max(0.0, score))
+
+    def _compute_budget_overlap(
+        self,
+        budget_min: Optional[float],
+        budget_max: Optional[float],
+        target_min: Optional[float],
+        target_max: Optional[float],
+    ) -> float:
+        """Compute budget-to-target overlap as a 0-100 score."""
+        # Defaults for unbounded ranges
+        b_min = budget_min if budget_min is not None else 0.0
+        b_max = budget_max if budget_max is not None else float("inf")
+        t_min = target_min if target_min is not None else 0.0
+        t_max = target_max if target_max is not None else float("inf")
+
+        # No overlap
+        if b_max < t_min or t_max < b_min:
+            # Budget completely outside target — how far?
+            if b_max < t_min:
+                gap_pct = (t_min - b_max) / max(1.0, t_min)
+            else:
+                gap_pct = (b_min - t_max) / max(1.0, t_max)
+            return max(0.0, 20.0 - gap_pct * 100)
+
+        # Compute overlap
+        overlap_start = max(b_min, t_min)
+        overlap_end = min(b_max, t_max)
+        overlap = overlap_end - overlap_start
+
+        # Budget range
+        budget_range = b_max - b_min if b_max != float("inf") else overlap * 2
+        if budget_range <= 0:
+            budget_range = 1.0
+
+        overlap_pct = min(1.0, overlap / budget_range)
+
+        # Score: 40 base for any overlap + up to 60 for full coverage
+        return 40.0 + overlap_pct * 60.0
+
+    # ------------------------------------------------------------------
+    # Urgency scoring (0-100)
+    # ------------------------------------------------------------------
+
+    def _calculate_urgency(self, data: LeadScoringInput) -> float:
+        """Score urgency based on timeline signals and activity recency."""
+        score = 30.0  # Baseline — unknown urgency
+
+        # Timeline-based urgency from desired_move_date
+        move_date = data.desired_move_date
+        if move_date is not None:
+            move_lower = move_date.lower().strip()
+
+            if move_lower in ("asap", "immediately", "urgent"):
+                score = 95.0
+            elif move_lower in ("1 month", "1-month", "30 days"):
+                score = 85.0
+            elif move_lower in ("1-3 months", "1-3-month", "90 days"):
+                score = 75.0
+            elif move_lower in ("3-6 months", "3-6-month"):
+                score = 55.0
+            elif move_lower in ("6-12 months", "6-12-month"):
+                score = 35.0
+            elif move_lower in ("12+ months", "just looking", "browsing"):
+                score = 15.0
+            else:
+                # Try parsing as ISO date
+                try:
+                    from datetime import datetime as dt
+
+                    target = dt.fromisoformat(move_date).replace(tzinfo=None)
+                    days_until = (target - dt.now()).days
+                    if days_until <= 0:
+                        score = 90.0
+                    elif days_until <= 30:
+                        score = 85.0
+                    elif days_until <= 90:
+                        score = 70.0
+                    elif days_until <= 180:
+                        score = 50.0
+                    elif days_until <= 365:
+                        score = 35.0
+                    else:
+                        score = 20.0
+                except (ValueError, TypeError):
+                    pass  # Keep baseline
+
+        # Activity recency modifier
+        days_inactive = data.days_since_last_activity
+        if days_inactive <= 1:
+            score = min(100.0, score + 10)
+        elif days_inactive <= 3:
+            score = min(100.0, score + 5)
+        elif days_inactive > 30:
+            score = max(0.0, score - 20)
+        elif days_inactive > 14:
+            score = max(0.0, score - 10)
+
+        # Inquiry/contact signals indicate urgency
+        if data.inquiries > 0:
+            score = min(100.0, score + 10)
+        if data.contact_requests > 0:
+            score = min(100.0, score + 10)
+
+        return min(100.0, max(0.0, score))
+
+    # ------------------------------------------------------------------
+    # Engagement scoring (0-100)
+    # ------------------------------------------------------------------
+
+    def _calculate_engagement(self, data: LeadScoringInput) -> float:
+        """Score engagement based on interaction frequency and depth."""
+        score = 0.0
+
+        # Searches (max 20 points)
+        if data.searches >= 20:
+            score += 20
+        elif data.searches >= 10:
+            score += 15
+        elif data.searches >= 5:
+            score += 10
+        elif data.searches >= 1:
+            score += 5
+
+        # Property views (max 25 points)
+        if data.property_views >= 50:
+            score += 25
+        elif data.property_views >= 20:
+            score += 20
+        elif data.property_views >= 10:
+            score += 15
+        elif data.property_views >= 5:
+            score += 10
+        elif data.property_views >= 1:
+            score += 5
+
+        # Favorites (max 20 points)
+        score += min(20, data.favorites * 5)
+
+        # Inquiries (max 20 points)
+        score += min(20, data.inquiries * 10)
+
+        # Contact requests (max 15 points)
+        score += min(15, data.contact_requests * 8)
+
+        # Profile completeness (max 10 points)
+        completeness = sum([data.has_email, data.has_phone, data.has_name]) * 3.33
+        score += min(10, completeness)
+
+        # Recency decay for engagement
+        days_inactive = data.days_since_last_activity
+        if days_inactive > 30:
+            score *= 0.5
+        elif days_inactive > 14:
+            score *= 0.75
+
+        return min(100.0, max(0.0, round(score, 1)))
+
+    # ------------------------------------------------------------------
+    # Recommendations
+    # ------------------------------------------------------------------
+
+    def _generate_recommendations(
+        self,
+        data: LeadScoringInput,
+        budget_fit: float,
+        urgency: float,
+        engagement: float,
+    ) -> list[str]:
+        """Generate actionable recommendations for the agent."""
+        recs: list[str] = []
+
+        # Budget recommendations
+        if budget_fit < 30:
+            recs.append("Budget significantly below target range — suggest alternative areas")
+        elif budget_fit >= 80:
+            recs.append("Budget well-aligned — prioritize matching properties")
+
+        # Urgency recommendations
+        if urgency >= 80:
+            recs.append("High urgency lead — respond within 1 hour")
+        elif urgency >= 60:
+            recs.append("Moderate urgency — follow up within 4 hours")
+        elif urgency < 30 and engagement > 50:
+            recs.append("Browsing lead with good engagement — nurture with new listings")
+
+        # Engagement recommendations
+        if data.inquiries > 0 and not data.has_phone:
+            recs.append("Lead submitted inquiry without phone — request for faster response")
+        if data.favorites >= 3 and data.inquiries == 0:
+            recs.append("Multiple favorites, no inquiry — proactively reach out")
+        if data.property_views >= 20 and data.inquiries == 0:
+            recs.append("Heavy browser, no inquiry — offer personalized recommendations")
+
+        # Source recommendation
+        if data.source == "referral":
+            recs.append("Referral lead — typically higher conversion, prioritize")
+
+        return recs[:5]
+
+    # ------------------------------------------------------------------
+    # Funnel visualization helper
+    # ------------------------------------------------------------------
+
+    async def get_agent_funnel(self, agent_id: str) -> dict[str, Any]:
+        """Get lead funnel statistics per agent for visualization.
+
+        Returns counts by priority tier and status for the given agent.
+        """
+        from db.lead_repos import LeadRepository
+
+        lead_repo = LeadRepository(self.session)
+
+        # Get all leads assigned to this agent
+        leads = await lead_repo.get_list(agent_id=agent_id, limit=1000)
+
+        funnel = {
+            "agent_id": agent_id,
+            "total_leads": len(leads),
+            "by_priority": {"hot": 0, "warm": 0, "cool": 0, "cold": 0},
+            "by_status": {"new": 0, "contacted": 0, "qualified": 0, "converted": 0, "lost": 0},
+            "average_score": 0.0,
+        }
+
+        total_score = 0
+        for lead in leads:
+            # Priority tier based on current_score
+            s = lead.current_score
+            total_score += s
+            if s >= 80:
+                funnel["by_priority"]["hot"] += 1
+            elif s >= 60:
+                funnel["by_priority"]["warm"] += 1
+            elif s >= 40:
+                funnel["by_priority"]["cool"] += 1
+            else:
+                funnel["by_priority"]["cold"] += 1
+
+            # Status counts
+            status_key = lead.status if lead.status in funnel["by_status"] else "new"
+            funnel["by_status"][status_key] += 1
+
+        if leads:
+            funnel["average_score"] = round(total_score / len(leads), 1)
+
+        return funnel

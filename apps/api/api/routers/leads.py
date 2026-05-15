@@ -21,24 +21,32 @@ from db.repositories import (
 from db.schemas import (
     AgentAssignmentCreate,
     AgentAssignmentResponse,
+    AgentFunnelResponse,
     BulkAssignRequest,
     BulkOperationResponse,
     BulkStatusUpdateRequest,
+    CreateAndScoreLeadRequest,
     LeadCreate,
     LeadDetailResponse,
     LeadInteractionResponse,
     LeadListResponse,
     LeadResponse,
     LeadScoreBreakdown,
+    LeadScoreInputSchema,
     LeadScoreResponse,
     LeadUpdate,
     LeadWithScoreResponse,
     MessageResponse,
+    PrioritizedScoreResponse,
     RecalculateScoresRequest,
     RecalculateScoresResponse,
     TrackInteractionRequest,
 )
-from services.lead_scoring import LeadScoringService
+from services.lead_scoring import (
+    LeadScoringInput,
+    LeadScoringService,
+    PrioritizedLeadScoringService,
+)
 from services.lead_tracking import LeadTrackingService
 
 router = APIRouter(prefix="/leads", tags=["Lead Scoring"])
@@ -106,6 +114,175 @@ async def get_or_create_visitor(
 
     # Set cookie in response
     return LeadResponse.model_validate(lead)
+
+
+# =============================================================================
+# Task #113: Prioritized Lead Scoring Endpoints
+# =============================================================================
+
+
+@router.post(
+    "",
+    response_model=LeadWithScoreResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create and score a lead",
+    description="Create a new lead and immediately calculate its priority score "
+    "based on budget fit, urgency, and engagement signals.",
+)
+async def create_and_score_lead(
+    body: CreateAndScoreLeadRequest,
+    session: AsyncSession = Depends(get_db),
+) -> LeadWithScoreResponse:
+    """Create a lead and score it in one request."""
+    tracking_service = LeadTrackingService(session)
+    lead, is_new = await tracking_service.get_or_create_visitor(
+        visitor_id=body.visitor_id,
+        user_id=body.user_id,
+        email=body.email,
+        source=body.source,
+        consent_given=body.consent_given,
+    )
+
+    # Update budget if provided
+    if body.budget_min is not None or body.budget_max is not None:
+        lead_repo = LeadRepository(session)
+        await lead_repo.update(
+            lead,
+            budget_min=body.budget_min,
+            budget_max=body.budget_max,
+        )
+
+    # Score using PrioritizedLeadScoringService
+    scoring_svc = PrioritizedLeadScoringService(session)
+    lead_input = LeadScoringInput(
+        budget_min=body.budget_min,
+        budget_max=body.budget_max,
+        target_price_min=body.target_price_min,
+        target_price_max=body.target_price_max,
+        has_email=body.email is not None,
+        has_phone=body.phone is not None,
+        has_name=body.name is not None,
+        source=body.source,
+        agent_id=body.agent_id,
+        property_id=body.property_id,
+        desired_move_date=body.desired_move_date,
+    )
+    result = scoring_svc.score_lead(lead_input)
+
+    # Also run the standard scoring if there are interactions
+    std_scoring = LeadScoringService(session)
+    await std_scoring.score_lead(lead.id)
+
+    return LeadWithScoreResponse(
+        id=lead.id,
+        visitor_id=lead.visitor_id,
+        user_id=lead.user_id,
+        email=lead.email,
+        phone=lead.phone,
+        name=lead.name,
+        budget_min=lead.budget_min,
+        budget_max=lead.budget_max,
+        preferred_locations=lead.preferred_locations,
+        status=lead.status,
+        source=lead.source,
+        current_score=lead.current_score,
+        first_seen_at=lead.first_seen_at,
+        last_activity_at=lead.last_activity_at,
+        created_at=lead.created_at,
+        updated_at=lead.updated_at,
+        consent_given=lead.consent_given,
+        consent_at=lead.consent_at,
+        assigned_agent_id=None,
+        assigned_agent_name=None,
+        latest_score=None,
+        interaction_count=0,
+        priority_score=PrioritizedScoreResponse(
+            score=result.score,
+            budget_fit=result.budget_fit,
+            urgency=result.urgency,
+            engagement=result.engagement,
+            priority_tier=result.priority_tier,
+            factors=result.factors,
+            recommendations=result.recommendations,
+        ),
+    )
+
+
+@router.post(
+    "/scores",
+    response_model=PrioritizedScoreResponse,
+    summary="Score lead data",
+    description="Calculate priority score for provided lead data without creating a record. "
+    "Returns budget fit, urgency, and engagement breakdown.",
+)
+async def score_lead_data(
+    body: LeadScoreInputSchema,
+    user: User = Depends(get_current_active_user),
+    session: AsyncSession = Depends(get_db),
+) -> PrioritizedScoreResponse:
+    """Score lead data and return breakdown without persisting."""
+    scoring_svc = PrioritizedLeadScoringService(session)
+
+    lead_input = LeadScoringInput(
+        budget_min=body.budget_min,
+        budget_max=body.budget_max,
+        target_price_min=body.target_price_min,
+        target_price_max=body.target_price_max,
+        searches=body.searches,
+        property_views=body.property_views,
+        favorites=body.favorites,
+        inquiries=body.inquiries,
+        contact_requests=body.contact_requests,
+        desired_move_date=body.desired_move_date,
+        days_since_first_seen=body.days_since_first_seen,
+        days_since_last_activity=body.days_since_last_activity,
+        has_email=body.has_email,
+        has_phone=body.has_phone,
+        has_name=body.has_name,
+        source=body.source,
+        agent_id=body.agent_id,
+        property_id=body.property_id,
+    )
+    result = scoring_svc.score_lead(lead_input)
+
+    return PrioritizedScoreResponse(
+        score=result.score,
+        budget_fit=result.budget_fit,
+        urgency=result.urgency,
+        engagement=result.engagement,
+        priority_tier=result.priority_tier,
+        factors=result.factors,
+        recommendations=result.recommendations,
+    )
+
+
+@router.get(
+    "/funnel",
+    response_model=AgentFunnelResponse,
+    summary="Get agent lead funnel",
+    description="Get lead funnel statistics for the current agent or a specified agent. "
+    "Shows leads by priority tier and status for visualization.",
+)
+async def get_agent_funnel(
+    agent_id: Optional[str] = Query(
+        None, description="Agent ID (admin only, defaults to current user)"
+    ),
+    user: User = Depends(get_current_active_user),
+    session: AsyncSession = Depends(get_db),
+) -> AgentFunnelResponse:
+    """Get lead funnel visualization data per agent."""
+    # Determine which agent's funnel to show
+    target_agent = agent_id
+    if target_agent is None:
+        target_agent = user.id
+    elif user.role not in ("admin", "superuser"):
+        # Non-admin can only see their own funnel
+        target_agent = user.id
+
+    scoring_svc = PrioritizedLeadScoringService(session)
+    funnel = await scoring_svc.get_agent_funnel(target_agent)
+
+    return AgentFunnelResponse(**funnel)
 
 
 # =============================================================================
