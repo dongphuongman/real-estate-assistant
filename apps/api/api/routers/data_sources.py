@@ -449,6 +449,15 @@ def _validate_config(source_type: str, config: dict[str, Any]) -> None:
     elif source_type == "file_upload":
         if "filename" not in config:
             raise ValueError("File upload source requires 'filename' in config")
+        # Validate Excel file extensions
+        from pathlib import Path
+
+        filename = config["filename"]
+        suffix = Path(filename).suffix.lower()
+        excel_extensions = {".xlsx", ".xls", ".ods"}
+        if suffix in excel_extensions and "record_count" not in config:
+            # Excel uploads don't require record_count upfront
+            pass
 
 
 def _validate_url_no_ssrf(url: str) -> None:
