@@ -20,6 +20,7 @@ First production release of AI Real Estate Assistant.
 - WCAG 2.1 AA accessibility improvements for UI components
 - E2E validation suite with comprehensive user journeys and price history tests
 - SPRAV systematic pre-release acceptance validation framework
+- i18n adoption: 21 components wrapped with `useTranslations()` across auth, analytics, CMA, settings, PWA, and search
 - Dependabot security updates: authlib, langsmith, lodash, picomatch, orjson
 
 ### Fixed
