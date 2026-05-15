@@ -8,23 +8,56 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![CI](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-4000+-green?style=flat)](docs/testing/TESTING_GUIDE.md)
+[![Tests](https://img.shields.io/badge/Tests-7000+-green?style=flat)](docs/testing/TESTING_GUIDE.md)
+[![Live Demo](https://img.shields.io/badge/Demo-Live-success?style=flat&logo=render)](https://realestate-web-dz1y.onrender.com/)
+[![Deploy](https://img.shields.io/badge/Deploy-Render-46E3B7?style=flat&logo=render&logoColor=white)](https://render.com)
+[![GitHub contributors](https://img.shields.io/github/contributors/AleksNeStu/ai-real-estate-assistant?style=flat)](https://github.com/AleksNeStu/ai-real-estate-assistant/graphs/contributors)
+[![GitHub commit activity](https://img.shields.io/github/commit-activity/t/AleksNeStu/ai-real-estate-assistant?style=flat&label=commits%2Fweek)](https://github.com/AleksNeStu/ai-real-estate-assistant/commits/dev)
+[![GitHub last commit](https://img.shields.io/github/last-commit/AleksNeStu/ai-real-estate-assistant/dev?style=flat)](https://github.com/AleksNeStu/ai-real-estate-assistant/commits/dev)
+
+<!-- markdownlint-disable MD051 -->
+## 📑 Table of Contents
+
+- [Live Demo](#-live-demo)
+- [Features](#-features)
+- [Screenshots](#-screenshots)
+- [Project Growth](#-project-growth)
+- [Architecture](#-architecture)
+- [Quick Start](#-quick-start)
+- [Testing](#-testing)
+- [Documentation](#-documentation)
+- [Roadmap](#-roadmap)
+- [Branches](#-branches)
+- [Deployment](#-deployment)
+- [Configuration](#-configuration)
+- [Contributing](#-contributing)
+- [License](#-license)
+<!-- markdownlint-restore -->
+
+## 🌐 Live Demo
+
+<div align="center">
+
+### [**🚀 Try the Live Demo →**](https://realestate-web-dz1y.onrender.com/)
+
+**No login required — explore in demo mode**
+
+</div>
+
+Experience the full power of AI-driven real estate search without any setup:
+
+- 🔍 **Natural Language Property Search** — ask questions like *"2-bedroom apartment in Kraków under 500k"* and get matched listings
+- 🤖 **AI-Powered Chat** — conversational interface for finding your perfect property
+- 📊 **Financial Tools** — mortgage calculator, rent-vs-buy comparison, ROI analysis, and TCO calculator
+- 🗺️ **Interactive Maps** — clustered property markers with area analytics
+- 🌍 **9 Languages** — English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, and Ukrainian
+
 [![Live Demo](https://img.shields.io/badge/Demo-Live-success?style=flat&logo=render)](https://realestate-web-dz1y.onrender.com/)
 [![Deploy](https://img.shields.io/badge/Deploy-Render-46E3B7?style=flat&logo=render&logoColor=white)](https://render.com)
 
-> **[Try the Live Demo](https://realestate-web-dz1y.onrender.com/)** — no signup required. Explore property search, AI chat, and financial tools in demo mode.
+> **Note:** The demo uses simulated AI responses for instant exploration. Production deployment requires API keys.
 
-![AI Real Estate Assistant](assets/image.png)
-
-## 🎮 What You Can Try (Demo Mode)
-
-No account or API keys needed — the deployed demo includes:
-
-- **AI Property Search** — ask questions in natural language, get matched listings
-- **9-Language Interface** — switch between English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, and Ukrainian
-- **Financial Calculators** — mortgage, rent-vs-buy, ROI, and TCO tools
-- **Interactive Maps** — clustered property markers with area analytics
-- **Demo mode** uses simulated AI responses — perfect for exploring without setup
+![AI Real Estate Assistant hero banner showing property search interface](assets/image.png)
 
 ## ✨ Features
 
@@ -46,32 +79,54 @@ English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, and Ukr
 ### 🔒 Enterprise Security
 OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode auth (API Key + JWT). Progressive 5-stage security pipeline with full scanning on all branches.
 
+## 📸 Screenshots
+
 <details>
-<summary><strong>📸 Screenshots</strong></summary>
+<summary><strong>Click to expand gallery</strong></summary>
 
 | Demo Home | Property Search |
-|:---:|:---:|
-| ![Demo Home](docs/screenshots/demo-home.png) | ![Search Results](docs/screenshots/search-results.png) |
+| :---: | :---: |
+| ![Demo homepage showing AI real estate assistant interface](docs/screenshots/demo-home.png) | ![Search results showing property listings with filters](docs/screenshots/search-results.png) |
 
-| AI Chat | Local Home View |
-|:---:|:---:|
-| ![AI Chat](docs/screenshots/local-chat.png) | ![Local Home](docs/screenshots/local-home.png) |
+| Property Results | Local Home View |
+| :---: | :---: |
+| ![Property search results with AI-powered filtering and listings](docs/screenshots/local-chat.png) | ![Local home view with property details](docs/screenshots/local-home.png) |
 
 | Login | Registration |
-|:---:|:---:|
-| ![Login](docs/screenshots/login.png) | ![Register](docs/screenshots/register.png) |
+| :---: | :---: |
+| ![Login page with email authentication](docs/screenshots/login.png) | ![Registration form for new users](docs/screenshots/register.png) |
 
 | Language Switcher | Polish UI |
-|:---:|:---:|
-| ![Languages](docs/screenshots/language-switcher.png) | ![Polish](docs/screenshots/polish-nav.png) |
+| :---: | :---: |
+| ![Language switcher showing 9 supported languages](docs/screenshots/language-switcher.png) | ![Polish language user interface](docs/screenshots/polish-nav.png) |
 
 | Mobile (375px) | Profile |
-|:---:|:---:|
-| ![Mobile](docs/screenshots/login-mobile.png) | ![Profile](docs/screenshots/profile-check.png) |
+| :---: | :---: |
+| ![Mobile responsive design on 375px viewport](docs/screenshots/login-mobile.png) | ![User profile page with saved properties](docs/screenshots/profile-check.png) |
 
 </details>
 
----
+## 📈 Project Growth
+
+### GitHub Stats
+
+[![GitHub stars](https://img.shields.io/github/stars/AleksNeStu/ai-real-estate-assistant?style=social)](https://github.com/AleksNeStu/ai-real-estate-assistant)
+[![GitHub forks](https://img.shields.io/github/forks/AleksNeStu/ai-real-estate-assistant?style=social)](https://github.com/AleksNeStu/ai-real-estate-assistant)
+[![GitHub issues](https://img.shields.io/github/issues/AleksNeStu/ai-real-estate-assistant)](https://github.com/AleksNeStu/ai-real-estate-assistant/issues)
+
+### Activity Graph
+
+[![Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=AleksNeStu&repo=ai-real-estate-assistant&theme=react-dark)](https://github.com/AleksNeStu/ai-real-estate-assistant)
+
+### Key Metrics
+
+| Metric           | Value                                       |
+| ---------------- | ------------------------------------------- |
+| **Commits**      | 1177+                                       |
+| **Tests**        | 7,000+ (6,254 backend + 1,000 frontend)     |
+| **Lines of Code** | 60,000+ (27K Python + 34K TypeScript)      |
+| **Contributors** | 6                                           |
+| **Languages**    | 9 supported                                 |
 
 ## 🏗️ Architecture
 
@@ -89,8 +144,6 @@ graph LR
 ```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full system design.
-
----
 
 ## 🚀 Quick Start
 
@@ -115,8 +168,6 @@ cd apps/web && npm install && npm run dev
 ```
 
 > **[5-Minute Quickstart →](docs/QUICKSTART_5MIN.md)** — Full setup with verification scripts.
-
----
 
 ## 🧪 Testing
 
@@ -151,8 +202,6 @@ cd apps/web && npm install && npm run dev
 
 **Performance:** Tests run in parallel using pytest-xdist (local) and GitHub Actions matrix (CI).
 
----
-
 ## 📖 Documentation
 
 | Doc | Description |
@@ -167,16 +216,26 @@ cd apps/web && npm install && npm run dev
 | [Troubleshooting](docs/development/TROUBLESHOOTING.md) | Common issues |
 | [Changelog](CHANGELOG.md) | Version history |
 
----
+## 🗺️ Roadmap
+
+### Upcoming Features
+
+- **Multi-Tenant Architecture** — Complete data isolation with tenant-aware models and repositories
+- **Billing API** — Stripe integration for subscription management and usage-based pricing
+- **Market Analytics Dashboard** — Advanced charts and trends for real estate markets
+- **Mobile App** — React Native application for iOS and Android
+- **Property Comparison Tool** — Side-by-side property analysis
+- **Email Notifications** — Alerts for price drops, new listings, and market updates
+- **API Rate Limiting** — Per-user quotas and usage analytics
+
+See [GitHub Issues](https://github.com/AleksNeStu/ai-real-estate-assistant/issues) for planned features and discussions.
 
 ## 🌿 Branches
 
-| Branch | Status | Description |
-|--------|--------|-------------|
-| [`dev`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/dev) | 🔥 Active | Current development & staging |
-| [`main`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/main) | 🟢 Stable | Stable releases |
-
----
+| Branch                                                                              | Status    | Description                    |
+| ----------------------------------------------------------------------------------- | --------- | ------------------------------ |
+| [`dev`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/dev)            | 🔥 Active | Current development & staging  |
+| [`main`](https://github.com/AleksNeStu/ai-real-estate-assistant/tree/main)           | 🟢 Stable  | Stable releases                |
 
 ## 🚢 Deployment
 
@@ -186,8 +245,6 @@ cd apps/web && npm install && npm run dev
 > **Note:** Render free tier services spin down after inactivity. First visit may take ~30-60s to cold start.
 
 See [Deployment Guide](docs/deployment/DEPLOYMENT.md) for Docker, Render, and Kubernetes setup.
-
----
 
 ## ⚙️ Configuration
 
@@ -209,8 +266,6 @@ REDIS_URL="redis://localhost:6379"          # Caching
 
 See [.env.example](.env.example) for the full list.
 
----
-
 ## 🤝 Contributing
 
 Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow.
@@ -220,13 +275,9 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for the workfl
 3. Commit: `type(scope): message`
 4. Open a PR against `dev`
 
----
-
 ## 📄 License
 
 MIT License — see [LICENSE](LICENSE).
-
----
 
 ## 💖 Support
 
