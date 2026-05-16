@@ -52,21 +52,7 @@ export default defineConfig({
         viewport: { width: 1440, height: 900 },
       },
     },
-    // Tablet view
-    {
-      name: 'tablet-chromium',
-      use: {
-        browserName: 'chromium',
-        viewport: { width: 768, height: 1024 },
-      },
-    },
-    // Mobile view
-    {
-      name: 'mobile-chromium',
-      use: {
-        ...devices['Pixel 5'],
-      },
-    },
+    // Tablet and mobile projects run in private repo full suite
   ],
   // Fail build on CI if tests use .only
   forbidOnly: isCI,
