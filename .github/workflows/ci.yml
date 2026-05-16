@@ -28,8 +28,8 @@ on:
         default: false
 
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.ref }}-${{ github.actor }}
+  cancel-in-progress: ${{ github.actor != 'dependabot[bot]' }}
 
 # Condition: only run on AleksNeStu repo (skip forks)
 # Condition: skip Stage 4 on Dependabot PRs (dependency-only changes)
