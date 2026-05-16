@@ -14,7 +14,16 @@ def mock_settings():
         mock.anthropic_api_key = "test-anthropic-key"
         mock.default_temperature = 0.7
         mock.default_max_tokens = 1000
-        yield mock
+        # _PROVIDER_KEY_MAP is evaluated at class-definition time, so we must
+        # also patch it to reflect the mocked settings values.
+        with patch.dict(
+            ModelProviderFactory._PROVIDER_KEY_MAP,
+            {
+                "openai": mock.openai_api_key,
+                "anthropic": mock.anthropic_api_key,
+            },
+        ):
+            yield mock
     ModelProviderFactory.clear_cache()
 
 
@@ -287,19 +296,22 @@ def test_get_provider_injects_anthropic_api_key(mock_settings):
 
 def test_get_provider_injects_google_api_key(mock_settings):
     mock_settings.google_api_key = "test-google-key"
-    provider = ModelProviderFactory.get_provider("google", use_cache=False)
+    with patch.dict(ModelProviderFactory._PROVIDER_KEY_MAP, {"google": "test-google-key"}):
+        provider = ModelProviderFactory.get_provider("google", use_cache=False)
     assert provider.config.get("api_key") == "test-google-key"
 
 
 def test_get_provider_injects_grok_api_key(mock_settings):
     mock_settings.grok_api_key = "test-grok-key"
-    provider = ModelProviderFactory.get_provider("grok", use_cache=False)
+    with patch.dict(ModelProviderFactory._PROVIDER_KEY_MAP, {"grok": "test-grok-key"}):
+        provider = ModelProviderFactory.get_provider("grok", use_cache=False)
     assert provider.config.get("api_key") == "test-grok-key"
 
 
 def test_get_provider_injects_deepseek_api_key(mock_settings):
     mock_settings.deepseek_api_key = "test-deepseek-key"
-    provider = ModelProviderFactory.get_provider("deepseek", use_cache=False)
+    with patch.dict(ModelProviderFactory._PROVIDER_KEY_MAP, {"deepseek": "test-deepseek-key"}):
+        provider = ModelProviderFactory.get_provider("deepseek", use_cache=False)
     assert provider.config.get("api_key") == "test-deepseek-key"
 
 

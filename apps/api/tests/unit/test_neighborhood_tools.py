@@ -392,6 +392,8 @@ class TestNeighborhoodToolFactory:
         # TASK-023: Added listing_description_generator, listing_headline_generator, social_media_content_generator
         # TASK-039: Added advanced_investment_analyzer
         # Task #42: Added rent_vs_buy_calculator (14 total tools)
+        # Task #114: Added commute_analysis and multi_origin_commute (OSRM-based)
+        # Task #115: Added negotiation_helper
         expected_names = {
             "mortgage_calculator",
             "tco_calculator",
@@ -407,6 +409,9 @@ class TestNeighborhoodToolFactory:
             "social_media_content_generator",  # TASK-023
             "advanced_investment_analyzer",  # TASK-039
             "rent_vs_buy_calculator",  # Task #42
+            "commute_analysis",  # Task #114
+            "multi_origin_commute",  # Task #114
+            "negotiation_helper",  # Task #115
         }
 
         assert tool_names == expected_names

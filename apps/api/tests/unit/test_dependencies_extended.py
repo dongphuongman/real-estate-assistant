@@ -803,7 +803,8 @@ class TestGetTemplateService:
 class TestGetLlmMultiKeyFallback:
     """Tests for get_llm with multi-key fallback enabled."""
 
-    def test_multi_key_fallback_enabled(self, monkeypatch):
+    @pytest.mark.asyncio
+    async def test_multi_key_fallback_enabled(self, monkeypatch):
         settings.default_provider = "openai"
         settings.default_model = "gpt-4"
         settings.enable_multi_key_fallback = True
@@ -817,21 +818,14 @@ class TestGetLlmMultiKeyFallback:
 
         monkeypatch.setattr(deps, "_create_llm_with_multi_key_fallback", _mock_multi_key)
 
-        # Need a running event loop for this path
-        import asyncio
-
         try:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            try:
-                result = get_llm()
-                assert result is mock_llm
-            finally:
-                loop.close()
+            result = await get_llm()
+            assert result is mock_llm
         finally:
             settings.enable_multi_key_fallback = False
 
-    def test_multi_key_fallback_deduplicates_providers(self, monkeypatch):
+    @pytest.mark.asyncio
+    async def test_multi_key_fallback_deduplicates_providers(self, monkeypatch):
         settings.default_provider = "openai"
         settings.default_model = "gpt-4"
         settings.enable_multi_key_fallback = True
@@ -847,23 +841,17 @@ class TestGetLlmMultiKeyFallback:
 
         monkeypatch.setattr(deps, "_create_llm_with_multi_key_fallback", _mock_multi_key)
 
-        import asyncio
-
         try:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            try:
-                get_llm()
-                # openai should appear only once, anthropic once, then openai (default) appended
-                assert captured_providers is not None
-                # Count occurrences
-                assert captured_providers.count("openai") == 1
-            finally:
-                loop.close()
+            await get_llm()
+            # openai should appear only once, anthropic once, then openai (default) appended
+            assert captured_providers is not None
+            # Count occurrences
+            assert captured_providers.count("openai") == 1
         finally:
             settings.enable_multi_key_fallback = False
 
-    def test_multi_key_fallback_adds_default_provider(self, monkeypatch):
+    @pytest.mark.asyncio
+    async def test_multi_key_fallback_adds_default_provider(self, monkeypatch):
         settings.default_provider = "anthropic"
         settings.default_model = "claude-3"
         settings.enable_multi_key_fallback = True
@@ -879,20 +867,14 @@ class TestGetLlmMultiKeyFallback:
 
         monkeypatch.setattr(deps, "_create_llm_with_multi_key_fallback", _mock_multi_key)
 
-        import asyncio
-
         try:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            try:
-                get_llm()
-                assert "anthropic" in captured_providers
-            finally:
-                loop.close()
+            await get_llm()
+            assert "anthropic" in captured_providers
         finally:
             settings.enable_multi_key_fallback = False
 
-    def test_multi_key_fallback_falls_through_on_error(self, monkeypatch):
+    @pytest.mark.asyncio
+    async def test_multi_key_fallback_falls_through_on_error(self, monkeypatch):
         """If multi-key fallback raises, falls through to legacy path."""
         settings.default_provider = "openai"
         settings.default_model = None
@@ -913,16 +895,9 @@ class TestGetLlmMultiKeyFallback:
             lambda name, config=None, use_cache=True: fake,
         )
 
-        import asyncio
-
         try:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            try:
-                result = get_llm()
-                assert result is not None
-            finally:
-                loop.close()
+            result = await get_llm()
+            assert result is not None
         finally:
             settings.enable_multi_key_fallback = False
 
@@ -1320,7 +1295,8 @@ class TestGetVectorStoreAdditional:
 class TestGetLlmEdgeCases:
     """Edge case tests for get_llm."""
 
-    def test_whitespace_user_email_is_treated_as_none(self, monkeypatch):
+    @pytest.mark.asyncio
+    async def test_whitespace_user_email_is_treated_as_none(self, monkeypatch):
         settings.default_provider = "openai"
         settings.default_model = None
         settings.enable_multi_key_fallback = False
@@ -1332,12 +1308,13 @@ class TestGetLlmEdgeCases:
             lambda name, config=None, use_cache=True: fake,
         )
 
-        result = get_llm(x_user_email="   ")
+        result = await get_llm(x_user_email="   ")
         assert result is not None
         # Should not have attempted preference lookup for whitespace-only email
         assert fake.created[0]["model_id"] == "fake-model"
 
-    def test_user_pref_load_failure_falls_through(self, monkeypatch):
+    @pytest.mark.asyncio
+    async def test_user_pref_load_failure_falls_through(self, monkeypatch):
         settings.default_provider = "openai"
         settings.default_model = None
         settings.enable_multi_key_fallback = False
@@ -1355,7 +1332,7 @@ class TestGetLlmEdgeCases:
 
         monkeypatch.setattr(deps.user_model_preferences, "MODEL_PREFS_MANAGER", _FailMgr())
 
-        result = get_llm(x_user_email="user@test.com")
+        result = await get_llm(x_user_email="user@test.com")
         assert result is not None
         # Falls back to default provider
         assert fake.created[0]["model_id"] == "fake-model"

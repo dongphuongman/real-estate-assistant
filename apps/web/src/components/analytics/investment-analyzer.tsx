@@ -446,7 +446,7 @@ export function InvestmentAnalyzer() {
                   {result.investment_score.toFixed(1)}
                 </p>
                 <p className={`text-lg font-semibold ${getScoreColor(result.investment_score)}`}>
-                  /100 - {getScoreLabel(result.investment_score)}
+                  /100 - {getScoreLabel(result.investment_score, t)}
                 </p>
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
