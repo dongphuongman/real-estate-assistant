@@ -12,7 +12,7 @@ export default defineConfig({
   // Retry failed tests in CI
   retries: isCI ? 2 : 0,
   // Limit workers in CI to avoid resource issues
-  workers: isCI ? 1 : undefined,
+  workers: isCI ? 2 : undefined,
   // Reporters: list for console, HTML for artifacts (use a separate folder to avoid conflicts)
   reporter: [
     ['list'],
