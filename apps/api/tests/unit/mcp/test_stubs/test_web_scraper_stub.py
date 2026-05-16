@@ -47,9 +47,12 @@ class TestWebScraperStubConnectorAsync:
     @pytest.mark.asyncio
     async def test_scrape_returns_default_response(self, stub):
         """Test scrape returns default response."""
-        result = await stub.execute("scrape", {
-            "url": "https://example.com/test",
-        })
+        result = await stub.execute(
+            "scrape",
+            {
+                "url": "https://example.com/test",
+            },
+        )
 
         assert result.success is True
         assert result.data["url"] == "https://example.com/test"
@@ -58,10 +61,13 @@ class TestWebScraperStubConnectorAsync:
     @pytest.mark.asyncio
     async def test_scrape_with_custom_selectors(self, stub):
         """Test scrape with custom selectors returns appropriate data."""
-        result = await stub.execute("scrape", {
-            "url": "https://example.com/test",
-            "selectors": {"title": "h1", "price": ".price"},
-        })
+        result = await stub.execute(
+            "scrape",
+            {
+                "url": "https://example.com/test",
+                "selectors": {"title": "h1", "price": ".price"},
+            },
+        )
 
         assert result.success is True
         assert result.data["title"] == "Sample Page Title"
@@ -70,12 +76,15 @@ class TestWebScraperStubConnectorAsync:
     @pytest.mark.asyncio
     async def test_scrape_batch_returns_results(self, stub):
         """Test scrape_batch returns results for all URLs."""
-        result = await stub.execute("scrape_batch", {
-            "urls": [
-                "https://example.com/page1",
-                "https://example.com/page2",
-            ],
-        })
+        result = await stub.execute(
+            "scrape_batch",
+            {
+                "urls": [
+                    "https://example.com/page1",
+                    "https://example.com/page2",
+                ],
+            },
+        )
 
         assert result.success is True
         assert result.data["total"] == 2
@@ -85,9 +94,12 @@ class TestWebScraperStubConnectorAsync:
     @pytest.mark.asyncio
     async def test_validate_selector_valid(self, stub):
         """Test validate_selector with valid selector."""
-        result = await stub.execute("validate_selector", {
-            "selector": "h1.title",
-        })
+        result = await stub.execute(
+            "validate_selector",
+            {
+                "selector": "h1.title",
+            },
+        )
 
         assert result.success is True
         assert result.data["valid"] is True
@@ -95,9 +107,12 @@ class TestWebScraperStubConnectorAsync:
     @pytest.mark.asyncio
     async def test_validate_selector_invalid(self, stub):
         """Test validate_selector with invalid selector."""
-        result = await stub.execute("validate_selector", {
-            "selector": "h1[",  # Invalid selector
-        })
+        result = await stub.execute(
+            "validate_selector",
+            {
+                "selector": "h1[",  # Invalid selector
+            },
+        )
 
         assert result.success is True
         assert result.data["valid"] is False
@@ -245,9 +260,12 @@ class TestWebScraperStubNetworkIsolation:
 
         with NetworkGuard.enabled():
             # This should NOT raise NetworkGuardError
-            result = await stub.execute("scrape", {
-                "url": "https://example.com/test",
-            })
+            result = await stub.execute(
+                "scrape",
+                {
+                    "url": "https://example.com/test",
+                },
+            )
 
         assert result.success is True
 

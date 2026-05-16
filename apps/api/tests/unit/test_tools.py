@@ -279,8 +279,10 @@ class TestToolFactory:
         # TASK-021: Added commute_time_analyzer and commute_ranking
         # TASK-023: Added listing_description_generator, listing_headline_generator, social_media_content_generator
         # TASK-039: Added advanced_investment_analyzer
-        # Task #42: Added rent_vs_buy_calculator (14 total tools)
-        assert len(tools) == 14
+        # Task #42: Added rent_vs_buy_calculator
+        # Task #114: Added commute_analysis, multi_origin_commute
+        # Task #115: Added negotiation_helper (17 total tools)
+        assert len(tools) == 17
         assert all(hasattr(tool, "name") for tool in tools)
         assert all(hasattr(tool, "description") for tool in tools)
 
@@ -296,10 +298,8 @@ class TestToolFactory:
         tools = create_property_tools()
         tool_names = {tool.name for tool in tools}
 
-        # TASK-021: Added commute_time_analyzer and commute_ranking
-        # TASK-023: Added listing_description_generator, listing_headline_generator, social_media_content_generator
-        # TASK-039: Added advanced_investment_analyzer
-        # Task #42: Added rent_vs_buy_calculator (14 total tools)
+        # Task #114: Added commute_analysis, multi_origin_commute
+        # Task #115: Added negotiation_helper (17 total tools)
         expected_names = {
             "mortgage_calculator",
             "tco_calculator",
@@ -315,6 +315,9 @@ class TestToolFactory:
             "social_media_content_generator",  # TASK-023
             "advanced_investment_analyzer",  # TASK-039
             "rent_vs_buy_calculator",  # Task #42
+            "commute_analysis",  # Task #114
+            "multi_origin_commute",  # Task #114
+            "negotiation_helper",  # Task #115
         }
 
         assert tool_names == expected_names

@@ -52,9 +52,7 @@ class TestHealthReadyEndpoint:
         assert data["status"] == "ready"
 
     @pytest.mark.asyncio
-    async def test_health_ready_returns_503_when_vector_store_unhealthy(
-        self, mock_health_status
-    ):
+    async def test_health_ready_returns_503_when_vector_store_unhealthy(self, mock_health_status):
         """Readiness probe returns 503 when vector store is unhealthy."""
         from api.main import app
 

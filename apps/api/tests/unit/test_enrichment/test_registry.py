@@ -1,6 +1,7 @@
 """
 Unit tests for Enrichment Registry (Task #78).
 """
+
 from data.enrichment.hooks import (
     EnrichmentConfig,
     EnrichmentPriority,

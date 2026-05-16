@@ -1766,7 +1766,7 @@ class TestAdminExcelSheets:
     @pytest.mark.asyncio
     async def test_excel_sheets_import_error(self, app_with_admin):
         """Excel sheets endpoint when libraries not available returns 400."""
-        with patch("api.routers.admin.DataLoaderExcel") as MockLoader:
+        with patch("api.routers.admin.ExcelDataLoader") as MockLoader:
             MockLoader.side_effect = ImportError("openpyxl not installed")
 
             transport = ASGITransport(app=app_with_admin)

@@ -176,15 +176,20 @@ class TestWebScraperConnectorSync:
         """Test HTML parsing with CSS selectors."""
         connector = WebScraperConnector()
 
-        result = connector._parse_content(SAMPLE_HTML, {
-            "title": "h1.title",
-            "content": "p.content",
-            "links": "ul.links a",
-        })
+        result = connector._parse_content(
+            SAMPLE_HTML,
+            {
+                "title": "h1.title",
+                "content": "p.content",
+                "links": "ul.links a",
+            },
+        )
 
         assert result["title"] == "Sample Title"
         assert len(result["content"]) == 2
-        assert "sample content" in result["content"][0] or "Second paragraph" in result["content"][0]
+        assert (
+            "sample content" in result["content"][0] or "Second paragraph" in result["content"][0]
+        )
         assert len(result["links"]) == 2
 
     def test_parse_content_single_element(self):
@@ -318,10 +323,13 @@ class TestWebScraperConnectorAsync:
 
         connector._client.get = AsyncMock(return_value=mock_response)
 
-        result = await connector.execute("scrape", {
-            "url": "https://example.com/test",
-            "selectors": {"title": "h1.title"},
-        })
+        result = await connector.execute(
+            "scrape",
+            {
+                "url": "https://example.com/test",
+                "selectors": {"title": "h1.title"},
+            },
+        )
 
         assert result.success is True
         assert result.data["title"] == "Sample Title"
@@ -338,9 +346,12 @@ class TestWebScraperConnectorAsync:
         mock_response.status_code = 403
         connector._client.get = AsyncMock(return_value=mock_response)
 
-        result = await connector.execute("scrape", {
-            "url": "https://example.com/blocked",
-        })
+        result = await connector.execute(
+            "scrape",
+            {
+                "url": "https://example.com/blocked",
+            },
+        )
 
         assert result.success is False
         assert "403" in str(result.errors)
@@ -356,9 +367,12 @@ class TestWebScraperConnectorAsync:
         mock_response.status_code = 404
         connector._client.get = AsyncMock(return_value=mock_response)
 
-        result = await connector.execute("scrape", {
-            "url": "https://example.com/notfound",
-        })
+        result = await connector.execute(
+            "scrape",
+            {
+                "url": "https://example.com/notfound",
+            },
+        )
 
         assert result.success is False
         assert "404" in str(result.errors)
@@ -386,14 +400,15 @@ class TestWebScraperConnectorAsync:
         mock_response_200.status_code = 200
         mock_response_200.text = SAMPLE_HTML
 
-        connector._client.get = AsyncMock(
-            side_effect=[mock_response_429, mock_response_200]
-        )
+        connector._client.get = AsyncMock(side_effect=[mock_response_429, mock_response_200])
 
-        result = await connector.execute("scrape", {
-            "url": "https://example.com/ratelimited",
-            "selectors": {"title": "h1.title"},
-        })
+        result = await connector.execute(
+            "scrape",
+            {
+                "url": "https://example.com/ratelimited",
+                "selectors": {"title": "h1.title"},
+            },
+        )
 
         assert result.success is True
         assert connector._client.get.call_count == 2
@@ -424,10 +439,13 @@ class TestWebScraperConnectorAsync:
             ]
         )
 
-        result = await connector.execute("scrape", {
-            "url": "https://example.com/timeout",
-            "selectors": {"title": "h1.title"},
-        })
+        result = await connector.execute(
+            "scrape",
+            {
+                "url": "https://example.com/timeout",
+                "selectors": {"title": "h1.title"},
+            },
+        )
 
         assert result.success is True
         assert connector._client.get.call_count == 2
@@ -444,13 +462,16 @@ class TestWebScraperConnectorAsync:
         mock_response.text = SAMPLE_HTML
         connector._client.get = AsyncMock(return_value=mock_response)
 
-        result = await connector.execute("scrape_batch", {
-            "urls": [
-                "https://example.com/page1",
-                "https://example.com/page2",
-            ],
-            "selectors": {"title": "h1.title"},
-        })
+        result = await connector.execute(
+            "scrape_batch",
+            {
+                "urls": [
+                    "https://example.com/page1",
+                    "https://example.com/page2",
+                ],
+                "selectors": {"title": "h1.title"},
+            },
+        )
 
         assert result.success is True
         assert result.data["total"] == 2
@@ -466,9 +487,12 @@ class TestWebScraperConnectorAsync:
 
         urls = [f"https://example.com/page/{i}" for i in range(51)]
 
-        result = await connector.execute("scrape_batch", {
-            "urls": urls,
-        })
+        result = await connector.execute(
+            "scrape_batch",
+            {
+                "urls": urls,
+            },
+        )
 
         assert result.success is False
         assert "Maximum 50 URLs" in str(result.errors)
@@ -480,10 +504,13 @@ class TestWebScraperConnectorAsync:
         """Test validate_selector with valid CSS selector."""
         await connector.connect()
 
-        result = await connector.execute("validate_selector", {
-            "selector": "h1.title",
-            "sample_html": SAMPLE_HTML,
-        })
+        result = await connector.execute(
+            "validate_selector",
+            {
+                "selector": "h1.title",
+                "sample_html": SAMPLE_HTML,
+            },
+        )
 
         assert result.success is True
         assert result.data["valid"] is True
@@ -538,16 +565,22 @@ class TestWebScraperConnectorAsync:
         connector._client.get = AsyncMock(return_value=mock_response)
 
         # First request
-        result1 = await connector.execute("scrape", {
-            "url": "https://example.com/cached",
-            "selectors": {"title": "h1.title"},
-        })
+        result1 = await connector.execute(
+            "scrape",
+            {
+                "url": "https://example.com/cached",
+                "selectors": {"title": "h1.title"},
+            },
+        )
 
         # Second request (should be cached)
-        result2 = await connector.execute("scrape", {
-            "url": "https://example.com/cached",
-            "selectors": {"title": "h1.title"},
-        })
+        result2 = await connector.execute(
+            "scrape",
+            {
+                "url": "https://example.com/cached",
+                "selectors": {"title": "h1.title"},
+            },
+        )
 
         assert result1.metadata.get("cached") is False
         assert result2.metadata.get("cached") is True

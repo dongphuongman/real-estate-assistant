@@ -51,8 +51,11 @@ class TestPortAllocationIntegration:
         # After release, allocation status changes to "inactive"
         # get_allocation only returns active allocations, so check registry directly
         alloc = next(
-            (a for a in pm.registry.get("allocations", [])
-            if a.get("serviceName") == "test-backend"),
+            (
+                a
+                for a in pm.registry.get("allocations", [])
+                if a.get("serviceName") == "test-backend"
+            ),
             None,
         )
         assert alloc is not None
@@ -67,6 +70,7 @@ class TestPortAllocationIntegration:
             assert backend_port != frontend_port
             assert 8000 <= backend_port <= 8099
             assert 3800 <= frontend_port <= 3899
+
     def test_service_discovery_generates_env_file(self, project_root: Path) -> None:
         """Test service discovery creates .env.ports file."""
         sd = ServiceDiscovery(project_root)
@@ -79,6 +83,7 @@ class TestPortAllocationIntegration:
             assert "BACKEND_API_URL=http://localhost:8001/api/v1" in content
             assert "FRONTEND_URL=http://localhost:3801" in content
             assert "CORS_ALLOW_ORIGINS=http://localhost:3801" in content
+
     def test_port_manager_cli_allocate(self, project_root: Path) -> None:
         """Test port-manager.py CLI allocate action."""
         result = subprocess.run(

@@ -290,6 +290,7 @@ class TestMCPRedaction:
 
     def test_redact_result(self):
         """Test redacting connector results."""
+
         # Mock result object
         class MockResult:
             success = True
@@ -342,9 +343,7 @@ class TestMCPAuditRetention:
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
         # Create old file (10 days ago)
-        old_date = (datetime.now(timezone.utc) - timedelta(days=10)).strftime(
-            "%Y-%m-%d"
-        )
+        old_date = (datetime.now(timezone.utc) - timedelta(days=10)).strftime("%Y-%m-%d")
         old_file = temp_log_dir / f"mcp_audit_{old_date}.csv"
         old_file.touch()
 
@@ -360,9 +359,7 @@ class TestMCPAuditRetention:
     def test_cleanup_dry_run(self, retention, temp_log_dir):
         """Test cleanup in dry-run mode (no deletion)."""
         # Create an old file
-        old_date = (datetime.now(timezone.utc) - timedelta(days=10)).strftime(
-            "%Y-%m-%d"
-        )
+        old_date = (datetime.now(timezone.utc) - timedelta(days=10)).strftime("%Y-%m-%d")
         old_file = temp_log_dir / f"mcp_audit_{old_date}.csv"
         old_file.touch()
 
@@ -375,9 +372,7 @@ class TestMCPAuditRetention:
     def test_cleanup_actual(self, retention, temp_log_dir):
         """Test actual cleanup (files deleted)."""
         # Create an old file
-        old_date = (datetime.now(timezone.utc) - timedelta(days=10)).strftime(
-            "%Y-%m-%d"
-        )
+        old_date = (datetime.now(timezone.utc) - timedelta(days=10)).strftime("%Y-%m-%d")
         old_file = temp_log_dir / f"mcp_audit_{old_date}.csv"
         old_file.write_text("old log content")
 

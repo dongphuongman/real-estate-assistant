@@ -21,7 +21,6 @@ class _StubStore:
 def _clear_factory_cache():
     from api.dependencies import clear_llm_cache
 
-
     clear_llm_cache()
     yield
     clear_llm_cache()
@@ -50,7 +49,8 @@ def test_get_vector_store_caches_success(monkeypatch):
     assert s1 is s2
 
 
-def test_get_llm_chooses_first_model_when_default_missing(monkeypatch):
+@pytest.mark.asyncio
+async def test_get_llm_chooses_first_model_when_default_missing(monkeypatch):
     dep_mod.settings.default_provider = "openai"
     dep_mod.settings.default_model = None
 
@@ -67,12 +67,13 @@ def test_get_llm_chooses_first_model_when_default_missing(monkeypatch):
     import models.provider_factory as pf_mod
 
     monkeypatch.setattr(pf_mod.ModelProviderFactory, "get_provider", lambda name: _Provider())
-    llm = get_llm()
+    llm = await get_llm()
     assert getattr(llm, "id", "") == "m1"
     assert "provider_name" not in getattr(llm, "kwargs", {})
 
 
-def test_get_llm_raises_when_no_models(monkeypatch):
+@pytest.mark.asyncio
+async def test_get_llm_raises_when_no_models(monkeypatch):
     dep_mod.settings.default_provider = "openai"
     dep_mod.settings.default_model = None
 
@@ -87,7 +88,7 @@ def test_get_llm_raises_when_no_models(monkeypatch):
 
     monkeypatch.setattr(pf_mod.ModelProviderFactory, "get_provider", lambda name: _Provider())
     with pytest.raises(RuntimeError):
-        get_llm()
+        await get_llm()
 
 
 def test_get_agent_requires_store(monkeypatch):

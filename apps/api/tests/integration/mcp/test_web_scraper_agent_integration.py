@@ -84,14 +84,17 @@ class TestWebScraperConnectorIntegration:
 
         connected_connector._client.get = AsyncMock(return_value=mock_response)
 
-        result = await connected_connector.execute("scrape", {
-            "url": "https://example.com/properties/berlin",
-            "selectors": {
-                "titles": "h2.title",
-                "prices": "span.price",
-                "locations": "span.location",
+        result = await connected_connector.execute(
+            "scrape",
+            {
+                "url": "https://example.com/properties/berlin",
+                "selectors": {
+                    "titles": "h2.title",
+                    "prices": "span.price",
+                    "locations": "span.location",
+                },
             },
-        })
+        )
 
         assert result.success is True
         assert "titles" in result.data
@@ -109,9 +112,12 @@ class TestWebScraperConnectorIntegration:
         connected_connector._client.get = AsyncMock(return_value=mock_response)
 
         # URL matches the target config pattern
-        result = await connected_connector.execute("scrape", {
-            "url": "https://example.com/properties/berlin/apartments",
-        })
+        result = await connected_connector.execute(
+            "scrape",
+            {
+                "url": "https://example.com/properties/berlin/apartments",
+            },
+        )
 
         assert result.success is True
         # Should use selectors from target config
@@ -130,13 +136,16 @@ class TestWebScraperConnectorIntegration:
 
         connected_connector._client.get = AsyncMock(return_value=mock_response)
 
-        result = await connected_connector.execute("scrape_batch", {
-            "urls": [
-                "https://example.com/properties/berlin",
-                "https://example.com/properties/munich",
-            ],
-            "selectors": {"titles": "h2.title"},
-        })
+        result = await connected_connector.execute(
+            "scrape_batch",
+            {
+                "urls": [
+                    "https://example.com/properties/berlin",
+                    "https://example.com/properties/munich",
+                ],
+                "selectors": {"titles": "h2.title"},
+            },
+        )
 
         assert result.success is True
         assert result.data["total"] == 2
@@ -146,9 +155,12 @@ class TestWebScraperConnectorIntegration:
     @pytest.mark.asyncio
     async def test_scrape_blocked_domain(self, connected_connector):
         """Test that scraping blocked domains is rejected."""
-        result = await connected_connector.execute("scrape", {
-            "url": "https://blocked-domain.com/page",
-        })
+        result = await connected_connector.execute(
+            "scrape",
+            {
+                "url": "https://blocked-domain.com/page",
+            },
+        )
 
         assert result.success is False
         assert "not in the allowed list" in str(result.errors)
@@ -161,9 +173,12 @@ class TestWebScraperConnectorIntegration:
 
         connected_connector._client.get = AsyncMock(return_value=mock_response)
 
-        result = await connected_connector.execute("scrape", {
-            "url": "https://example.com/protected",
-        })
+        result = await connected_connector.execute(
+            "scrape",
+            {
+                "url": "https://example.com/protected",
+            },
+        )
 
         assert result.success is False
         assert "403" in str(result.errors)
@@ -176,9 +191,12 @@ class TestWebScraperConnectorIntegration:
 
         connected_connector._client.get = AsyncMock(return_value=mock_response)
 
-        result = await connected_connector.execute("scrape", {
-            "url": "https://example.com/nonexistent",
-        })
+        result = await connected_connector.execute(
+            "scrape",
+            {
+                "url": "https://example.com/nonexistent",
+            },
+        )
 
         assert result.success is False
         assert "404" in str(result.errors)
@@ -198,10 +216,13 @@ class TestWebScraperConnectorIntegration:
             side_effect=[mock_response_429, mock_response_200]
         )
 
-        result = await connected_connector.execute("scrape", {
-            "url": "https://example.com/properties/test",
-            "selectors": {"title": "h2.title"},
-        })
+        result = await connected_connector.execute(
+            "scrape",
+            {
+                "url": "https://example.com/properties/test",
+                "selectors": {"title": "h2.title"},
+            },
+        )
 
         assert result.success is True
         assert connected_connector._client.get.call_count == 2
@@ -230,10 +251,13 @@ class TestWebScraperConnectorIntegration:
     @pytest.mark.asyncio
     async def test_validate_selector(self, connected_connector):
         """Test CSS selector validation."""
-        result = await connected_connector.execute("validate_selector", {
-            "selector": "h2.title",
-            "sample_html": SAMPLE_PROPERTY_LISTING,
-        })
+        result = await connected_connector.execute(
+            "validate_selector",
+            {
+                "selector": "h2.title",
+                "sample_html": SAMPLE_PROPERTY_LISTING,
+            },
+        )
 
         assert result.success is True
         assert result.data["valid"] is True
@@ -270,9 +294,7 @@ class TestWebScraperConnectorWithAgentTools:
 
         name = scrape_property_listings.name
         assert name == "scrape_property_listings"
-        result = scrape_property_listings.invoke(
-            "https://example.com/properties"
-        )
+        result = scrape_property_listings.invoke("https://example.com/properties")
         assert "Scraped data" in result
 
     @pytest.mark.asyncio
@@ -290,9 +312,12 @@ class TestWebScraperConnectorWithAgentTools:
             mock_response.text = "<html><body>Test</body></html>"
             connector._client.get = AsyncMock(return_value=mock_response)
 
-            result = await connector.execute("scrape", {
-                "url": "https://example.com/test",
-            })
+            result = await connector.execute(
+                "scrape",
+                {
+                    "url": "https://example.com/test",
+                },
+            )
 
             assert result.success is True
 
@@ -336,17 +361,11 @@ class TestWebScraperConnectorWithAgentTools:
         connector._client.get = AsyncMock(return_value=mock_response)
 
         # First two requests should succeed
-        result1 = await connector.execute(
-            "scrape", {"url": "https://example.com/1"}
-        )
-        result2 = await connector.execute(
-            "scrape", {"url": "https://example.com/2"}
-        )
+        result1 = await connector.execute("scrape", {"url": "https://example.com/1"})
+        result2 = await connector.execute("scrape", {"url": "https://example.com/2"})
 
         # Third should be rate limited
-        result3 = await connector.execute(
-            "scrape", {"url": "https://example.com/3"}
-        )
+        result3 = await connector.execute("scrape", {"url": "https://example.com/3"})
 
         assert result1.success is True
         assert result2.success is True
@@ -383,14 +402,17 @@ class TestWebScraperConnectorWithAgentTools:
             ]
         )
 
-        result = await connector.execute("scrape_batch", {
-            "urls": [
-                "https://site1.com/page",
-                "https://site2.com/missing",
-                "https://site3.com/page",
-            ],
-            "selectors": {"content": "body"},
-        })
+        result = await connector.execute(
+            "scrape_batch",
+            {
+                "urls": [
+                    "https://site1.com/page",
+                    "https://site2.com/missing",
+                    "https://site3.com/page",
+                ],
+                "selectors": {"content": "body"},
+            },
+        )
 
         assert result.success is True
         assert result.data["total"] == 3

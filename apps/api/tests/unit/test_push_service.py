@@ -11,6 +11,7 @@ import pytest
 
 # Mock pywebpush if not installed (optional dependency)
 if "pywebpush" not in sys.modules:
+
     class _MockWebPushException(Exception):
         """Mock WebPushException matching pywebpush interface."""
 

@@ -88,11 +88,9 @@ def mock_vector_store():
 
 def test_create_property_tools(mock_vector_store):
     tools = create_property_tools(mock_vector_store)
-    # TASK-021: Added commute_time_analyzer and commute_ranking
-    # TASK-023: Added AI listing generator tools (3 tools)
-    # Task #39: Added AdvancedInvestmentTool
-    # Task #42: Added RentVsBuyCalculatorTool
-    assert len(tools) == 14
+    # Task #114: Added CommuteTool, MultiOriginCommuteTool
+    # Task #115: Added NegotiationTool
+    assert len(tools) == 17
     assert isinstance(tools[0], MortgageCalculatorTool)
     assert isinstance(tools[1], TCOCalculatorTool)
     assert isinstance(tools[2], InvestmentCalculatorTool)
@@ -105,10 +103,18 @@ def test_create_property_tools(mock_vector_store):
     # TASK-021: Commute tools
     assert isinstance(tools[9], CommuteTimeAnalysisTool)
     assert isinstance(tools[10], CommuteRankingTool)
+    # Task #114: OSRM-based commute tools
+    from tools.commute_tool import CommuteTool, MultiOriginCommuteTool
+    from tools.negotiation_tool import NegotiationTool
+
+    assert isinstance(tools[11], CommuteTool)
+    assert isinstance(tools[12], MultiOriginCommuteTool)
+    # Task #115: Negotiation helper
+    assert isinstance(tools[13], NegotiationTool)
     # TASK-023: AI Listing Generator tools
-    assert isinstance(tools[11], PropertyDescriptionGeneratorTool)
-    assert isinstance(tools[12], HeadlineGeneratorTool)
-    assert isinstance(tools[13], SocialMediaContentGeneratorTool)
+    assert isinstance(tools[14], PropertyDescriptionGeneratorTool)
+    assert isinstance(tools[15], HeadlineGeneratorTool)
+    assert isinstance(tools[16], SocialMediaContentGeneratorTool)
 
 
 def test_mortgage_tool():

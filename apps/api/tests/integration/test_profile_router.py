@@ -111,9 +111,7 @@ class TestProfileRouter:
         assert data["phone"] == "+1 555 123 4567"
 
     @pytest.mark.asyncio
-    async def test_update_profile_bio(
-        self, profile_client: AsyncClient, db_session: AsyncSession
-    ):
+    async def test_update_profile_bio(self, profile_client: AsyncClient, db_session: AsyncSession):
         """Test updating profile bio."""
         bio_text = "Real estate enthusiast looking for properties in Warsaw."
         response = await profile_client.put(
@@ -192,9 +190,7 @@ class TestProfileAvatar:
     """Tests for avatar upload/delete endpoints."""
 
     @pytest.mark.asyncio
-    async def test_upload_avatar_png(
-        self, profile_client: AsyncClient, db_session: AsyncSession
-    ):
+    async def test_upload_avatar_png(self, profile_client: AsyncClient, db_session: AsyncSession):
         """Test uploading a PNG avatar."""
         # Create a minimal valid PNG (1x1 pixel)
         png_header = (
@@ -245,9 +241,7 @@ class TestProfileAvatar:
         assert "too large" in response.json()["detail"].lower()
 
     @pytest.mark.asyncio
-    async def test_delete_avatar(
-        self, profile_client: AsyncClient, db_session: AsyncSession
-    ):
+    async def test_delete_avatar(self, profile_client: AsyncClient, db_session: AsyncSession):
         """Test deleting avatar."""
         # First upload an avatar
         png_header = (
@@ -328,9 +322,7 @@ class TestDataExport:
     """Tests for GDPR data export endpoints."""
 
     @pytest.mark.asyncio
-    async def test_request_data_export(
-        self, profile_client: AsyncClient, db_session: AsyncSession
-    ):
+    async def test_request_data_export(self, profile_client: AsyncClient, db_session: AsyncSession):
         """Test requesting data export."""
         response = await profile_client.post(
             "/api/v1/profile/export",
@@ -352,9 +344,7 @@ class TestDataExport:
         assert "documents" in data["includes"]
 
     @pytest.mark.asyncio
-    async def test_get_export_status(
-        self, profile_client: AsyncClient, db_session: AsyncSession
-    ):
+    async def test_get_export_status(self, profile_client: AsyncClient, db_session: AsyncSession):
         """Test getting export job status."""
         # First request an export
         export_response = await profile_client.post(
@@ -388,9 +378,7 @@ class TestDataExport:
         assert "not found" in response.json()["detail"].lower()
 
     @pytest.mark.asyncio
-    async def test_export_rate_limit(
-        self, profile_client: AsyncClient, db_session: AsyncSession
-    ):
+    async def test_export_rate_limit(self, profile_client: AsyncClient, db_session: AsyncSession):
         """Test that export rate limiting works (1 per day)."""
         # First request
         response1 = await profile_client.post(

@@ -95,6 +95,7 @@ if _mcp_original is not None:
 else:
     sys.modules.pop("mcp", None)
 
+
 # Re-stub for each test function scope (restored in fixture below)
 @pytest.fixture(autouse=True)
 def _isolate_mcp_stub():
