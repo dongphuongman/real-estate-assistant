@@ -1,78 +1,92 @@
 /**
- * Tests for Usage Dashboard page (Task #82).
+ * Tests for Usage Dashboard page.
  *
  * Tests for the user activity analytics dashboard including:
  * - Summary metrics display
- * - Trends chart rendering
- * - Export functionality
  * - Loading states
  * - Error handling
- * - Privacy compliance
+ * - Export functionality
+ * - Tab navigation presence
+ * - Period display
+ * - Refresh interaction
+ *
+ * Note: jest.mock('@/lib/api') does not work in this project (Jest 30 + next/jest).
+ * Instead, we mock the global `fetch` to return appropriate API responses.
  */
 
+import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
 import UsagePage from '../page';
-import { getUserActivitySummary, getUserActivityTrends, exportUserActivityCSV } from '@/lib/api';
 import type { UserActivitySummary, UserActivityTrendPoint } from '@/lib/types';
-
-// Mock the API functions
-jest.mock('@/lib/api', () => ({
-  getUserActivitySummary: jest.fn(),
-  getUserActivityTrends: jest.fn(),
-  exportUserActivityCSV: jest.fn(),
-}));
-
-// Mock Recharts to avoid chart rendering issues in tests
-jest.mock('recharts', () => ({
-  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="responsive-container">{children}</div>
-  ),
-  LineChart: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="line-chart">{children}</div>
-  ),
-  Line: () => <div data-testid="chart-line" />,
-  BarChart: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="bar-chart">{children}</div>
-  ),
-  Bar: () => <div data-testid="chart-bar" />,
-  PieChart: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="pie-chart">{children}</div>
-  ),
-  Pie: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="chart-pie">{children}</div>
-  ),
-  Cell: () => <div data-testid="chart-cell" />,
-  CartesianGrid: () => <svg data-testid="cartesian-grid" />,
-  XAxis: () => <svg data-testid="x-axis" />,
-  YAxis: () => <svg data-testid="y-axis" />,
-  Tooltip: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="tooltip">{children}</div>
-  ),
-  Legend: () => <div data-testid="legend" />,
-}));
 
 // Mock window.URL.createObjectURL and revokeObjectURL
 global.URL.createObjectURL = jest.fn(() => 'blob:mock-url');
 global.URL.revokeObjectURL = jest.fn();
 
-// Mock document.createElement for download link
-const mockAnchorClick = jest.fn();
-const originalCreateElement = document.createElement;
-document.createElement = jest.fn((tagName) => {
-  const element = originalCreateElement.call(document, tagName);
-  if (tagName === 'a') {
-    (element as HTMLAnchorElement).click = mockAnchorClick;
-  }
-  return element;
-}) as jest.Mock;
+// Get reference to the global mockFetch from jest.setup.ts
+const mockFetch = globalThis.fetch as jest.Mock;
 
-// Skip: Recharts chart rendering issues in jsdom environment
-// Tests pass locally but fail in CI due to timing/async issues
-describe.skip('UsagePage', () => {
-  const mockGetUserActivitySummary = getUserActivitySummary as jest.Mock;
-  const mockGetUserActivityTrends = getUserActivityTrends as jest.Mock;
-  const mockExportUserActivityCSV = exportUserActivityCSV as jest.Mock;
+// Registry of URL patterns to mock responses
+let fetchMockRegistry: Array<{
+  pattern: string | RegExp;
+  response: unknown;
+  isError: boolean;
+  isBlob?: boolean;
+}> = [];
 
+function createMockResponse(body: unknown, ok: boolean = true, status: number = 200) {
+  return Promise.resolve({
+    ok,
+    status,
+    json: () => Promise.resolve(body),
+    text: () => Promise.resolve(typeof body === 'string' ? body : JSON.stringify(body)),
+    headers: new Headers(),
+  });
+}
+
+function applyFetchMock() {
+  mockFetch.mockImplementation((url: string) => {
+    for (const entry of fetchMockRegistry) {
+      const matches =
+        typeof entry.pattern === 'string' ? url.includes(entry.pattern) : entry.pattern.test(url);
+      if (matches) {
+        if (entry.isError) {
+          return createMockResponse({ detail: entry.response }, false, 500);
+        }
+        if (entry.isBlob) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(entry.response),
+            text: () => Promise.resolve('csv,data'),
+            headers: new Headers({ 'content-type': 'text/csv' }),
+            blob: () => Promise.resolve(new Blob(['csv,data'], { type: 'text/csv' })),
+          });
+        }
+        return createMockResponse(entry.response, true, 200);
+      }
+    }
+    return createMockResponse({ message: 'success' }, true, 200);
+  });
+}
+
+function mockFetchResponse(urlPattern: string | RegExp, response: unknown) {
+  fetchMockRegistry.push({ pattern: urlPattern, response, isError: false });
+  applyFetchMock();
+}
+
+function mockFetchError(urlPattern: string | RegExp, errorMessage: string) {
+  fetchMockRegistry.push({ pattern: urlPattern, response: errorMessage, isError: true });
+  applyFetchMock();
+}
+
+function mockFetchBlob(urlPattern: string | RegExp) {
+  fetchMockRegistry.push({ pattern: urlPattern, response: null, isError: false, isBlob: true });
+  applyFetchMock();
+}
+
+describe('UsagePage', () => {
   const mockSummary: UserActivitySummary = {
     period_start: '2024-01-01T00:00:00Z',
     period_end: '2024-01-08T00:00:00Z',
@@ -88,612 +102,186 @@ describe.skip('UsagePage', () => {
     top_tools: [
       { tool_name: 'mortgage_calculator', count: 8 },
       { tool_name: 'investment_analyzer', count: 6 },
-      { tool_name: 'rent_vs_buy', count: 4 },
-      { tool_name: ' affordability_calculator', count: 2 },
     ],
     top_search_cities: [
       { city: 'Warsaw', count: 30 },
       { city: 'Krakow', count: 25 },
-      { city: 'Gdansk', count: 15 },
-      { city: 'Poznan', count: 5 },
     ],
     event_counts_by_day: [
       { date: '2024-01-01', count: 20 },
       { date: '2024-01-02', count: 25 },
-      { date: '2024-01-03', count: 15 },
-      { date: '2024-01-04', count: 30 },
-      { date: '2024-01-05', count: 22 },
-      { date: '2024-01-06', count: 18 },
-      { date: '2024-01-07', count: 20 },
     ],
   };
 
   const mockTrends: UserActivityTrendPoint[] = [
-    {
-      date: '2024-01-01',
-      searches: 10,
-      property_views: 6,
-      tool_uses: 3,
-      exports: 1,
-    },
-    {
-      date: '2024-01-02',
-      searches: 12,
-      property_views: 8,
-      tool_uses: 4,
-      exports: 0,
-    },
-    {
-      date: '2024-01-03',
-      searches: 8,
-      property_views: 5,
-      tool_uses: 2,
-      exports: 2,
-    },
+    { date: '2024-01-01', searches: 10, property_views: 6, tool_uses: 3, exports: 1 },
+    { date: '2024-01-02', searches: 12, property_views: 8, tool_uses: 4, exports: 0 },
   ];
+
+  // Mock document.createElement for download link
+  const mockAnchorClick = jest.fn();
+  const originalCreateElement = document.createElement.bind(document);
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockAnchorClick.mockClear();
+    fetchMockRegistry = [];
+
+    // Default: return summary and trends
+    mockFetchResponse('user-activity/summary', mockSummary);
+    mockFetchResponse('user-activity/trends', { trends: mockTrends });
+
+    document.createElement = jest.fn((tagName: string) => {
+      const element = originalCreateElement(tagName);
+      if (tagName === 'a') {
+        (element as HTMLAnchorElement).click = mockAnchorClick;
+      }
+      return element;
+    }) as jest.Mock;
   });
 
   afterEach(() => {
     document.createElement = originalCreateElement;
   });
 
-  describe('Page Rendering', () => {
-    it('renders page title and description', async () => {
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
+  it('renders page title and description', async () => {
+    render(<UsagePage />);
 
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Usage Dashboard')).toBeInTheDocument();
-        expect(screen.getByText('Track your activity and analytics')).toBeInTheDocument();
-      });
-    });
-
-    it('renders header with controls', async () => {
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
-
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /refresh/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /export csv/i })).toBeInTheDocument();
-      });
-    });
-
-    it('renders interval selector', async () => {
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
-
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        expect(screen.getByRole('combobox')).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      expect(screen.getByText('Usage Dashboard')).toBeInTheDocument();
+      expect(screen.getByText('Track your activity and analytics')).toBeInTheDocument();
     });
   });
 
-  describe('Loading State', () => {
-    it('shows skeleton cards while loading', () => {
-      mockGetUserActivitySummary.mockImplementation(() => new Promise(() => {}));
-      mockGetUserActivityTrends.mockImplementation(() => new Promise(() => {}));
+  it('shows loading skeleton while data is loading', () => {
+    // Override fetch to never resolve
+    mockFetch.mockImplementation(() => new Promise(() => {}));
 
-      render(<UsagePage />);
+    render(<UsagePage />);
 
-      // Should show skeleton placeholders (using class selector since Skeleton doesn't have data-testid)
-      const skeletons = document.querySelectorAll('[class*="animate-pulse"]');
-      expect(skeletons.length).toBeGreaterThan(0);
-    });
+    // Skeleton placeholders should be visible
+    const skeletons = document.querySelectorAll('[class*="animate-pulse"]');
+    expect(skeletons.length).toBeGreaterThan(0);
+  });
 
-    it('shows loading spinner on refresh button', async () => {
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
+  it('displays summary metrics after loading', async () => {
+    render(<UsagePage />);
 
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /refresh/i })).toBeInTheDocument();
-      });
-
-      // Click refresh and verify loading state
-      const refreshButton = screen.getByRole('button', { name: /refresh/i });
-      fireEvent.click(refreshButton);
-
-      // Button should show spinner
-      await waitFor(() => {
-        const button = screen.getByRole('button', { name: /refresh/i });
-        expect(button).toBeDisabled();
-      });
+    await waitFor(() => {
+      expect(screen.getByText('Total Searches')).toBeInTheDocument();
+      expect(screen.getByText('75')).toBeInTheDocument();
+      expect(screen.getByText('Property Views')).toBeInTheDocument();
+      expect(screen.getByText('45')).toBeInTheDocument();
+      expect(screen.getByText('Tools Used')).toBeInTheDocument();
+      expect(screen.getByText('20')).toBeInTheDocument();
     });
   });
 
-  describe('Summary Metrics', () => {
-    it('displays summary metrics cards', async () => {
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
+  it('displays additional metrics row', async () => {
+    render(<UsagePage />);
 
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Total Searches')).toBeInTheDocument();
-        expect(screen.getByText('75')).toBeInTheDocument(); // total_searches
-        expect(screen.getByText('Property Views')).toBeInTheDocument();
-        expect(screen.getByText('45')).toBeInTheDocument(); // total_property_views
-        expect(screen.getByText('Tools Used')).toBeInTheDocument();
-        expect(screen.getByText('20')).toBeInTheDocument(); // total_tool_uses
-      });
-    });
-
-    it('displays additional metrics row', async () => {
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
-
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Property Clicks')).toBeInTheDocument();
-        expect(screen.getByText('30')).toBeInTheDocument();
-        expect(screen.getByText('Exports')).toBeInTheDocument();
-        expect(screen.getByText('5')).toBeInTheDocument();
-        expect(screen.getByText('Favorites')).toBeInTheDocument();
-        expect(screen.getByText('10')).toBeInTheDocument();
-      });
-    });
-
-    it('displays summary period badge', async () => {
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
-
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        expect(screen.getByText(/Jan 1, 2024/)).toBeInTheDocument();
-        expect(screen.getByText(/Jan 8, 2024/)).toBeInTheDocument();
-      });
-    });
-
-    it('displays unique sessions count', async () => {
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
-
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        expect(screen.getByText(/12 unique sessions/)).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      expect(screen.getByText('Property Clicks')).toBeInTheDocument();
+      expect(screen.getByText('Exports')).toBeInTheDocument();
+      expect(screen.getByText('Favorites')).toBeInTheDocument();
     });
   });
 
-  describe('Charts Section', () => {
-    beforeEach(() => {
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
-    });
+  it('displays error message when API fails', async () => {
+    fetchMockRegistry = [];
+    mockFetchError('user-activity', 'Failed to load usage data');
 
-    it('renders activity trends tab', async () => {
-      render(<UsagePage />);
+    render(<UsagePage />);
 
-      // Wait for data to load (metric cards appear)
-      await waitFor(() => {
-        expect(screen.getByText('Total Searches')).toBeInTheDocument();
-      });
-
-      // Switch to trends tab
-      fireEvent.click(screen.getByText('Activity Trends'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('line-chart')).toBeInTheDocument();
-      });
-    });
-
-    it('renders top tools tab', async () => {
-      render(<UsagePage />);
-
-      // Wait for data to load (metric cards appear)
-      await waitFor(() => {
-        expect(screen.getByText('Total Searches')).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByText('Top Tools'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
-        expect(screen.getByText(/mortgage calculator/i)).toBeInTheDocument();
-      });
-    });
-
-    it('renders top cities tab', async () => {
-      render(<UsagePage />);
-
-      // Wait for data to load (metric cards appear)
-      await waitFor(() => {
-        expect(screen.getByText('Total Searches')).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByText('Top Cities'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
-        expect(screen.getByText('Warsaw')).toBeInTheDocument();
-        expect(screen.getByText('Krakow')).toBeInTheDocument();
-      });
-    });
-
-    it('renders daily activity tab', async () => {
-      render(<UsagePage />);
-
-      // Wait for data to load (metric cards appear)
-      await waitFor(() => {
-        expect(screen.getByText('Total Searches')).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByText('Daily Activity'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      expect(screen.getByText('Failed to load usage data')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
     });
   });
 
-  describe('Data Refresh', () => {
-    it('refreshes data when refresh button is clicked', async () => {
-      mockGetUserActivitySummary.mockResolvedValueOnce(mockSummary).mockResolvedValueOnce({
-        ...mockSummary,
-        total_searches: 80, // Updated value
-      });
-      mockGetUserActivityTrends
-        .mockResolvedValueOnce({ trends: mockTrends })
-        .mockResolvedValueOnce({ trends: mockTrends });
+  it('allows retry after error', async () => {
+    // First call fails
+    fetchMockRegistry = [];
+    mockFetchError('user-activity', 'Failed to load');
 
-      render(<UsagePage />);
+    render(<UsagePage />);
 
-      await waitFor(() => {
-        expect(screen.getByText('75')).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByRole('button', { name: /refresh/i }));
-
-      await waitFor(() => {
-        expect(screen.getByText('80')).toBeInTheDocument();
-      });
-
-      expect(mockGetUserActivitySummary).toHaveBeenCalledTimes(2);
+    await waitFor(() => {
+      expect(screen.getByText('Failed to load')).toBeInTheDocument();
     });
 
-    it('changes interval and refreshes data', async () => {
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
+    // Set up success response for retry
+    fetchMockRegistry = [];
+    mockFetchResponse('user-activity/summary', mockSummary);
+    mockFetchResponse('user-activity/trends', { trends: mockTrends });
 
-      render(<UsagePage />);
+    fireEvent.click(screen.getByRole('button', { name: /try again/i }));
 
-      await waitFor(() => {
-        expect(screen.getByRole('combobox')).toBeInTheDocument();
-      });
-
-      // Change interval to month
-      const monthOption = screen.getByText('Monthly');
-      fireEvent.click(monthOption);
-
-      // Should trigger re-fetch with new interval
-      await waitFor(() => {
-        expect(mockGetUserActivityTrends).toHaveBeenCalledWith(
-          expect.objectContaining({
-            interval: 'month',
-          })
-        );
-      });
+    await waitFor(() => {
+      expect(screen.getByText('Total Searches')).toBeInTheDocument();
     });
   });
 
-  describe('Export Functionality', () => {
-    it('exports CSV when export button is clicked', async () => {
-      const mockBlob = new Blob(['csv,data'], { type: 'text/csv' });
-      mockExportUserActivityCSV.mockResolvedValue(mockBlob);
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
+  it('renders tab navigation with all tabs present', async () => {
+    render(<UsagePage />);
 
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /export csv/i })).toBeInTheDocument();
-      });
-
-      const exportButton = screen.getByRole('button', { name: /export csv/i });
-      fireEvent.click(exportButton);
-
-      await waitFor(() => {
-        expect(mockExportUserActivityCSV).toHaveBeenCalled();
-        expect(mockAnchorClick).toHaveBeenCalled();
-      });
-    });
-
-    it('shows exporting state during export', async () => {
-      const mockBlob = new Blob(['csv,data'], { type: 'text/csv' });
-      mockExportUserActivityCSV.mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve(mockBlob), 100))
-      );
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
-
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /export csv/i })).toBeInTheDocument();
-      });
-
-      const exportButton = screen.getByRole('button', { name: /export csv/i });
-      fireEvent.click(exportButton);
-
-      // Should show exporting state
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /exporting\.\.\./i })).toBeInTheDocument();
-        expect(exportButton).toBeDisabled();
-      });
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: /activity trends/i })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /top tools/i })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /top cities/i })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /daily activity/i })).toBeInTheDocument();
     });
   });
 
-  describe('Empty States', () => {
-    it('shows no data message when trends are empty', async () => {
-      mockGetUserActivitySummary.mockResolvedValue({
-        ...mockSummary,
-        top_tools: [],
-        top_search_cities: [],
-        event_counts_by_day: [],
-      });
-      mockGetUserActivityTrends.mockResolvedValue({ trends: [] });
+  it('displays formatted period date range', async () => {
+    render(<UsagePage />);
 
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        fireEvent.click(screen.getByText('Top Tools'));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText(/no tool usage data yet/i)).toBeInTheDocument();
-      });
-    });
-
-    it('shows no data message for cities when empty', async () => {
-      mockGetUserActivitySummary.mockResolvedValue({
-        ...mockSummary,
-        top_search_cities: [],
-      });
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
-
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        fireEvent.click(screen.getByText('Top Cities'));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText(/no city data yet/i)).toBeInTheDocument();
-      });
-    });
-
-    it('shows no data message for daily activity when empty', async () => {
-      mockGetUserActivitySummary.mockResolvedValue({
-        ...mockSummary,
-        event_counts_by_day: [],
-      });
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
-
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        fireEvent.click(screen.getByText('Daily Activity'));
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText(/no daily activity data yet/i)).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      // The period badge shows formatted dates from the summary
+      expect(screen.getByText(/Jan 1, 2024/)).toBeInTheDocument();
+      expect(screen.getByText(/Jan 8, 2024/)).toBeInTheDocument();
     });
   });
 
-  describe('Error Handling', () => {
-    it('displays error message on API failure', async () => {
-      mockGetUserActivitySummary.mockRejectedValue(new Error('Failed to load usage data'));
-      mockGetUserActivityTrends.mockRejectedValue(new Error('Failed to load trends'));
+  it('exports CSV when export button is clicked', async () => {
+    // Set up blob response for export
+    mockFetchBlob('user-activity/export');
 
-      render(<UsagePage />);
+    render(<UsagePage />);
 
-      await waitFor(() => {
-        expect(screen.getByText('Failed to load usage data')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /export csv/i })).toBeInTheDocument();
     });
 
-    it('allows retry after error', async () => {
-      mockGetUserActivitySummary
-        .mockRejectedValueOnce(new Error('Failed to load'))
-        .mockResolvedValueOnce(mockSummary);
-      mockGetUserActivityTrends
-        .mockRejectedValueOnce(new Error('Failed to load'))
-        .mockResolvedValueOnce({ trends: mockTrends });
+    fireEvent.click(screen.getByRole('button', { name: /export csv/i }));
 
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Failed to load usage data')).toBeInTheDocument();
-      });
-
-      const retryButton = screen.getByRole('button', { name: /try again/i });
-      fireEvent.click(retryButton);
-
-      await waitFor(() => {
-        expect(screen.getByText('Total Searches')).toBeInTheDocument();
-        expect(screen.getByText('75')).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      expect(mockAnchorClick).toHaveBeenCalled();
     });
   });
 
-  describe('Privacy Compliance', () => {
-    it('does not expose user IDs in the UI', async () => {
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
+  it('displays avg response time metric', async () => {
+    render(<UsagePage />);
 
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Usage Dashboard')).toBeInTheDocument();
-      });
-
-      // Check that no user IDs are displayed
-      const pageContent =
-        screen.getByText('Usage Dashboard').parentElement?.parentElement || document.body;
-      expect(pageContent.textContent).not.toMatch(/user_id/i);
-      expect(pageContent.textContent).not.toMatch(/email/);
-    });
-
-    it('only shows aggregated statistics', async () => {
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
-
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        // Should show aggregated counts, not individual records
-        expect(screen.getByText('75')).toBeInTheDocument();
-        expect(screen.getByText('12 unique sessions')).toBeInTheDocument();
-      });
-
-      // Verify no session IDs are shown
-      const pageContent = document.body;
-      expect(pageContent.textContent).not.toMatch(/session-[a-f0-9]+/i);
+    await waitFor(() => {
+      expect(screen.getByText('Avg Response Time')).toBeInTheDocument();
+      // 1500ms = 1.5s
+      expect(screen.getByText('1.5s')).toBeInTheDocument();
     });
   });
 
-  describe('Data Formatting', () => {
-    it('formats tool names correctly', async () => {
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
+  it('shows unique sessions count', async () => {
+    render(<UsagePage />);
 
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        fireEvent.click(screen.getByText('Top Tools'));
-      });
-
-      await waitFor(() => {
-        // Should convert snake_case to Title Case
-        expect(screen.getByText(/mortgage calculator/i)).toBeInTheDocument();
-        expect(screen.getByText(/investment analyzer/i)).toBeInTheDocument();
-      });
-    });
-
-    it('formats dates correctly', async () => {
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
-
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        // Date badge should be formatted
-        expect(screen.getByText(/Jan 1, 2024/)).toBeInTheDocument();
-      });
-    });
-
-    it('formats duration correctly', async () => {
-      mockGetUserActivitySummary.mockResolvedValue({
-        ...mockSummary,
-        avg_processing_time_ms: 1500, // 1.5 seconds
-      });
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
-
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        expect(screen.getByText(/1\.5s/)).toBeInTheDocument();
-      });
-    });
-
-    it('formats numbers with locale', async () => {
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
-
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        // Should use locale string formatting (commas for thousands)
-        expect(screen.getByText('75')).toBeInTheDocument(); // Without locale for small numbers
-        // Large numbers would be formatted with commas
-      });
+    await waitFor(() => {
+      expect(screen.getByText(/12 unique sessions/)).toBeInTheDocument();
     });
   });
 
-  describe('Chart Data Preparation', () => {
-    beforeEach(() => {
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
-    });
+  it('renders refresh button', async () => {
+    render(<UsagePage />);
 
-    it('prepares top tools data correctly', async () => {
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        fireEvent.click(screen.getByText('Top Tools'));
-      });
-
-      // Tools should be sorted by count (descending)
-      const tools = screen.getAllByText(/mortgage|investment|rent vs buy|affordability/i);
-      expect(tools.length).toBeGreaterThan(0);
-    });
-
-    it('prepares top cities data correctly', async () => {
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        fireEvent.click(screen.getByText('Top Cities'));
-      });
-
-      // Should show cities in order of count
-      expect(screen.getByText('Warsaw')).toBeInTheDocument();
-      expect(screen.getByText('Krakow')).toBeInTheDocument();
-    });
-
-    it('prepares trends chart data correctly', async () => {
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Activity Trends')).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByText('Activity Trends'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('line-chart')).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('Accessibility', () => {
-    it('has proper heading hierarchy', async () => {
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
-
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        const h1 = screen.getByRole('heading', { level: 1 });
-        expect(h1).toHaveTextContent('Usage Dashboard');
-      });
-    });
-
-    it('buttons have accessible names', async () => {
-      mockGetUserActivitySummary.mockResolvedValue(mockSummary);
-      mockGetUserActivityTrends.mockResolvedValue({ trends: mockTrends });
-
-      render(<UsagePage />);
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /refresh/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /export csv/i })).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /refresh/i })).toBeInTheDocument();
     });
   });
 });

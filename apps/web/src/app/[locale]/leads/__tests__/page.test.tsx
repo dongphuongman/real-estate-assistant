@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import LeadsPage from '../page';
 import * as api from '@/lib/api';
 import type { LeadWithScore, LeadListResponse, ScoringStatistics } from '@/lib/types';
@@ -34,6 +34,10 @@ const mockLeads: LeadWithScore[] = [
     name: 'John Doe',
     status: 'new',
     total_score: 85,
+    search_activity_score: 30,
+    engagement_score: 25,
+    intent_score: 30,
+    interaction_count: 12,
     last_activity_at: new Date().toISOString(),
     created_at: new Date().toISOString(),
     source: 'organic',
@@ -41,6 +45,8 @@ const mockLeads: LeadWithScore[] = [
     user_id: null,
     current_score: 85,
     updated_at: new Date().toISOString(),
+    first_seen_at: new Date().toISOString(),
+    consent_given: true,
   },
   {
     id: 'lead-2',
@@ -49,6 +55,10 @@ const mockLeads: LeadWithScore[] = [
     name: 'Jane Smith',
     status: 'contacted',
     total_score: 65,
+    search_activity_score: 20,
+    engagement_score: 25,
+    intent_score: 20,
+    interaction_count: 8,
     last_activity_at: new Date().toISOString(),
     created_at: new Date().toISOString(),
     source: 'referral',
@@ -56,6 +66,8 @@ const mockLeads: LeadWithScore[] = [
     user_id: 'user-1',
     current_score: 65,
     updated_at: new Date().toISOString(),
+    first_seen_at: new Date().toISOString(),
+    consent_given: true,
   },
   {
     id: 'lead-3',
@@ -64,6 +76,10 @@ const mockLeads: LeadWithScore[] = [
     name: 'Bob Wilson',
     status: 'qualified',
     total_score: 92,
+    search_activity_score: 35,
+    engagement_score: 30,
+    intent_score: 27,
+    interaction_count: 20,
     last_activity_at: new Date().toISOString(),
     created_at: new Date().toISOString(),
     source: 'paid',
@@ -71,6 +87,8 @@ const mockLeads: LeadWithScore[] = [
     user_id: null,
     current_score: 92,
     updated_at: new Date().toISOString(),
+    first_seen_at: new Date().toISOString(),
+    consent_given: true,
   },
 ];
 
@@ -214,5 +232,215 @@ describe('LeadsPage', () => {
       expect(screen.getByText('High Value')).toBeInTheDocument();
       expect(screen.getByText('New')).toBeInTheDocument();
     });
+  });
+
+  // ---- Additional coverage tests ----
+
+  it('displays statistics values correctly', async () => {
+    render(<LeadsPage />);
+
+    await waitFor(() => {
+      // Total leads count (100 appears in stats card)
+      const totalLeadsElements = screen.getAllByText('100');
+      expect(totalLeadsElements.length).toBeGreaterThanOrEqual(1);
+      // High value leads count
+      expect(screen.getByText('15')).toBeInTheDocument();
+      // Average score
+      expect(screen.getByText('55.5')).toBeInTheDocument();
+      // Conversion rate - 0.25.toFixed(1) => "0.3", displayed as "0.3%"
+      expect(screen.getByText('0.3%')).toBeInTheDocument();
+    });
+  });
+
+  it('displays new leads in last 24h', async () => {
+    render(<LeadsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/\+10 in last 24h/)).toBeInTheDocument();
+    });
+  });
+
+  it('shows converted leads count', async () => {
+    render(<LeadsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('25 converted')).toBeInTheDocument();
+    });
+  });
+
+  it('displays lead email and phone', async () => {
+    render(<LeadsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('john@example.com')).toBeInTheDocument();
+    });
+
+    // Jane has a phone number
+    expect(screen.getByText('+1234567890')).toBeInTheDocument();
+  });
+
+  it('shows score breakdown for leads (Search/Engage/Intent)', async () => {
+    render(<LeadsPage />);
+
+    await waitFor(() => {
+      // The page renders score breakdown labels
+      expect(screen.getAllByText('Search').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Engage').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Intent').length).toBeGreaterThan(0);
+    });
+  });
+
+  it('calls recalculateScores when Recalculate Scores button is clicked', async () => {
+    (api.recalculateScores as jest.Mock).mockResolvedValue({});
+
+    render(<LeadsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Recalculate Scores')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Recalculate Scores'));
+
+    await waitFor(() => {
+      expect(api.recalculateScores).toHaveBeenCalled();
+    });
+  });
+
+  it('calls exportLeads when Export button is clicked', async () => {
+    const mockBlob = new Blob(['csv data'], { type: 'text/csv' });
+    (api.exportLeads as jest.Mock).mockResolvedValue(mockBlob);
+
+    // Mock URL.createObjectURL and related
+    const mockUrl = 'blob:http://localhost/test';
+    const originalCreateObjectURL = window.URL.createObjectURL;
+    const originalRevokeObjectURL = window.URL.revokeObjectURL;
+    window.URL.createObjectURL = jest.fn(() => mockUrl);
+    window.URL.revokeObjectURL = jest.fn();
+
+    // Mock createElement to track the anchor element
+    const mockAnchor = { click: jest.fn(), href: '', download: '' };
+    const originalCreateElement = document.createElement.bind(document);
+    jest.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+      if (tag === 'a') return mockAnchor as unknown as HTMLAnchorElement;
+      return originalCreateElement(tag);
+    });
+
+    render(<LeadsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Export')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Export'));
+
+    await waitFor(() => {
+      expect(api.exportLeads).toHaveBeenCalled();
+    });
+
+    // Restore mocks
+    window.URL.createObjectURL = originalCreateObjectURL;
+    window.URL.revokeObjectURL = originalRevokeObjectURL;
+    (document.createElement as jest.Mock).mockRestore();
+  });
+
+  it('renders lead score bar text', async () => {
+    render(<LeadsPage />);
+
+    await waitFor(() => {
+      // Score bar displays total_score/100
+      expect(screen.getByText('85/100')).toBeInTheDocument();
+      expect(screen.getByText('65/100')).toBeInTheDocument();
+      expect(screen.getByText('92/100')).toBeInTheDocument();
+    });
+  });
+
+  it('renders "Lead Score" label', async () => {
+    render(<LeadsPage />);
+
+    await waitFor(() => {
+      const labels = screen.getAllByText('Lead Score');
+      expect(labels.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('shows time ago for lead activity', async () => {
+    render(<LeadsPage />);
+
+    await waitFor(() => {
+      // date-fns mock returns '2 hours ago'
+      const timeAgoElements = screen.getAllByText('2 hours ago');
+      expect(timeAgoElements.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('retries loading when Try Again is clicked after error', async () => {
+    (api.getLeads as jest.Mock)
+      .mockRejectedValueOnce(new Error('API Error'))
+      .mockResolvedValueOnce(mockLeadResponse);
+
+    render(<LeadsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Try Again')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Try Again'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Lead Dashboard')).toBeInTheDocument();
+    });
+  });
+
+  it('renders high value leads from separate API', async () => {
+    render(<LeadsPage />);
+
+    await waitFor(() => {
+      // getHighValueLeads is called with (70, 10)
+      expect(api.getHighValueLeads).toHaveBeenCalledWith(70, 10);
+    });
+  });
+
+  it('calls getScoringStatistics on load', async () => {
+    render(<LeadsPage />);
+
+    await waitFor(() => {
+      expect(api.getScoringStatistics).toHaveBeenCalled();
+    });
+  });
+
+  it('renders Contacted status badge for jane', async () => {
+    render(<LeadsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Contacted')).toBeInTheDocument();
+    });
+  });
+
+  it('renders Qualified status badge', async () => {
+    render(<LeadsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Qualified')).toBeInTheDocument();
+    });
+  });
+
+  it('renders "No leads found" when lead list is empty', async () => {
+    (api.getLeads as jest.Mock).mockResolvedValue({
+      items: [],
+      total: 0,
+      page: 1,
+      page_size: 50,
+      total_pages: 0,
+    });
+
+    render(<LeadsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('No leads found')).toBeInTheDocument();
+    });
+
+    expect(
+      screen.getByText('Try adjusting your filters or wait for new leads to come in')
+    ).toBeInTheDocument();
   });
 });

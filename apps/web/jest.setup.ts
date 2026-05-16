@@ -9,6 +9,15 @@ if (typeof globalThis.TextDecoder === 'undefined') {
   globalThis.TextDecoder = TextDecoder as typeof globalThis.TextDecoder;
 }
 
+// Polyfill ResizeObserver for Recharts and other browser libraries
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  globalThis.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof globalThis.ResizeObserver;
+}
+
 type ResponseInitLike = {
   status?: number;
   statusText?: string;
