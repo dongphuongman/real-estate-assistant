@@ -18,6 +18,7 @@ import {
   listDataSources,
   syncDataSource,
   deleteDataSource,
+  updateDataSource,
   ingestData,
   getExcelSheets,
   listPortals,
@@ -29,12 +30,9 @@ import {
 import {
   DataSourceList,
   DeleteConfirmDialog,
+  EditDataSourceDialog,
 } from '@/components/admin/data-sources';
-import type {
-  DataSource,
-  IngestResponse,
-  PortalAdapterInfo,
-} from '@/lib/types';
+import type { DataSource, DataSourceUpdate, IngestResponse, PortalAdapterInfo } from '@/lib/types';
 
 interface ErrorState {
   message: string;
@@ -62,6 +60,10 @@ export default function DataSourcesPage() {
   // Delete dialog state
   const [deleteSource, setDeleteSource] = useState<DataSource | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Edit dialog state
+  const [editSource, setEditSource] = useState<DataSource | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Import state
   const [importMode, setImportMode] = useState<'url' | 'file' | 'portal'>('url');
@@ -164,10 +166,23 @@ export default function DataSourcesPage() {
     }
   };
 
-  // Handle edit (placeholder - would open edit modal)
+  // Handle edit
   const handleEdit = (source: DataSource) => {
-    // For now, just show an alert - full edit modal would be added later
-    alert(`Edit source: ${source.name} (Edit modal to be implemented)`);
+    setEditSource(source);
+  };
+
+  const handleSaveEdit = async (id: string, data: DataSourceUpdate) => {
+    setIsSaving(true);
+    setError(null);
+    try {
+      await updateDataSource(id, data);
+      setEditSource(null);
+      loadDataSources();
+    } catch (e) {
+      setError(extractErrorState(e));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Handle delete
@@ -520,7 +535,8 @@ export default function DataSourcesPage() {
                     </p>
                     {uploadFile && (
                       <p className="text-sm text-muted-foreground mt-2">
-                        Selected: <strong>{uploadFile.name}</strong> ({(uploadFile.size / 1024 / 1024).toFixed(2)} MB)
+                        Selected: <strong>{uploadFile.name}</strong> (
+                        {(uploadFile.size / 1024 / 1024).toFixed(2)} MB)
                       </p>
                     )}
                   </div>
@@ -542,7 +558,8 @@ export default function DataSourcesPage() {
                 </div>
 
                 {/* Excel Options */}
-                {((importMode === 'url' && isExcelFile(fileUrl)) || (importMode === 'file' && isExcelFileObj(uploadFile))) && (
+                {((importMode === 'url' && isExcelFile(fileUrl)) ||
+                  (importMode === 'file' && isExcelFileObj(uploadFile))) && (
                   <div className="border-t pt-4 mt-4">
                     <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                       <FileSpreadsheet className="w-4 h-4" />
@@ -913,6 +930,16 @@ export default function DataSourcesPage() {
         onClose={() => setDeleteSource(null)}
         onConfirm={handleDeleteConfirm}
         isDeleting={isDeleting}
+      />
+
+      {/* Edit Dialog */}
+      <EditDataSourceDialog
+        key={editSource?.id}
+        source={editSource}
+        isOpen={!!editSource}
+        onClose={() => setEditSource(null)}
+        onSave={handleSaveEdit}
+        isSaving={isSaving}
       />
     </div>
   );
