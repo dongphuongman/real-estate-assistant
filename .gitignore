@@ -363,7 +363,7 @@ DESIGN.md
 # Local development files (not for public repo)
 .research/
 logs/
-screenshots/
+/screenshots/
 .python-version
 
 # Playwright test output

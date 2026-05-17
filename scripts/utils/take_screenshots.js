@@ -4,7 +4,7 @@ const fs = require("fs");
 
 const BASE = process.argv[2] || "http://localhost:3456";
 const THEME = process.argv[3] || "dark";
-const OUT_DIR = path.join(__dirname, "..", "docs", "screenshots");
+const OUT_DIR = path.join(__dirname, "..", "..", "docs", "screenshots");
 
 const SCREENSHOTS = [
   { name: "home", path: "/", desc: "Landing page" },
