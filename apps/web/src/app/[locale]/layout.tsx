@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono, Cinzel } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
@@ -27,6 +27,12 @@ const fontTemplar = Cinzel({
   variable: '--font-templar',
   subsets: ['latin'],
 });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -69,10 +75,6 @@ export async function generateMetadata({
       template: `%s | ${titles[locale as Locale] || titles.en}`,
     },
     description: descriptions[locale as Locale] || descriptions.en,
-    viewport: {
-      width: 'device-width',
-      initialScale: 1,
-    },
     alternates: {
       canonical: `/${locale}`,
       languages: {

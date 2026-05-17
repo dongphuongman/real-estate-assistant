@@ -19,7 +19,17 @@ const SCREENSHOTS = [
   { name: "cma", path: "/en/cma", desc: "CMA tool" },
   { name: "city-overview", path: "/en/city-overview", desc: "City overview" },
   { name: "knowledge", path: "/en/knowledge", desc: "Knowledge base" },
+  { name: "favorites", path: "/en/favorites", desc: "Saved favorites" },
+  { name: "saved-searches", path: "/en/saved-searches", desc: "Saved searches" },
+  { name: "leads", path: "/en/leads", desc: "Lead management" },
+  { name: "settings", path: "/en/settings", desc: "User settings" },
+  { name: "tools", path: "/en/tools", desc: "Available tools" },
+  { name: "agent-analytics", path: "/en/agent-analytics", desc: "Agent analytics" },
+  { name: "documents", path: "/en/documents", desc: "Document manager" },
+  { name: "usage", path: "/en/usage", desc: "Usage dashboard" },
   { name: "home-mobile", path: "/", desc: "Landing (mobile)", mobile: true },
+  { name: "chat-mobile", path: "/en/chat", desc: "AI chat (mobile)", mobile: true },
+  { name: "search-mobile", path: "/en/search?q=apartment+berlin", desc: "Search (mobile)", mobile: true },
 ];
 
 async function captureScreenshots(browser, screenshots) {
@@ -43,8 +53,8 @@ async function captureScreenshots(browser, screenshots) {
     const url = `${BASE}${shot.path}`;
     console.log(`Capturing ${shot.name} (${shot.desc})...`);
     try {
-      await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
-      await page.waitForTimeout(1500);
+      await page.goto(url, { waitUntil: "load", timeout: 30000 });
+      await page.waitForTimeout(3000);
 
       // Dismiss cookie banners
       try {
@@ -96,8 +106,8 @@ async function main() {
       const url = `${BASE}${shot.path}`;
       console.log(`Capturing ${shot.name} (${shot.desc}, mobile)...`);
       try {
-        await mobilePage.goto(url, { waitUntil: "networkidle", timeout: 30000 });
-        await mobilePage.waitForTimeout(1500);
+        await mobilePage.goto(url, { waitUntil: "load", timeout: 30000 });
+        await mobilePage.waitForTimeout(3000);
 
         const outPath = path.join(OUT_DIR, `${shot.name}.png`);
         await mobilePage.screenshot({ path: outPath, fullPage: false });

@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "leaflet/dist/leaflet.css";
+@import 'tailwindcss';
+@import 'leaflet/dist/leaflet.css';
 
 @plugin "tailwindcss-animate";
 
@@ -82,14 +82,18 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html,
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-x-hidden;
   }
 }
 
 /* Map marker animations */
 .mapbox-marker-cluster {
-  transition: transform 0.2s ease-out, box-shadow 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease-out,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .mapbox-marker-cluster:hover {
@@ -101,7 +105,9 @@
 }
 
 .mapbox-marker-point {
-  transition: transform 0.15s ease-out, opacity 0.2s ease;
+  transition:
+    transform 0.15s ease-out,
+    opacity 0.2s ease;
 }
 
 .mapbox-marker-point:hover {
@@ -148,8 +154,6 @@
     transform: scale(1.15);
   }
 }
-
 .mapbox-cluster-expanding {
   animation: cluster-expand 0.2s ease-out;
 }
-

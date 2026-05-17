@@ -189,6 +189,7 @@ export async function refreshToken(): Promise<AuthResponse> {
 
 /**
  * Get the currently authenticated user's profile.
+ * Fails silently (no console error) for expected 401/404 responses.
  *
  * @returns User object
  */
@@ -199,7 +200,28 @@ export async function getCurrentUser(): Promise<User> {
     credentials: 'include',
   });
 
-  return handleAuthResponse<User>(response);
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '');
+    let message = 'Not authenticated';
+
+    if (errorText) {
+      try {
+        const parsed: unknown = JSON.parse(errorText);
+        if (parsed && typeof parsed === 'object') {
+          const detail = (parsed as { detail?: unknown }).detail;
+          if (typeof detail === 'string' && detail.trim()) {
+            message = detail.trim();
+          }
+        }
+      } catch {
+        // ignore parse errors
+      }
+    }
+
+    throw new ApiError(message, response.status);
+  }
+
+  return response.json();
 }
 
 /**

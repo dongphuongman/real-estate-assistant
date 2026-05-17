@@ -44,7 +44,9 @@ const nextConfig: NextConfig = {
           'font-src': ["'self'", 'data:'],
           'connect-src': [
             "'self'",
-            process.env.NEXT_PUBLIC_API_URL || "'self'",
+            ...(process.env.NEXT_PUBLIC_API_URL?.startsWith('http')
+              ? [process.env.NEXT_PUBLIC_API_URL]
+              : []),
             'https://*.onrender.com',
             // Push notification services
             'https://fcm.googleapis.com',

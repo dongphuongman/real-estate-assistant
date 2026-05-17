@@ -81,38 +81,124 @@ OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode
 
 ## 📸 Screenshots
 
-<details>
-<summary><strong>Click to expand gallery (dark theme)</strong></summary>
+<div align="center">
 
-| Home | Property Search |
-| :---: | :---: |
-| ![Dark-themed homepage](docs/screenshots/home.png) | ![Property search interface](docs/screenshots/search.png) |
+**← Swipe to browse gallery →**
 
-| Search Results | AI Chat |
-| :---: | :---: |
-| ![Search results with listings](docs/screenshots/search-results.png) | ![AI chat interface](docs/screenshots/chat.png) |
+</div>
 
-| City Overview | Knowledge Base |
-| :---: | :---: |
-| ![City analytics dashboard](docs/screenshots/city-overview.png) | ![Knowledge base](docs/screenshots/knowledge.png) |
+<div style="display: flex; overflow-x: auto; gap: 12px; padding: 8px 0; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;">
 
-| Market Trends | Analytics |
-| :---: | :---: |
-| ![Market trends dashboard](docs/screenshots/market-trends.png) | ![Analytics tools](docs/screenshots/analytics.png) |
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/home.png" alt="Dark-themed landing page with hero section" width="320" style="border-radius: 8px;" />
+<p><strong>Home</strong></p>
+</div>
 
-| AI Agents | CMA Tool |
-| :---: | :---: |
-| ![AI agents configuration](docs/screenshots/agents.png) | ![Comparative Market Analysis](docs/screenshots/cma.png) |
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/search.png" alt="Property search with filters" width="320" style="border-radius: 8px;" />
+<p><strong>Property Search</strong></p>
+</div>
 
-| Login (Demo) | Register |
-| :---: | :---: |
-| ![Login page with Try Demo button](docs/screenshots/login.png) | ![Registration page](docs/screenshots/register.png) |
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/search-results.png" alt="Search results with listings and map" width="320" style="border-radius: 8px;" />
+<p><strong>Search Results</strong></p>
+</div>
 
-| Mobile |
-| :---: |
-| ![Mobile responsive view](docs/screenshots/home-mobile.png) |
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/chat.png" alt="AI chat interface" width="320" style="border-radius: 8px;" />
+<p><strong>AI Chat</strong></p>
+</div>
 
-</details>
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/city-overview.png" alt="City analytics dashboard" width="320" style="border-radius: 8px;" />
+<p><strong>City Overview</strong></p>
+</div>
+
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/knowledge.png" alt="Knowledge base" width="320" style="border-radius: 8px;" />
+<p><strong>Knowledge Base</strong></p>
+</div>
+
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/market-trends.png" alt="Market trends dashboard" width="320" style="border-radius: 8px;" />
+<p><strong>Market Trends</strong></p>
+</div>
+
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/analytics.png" alt="Analytics and ROI tools" width="320" style="border-radius: 8px;" />
+<p><strong>Analytics</strong></p>
+</div>
+
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/agents.png" alt="AI agents directory" width="320" style="border-radius: 8px;" />
+<p><strong>AI Agents</strong></p>
+</div>
+
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/cma.png" alt="Comparative Market Analysis" width="320" style="border-radius: 8px;" />
+<p><strong>CMA Tool</strong></p>
+</div>
+
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/agent-analytics.png" alt="Agent performance metrics" width="320" style="border-radius: 8px;" />
+<p><strong>Agent Analytics</strong></p>
+</div>
+
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/tools.png" alt="Mortgage calculator and tools" width="320" style="border-radius: 8px;" />
+<p><strong>Tools</strong></p>
+</div>
+
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/favorites.png" alt="Saved favorite properties" width="320" style="border-radius: 8px;" />
+<p><strong>Favorites</strong></p>
+</div>
+
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/saved-searches.png" alt="Saved search queries" width="320" style="border-radius: 8px;" />
+<p><strong>Saved Searches</strong></p>
+</div>
+
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/leads.png" alt="Lead management dashboard" width="320" style="border-radius: 8px;" />
+<p><strong>Leads</strong></p>
+</div>
+
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/documents.png" alt="Document manager" width="320" style="border-radius: 8px;" />
+<p><strong>Documents</strong></p>
+</div>
+
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/usage.png" alt="Usage statistics dashboard" width="320" style="border-radius: 8px;" />
+<p><strong>Usage Dashboard</strong></p>
+</div>
+
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/settings.png" alt="User settings" width="320" style="border-radius: 8px;" />
+<p><strong>Settings</strong></p>
+</div>
+
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/login.png" alt="Login with Try Demo button" width="320" style="border-radius: 8px;" />
+<p><strong>Login (Demo)</strong></p>
+</div>
+
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/register.png" alt="Registration form" width="320" style="border-radius: 8px;" />
+<p><strong>Register</strong></p>
+</div>
+
+<div style="flex: 0 0 320px; scroll-snap-align: start; text-align: center;">
+<img src="docs/screenshots/home-mobile.png" alt="Mobile home page" width="160" style="border-radius: 8px;" />
+<br/>
+<img src="docs/screenshots/chat-mobile.png" alt="Mobile AI chat" width="160" style="border-radius: 8px; margin-top: 8px;" />
+<br/>
+<img src="docs/screenshots/search-mobile.png" alt="Mobile search" width="160" style="border-radius: 8px; margin-top: 8px;" />
+<p><strong>Mobile Views</strong></p>
+</div>
+
+</div>
 
 ## 📈 Project Growth
 
