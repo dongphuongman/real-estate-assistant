@@ -100,9 +100,17 @@ OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode
 | :---: | :---: |
 | ![Market trends dashboard](docs/screenshots/market-trends.png) | ![Analytics tools](docs/screenshots/analytics.png) |
 
-| Login (Demo) | Mobile |
+| AI Agents | CMA Tool |
 | :---: | :---: |
-| ![Login page with Try Demo button](docs/screenshots/login.png) | ![Mobile responsive view](docs/screenshots/home-mobile.png) |
+| ![AI agents configuration](docs/screenshots/agents.png) | ![Comparative Market Analysis](docs/screenshots/cma.png) |
+
+| Login (Demo) | Register |
+| :---: | :---: |
+| ![Login page with Try Demo button](docs/screenshots/login.png) | ![Registration page](docs/screenshots/register.png) |
+
+| Mobile |
+| :---: |
+| ![Mobile responsive view](docs/screenshots/home-mobile.png) |
 
 </details>
 
