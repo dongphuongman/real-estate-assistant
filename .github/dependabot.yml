@@ -13,8 +13,6 @@ updates:
       - frontend
     commit-message:
       prefix: chore(deps-web)
-    reviewers:
-      - AleksNeStu
     groups:
       dev-patch-and-minor:
         patterns: ["*"]
@@ -37,8 +35,6 @@ updates:
       - backend
     commit-message:
       prefix: chore(deps-api)
-    reviewers:
-      - AleksNeStu
     groups:
       dev-patch-and-minor:
         patterns: ["*"]

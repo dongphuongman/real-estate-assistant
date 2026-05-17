@@ -13,6 +13,7 @@ jobs:
   collect:
     name: Collect weekly metrics
     runs-on: ubuntu-latest
+    if: false  # Disabled: community metrics not applicable to private repo
 
     steps:
       - name: Checkout repository
