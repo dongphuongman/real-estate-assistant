@@ -82,27 +82,27 @@ OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode
 ## 📸 Screenshots
 
 <details>
-<summary><strong>Click to expand gallery</strong></summary>
+<summary><strong>Click to expand gallery (dark theme)</strong></summary>
 
-| Demo Home | Property Search |
+| Home | Property Search |
 | :---: | :---: |
-| ![Demo homepage showing AI real estate assistant interface](docs/screenshots/demo-home.png) | ![Search results showing property listings with filters](docs/screenshots/search-results.png) |
+| ![Dark-themed homepage](docs/screenshots/home.png) | ![Property search interface](docs/screenshots/search.png) |
 
-| Property Results | Local Home View |
+| Search Results | AI Chat |
 | :---: | :---: |
-| ![Property search results with AI-powered filtering and listings](docs/screenshots/local-chat.png) | ![Local home view with property details](docs/screenshots/local-home.png) |
+| ![Search results with listings](docs/screenshots/search-results.png) | ![AI chat interface](docs/screenshots/chat.png) |
 
-| Login | Registration |
+| City Overview | Knowledge Base |
 | :---: | :---: |
-| ![Login page with email authentication](docs/screenshots/login.png) | ![Registration form for new users](docs/screenshots/register.png) |
+| ![City analytics dashboard](docs/screenshots/city-overview.png) | ![Knowledge base](docs/screenshots/knowledge.png) |
 
-| Language Switcher | Polish UI |
+| Market Trends | Analytics |
 | :---: | :---: |
-| ![Language switcher showing 9 supported languages](docs/screenshots/language-switcher.png) | ![Polish language user interface](docs/screenshots/polish-nav.png) |
+| ![Market trends dashboard](docs/screenshots/market-trends.png) | ![Analytics tools](docs/screenshots/analytics.png) |
 
-| Mobile (375px) | Profile |
+| Login (Demo) | Mobile |
 | :---: | :---: |
-| ![Mobile responsive design on 375px viewport](docs/screenshots/login-mobile.png) | ![User profile page with saved properties](docs/screenshots/profile-check.png) |
+| ![Login page with Try Demo button](docs/screenshots/login.png) | ![Mobile responsive view](docs/screenshots/home-mobile.png) |
 
 </details>
 
