@@ -6,6 +6,7 @@ import { MainNav } from '@/components/layout/main-nav';
 import { SkipNav } from '@/components/layout/SkipNav';
 import { DemoBanner } from '@/components/layout/demo-banner';
 import { Providers } from '@/components/providers';
+import { Toaster } from '@/components/ui/sonner';
 import { InstallPrompt } from '@/components/pwa/install-prompt';
 import { UpdateBanner } from '@/components/pwa/update-banner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -186,6 +187,7 @@ export default async function LocaleLayout({
               <ErrorBoundary>{children}</ErrorBoundary>
             </main>
             <InstallPrompt />
+            <Toaster />
           </Providers>
         </NextIntlClientProvider>
       </body>

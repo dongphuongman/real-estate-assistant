@@ -773,6 +773,7 @@
     "banner": "Modo demo — búsqueda y datos de ciudades disponibles",
     "login": "Iniciar sesión",
     "lockedFeature": "Inicia sesión para acceder a esta función",
-    "signInForFull": "Inicia sesión para el asistente AI y más"
+    "signInForFull": "Inicia sesión para el asistente AI y más",
+    "signUpCta": "Regístrate para desbloquear todo"
   }
 }

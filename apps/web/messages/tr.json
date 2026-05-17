@@ -773,6 +773,7 @@
     "banner": "Demo modu — arama ve şehir verileri mevcut",
     "login": "Giriş yap",
     "lockedFeature": "Bu özelliğe erişmek için giriş yapın",
-    "signInForFull": "AI asistanı ve daha fazlası için giriş yap"
+    "signInForFull": "AI asistanı ve daha fazlası için giriş yap",
+    "signUpCta": "Tüm özelliklerin kilidini açmak için kaydol"
   }
 }

@@ -15,7 +15,6 @@ import {
   Building2,
   FileText,
   Heart,
-  Lock,
   Menu,
   MessageSquare,
   Moon,
@@ -30,9 +29,17 @@ import {
 
 const THEME_STORAGE_KEY = 'theme';
 
-// Routes accessible in demo mode without auth
-const DEMO_OPEN_ROUTES = new Set(['/search', '/city-overview', '/knowledge']);
-// Routes completely hidden in demo mode
+// Routes visible in demo mode (auth-required routes are hidden, not locked)
+const DEMO_VISIBLE_ROUTES = new Set([
+  '/search',
+  '/city-overview',
+  '/knowledge',
+  '/analytics',
+  '/market-trends',
+  '/cma',
+  '/tools',
+]);
+// Routes always hidden in demo mode
 const DEMO_HIDDEN_ROUTES = new Set(['/settings']);
 
 interface RouteConfig {
@@ -44,7 +51,6 @@ interface RouteConfig {
 export function MainNav() {
   const pathname = usePathname();
   const t = useTranslations('nav');
-  const tDemo = useTranslations('demo');
   const tCommon = useTranslations('common');
   const { isDemoMode } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -103,8 +109,9 @@ export function MainNav() {
     return currentPath === href || (href !== '/' && currentPath.startsWith(href));
   };
 
-  const isLocked = (href: string) => isDemoMode && !DEMO_OPEN_ROUTES.has(href);
-  const isHidden = (href: string) => isDemoMode && DEMO_HIDDEN_ROUTES.has(href);
+  const isLocked = () => false;
+  const isHidden = (href: string) =>
+    isDemoMode && (!DEMO_VISIBLE_ROUTES.has(href) || DEMO_HIDDEN_ROUTES.has(href));
 
   const toggleTheme = () => {
     const isDark = document.documentElement.classList.contains('dark');
@@ -130,22 +137,18 @@ export function MainNav() {
         {/* Desktop navigation links */}
         <div className="hidden md:flex items-center justify-center flex-1 space-x-4 lg:space-x-6">
           {visibleRoutes.map((route) => {
-            const locked = isLocked(route.href);
             return (
               <Link
                 key={route.href}
-                href={locked ? '/auth/login' : route.href}
-                aria-current={!locked && isActiveRoute(route.href) ? 'page' : undefined}
-                title={locked ? tDemo('lockedFeature') : undefined}
+                href={route.href}
+                aria-current={isActiveRoute(route.href) ? 'page' : undefined}
                 className={cn(
                   'text-sm font-medium transition-colors hover:text-primary flex items-center gap-x-1.5 whitespace-nowrap',
-                  isActiveRoute(route.href) ? 'text-foreground' : 'text-muted-foreground',
-                  locked && 'opacity-60'
+                  isActiveRoute(route.href) ? 'text-foreground' : 'text-muted-foreground'
                 )}
               >
                 <route.icon className="w-4 h-4" aria-hidden="true" />
                 {route.label}
-                {locked && <Lock className="w-3 h-3 text-muted-foreground" aria-hidden="true" />}
               </Link>
             );
           })}
@@ -203,25 +206,20 @@ export function MainNav() {
             </div>
             <div className="flex-1 overflow-y-auto py-2">
               {visibleRoutes.map((route) => {
-                const locked = isLocked(route.href);
                 return (
                   <Link
                     key={route.href}
-                    href={locked ? '/auth/login' : route.href}
+                    href={route.href}
                     onClick={() => setMobileOpen(false)}
                     className={cn(
                       'flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors hover:bg-accent',
                       isActiveRoute(route.href)
                         ? 'text-foreground bg-accent/50'
-                        : 'text-muted-foreground',
-                      locked && 'opacity-60'
+                        : 'text-muted-foreground'
                     )}
                   >
                     <route.icon className="w-5 h-5" aria-hidden="true" />
                     {route.label}
-                    {locked && (
-                      <Lock className="w-3 h-3 ml-auto text-muted-foreground" aria-hidden="true" />
-                    )}
                   </Link>
                 );
               })}

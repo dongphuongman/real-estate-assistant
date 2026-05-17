@@ -766,6 +766,7 @@
     "banner": "Tryb demo — wyszukiwanie i dane miast są dostępne",
     "login": "Zaloguj się",
     "lockedFeature": "Zaloguj się, aby uzyskać dostęp",
-    "signInForFull": "Zaloguj się dla AI asystenta i więcej"
+    "signInForFull": "Zaloguj się dla AI asystenta i więcej",
+    "signUpCta": "Zarejestruj się aby odblokować wszystko"
   }
 }

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { oauthLogin } from '@/lib/auth';
@@ -19,9 +20,10 @@ export function OAuthButtons({ isLoading = false, className }: OAuthButtonsProps
   const handleOAuthLogin = async (provider: 'google' | 'apple') => {
     setIsRedirecting(provider);
     try {
-      oauthLogin(provider);
+      await oauthLogin(provider);
     } catch (error) {
-      console.error(`OAuth login failed for ${provider}:`, error);
+      const message = error instanceof Error ? error.message : `OAuth login failed for ${provider}`;
+      toast.error(message);
       setIsRedirecting(null);
     }
   };

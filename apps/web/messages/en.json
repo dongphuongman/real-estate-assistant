@@ -1410,6 +1410,7 @@
     "banner": "Browsing in demo mode — search and city data are available",
     "login": "Sign in",
     "lockedFeature": "Sign in to access this feature",
-    "signInForFull": "Sign in for AI assistant and more"
+    "signInForFull": "Sign in for AI assistant and more",
+    "signUpCta": "Sign up to unlock all features"
   }
 }

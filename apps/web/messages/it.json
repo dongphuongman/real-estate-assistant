@@ -773,6 +773,7 @@
     "banner": "Modalità demo — ricerca e dati cittadini disponibili",
     "login": "Accedi",
     "lockedFeature": "Accedi per utilizzare questa funzione",
-    "signInForFull": "Accedi per l'assistente AI e altro"
+    "signInForFull": "Accedi per l'assistente AI e altro",
+    "signUpCta": "Registrati per sbloccare tutte le funzioni"
   }
 }

@@ -60,7 +60,18 @@ export async function middleware(request: NextRequest) {
   const isAuthRoute = pathWithoutLocale.startsWith('/auth/') || pathWithoutLocale === '/auth';
 
   // Routes accessible without authentication (demo mode)
-  const demoRoutes = ['/', '/search', '/city-overview', '/knowledge'];
+  const demoRoutes = [
+    '/',
+    '/search',
+    '/city-overview',
+    '/knowledge',
+    '/analytics',
+    '/market-trends',
+    '/cma',
+    '/tools',
+    '/chat',
+    '/agents',
+  ];
   const isDemoRoute =
     pathWithoutLocale === '/' ||
     demoRoutes.some(

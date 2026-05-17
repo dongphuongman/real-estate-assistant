@@ -773,6 +773,7 @@
     "banner": "Demo-Modus — Suche und Stadt-Daten verfügbar",
     "login": "Anmelden",
     "lockedFeature": "Melden Sie sich an, um diese Funktion zu nutzen",
-    "signInForFull": "Anmelden für AI-Assistent und mehr"
+    "signInForFull": "Anmelden für AI-Assistent und mehr",
+    "signUpCta": "Registrieren für alle Funktionen"
   }
 }

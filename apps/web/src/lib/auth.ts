@@ -303,35 +303,38 @@ export async function resendVerificationEmail(email: string): Promise<MessageRes
  * Currently supports 'google' and 'apple' (though Apple requires backend setup).
  *
  * @param provider - OAuth provider ('google' | 'apple')
+ * @throws Error if OAuth is not configured or request fails
  */
-export function oauthLogin(provider: 'google' | 'apple'): void {
+export async function oauthLogin(provider: 'google' | 'apple'): Promise<void> {
   const baseUrl = getAuthApiUrl();
   const authUrl = `${baseUrl}/auth/oauth/${provider}`;
 
-  // Fetch the authorization URL from the backend
-  fetch(authUrl, {
+  const response = await fetch(authUrl, {
     method: 'GET',
     headers: buildAuthHeaders(),
     credentials: 'include',
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('Failed to initiate OAuth flow');
+  });
+
+  if (!response.ok) {
+    let detail = 'Failed to initiate OAuth flow';
+    try {
+      const body: unknown = await response.json();
+      if (body && typeof body === 'object' && 'detail' in body) {
+        const d = (body as { detail?: unknown }).detail;
+        if (typeof d === 'string') detail = d;
       }
-      return response.json();
-    })
-    .then((data) => {
-      // Redirect to the OAuth provider's authorization page
-      if (data.authorization_url) {
-        window.location.href = data.authorization_url;
-      } else {
-        throw new Error('Invalid OAuth response');
-      }
-    })
-    .catch((error) => {
-      console.error('OAuth login error:', error);
-      // You might want to show a toast or notification here
-    });
+    } catch {
+      // ignore parse errors
+    }
+    throw new Error(detail);
+  }
+
+  const data = await response.json();
+  if (data.authorization_url) {
+    window.location.href = data.authorization_url;
+  } else {
+    throw new Error('Invalid OAuth response');
+  }
 }
 
 /**
