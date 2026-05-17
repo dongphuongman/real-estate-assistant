@@ -4,7 +4,7 @@ import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { Building2, Loader2, AlertCircle } from 'lucide-react';
+import { Building2, Loader2, AlertCircle, Play } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -118,12 +118,21 @@ function LoginForm() {
           </div>
         </div>
 
-        <Link
-          href={`/${locale}`}
-          className="text-sm text-center text-muted-foreground hover:text-primary underline underline-offset-4"
-        >
-          {t('continueAsGuest')}
-        </Link>
+        {process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ? (
+          <Link href={`/${locale}`} className="w-full">
+            <Button variant="outline" className="w-full gap-2" type="button">
+              <Play className="w-4 h-4" />
+              {t('tryDemo')}
+            </Button>
+          </Link>
+        ) : (
+          <Link
+            href={`/${locale}`}
+            className="text-sm text-center text-muted-foreground hover:text-primary underline underline-offset-4"
+          >
+            {t('continueAsGuest')}
+          </Link>
+        )}
       </CardFooter>
     </form>
   );

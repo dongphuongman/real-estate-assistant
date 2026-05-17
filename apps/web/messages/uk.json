@@ -72,7 +72,8 @@
       "signUp": "Sign up",
       "orContinueWith": "Or continue with",
       "or": "або",
-      "continueAsGuest": "Спробувати без акаунта"
+      "continueAsGuest": "Спробувати без акаунта",
+      "tryDemo": "Спробувати Демо — без акаунта"
     },
     "register": {
       "title": "Create an account",

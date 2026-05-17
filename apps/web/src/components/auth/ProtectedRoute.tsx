@@ -28,12 +28,12 @@ interface ProtectedRouteProps {
  * ```
  */
 export function ProtectedRoute({ children, redirectTo = '/auth/login' }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, isDemoMode } = useAuth();
   const router = useRouter();
   const t = useTranslations('auth');
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated && !isDemoMode) {
       router.push(redirectTo);
     }
   }, [isAuthenticated, isLoading, router, redirectTo]);
@@ -49,7 +49,7 @@ export function ProtectedRoute({ children, redirectTo = '/auth/login' }: Protect
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !isDemoMode) {
     return null; // Will redirect
   }
 

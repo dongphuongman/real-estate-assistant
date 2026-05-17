@@ -3,41 +3,50 @@ const path = require("path");
 const fs = require("fs");
 
 const BASE = process.argv[2] || "http://localhost:3456";
+const THEME = process.argv[3] || "dark";
 const OUT_DIR = path.join(__dirname, "..", "docs", "screenshots");
 
 const SCREENSHOTS = [
-  // Public pages (redirect to login is fine for demo)
-  { name: "home", path: "/", desc: "Landing / Login" },
+  { name: "home", path: "/", desc: "Landing page" },
   { name: "login", path: "/en/auth/login", desc: "Login form" },
   { name: "register", path: "/en/auth/register", desc: "Registration" },
-  // After login, these would be the main features:
   { name: "search", path: "/en/search", desc: "Property search" },
+  { name: "search-results", path: "/en/search?q=apartment+krakow", desc: "Search results" },
   { name: "chat", path: "/en/chat", desc: "AI chat" },
   { name: "analytics", path: "/en/analytics", desc: "Analytics tools" },
   { name: "agents", path: "/en/agents", desc: "Agent directory" },
   { name: "market-trends", path: "/en/market-trends", desc: "Market trends" },
   { name: "cma", path: "/en/cma", desc: "CMA tool" },
   { name: "city-overview", path: "/en/city-overview", desc: "City overview" },
+  { name: "knowledge", path: "/en/knowledge", desc: "Knowledge base" },
+  { name: "home-mobile", path: "/", desc: "Landing (mobile)", mobile: true },
 ];
 
-async function main() {
-  fs.mkdirSync(OUT_DIR, { recursive: true });
-
-  const browser = await chromium.launch({ headless: true });
+async function captureScreenshots(browser, screenshots) {
   const context = await browser.newContext({
     viewport: { width: 1280, height: 800 },
     locale: "en-US",
+    colorScheme: THEME,
   });
+
+  // Apply dark/light theme before any page renders
+  if (THEME === "dark") {
+    await context.addInitScript(() => {
+      localStorage.setItem("theme", "dark");
+      document.documentElement.classList.add("dark");
+    });
+  }
+
   const page = await context.newPage();
 
-  for (const shot of SCREENSHOTS) {
+  for (const shot of screenshots) {
     const url = `${BASE}${shot.path}`;
     console.log(`Capturing ${shot.name} (${shot.desc})...`);
     try {
-      await page.goto(url, { waitUntil: "networkidle", timeout: 15000 });
+      await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
       await page.waitForTimeout(1500);
 
-      // Dismiss any cookie banners
+      // Dismiss cookie banners
       try {
         const btn = page.locator("button:has-text('Accept'), button:has-text('Close')");
         if (await btn.isVisible({ timeout: 1000 })) await btn.click();
@@ -50,6 +59,56 @@ async function main() {
     } catch (err) {
       console.error(`  Failed: ${err.message}`);
     }
+  }
+
+  await context.close();
+}
+
+async function main() {
+  fs.mkdirSync(OUT_DIR, { recursive: true });
+
+  const browser = await chromium.launch({ headless: true });
+
+  // Desktop screenshots
+  const desktop = SCREENSHOTS.filter((s) => !s.mobile);
+  await captureScreenshots(browser, desktop);
+
+  // Mobile screenshots
+  const mobile = SCREENSHOTS.filter((s) => s.mobile);
+  if (mobile.length) {
+    const mobileContext = await browser.newContext({
+      viewport: { width: 375, height: 812 },
+      locale: "en-US",
+      colorScheme: THEME,
+      isMobile: true,
+    });
+
+    if (THEME === "dark") {
+      await mobileContext.addInitScript(() => {
+        localStorage.setItem("theme", "dark");
+        document.documentElement.classList.add("dark");
+      });
+    }
+
+    const mobilePage = await mobileContext.newPage();
+
+    for (const shot of mobile) {
+      const url = `${BASE}${shot.path}`;
+      console.log(`Capturing ${shot.name} (${shot.desc}, mobile)...`);
+      try {
+        await mobilePage.goto(url, { waitUntil: "networkidle", timeout: 30000 });
+        await mobilePage.waitForTimeout(1500);
+
+        const outPath = path.join(OUT_DIR, `${shot.name}.png`);
+        await mobilePage.screenshot({ path: outPath, fullPage: false });
+        const size = fs.statSync(outPath).size;
+        console.log(`  Saved: ${outPath} (${(size / 1024).toFixed(1)} KB)`);
+      } catch (err) {
+        console.error(`  Failed: ${err.message}`);
+      }
+    }
+
+    await mobileContext.close();
   }
 
   await browser.close();

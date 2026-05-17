@@ -72,7 +72,8 @@
       "signUp": "Sign up",
       "orContinueWith": "Or continue with",
       "or": "veya",
-      "continueAsGuest": "Hesapsız dene"
+      "continueAsGuest": "Hesapsız dene",
+      "tryDemo": "Demo Dene — hesap gerekmez"
     },
     "register": {
       "title": "Create an account",

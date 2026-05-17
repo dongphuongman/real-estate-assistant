@@ -72,7 +72,8 @@
       "signUp": "Sign up",
       "orContinueWith": "Or continue with",
       "or": "o",
-      "continueAsGuest": "Probar sin cuenta"
+      "continueAsGuest": "Probar sin cuenta",
+      "tryDemo": "Probar Demo — sin cuenta"
     },
     "register": {
       "title": "Create an account",
