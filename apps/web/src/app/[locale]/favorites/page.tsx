@@ -57,7 +57,7 @@ export default function FavoritesPage() {
           <p className="text-muted-foreground mb-6">
             Save properties you love and access them from any device.
           </p>
-          <Link href="/login">
+          <Link href="/auth/login">
             <Button>Sign In</Button>
           </Link>
         </div>
