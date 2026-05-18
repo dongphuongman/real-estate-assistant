@@ -291,6 +291,69 @@
       "totalCashFlow": "Całkowity przepływ miesięczny"
     }
   },
+  "rentVsBuy": {
+    "title": "Kalkulator Wynajem vs Kupno",
+    "description": "Porównaj wynajem i kupno w czasie z analizą punktu równowagi.",
+    "emptyHint": "Wprowadź szczegóły nieruchomości i aktualny czynsz, aby zobaczyć porównanie.",
+    "analyzeButton": "Porównaj Wynajem z Kupnem",
+    "error": {
+      "title": "Analiza nieudana",
+      "retry": "Spróbuj ponownie"
+    },
+    "form": {
+      "propertyRent": "Informacje o nieruchomości i czynszie",
+      "propertyPrice": "Cena nieruchomości ($)",
+      "monthlyRent": "Miesięczny czynsz ($)",
+      "advancedOptions": "Opcje zaawansowane",
+      "showAdvanced": "Pokaż opcje zaawansowane",
+      "hideAdvanced": "Ukryj opcje zaawansowane",
+      "mortgageDetails": "Szczegóły kredytu",
+      "downPayment": "Wpłata własna (%)",
+      "interestRate": "Oprocentowanie (%)",
+      "loanTerm": "Okres kredytu (lata)",
+      "ownershipCosts": "Koszty własności",
+      "annualPropertyTax": "Roczny podatek od nieruchomości ($)",
+      "annualInsurance": "Roczne ubezpieczenie ($)",
+      "monthlyHoa": "Miesięczne HOA ($)",
+      "maintenancePercent": "Utrzymanie (%)",
+      "appreciationRate": "Wzrost wartości (%)",
+      "rentIncreaseRate": "Wzrost czynszu (%)",
+      "investmentReturnRate": "Stopa zwrotu z inwestycji (%)",
+      "marginalTaxRate": "Krańcowa stopa podatkowa (%)",
+      "projectionYears": "Okres prognozy (lata)"
+    },
+    "results": {
+      "title": "Wyniki analizy",
+      "description": "Kompletne porównanie wynajmu i kupna w okresie {years} lat.",
+      "recommendation": "Rekomendacja",
+      "breakEvenAt": "Punkt równowagi po {years} lat",
+      "buyingRecommended": "Rekomendowane kupno",
+      "rentingRecommended": "Rekomendowany wynajem",
+      "dependsTimeline": "Zależy od Twojej perspektywy czasowej",
+      "monthlyMortgage": "Miesięczna rata kredytu",
+      "monthlyRentInitial": "Miesięczny czynsz (początkowy)",
+      "totalRentPaid": "Całkowity zapłacony czynsz",
+      "totalOwnershipCost": "Całkowity koszt własności",
+      "netBuyingAdvantage": "Netto korzyść z kupna",
+      "equityBuilt": "Zbudowany kapitał własny",
+      "advantageExplanation": "Pozytywna = kupno jest bardziej opłacalne. Negatywna = wynajem jest lepszy.",
+      "finalSummary": "Podsumowanie końcowe",
+      "finalPropertyValue": "Końcowa wartość nieruchomości",
+      "totalEquityBuilt": "Całkowity zbudowany kapitał własny",
+      "opportunityCost": "Koszt alternatywny",
+      "netAdvantage": "Netto korzyść",
+      "charts": {
+        "cumulativeCost": {
+          "title": "Porównanie kosztów skumulowanych",
+          "ariaLabel": "Wykres porównania kosztów skumulowanych pokazujący koszty wynajmu i kupna w czasie"
+        },
+        "equityGrowth": {
+          "title": "Wzrost kapitału własnego i wartości nieruchomości",
+          "ariaLabel": "Wykres wzrostu kapitału własnego i wartości nieruchomości w czasie"
+        }
+      }
+    }
+  },
   "neighborhood": {
     "title": "Informacje o dzielnicy",
     "score": {
