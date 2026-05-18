@@ -49,7 +49,7 @@ export default function AgentsPage({ params }: { params: Promise<{ locale: strin
   // Local filter state for the form
   const [localCity, setLocalCity] = useState('');
   const [localSpecialty, setLocalSpecialty] = useState('');
-  const [localMinRating, setLocalMinRating] = useState('');
+  const [localMinRating, setLocalMinRating] = useState('any');
   const [localSortBy, setLocalSortBy] = useState<SortOption>('rating');
 
   // Get locale from params
@@ -85,7 +85,8 @@ export default function AgentsPage({ params }: { params: Promise<{ locale: strin
     setFilters({
       city: localCity || undefined,
       specialty: localSpecialty || undefined,
-      min_rating: localMinRating ? parseFloat(localMinRating) : undefined,
+      min_rating:
+        localMinRating && localMinRating !== 'any' ? parseFloat(localMinRating) : undefined,
       sort_by: localSortBy,
       sort_order: 'desc',
     });
@@ -199,7 +200,7 @@ export default function AgentsPage({ params }: { params: Promise<{ locale: strin
                   <SelectValue placeholder="Any rating" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any</SelectItem>
+                  <SelectItem value="any">Any</SelectItem>
                   <SelectItem value="4">4+ Stars</SelectItem>
                   <SelectItem value="4.5">4.5+ Stars</SelectItem>
                   <SelectItem value="4.8">4.8+ Stars</SelectItem>
