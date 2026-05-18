@@ -298,6 +298,69 @@
       "totalCashFlow": "Total Monthly Cash Flow"
     }
   },
+  "rentVsBuy": {
+    "title": "Calcolatrice Affitto vs Acquisto",
+    "description": "Confronta l'affitto e l'acquisto nel tempo con analisi del punto di pareggio.",
+    "emptyHint": "Inserisci i dettagli della proprietà e l'affitto attuale per vedere il confronto.",
+    "analyzeButton": "Confronta Affitto con Acquisto",
+    "error": {
+      "title": "Analisi fallita",
+      "retry": "Riprova"
+    },
+    "form": {
+      "propertyRent": "Proprietà e Affitto",
+      "propertyPrice": "Prezzo della proprietà ($)",
+      "monthlyRent": "Affitto mensile ($)",
+      "advancedOptions": "Opzioni avanzate",
+      "showAdvanced": "Mostra opzioni avanzate",
+      "hideAdvanced": "Nascondi opzioni avanzate",
+      "mortgageDetails": "Dettagli del mutuo",
+      "downPayment": "Anticipo (%)",
+      "interestRate": "Tasso di interesse (%)",
+      "loanTerm": "Durata del prestito (anni)",
+      "ownershipCosts": "Costi di proprietà",
+      "annualPropertyTax": "Imposta annuale sulla proprietà ($)",
+      "annualInsurance": "Assicurazione annuale ($)",
+      "monthlyHoa": "HOA mensile ($)",
+      "maintenancePercent": "Manutenzione (%)",
+      "appreciationRate": "Tasso di apprezzamento (%)",
+      "rentIncreaseRate": "Aumento dell'affitto (%)",
+      "investmentReturnRate": "Rendimento dell'investimento (%)",
+      "marginalTaxRate": "Aliquota marginale (%)",
+      "projectionYears": "Periodo di proiezione (anni)"
+    },
+    "results": {
+      "title": "Risultati dell'analisi",
+      "description": "Confronto completo tra affitto e acquisto per {years} anni.",
+      "recommendation": "Raccomandazione",
+      "breakEvenAt": "Punto di pareggio tra {years} anni",
+      "buyingRecommended": "Acquisto raccomandato",
+      "rentingRecommended": "Affitto raccomandato",
+      "dependsTimeline": "Dipende dal tuo orizzonte temporale",
+      "monthlyMortgage": "Mutuo mensile",
+      "monthlyRentInitial": "Affitto mensile (iniziale)",
+      "totalRentPaid": "Totale affitto pagato",
+      "totalOwnershipCost": "Costo totale di proprietà",
+      "netBuyingAdvantage": "Vantaggio netto dell'acquisto",
+      "equityBuilt": "Capitale proprio accumulato",
+      "advantageExplanation": "Positivo = l'acquisto è finanziariamente migliore. Negativo = l'affitto è migliore.",
+      "finalSummary": "Riepilogo finale",
+      "finalPropertyValue": "Valore finale della proprietà",
+      "totalEquityBuilt": "Capitale proprio totale accumulato",
+      "opportunityCost": "Costo opportunità",
+      "netAdvantage": "Vantaggio netto",
+      "charts": {
+        "cumulativeCost": {
+          "title": "Confronto costi cumulativi",
+          "ariaLabel": "Grafico di confronto dei costi cumulativi che mostra i costi di affitto e acquisto nel tempo"
+        },
+        "equityGrowth": {
+          "title": "Crescita del capitale proprio e del valore della proprietà",
+          "ariaLabel": "Grafico della crescita del capitale proprio e del valore della proprietà nel tempo"
+        }
+      }
+    }
+  },
   "neighborhood": {
     "title": "Neighborhood Insights",
     "score": {

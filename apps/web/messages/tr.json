@@ -298,6 +298,69 @@
       "totalCashFlow": "Total Monthly Cash Flow"
     }
   },
+  "rentVsBuy": {
+    "title": "Kiralama vs Satın Alma Hesaplayıcı",
+    "description": "Breake-even analizi ile kiralama ve satın almayı zaman içinde karşılaştırın.",
+    "emptyHint": "Karşılaştırmayı görmek için gayrimenkul detaylarını ve mevcut kiramayı girin.",
+    "analyzeButton": "Kiralama ile Satın Almayı Karşılaştır",
+    "error": {
+      "title": "Analiz başarısız",
+      "retry": "Yeniden dene"
+    },
+    "form": {
+      "propertyRent": "Gayrimenkul ve Kiralama",
+      "propertyPrice": "Gayrimenkul Fiyatı ($)",
+      "monthlyRent": "Aylık Kira ($)",
+      "advancedOptions": "Gelişmiş Seçenekler",
+      "showAdvanced": "Gelişmiş seçenekleri göster",
+      "hideAdvanced": "Gelişmiş seçenekleri gizle",
+      "mortgageDetails": "Konut Kredisi Detayları",
+      "downPayment": "Peşinat (%)",
+      "interestRate": "Faiz Oranı (%)",
+      "loanTerm": "Kredi Süresi (yıl)",
+      "ownershipCosts": "Mülkiyet Maliyetleri",
+      "annualPropertyTax": "Yıllık Emlak Vergisi ($)",
+      "annualInsurance": "Yıllık Sigorta ($)",
+      "monthlyHoa": "Aylık HOA ($)",
+      "maintenancePercent": "Bakım (%)",
+      "appreciationRate": "Değer Artışı (%)",
+      "rentIncreaseRate": "Kira Artışı (%)",
+      "investmentReturnRate": "Yatırım Getirisi (%)",
+      "marginalTaxRate": "Marjinal Vergi Oranı (%)",
+      "projectionYears": "Projeksiyon Dönemi (yıl)"
+    },
+    "results": {
+      "title": "Analiz Sonuçları",
+      "description": "{years} yıl boyunca kiralama ve satın alma için kapsamlı karşılaştırma.",
+      "recommendation": "Tavsiye",
+      "breakEvenAt": "{years} yılda denge noktası",
+      "buyingRecommended": "Satın alma tavsiye edilir",
+      "rentingRecommended": "Kiralama tavsiye edilir",
+      "dependsTimeline": "Zaman çizelinenize bağlıdır",
+      "monthlyMortgage": "Aylık Konut Kredisi",
+      "monthlyRentInitial": "Aylık Kira (başlangıç)",
+      "totalRentPaid": "Toplam Ödenen Kira",
+      "totalOwnershipCost": "Toplam Mülkiyet Maliyeti",
+      "netBuyingAdvantage": "Net Satın Alma Avantajı",
+      "equityBuilt": "Oluşturulan Öz Sermaye",
+      "advantageExplanation": "Pozitif = satın alma finansal olarak daha iyi. Negatif = kiralama daha iyi.",
+      "finalSummary": "Final Özeti",
+      "finalPropertyValue": "Final Gayrimenkul Değeri",
+      "totalEquityBuilt": "Toplam Oluşturulan Öz Sermaye",
+      "opportunityCost": "Fırsat Maliyeti",
+      "netAdvantage": "Net Avantaj",
+      "charts": {
+        "cumulativeCost": {
+          "title": "Kümülatif Maliyet Karşılaştırması",
+          "ariaLabel": "Zaman içinde kiralama ve satın alma maliyetlerini gösteren kümülatif maliyet karşılaştırma grafiği"
+        },
+        "equityGrowth": {
+          "title": "Öz Sermaye ve Gayrimenkul Değer Artışı",
+          "ariaLabel": "Zaman içinde öz sermaye ve gayrimenkul değer artışı grafiği"
+        }
+      }
+    }
+  },
   "neighborhood": {
     "title": "Neighborhood Insights",
     "score": {

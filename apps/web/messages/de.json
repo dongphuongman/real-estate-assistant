@@ -298,6 +298,69 @@
       "totalCashFlow": "Total Monthly Cash Flow"
     }
   },
+  "rentVsBuy": {
+    "title": "Miete vs Kauf Rechner",
+    "description": "Vergleichen Sie Mieten und Kaufen über Zeit mit Break-Even-Analyse.",
+    "emptyHint": "Immobilien-details und aktuelle Miete eingeben für den Vergleich.",
+    "analyzeButton": "Miete vs Kaufen vergleichen",
+    "error": {
+      "title": "Analyse fehlgeschlagen",
+      "retry": "Wiederholen"
+    },
+    "form": {
+      "propertyRent": "Immobilie & Miete",
+      "propertyPrice": "Immobilienpreis ($)",
+      "monthlyRent": "Monatliche Miete ($)",
+      "advancedOptions": "Erweiterte Optionen",
+      "showAdvanced": "Erweiterte Optionen anzeigen",
+      "hideAdvanced": "Erweiterte Optionen ausblenden",
+      "mortgageDetails": "Hypothekdetails",
+      "downPayment": "Anzahlung (%)",
+      "interestRate": "Zinssatz (%)",
+      "loanTerm": "Kreditlaufzeit (Jahre)",
+      "ownershipCosts": "Besitzkosten",
+      "annualPropertyTax": "Jährliche Grundsteuer ($)",
+      "annualInsurance": "Jährliche Versicherung ($)",
+      "monthlyHoa": "Monatliche Hausgeld ($)",
+      "maintenancePercent": "Instandhaltung (%)",
+      "appreciationRate": "Wertsteigerung (%)",
+      "rentIncreaseRate": "Mietsteigerung (%)",
+      "investmentReturnRate": "Investitionsrendite (%)",
+      "marginalTaxRate": "Grenzsteuersatz (%)",
+      "projectionYears": "Projektionszeitraum (Jahre)"
+    },
+    "results": {
+      "title": "Analyseergebnisse",
+      "description": "Umfassender Miete-vs-Kauf-Vergleich über {years} Jahre.",
+      "recommendation": "Empfehlung",
+      "breakEvenAt": "Break-even nach {years} Jahren",
+      "buyingRecommended": "Kauf empfohlen",
+      "rentingRecommended": "Miete empfohlen",
+      "dependsTimeline": "Hängt von Ihrem Zeitrahmen ab",
+      "monthlyMortgage": "Monatliche Hypothek",
+      "monthlyRentInitial": "Monatliche Miete (Anfang)",
+      "totalRentPaid": "Gesamte Miete gezahlt",
+      "totalOwnershipCost": "Gesamte Besitzkosten",
+      "netBuyingAdvantage": "Netto-Kaufvorteil",
+      "equityBuilt": "Aufgebautes Eigenkapital",
+      "advantageExplanation": "Positiv = Kaufen ist finanziell besser. Negativ = Mieten ist besser.",
+      "finalSummary": "Abschlusszusammenfassung",
+      "finalPropertyValue": "Endgültiger Immobilienwert",
+      "totalEquityBuilt": "Gesamtes aufgebautes Eigenkapital",
+      "opportunityCost": "Opportunitätskosten",
+      "netAdvantage": "Netto-Vorteil",
+      "charts": {
+        "cumulativeCost": {
+          "title": "Kostenvergleich kumuliert",
+          "ariaLabel": "Kumulierter Kostenvergleich图表 zeigt Miete-vs-Kauf-Kosten über Zeit"
+        },
+        "equityGrowth": {
+          "title": "Eigenkapital- und Immobilienwertwachstum",
+          "ariaLabel": "Eigenkapital- und Immobilienwertwachstum über Zeit"
+        }
+      }
+    }
+  },
   "neighborhood": {
     "title": "Neighborhood Insights",
     "score": {

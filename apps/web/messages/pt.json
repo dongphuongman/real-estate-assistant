@@ -298,6 +298,69 @@
       "totalCashFlow": "Total Monthly Cash Flow"
     }
   },
+  "rentVsBuy": {
+    "title": "Calculadora Alugar vs Comprar",
+    "description": "Compare alugar e comprar ao longo do tempo com análise de ponto de equilíbrio.",
+    "emptyHint": "Insira detalhes da propriedade e aluguel atual para ver a comparação.",
+    "analyzeButton": "Comparar Alugar com Comprar",
+    "error": {
+      "title": "Análise falhou",
+      "retry": "Tentar novamente"
+    },
+    "form": {
+      "propertyRent": "Propriedade e Aluguel",
+      "propertyPrice": "Preço da propriedade ($)",
+      "monthlyRent": "Aluguel mensal ($)",
+      "advancedOptions": "Opções avançadas",
+      "showAdvanced": "Mostrar opções avançadas",
+      "hideAdvanced": "Ocultar opções avançadas",
+      "mortgageDetails": "Detalhes da hipoteca",
+      "downPayment": "Entrada (%)",
+      "interestRate": "Taxa de juros (%)",
+      "loanTerm": "Prazo do empréstimo (anos)",
+      "ownershipCosts": "Custos de propriedade",
+      "annualPropertyTax": "Imposto anual sobre propriedade ($)",
+      "annualInsurance": "Seguro anual ($)",
+      "monthlyHoa": "HOA mensal ($)",
+      "maintenancePercent": "Manutenção (%)",
+      "appreciationRate": "Taxa de apreciação (%)",
+      "rentIncreaseRate": "Aumento do aluguel (%)",
+      "investmentReturnRate": "Retorno do investimento (%)",
+      "marginalTaxRate": "Alíquota marginal (%)",
+      "projectionYears": "Período de projeção (anos)"
+    },
+    "results": {
+      "title": "Resultados da análise",
+      "description": "Comparação abrangente entre alugar e comprar por {years} anos.",
+      "recommendation": "Recomendação",
+      "breakEvenAt": "Ponto de equilíbrio em {years} anos",
+      "buyingRecommended": "Compra recomendada",
+      "rentingRecommended": "Aluguel recomendado",
+      "dependsTimeline": "Depende do seu horizonte de tempo",
+      "monthlyMortgage": "Hipoteca mensal",
+      "monthlyRentInitial": "Aluguel mensal (inicial)",
+      "totalRentPaid": "Total de aluguel pago",
+      "totalOwnershipCost": "Custo total de propriedade",
+      "netBuyingAdvantage": "Vantagem líquida da compra",
+      "equityBuilt": "Capital próprio acumulado",
+      "advantageExplanation": "Positivo = comprar é financeiramente melhor. Negativo = alugar é melhor.",
+      "finalSummary": "Resumo final",
+      "finalPropertyValue": "Valor final da propriedade",
+      "totalEquityBuilt": "Capital próprio total acumulado",
+      "opportunityCost": "Custo de oportunidade",
+      "netAdvantage": "Vantagem líquida",
+      "charts": {
+        "cumulativeCost": {
+          "title": "Comparação de custos cumulativos",
+          "ariaLabel": "Gráfico de comparação de custos cumulativos mostrando custos de aluguel e compra ao longo do tempo"
+        },
+        "equityGrowth": {
+          "title": "Crescimento do capital próprio e valor da propriedade",
+          "ariaLabel": "Gráfico de crescimento do capital próprio e valor da propriedade ao longo do tempo"
+        }
+      }
+    }
+  },
   "neighborhood": {
     "title": "Neighborhood Insights",
     "score": {

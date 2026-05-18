@@ -298,6 +298,69 @@
       "totalCashFlow": "Total Monthly Cash Flow"
     }
   },
+  "rentVsBuy": {
+    "title": "Калькулятор Оренда vs Купівля",
+    "description": "Порівняйте оренду та купівлю у часі з аналізом точки беззбитковості.",
+    "emptyHint": "Введіть деталі нерухомості та поточну оренду, щоб побачити порівняння.",
+    "analyzeButton": "Порівняти оренду з купівлею",
+    "error": {
+      "title": "Аналіз не вдався",
+      "retry": "Спробувати знову"
+    },
+    "form": {
+      "propertyRent": "Нерухомість та оренда",
+      "propertyPrice": "Вартість нерухомості ($)",
+      "monthlyRent": "Щомісячна оренда ($)",
+      "advancedOptions": "Розширені опції",
+      "showAdvanced": "Показати розширені опції",
+      "hideAdvanced": "Приховати розширені опції",
+      "mortgageDetails": "Деталі іпотеки",
+      "downPayment": "Початковий внесок (%)",
+      "interestRate": "Процентна ставка (%)",
+      "loanTerm": "Термін кредіту (років)",
+      "ownershipCosts": "Витрати на власність",
+      "annualPropertyTax": "Річний податок на нерухомість ($)",
+      "annualInsurance": "Річне страхування ($)",
+      "monthlyHoa": "Щомісячні ОСБ ($)",
+      "maintenancePercent": "Обслуговування (%)",
+      "appreciationRate": "Зростання вартості (%)",
+      "rentIncreaseRate": "Зростання оренди (%)",
+      "investmentReturnRate": "Дохідність інвестицій (%)",
+      "marginalTaxRate": "Гранична ставка податку (%)",
+      "projectionYears": "Період прогнозу (років)"
+    },
+    "results": {
+      "title": "Результати аналізу",
+      "description": "Всеосяжне порівняння оренди та купівлі за {years} років.",
+      "recommendation": "Рекомендація",
+      "breakEvenAt": "Точка беззбитковості через {years} років",
+      "buyingRecommended": "Рекомендується купівля",
+      "rentingRecommended": "Рекомендується оренда",
+      "dependsTimeline": "Залежить від вашого часового горизонту",
+      "monthlyMortgage": "Щомісячна іпотека",
+      "monthlyRentInitial": "Щомісячна оренда (початкова)",
+      "totalRentPaid": "Всього сплачено оренди",
+      "totalOwnershipCost": "Загальні витрати на власність",
+      "netBuyingAdvantage": "Чистий дохід від купівлі",
+      "equityBuilt": "Накопичений власний капітал",
+      "advantageExplanation": "Позитивно = купівля фінансово вигідніша. Негативно = оренда краща.",
+      "finalSummary": "Підсумковий звіт",
+      "finalPropertyValue": "Кінцева вартість нерухомості",
+      "totalEquityBuilt": "Загальний накопичений власний капітал",
+      "opportunityCost": "Альтернативні витрати",
+      "netAdvantage": "Чистий дохід",
+      "charts": {
+        "cumulativeCost": {
+          "title": "Порівняння накопичених витрат",
+          "ariaLabel": "Графік порівняння накопичених витрат, що показує витрати на оренду та купівлю у часі"
+        },
+        "equityGrowth": {
+          "title": "Зростання власного капіталу та вартості нерухомості",
+          "ariaLabel": "Графік зростання власного капіталу та вартості нерухомості у часі"
+        }
+      }
+    }
+  },
   "neighborhood": {
     "title": "Neighborhood Insights",
     "score": {
