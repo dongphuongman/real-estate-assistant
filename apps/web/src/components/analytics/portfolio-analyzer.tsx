@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -14,30 +15,10 @@ import {
 } from '@/components/ui/select';
 import { analyzePortfolio, ApiError } from '@/lib/api';
 import type { PortfolioAnalysisResult, PropertyHolding } from '@/lib/types';
+import { extractErrorState, type ErrorState } from '@/lib/error-utils';
 import { Loader2, AlertCircle, RefreshCw, PieChart, Plus, Trash2, Building2 } from 'lucide-react';
 import { DiversificationChart } from './charts/diversification-chart';
 import { RiskGauge } from './charts/risk-gauge';
-
-interface ErrorState {
-  message: string;
-  requestId?: string;
-}
-
-const extractErrorState = (err: unknown): ErrorState => {
-  let message = 'Unknown error';
-  let requestId: string | undefined = undefined;
-
-  if (err instanceof ApiError) {
-    message = err.message;
-    requestId = err.request_id;
-  } else if (err instanceof Error) {
-    message = err.message;
-  } else {
-    message = String(err);
-  }
-
-  return { message, requestId };
-};
 
 const PROPERTY_TYPES = ['apartment', 'house', 'condo', 'townhouse', 'multi_family', 'commercial'];
 
@@ -51,6 +32,7 @@ const emptyProperty: Omit<PropertyHolding, 'property_id'> = {
 };
 
 export function PortfolioAnalyzer() {
+  const t = useTranslations('portfolio');
   const [loading, setLoading] = useState(false);
   const [errorState, setErrorState] = useState<ErrorState | null>(null);
   const [result, setResult] = useState<PortfolioAnalysisResult | null>(null);
@@ -135,9 +117,7 @@ export function PortfolioAnalyzer() {
           role="status"
           aria-live="polite"
         >
-          <p className="text-sm text-muted-foreground">
-            Add multiple properties below to generate a comprehensive portfolio analysis.
-          </p>
+          <p className="text-sm text-muted-foreground">{t('emptyHint')}</p>
         </div>
       )}
 
@@ -146,15 +126,13 @@ export function PortfolioAnalyzer() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>Properties</span>
+              <span>{t('addProperty')}</span>
               <Button type="button" variant="outline" size="sm" onClick={addProperty}>
                 <Plus className="h-4 w-4 mr-1" aria-hidden="true" />
-                Add Property
+                {t('addProperty')}
               </Button>
             </CardTitle>
-            <CardDescription>
-              Add your investment properties to analyze portfolio performance.
-            </CardDescription>
+            <CardDescription>{t('emptyHint')}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleAnalyze} className="space-y-6">
@@ -163,7 +141,7 @@ export function PortfolioAnalyzer() {
                   <div className="flex items-center justify-between">
                     <h4 className="text-sm font-semibold flex items-center gap-2">
                       <Building2 className="h-4 w-4" aria-hidden="true" />
-                      Property {index + 1}
+                      {t('propertyLabel')} {index + 1}
                     </h4>
                     {properties.length > 1 && (
                       <Button
@@ -179,7 +157,7 @@ export function PortfolioAnalyzer() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor={`price-${property.id}`}>Property Price ($)</Label>
+                      <Label htmlFor={`price-${property.id}`}>{t('propertyPrice')}</Label>
                       <Input
                         id={`price-${property.id}`}
                         type="number"
@@ -196,7 +174,7 @@ export function PortfolioAnalyzer() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor={`rent-${property.id}`}>Monthly Rent ($)</Label>
+                      <Label htmlFor={`rent-${property.id}`}>{t('monthlyRent')}</Label>
                       <Input
                         id={`rent-${property.id}`}
                         type="number"
@@ -212,7 +190,7 @@ export function PortfolioAnalyzer() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor={`cashflow-${property.id}`}>Monthly Cash Flow ($)</Label>
+                      <Label htmlFor={`cashflow-${property.id}`}>{t('monthlyCashFlow')}</Label>
                       <Input
                         id={`cashflow-${property.id}`}
                         type="number"
@@ -227,7 +205,7 @@ export function PortfolioAnalyzer() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor={`caprate-${property.id}`}>Cap Rate (%)</Label>
+                      <Label htmlFor={`caprate-${property.id}`}>{t('capRate')}</Label>
                       <Input
                         id={`caprate-${property.id}`}
                         type="number"
@@ -241,17 +219,17 @@ export function PortfolioAnalyzer() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor={`city-${property.id}`}>City</Label>
+                      <Label htmlFor={`city-${property.id}`}>{t('city')}</Label>
                       <Input
                         id={`city-${property.id}`}
                         type="text"
                         value={property.city}
                         onChange={(e) => updateProperty(property.id, 'city', e.target.value)}
-                        placeholder="Berlin"
+                        placeholder={t('cityPlaceholder')}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor={`type-${property.id}`}>Property Type</Label>
+                      <Label htmlFor={`type-${property.id}`}>{t('propertyType')}</Label>
                       <Select
                         value={property.property_type}
                         onValueChange={(value) =>
@@ -259,7 +237,7 @@ export function PortfolioAnalyzer() {
                         }
                       >
                         <SelectTrigger id={`type-${property.id}`}>
-                          <SelectValue placeholder="Select type" />
+                          <SelectValue placeholder={t('selectType')} />
                         </SelectTrigger>
                         <SelectContent>
                           {PROPERTY_TYPES.map((type) => (
@@ -277,7 +255,7 @@ export function PortfolioAnalyzer() {
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
                 <PieChart className="mr-2 h-4 w-4" aria-hidden="true" />
-                Analyze Portfolio
+                {t('analyzeButton')}
               </Button>
 
               {/* Error state */}
@@ -292,7 +270,7 @@ export function PortfolioAnalyzer() {
                       aria-hidden="true"
                     />
                     <div className="flex-1">
-                      <p className="text-sm text-destructive font-medium">Analysis failed</p>
+                      <p className="text-sm text-destructive font-medium">{t('analysisFailed')}</p>
                       <p className="text-sm text-destructive/90 mt-1">{errorState.message}</p>
                     </div>
                   </div>
@@ -311,7 +289,7 @@ export function PortfolioAnalyzer() {
                       className="gap-2 ml-auto"
                     >
                       <RefreshCw className="h-3 w-3" aria-hidden="true" />
-                      Retry
+                      {t('retry')}
                     </Button>
                   </div>
                 </div>
@@ -326,23 +304,23 @@ export function PortfolioAnalyzer() {
             {/* Portfolio Metrics */}
             <Card>
               <CardHeader>
-                <CardTitle>Portfolio Metrics</CardTitle>
-                <CardDescription>Aggregate performance metrics for your portfolio</CardDescription>
+                <CardTitle>{t('results.metricsTitle')}</CardTitle>
+                <CardDescription>{t('results.metricsDescription')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   <div className="text-center p-3 bg-muted/50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Total Properties</p>
+                    <p className="text-sm text-muted-foreground">{t('results.totalProperties')}</p>
                     <p className="text-2xl font-bold">{result.metrics.total_properties}</p>
                   </div>
                   <div className="text-center p-3 bg-muted/50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Total Value</p>
+                    <p className="text-sm text-muted-foreground">{t('results.totalValue')}</p>
                     <p className="text-2xl font-bold">
                       ${(result.metrics.total_value / 1000000).toFixed(2)}M
                     </p>
                   </div>
                   <div className="text-center p-3 bg-muted/50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Annual Cash Flow</p>
+                    <p className="text-sm text-muted-foreground">{t('results.annualCashFlow')}</p>
                     <p
                       className={`text-2xl font-bold ${result.metrics.total_annual_cash_flow >= 0 ? 'text-green-600' : 'text-red-600'}`}
                     >
@@ -353,19 +331,19 @@ export function PortfolioAnalyzer() {
                     </p>
                   </div>
                   <div className="text-center p-3 bg-muted/50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Avg Cap Rate</p>
+                    <p className="text-sm text-muted-foreground">{t('results.avgCapRate')}</p>
                     <p className="text-2xl font-bold">
                       {result.metrics.weighted_avg_cap_rate.toFixed(2)}%
                     </p>
                   </div>
                   <div className="text-center p-3 bg-muted/50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Avg Yield</p>
+                    <p className="text-sm text-muted-foreground">{t('results.avgYield')}</p>
                     <p className="text-2xl font-bold">
                       {result.metrics.weighted_avg_yield.toFixed(2)}%
                     </p>
                   </div>
                   <div className="text-center p-3 bg-muted/50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Cash on Cash</p>
+                    <p className="text-sm text-muted-foreground">{t('results.cashOnCash')}</p>
                     <p className="text-2xl font-bold">
                       {result.performance.cash_on_cash_return.toFixed(2)}%
                     </p>
