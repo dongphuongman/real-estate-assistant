@@ -96,7 +96,7 @@ export default function AgentsPage({ params }: { params: Promise<{ locale: strin
   const clearFilters = () => {
     setLocalCity('');
     setLocalSpecialty('');
-    setLocalMinRating('');
+    setLocalMinRating('any');
     setLocalSortBy('rating');
     setFilters({
       sort_by: 'rating',
