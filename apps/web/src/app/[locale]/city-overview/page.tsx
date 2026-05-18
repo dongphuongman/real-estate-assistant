@@ -3,7 +3,11 @@
 import { useEffect, useState, useMemo } from 'react';
 import { MapPin, Building2, DollarSign, AlertCircle, Loader2 } from 'lucide-react';
 import { searchProperties } from '@/lib/api';
-import { extractMapPoints, type PropertyMapPoint } from '@/components/search/property-map-utils';
+import {
+  computeCenter,
+  extractMapPoints,
+  type PropertyMapPoint,
+} from '@/components/search/property-map-utils';
 import dynamic from 'next/dynamic';
 
 const PropertyMapboxMap = dynamic(() => import('@/components/search/property-mapbox-map'), {
@@ -34,7 +38,7 @@ const POPULAR_CITIES = [
 ];
 
 export default function CityOverviewPage() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cityStats, setCityStats] = useState<CityStats[]>([]);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
@@ -44,50 +48,48 @@ export default function CityOverviewPage() {
       setLoading(true);
       setError(null);
 
-      const stats: CityStats[] = [];
-
-      for (const city of POPULAR_CITIES) {
-        try {
+      const results = await Promise.allSettled(
+        POPULAR_CITIES.map(async (city) => {
           const response = await searchProperties({
             query: `properties in ${city}`,
             limit: 100,
           });
+          return { city, response };
+        })
+      );
 
-          if (response.results.length > 0) {
-            const points = extractMapPoints(response.results);
-            const prices = points
-              .map((p) => p.price)
-              .filter((p): p is number => typeof p === 'number');
+      const stats: CityStats[] = [];
 
-            const center =
-              points.length > 0
-                ? { lat: points[0].lat, lon: points[0].lon }
-                : { lat: 52.2297, lon: 21.0122 };
+      for (const result of results) {
+        if (result.status === 'rejected') continue;
 
-            stats.push({
-              city,
-              country: response.results[0].property.country || 'Poland',
-              propertyCount: response.results.length,
-              avgPrice:
-                prices.length > 0
-                  ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length)
-                  : 0,
-              minPrice: prices.length > 0 ? Math.min(...prices) : 0,
-              maxPrice: prices.length > 0 ? Math.max(...prices) : 0,
-              points,
-              center,
-            });
-          }
-        } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-          console.error(`Failed to load data for ${city}:`, err);
-          // Set error state so user sees the error UI
-          setError(`Failed to load data for ${city}: ${errorMessage}`);
-          break; // Stop processing remaining cities on error
-        }
+        const { city, response } = result.value;
+        if (response.results.length === 0) continue;
+
+        const points = extractMapPoints(response.results);
+        const prices = points.map((p) => p.price).filter((p): p is number => typeof p === 'number');
+
+        const center = computeCenter(points) ?? { lat: 52.2297, lon: 21.0122 };
+
+        stats.push({
+          city,
+          country: response.results[0].property.country || 'Poland',
+          propertyCount: response.results.length,
+          avgPrice:
+            prices.length > 0 ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0,
+          minPrice: prices.length > 0 ? prices.reduce((a, b) => Math.min(a, b)) : 0,
+          maxPrice: prices.length > 0 ? prices.reduce((a, b) => Math.max(a, b)) : 0,
+          points,
+          center,
+        });
       }
 
       setCityStats(stats.sort((a, b) => b.propertyCount - a.propertyCount));
+      if (stats.length === 0) {
+        setError(
+          'No city data available. The property database may be empty or the API is unreachable.'
+        );
+      }
       setLoading(false);
     };
 
@@ -135,22 +137,29 @@ export default function CityOverviewPage() {
         )}
 
         {/* Error state */}
-        {error && !loading && (
+        {error && !loading && cityStats.length === 0 && (
           <div
-            className="flex flex-col items-center justify-center h-96 text-center border rounded-lg bg-destructive/10"
+            className="flex flex-col items-center justify-center h-96 text-center border rounded-lg bg-muted/50"
             role="alert"
             aria-live="assertive"
           >
-            <div className="p-4 rounded-full bg-destructive/20 mb-4">
-              <AlertCircle className="h-12 w-12 text-destructive" aria-hidden="true" />
+            <div className="p-4 rounded-full bg-muted mb-4">
+              <AlertCircle className="h-12 w-12 text-muted-foreground" aria-hidden="true" />
             </div>
-            <h2 className="text-2xl font-bold mb-2 text-destructive">Failed to Load City Data</h2>
-            <p className="text-destructive/90 max-w-md mb-4">{error}</p>
+            <h2 className="text-2xl font-bold mb-2">No City Data Available</h2>
+            <p className="text-muted-foreground max-w-md mb-4">{error}</p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              Retry
+            </button>
           </div>
         )}
 
         {/* Main content */}
-        {!loading && !error && (
+        {!loading && cityStats.length > 0 && (
           <>
             {/* Map with all cities */}
             {allPoints.length > 0 && (

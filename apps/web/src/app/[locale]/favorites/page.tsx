@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { FolderPlus, Heart, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useLocale } from 'next-intl';
 
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,6 +11,7 @@ import { PropertyCard } from '@/components/property';
 import { Button } from '@/components/ui/button';
 
 export default function FavoritesPage() {
+  const locale = useLocale();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const {
     favorites,
@@ -57,7 +59,7 @@ export default function FavoritesPage() {
           <p className="text-muted-foreground mb-6">
             Save properties you love and access them from any device.
           </p>
-          <Link href="/auth/login">
+          <Link href={`/${locale}/auth/login`}>
             <Button>Sign In</Button>
           </Link>
         </div>
@@ -163,7 +165,7 @@ export default function FavoritesPage() {
                 <p className="text-sm text-muted-foreground mt-2 max-w-sm">
                   Click the heart icon on any property to save it here.
                 </p>
-                <Link href="/search">
+                <Link href={`/${locale}/search`}>
                   <Button variant="outline" className="mt-4">
                     Browse Properties
                   </Button>
