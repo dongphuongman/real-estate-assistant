@@ -49,41 +49,41 @@ export default function AnalyticsPage() {
         </p>
       </div>
 
-      <div className="grid gap-8">
-        <section>
-          <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+      <div className="space-y-12">
+        <section className="rounded-lg border bg-card p-6">
+          <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
             <BarChart3 className="h-6 w-6" />
             Mortgage Calculator
           </h2>
           <MortgageCalculator />
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+        <section className="rounded-lg border bg-card p-6">
+          <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
             <TrendingUp className="h-6 w-6" />
             Investment Property Analyzer
           </h2>
           <InvestmentAnalyzer />
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+        <section className="rounded-lg border bg-card p-6">
+          <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
             <Calculator className="h-6 w-6" />
             Advanced Investment Analytics
           </h2>
           <AdvancedInvestmentAnalyzer />
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+        <section className="rounded-lg border bg-card p-6">
+          <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
             <PieChart className="h-6 w-6" />
             Portfolio Analyzer
           </h2>
           <PortfolioAnalyzer />
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+        <section className="rounded-lg border bg-card p-6">
+          <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
             <Scale className="h-6 w-6" />
             Rent vs Buy Calculator
           </h2>

@@ -17,16 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { calculateRentVsBuy, ApiError } from '@/lib/api';
 import { RentVsBuyResult } from '@/lib/types';
-import {
-  Loader2,
-  AlertCircle,
-  RefreshCw,
-  Home,
-  Building,
-  ChevronDown,
-  ChevronUp,
-  TrendingUp,
-} from 'lucide-react';
+import { Loader2, AlertCircle, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ErrorState {
   message: string;
@@ -167,24 +158,14 @@ export function RentVsBuyCalculator() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      {/* Empty state guidance */}
+      {/* Empty state hint */}
       {!result && !errorState && !loading && (
         <div
-          className="col-span-full lg:col-span-2 rounded-lg border bg-muted/30 p-6 text-center"
+          className="col-span-full lg:col-span-2 rounded-lg border bg-muted/30 p-4 text-center"
           role="status"
           aria-live="polite"
         >
-          <div className="flex justify-center mb-3">
-            <div className="p-3 rounded-full bg-primary/10">
-              <TrendingUp className="h-8 w-8 text-primary" aria-hidden="true" />
-            </div>
-          </div>
-          <h3 className="text-lg font-semibold mb-2">Rent vs Buy Calculator</h3>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto mb-3">
-            Compare the financial implications of renting vs buying over time with break-even
-            analysis, opportunity costs, and tax benefits.
-          </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Enter property details and current rent to see the comparison.
           </p>
         </div>
@@ -193,10 +174,7 @@ export function RentVsBuyCalculator() {
       {/* Calculator Form */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Home className="h-5 w-5" aria-hidden="true" />
-            Rent vs Buy Calculator
-          </CardTitle>
+          <CardTitle>Rent vs Buy Calculator</CardTitle>
           <CardDescription>
             Compare renting vs buying over time with break-even analysis.
           </CardDescription>
@@ -475,10 +453,7 @@ export function RentVsBuyCalculator() {
       {result && (
         <Card className="lg:row-span-2">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building className="h-5 w-5" aria-hidden="true" />
-              Analysis Results
-            </CardTitle>
+            <CardTitle>Analysis Results</CardTitle>
             <CardDescription>
               Comprehensive rent vs buy comparison over {result.yearly_breakdown.length} years.
             </CardDescription>

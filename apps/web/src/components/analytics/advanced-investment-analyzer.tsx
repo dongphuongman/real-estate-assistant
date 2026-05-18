@@ -15,7 +15,6 @@ import {
   TrendingUp,
   ChevronDown,
   ChevronUp,
-  Calculator,
   Download,
 } from 'lucide-react';
 import { CashFlowChart } from './charts/cash-flow-chart';
@@ -174,24 +173,14 @@ export function AdvancedInvestmentAnalyzer() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Empty state hint */}
       {!result && !errorState && !loading && (
         <div
-          className="rounded-lg border bg-muted/30 p-6 text-center"
+          className="rounded-lg border bg-muted/30 p-4 text-center"
           role="status"
           aria-live="polite"
         >
-          <div className="flex justify-center mb-3">
-            <div className="p-3 rounded-full bg-primary/10">
-              <Calculator className="h-8 w-8 text-primary" aria-hidden="true" />
-            </div>
-          </div>
-          <h3 className="text-lg font-semibold mb-2">Advanced Investment Analytics</h3>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto mb-3">
-            Comprehensive analysis with cash flow projections, tax implications, appreciation
-            scenarios, and risk assessment.
-          </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Enter property details below to generate multi-year projections and risk analysis.
           </p>
         </div>

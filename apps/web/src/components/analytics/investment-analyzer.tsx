@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { calculateInvestment, ApiError } from '@/lib/api';
 import { InvestmentAnalysisResult } from '@/lib/types';
-import { Loader2, AlertCircle, RefreshCw, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, AlertCircle, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ErrorState {
   message: string;
@@ -128,20 +128,11 @@ export function InvestmentAnalyzer() {
       {/* Empty state guidance */}
       {!result && !errorState && !loading && (
         <div
-          className="col-span-full md:col-span-2 rounded-lg border bg-muted/30 p-6 text-center"
+          className="col-span-full md:col-span-2 rounded-lg border bg-muted/30 p-4 text-center"
           role="status"
           aria-live="polite"
         >
-          <div className="flex justify-center mb-3">
-            <div className="p-3 rounded-full bg-primary/10">
-              <TrendingUp className="h-8 w-8 text-primary" aria-hidden="true" />
-            </div>
-          </div>
-          <h3 className="text-lg font-semibold mb-2">{t('title')}</h3>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto mb-3">
-            {t('emptyDescription')}
-          </p>
-          <p className="text-xs text-muted-foreground">{t('emptyHint')}</p>
+          <p className="text-sm text-muted-foreground">{t('emptyHint')}</p>
         </div>
       )}
 

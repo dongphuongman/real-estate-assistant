@@ -12,7 +12,6 @@ import {
   Loader2,
   AlertCircle,
   RefreshCw,
-  Calculator,
   ChevronDown,
   ChevronUp,
   Scale,
@@ -120,20 +119,11 @@ export function MortgageCalculator() {
       {/* STATE 1: Empty state - guidance before calculation */}
       {!result && !errorState && !loading && (
         <div
-          className="col-span-full md:col-span-2 rounded-lg border bg-muted/30 p-6 text-center"
+          className="col-span-full md:col-span-2 rounded-lg border bg-muted/30 p-4 text-center"
           role="status"
           aria-live="polite"
         >
-          <div className="flex justify-center mb-3">
-            <div className="p-3 rounded-full bg-primary/10">
-              <Calculator className="h-8 w-8 text-primary" aria-hidden="true" />
-            </div>
-          </div>
-          <h3 className="text-lg font-semibold mb-2">{t('title')}</h3>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto mb-3">
-            {t('emptyDescription')}
-          </p>
-          <p className="text-xs text-muted-foreground">{t('emptyHint')}</p>
+          <p className="text-sm text-muted-foreground">{t('emptyHint')}</p>
         </div>
       )}
 
@@ -197,34 +187,32 @@ export function MortgageCalculator() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
-              {t('calculate')}
-            </Button>
-
             {/* TCO Options Toggle */}
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => setShowTcoOptions(!showTcoOptions)}
-            >
-              {showTcoOptions ? (
-                <>
-                  <ChevronUp className="mr-2 h-4 w-4" />
-                  {t('hideTcoOptions')}
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="mr-2 h-4 w-4" />
-                  {t('showTcoOptions')}
-                </>
-              )}
-            </Button>
+            <div className="pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => setShowTcoOptions(!showTcoOptions)}
+                aria-expanded={showTcoOptions}
+              >
+                {showTcoOptions ? (
+                  <>
+                    <ChevronUp className="mr-2 h-4 w-4" aria-hidden="true" />
+                    {t('hideTcoOptions')}
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="mr-2 h-4 w-4" aria-hidden="true" />
+                    {t('showTcoOptions')}
+                  </>
+                )}
+              </Button>
+            </div>
 
             {/* TCO Input Fields */}
             {showTcoOptions && (
-              <div className="space-y-4 pt-4 border-t">
+              <div className="space-y-4 pt-4">
                 <h4 className="text-sm font-semibold">{t('tcoOptionsTitle')}</h4>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -317,6 +305,11 @@ export function MortgageCalculator() {
                 </div>
               </div>
             )}
+
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
+              {t('calculate')}
+            </Button>
 
             {/* STATE 3: Error state with request_id and retry */}
             {errorState && (
