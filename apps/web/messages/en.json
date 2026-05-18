@@ -418,6 +418,69 @@
       }
     }
   },
+  "rentVsBuy": {
+    "title": "Rent vs Buy Calculator",
+    "description": "Compare renting vs buying over time with break-even analysis.",
+    "emptyHint": "Enter property details and current rent to see the comparison.",
+    "analyzeButton": "Compare Rent vs Buy",
+    "error": {
+      "title": "Analysis failed",
+      "retry": "Retry"
+    },
+    "form": {
+      "propertyRent": "Property & Rent Information",
+      "propertyPrice": "Property Price ($)",
+      "monthlyRent": "Monthly Rent ($)",
+      "advancedOptions": "Advanced Options",
+      "showAdvanced": "Show Advanced Options",
+      "hideAdvanced": "Hide Advanced Options",
+      "mortgageDetails": "Mortgage Details",
+      "downPayment": "Down Payment (%)",
+      "interestRate": "Interest Rate (%)",
+      "loanTerm": "Loan Term (Years)",
+      "ownershipCosts": "Ownership Costs",
+      "annualPropertyTax": "Annual Property Tax ($)",
+      "annualInsurance": "Annual Insurance ($)",
+      "monthlyHoa": "Monthly HOA ($)",
+      "maintenancePercent": "Maintenance (%)",
+      "appreciationRate": "Appreciation Rate (%)",
+      "rentIncreaseRate": "Rent Increase Rate (%)",
+      "investmentReturnRate": "Investment Return Rate (%)",
+      "marginalTaxRate": "Marginal Tax Rate (%)",
+      "projectionYears": "Projection Years (Years)"
+    },
+    "results": {
+      "title": "Analysis Results",
+      "description": "Comprehensive rent vs buy comparison over {years} years.",
+      "recommendation": "Recommendation",
+      "breakEvenAt": "Break-even at {years} years",
+      "buyingRecommended": "Buying Recommended",
+      "rentingRecommended": "Renting Recommended",
+      "dependsTimeline": "Depends on Your Timeline",
+      "monthlyMortgage": "Monthly Mortgage",
+      "monthlyRentInitial": "Monthly Rent (Initial)",
+      "totalRentPaid": "Total Rent Paid",
+      "totalOwnershipCost": "Total Ownership Cost",
+      "netBuyingAdvantage": "Net Buying Advantage",
+      "equityBuilt": "Equity Built",
+      "advantageExplanation": "Positive = buying is financially better. Negative = renting is better.",
+      "finalSummary": "Final Summary",
+      "finalPropertyValue": "Final Property Value",
+      "totalEquityBuilt": "Total Equity Built",
+      "opportunityCost": "Opportunity Cost",
+      "netAdvantage": "Net Advantage",
+      "charts": {
+        "cumulativeCost": {
+          "title": "Cumulative Cost Comparison",
+          "ariaLabel": "Cumulative cost comparison chart showing rent vs buy costs over time"
+        },
+        "equityGrowth": {
+          "title": "Equity & Property Value Growth",
+          "ariaLabel": "Equity and property value growth chart over time"
+        }
+      }
+    }
+  },
   "portfolio": {
     "title": "Portfolio Analyzer",
     "description": "Analyze multiple properties as a portfolio.",
