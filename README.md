@@ -97,9 +97,9 @@ Run the full demo locally with comprehensive mock data in minutes:
 
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/AleksNeStu/ai-real-estate-assistant/dev/assets/screenshots/slideshow.gif" alt="App slideshow — slide through all screens" width="640"/>
+<img src="docs/screenshots/demo-flow.gif" alt="App demo — Homepage · Search · Chat · Agents" width="640"/>
 
-*Home · Search · Assistant · Analytics · Agents · Knowledge · Sign In · Sign Up*
+*Homepage · Search · Chat · Agents · Analytics*
 
 </div>
 
