@@ -5,6 +5,94 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.7] - 2026-06-05
+
+### Fixed
+
+- **v5.0.6 image was broken at startup.** `langchain-community==0.4.2`
+  moved `ChatOllama` out of `langchain_community.chat_models` into the
+  standalone `langchain-ollama` package. The v5.0.6 source still had
+  `from langchain_community.chat_models import ChatOllama`, so the
+  container crashed with `ImportError` on every boot. Fix:
+  - `apps/api/models/providers/ollama.py`: import now from
+    `langchain_ollama`
+  - `apps/api/requirements.txt`: add `langchain-ollama>=0.0.1,<1.0.0`
+
+### Added
+
+- `.github/workflows/publish-ghcr.yml`: new `Smoke-test backend image`
+  step that boots the just-built image and polls `/health` for 40s
+  before declaring the publish-backend job successful. Catches
+  future "installs cleanly, crashes at startup" class bugs at CI
+  time instead of at customer-deploy time. ~10s of CI cost.
+
+## [5.0.6] - 2026-06-04
+
+### Security
+
+- Close all 75 open GitHub CodeQL code-scanning alerts on the
+  `AleksNeStu/ai-real-estate-assistant` public repo:
+  - `py/partial-ssrf` (2, critical) — explicit `float()` cast on lat/lon
+    in URL interpolation, plus existing allowlist + IP-range guard
+  - `py/weak-sensitive-data-hashing` (3, high) — new `hash_fingerprint`
+    in `core/security_utils.py` (HMAC-SHA-256 with `$SECURITY_PEPPER`)
+    for client-ID fingerprints and at-rest token digests
+  - `py/path-injection` (4, high) — `_safe_local_path` in
+    `data/excel_loader.py` validates every local file path against
+    `ALLOWED_BASE_DIRS` (env-overridable via `EXCEL_ALLOWED_BASE_DIR`)
+  - `py/clear-text-logging-sensitive-data` (1, high) — pass station
+    name through `redact_sensitive_data` before logging in
+    `data/adapters/air_quality_adapter.py`
+  - `py/log-injection` (65, medium) — wrap every user-controlled
+    value in `sanitize_for_log` / `sanitize_for_logging` across 22
+    modules; imports added where missing
+
+### Notes
+
+- Alerts were dismissed in CodeQL with reason `false positive` because
+  the custom sanitizer is in place at the call site but CodeQL's
+  taint analysis does not recognize `core.security_utils.sanitize_for_log`
+  or `utils.sanitization.sanitize_for_logging` as barriers. The
+  actual data flow is blocked by the sanitizer.
+
+## [5.0.5] - 2026-06-04
+
+### Security
+
+- Bump starlette 1.0.0 → 1.2.1 (CVE-2026-48710) — missing Host header
+  validation could poison `request.url.path` and bypass path-based
+  security checks
+- Dedupe postcss via npm `overrides: ^8.5.10` (CVE-2026-41305) — the
+  vulnerable copy was `next@16.2.6/node_modules/postcss` (< 8.5.10);
+  now resolves to 8.5.15 alongside the top-level install. `npm audit`
+  reports 0 vulnerabilities
+
+## [5.0.4] - 2026-06-04
+
+### Security
+
+- Log injection remediation: add `core/security_utils.py` (`sanitize_for_log`,
+  `validate_file_path`, `validate_osrm_url`, `hash_sensitive_data`, `SecureLogger`)
+  and replace 301 unsafe f-string logger calls across 61 backend files with
+  parameterized %-format + sanitization
+- Bump urllib3 2.6.3 → 2.7.0 (CVE-2026-44432, CVE-2026-44431)
+- Bump pillow 12.1.1 → 12.2.0 (CVE-2026-42311, CVE-2026-42310, CVE-2026-42308,
+  CVE-2026-42309, CVE-2026-40192)
+- Bump cryptography 43.0.3 → 46.0.7 (CVE-2026-26007, CVE-2026-34073,
+  CVE-2024-12797) — 3 major versions; verified `data_protection.py` still
+  works with Fernet + PBKDF2HMAC APIs
+- Bump anthropic 0.86.0 → 0.105.2 (CVE-2026-34452, CVE-2026-34450)
+- Bump pytest 9.0.2 → 9.0.3 (CVE-2025-71176)
+- Bump tmp 0.1.0 → 0.2.7 and add npm `overrides` to dedupe transitive copies
+  in `@lhci/cli` and `external-editor` (CVE-2025-54798)
+
+### Notes
+
+- The Dependabot alert for `postcss` (CVE-2026-41305) remains open because the
+  vulnerable copy is `next/node_modules/postcss` (a transitive of `next@16.2.6`),
+  not a direct dep. The top-level `postcss@8.5.14` is already patched; closing
+  the alert requires bumping `next` (out of scope for this security-only push).
+
 ## [5.0.3] - 2026-05-24
 
 ### Fixed

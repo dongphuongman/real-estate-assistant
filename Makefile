@@ -2,14 +2,15 @@
 # Quick commands for development, testing, and CI/CD
 #
 # Usage:
-#   make help        - Show all available targets
-#   make security    - Run security scans
-#   make test        - Run all tests
-#   make lint        - Run linting
-#   make dev         - Start development servers
-#   make docker-up   - Start Docker containers
-#   make docker-down - Stop Docker containers
-#   make ci          - Run full CI locally
+#   make help         - Show all available targets
+#   make security     - Run security scans
+#   make check-deps   - Verify Python dependencies resolve (run before tagging)
+#   make test         - Run all tests
+#   make lint         - Run linting
+#   make dev          - Start development servers
+#   make docker-up    - Start Docker containers
+#   make docker-down  - Stop Docker containers
+#   make ci           - Run full CI locally
 
 # Variables
 PYTHON := python
@@ -84,6 +85,13 @@ security:
 ## security-quick: Run quick security scan (skip pip-audit)
 security-quick:
 	$(PYTHON) $(SCRIPTS_DIR)/security/local_scan.py --quick
+
+## check-deps: Verify Python deps in apps/api/requirements.txt actually resolve.
+## Run this BEFORE pushing any v* tag. Exits 1 on unsatisfiable constraints,
+## so a v5.0.7 protobuf-style regression cannot reach the GHCR publish
+## step. Cheap (~10s) because pip only resolves, doesn't install.
+check-deps:
+	cd apps/api && $(PYTHON) -m pip install --dry-run -r requirements.txt
 
 ## security-pre-push: Quick security check for pre-push (semgrep errors only)
 security-pre-push:

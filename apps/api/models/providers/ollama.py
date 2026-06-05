@@ -7,8 +7,8 @@ Supports local Llama, Mistral, Qwen, and other open-source models via Ollama.
 import os
 from typing import Any, Dict, List, Optional
 
-from langchain_community.chat_models import ChatOllama
 from langchain_core.language_models import BaseChatModel
+from langchain_ollama import ChatOllama
 
 from .base import (
     LocalModelProvider,

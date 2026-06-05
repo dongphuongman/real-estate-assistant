@@ -22,6 +22,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      # Catches unsatisfiable Python constraints (e.g. the v5.0.6
+      # protobuf-vs-google-generativeai conflict) before the slow
+      # buildx step wastes 3+ minutes. See commit 245885a for context.
+      - name: Check Python dependencies resolve
+        run: |
+          cd apps/api
+          python -m pip install --upgrade pip
+          python -m pip install --dry-run -r requirements.txt
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -54,6 +68,50 @@ jobs:
           platforms: linux/amd64,linux/arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      # Container smoke test: catch runtime import errors that pip
+      # resolution and `uv pip install` cannot detect. The v5.0.6
+      # image shipped with a broken `from langchain_community.chat_models
+      # import ChatOllama` — pip installed cleanly but the container
+      # crashed at startup. This step starts the image, hits /health,
+      # and tears it down. ~10s of CI time. See commits 9ea5a7e
+      # (v5.0.6) and the follow-up v5.0.7.
+      - name: Smoke-test backend image
+        if: github.event_name == 'push'
+        run: |
+          set -euo pipefail
+          IMAGE=$(echo "${{ steps.meta.outputs.tags }}" | head -1)
+          docker rm -f smoke-backend 2>/dev/null || true
+          docker run -d --name smoke-backend \
+            -e ENVIRONMENT=development \
+            -e API_ACCESS_KEY=dev-secret-key \
+            -e AUTH_JWT_ENABLED=false \
+            -e CACHE_ENABLED=false \
+            -e METRICS_ENABLED=false \
+            -e API_RATE_LIMIT_ENABLED=false \
+            -e CORS_ALLOW_ORIGINS=* \
+            -e INTERNET_ENABLED=false \
+            -e DEFAULT_PROVIDER=openai \
+            -e DEMO_MODE=true \
+            -e UPTIME_MONITOR_ENABLED=false \
+            -e SMTP_PROVIDER=disabled \
+            -e DATABASE_URL=sqlite+aiosqlite:///./data/smoke.db \
+            -e SEED_ON_STARTUP=false \
+            "$IMAGE"
+          # Container HEALTHCHECK polls /health every 30s; force a faster check.
+          for i in $(seq 1 20); do
+            sleep 2
+            code=$(docker exec smoke-backend curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/health || true)
+            if [ "$code" = "200" ]; then
+              echo "smoke-test PASSED: /health returned 200 after ${i}x2s"
+              docker rm -f smoke-backend >/dev/null
+              exit 0
+            fi
+          done
+          echo "smoke-test FAILED: /health never returned 200 in 40s" >&2
+          docker logs smoke-backend >&2 || true
+          docker rm -f smoke-backend >/dev/null
+          exit 1
 
   publish-frontend:
     runs-on: ubuntu-latest
