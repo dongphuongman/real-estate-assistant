@@ -20,6 +20,16 @@ COPY apps/api .
 RUN groupadd -r appuser && useradd -r -g appuser -d /app -s /sbin/nologin appuser && \
     chown -R appuser:appuser /app
 USER appuser
+# Pre-bundle the default fastembed embedding model so the container
+# boots without needing outbound HTTPS to HuggingFace at startup.
+# The default cache dir is $HOME/.cache/fastembed (= /app/.cache/fastembed,
+# since appuser's home is /app). Without this, the smoke-test in CI
+# (run 27007739447 for v5.0.7) failed because the CI runner blocks
+# HuggingFace egress. The download happens at build time when pip
+# already has internet for `uv pip install`, so the cost is ~30s of
+# build time and ~33 MB of image size.
+RUN python -c "from fastembed import TextEmbedding; TextEmbedding()" || \
+    echo "fastembed model pre-bundle failed (non-fatal: app still boots, embeddings will be unavailable)"
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app
 EXPOSE ${PORT:-8000}
