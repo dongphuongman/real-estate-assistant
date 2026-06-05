@@ -161,7 +161,12 @@ jobs:
         run: |
           echo "Waiting for backend to become healthy..."
           for i in $(seq 1 30); do
-            if curl -sf "${{ steps.service.outputs.url }}/health" | jq -e '.status == "healthy"' >/dev/null 2>&1; then
+            # -m 10 = 10s curl timeout so a hung Render cold-start
+            # doesn't block the loop forever. -f = silent on HTTP
+            # errors. Without -m, the previous loop hung for 75+ min
+            # against a Render free-tier service that wasn't returning
+            # /health, blocking the deploy pipeline.
+            if curl -m 10 -sf "${{ steps.service.outputs.url }}/health" | jq -e '.status == "healthy"' >/dev/null 2>&1; then
               echo "Backend is healthy!"
               exit 0
             fi
