@@ -37,8 +37,11 @@ USER appuser
 #
 # The script lives in apps/api/ (not deploy/docker/) because the root
 # .dockerignore excludes the deploy/ directory from the build context.
+# It stays in /tmp after the run (~3KB) — the `&& rm` cleanup was
+# removed because the appuser doesn't own the file in /tmp and gets
+# "Operation not permitted" on removal.
 COPY apps/api/prebundle_fastembed.py /tmp/prebundle_fastembed.py
-RUN python /tmp/prebundle_fastembed.py && rm /tmp/prebundle_fastembed.py
+RUN python /tmp/prebundle_fastembed.py
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app
 EXPOSE ${PORT:-8000}
