@@ -236,7 +236,8 @@ jobs:
           FRONTEND_URL=$(cat /tmp/frontend_url.txt)
           echo "Waiting for frontend to become healthy at $FRONTEND_URL..."
           for i in $(seq 1 30); do
-            if curl -sf "$FRONTEND_URL" -o /dev/null; then
+            # -m 10 = 10s curl timeout (see Wait for backend health above)
+            if curl -m 10 -sf "$FRONTEND_URL" -o /dev/null; then
               echo "Frontend is live!"
               exit 0
             fi
@@ -280,7 +281,7 @@ jobs:
           echo "Backend: $BACKEND_URL"
 
           # Backend health
-          health=$(curl -sf "${BACKEND_URL}/health" | jq -r '.status')
+          health=$(curl -m 10 -sf "${BACKEND_URL}/health" | jq -r '.status')
           if [ "$health" != "healthy" ]; then
             echo "ERROR: Backend status=$health"
             exit 1
@@ -289,7 +290,7 @@ jobs:
 
           # Frontend check
           if [ -n "$FRONTEND_URL" ]; then
-            status=$(curl -sL -o /dev/null -w "%{http_code}" "${FRONTEND_URL}")
+            status=$(curl -m 10 -sL -o /dev/null -w "%{http_code}" "${FRONTEND_URL}")
             if [ "$status" -ge 200 ] && [ "$status" -lt 400 ]; then
               echo "  ✓ Frontend live (HTTP $status)"
             else

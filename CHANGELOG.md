@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.8] - 2026-06-06
+
+### Fixed
+
+- **deploy**: add `curl -m 10` timeout to the three remaining
+  health-check curl call sites in `.github/workflows/deploy.yml`
+  (frontend wait loop, post-deploy backend probe, post-deploy
+  frontend probe). The backend wait loop was already fixed in
+  4b803ec, but the other three were missed, leaving a 75+ min
+  hang risk on a stale Render service. With `-m 10` on all four
+  call sites, each `/health` and frontend probe is bounded at
+  10s and the 30-iteration loop completes in ≤15 min.
+
+### Security
+
+- **deps-api**: bump `pyarrow` lower bound to `>=23.0.1` for
+  **CVE-2026-25087 / GHSA-rgxp-2hwp-jwgg** (high, CVSS 7.0).
+  Use-after-free in Apache Arrow C++ IPC file pre-buffering
+  (`RecordBatchFileReader::PreBufferMetadata`). The Python
+  bindings don't expose the vulnerable C++ API, so this is
+  not exploitable from Python code, but the C++ wheel is still
+  shipped inside pyarrow. Bumping the lower bound keeps fresh
+  installs off the vulnerable range.
+
+### Documentation
+
+- **docs**: add `DEPLOYMENT_VARIANTS.md` — a feature-by-feature
+  comparison of Local Docker, VPS, and Render free tier, with a
+  matrix of which features (local LLM, web search, persistent
+  ChromaDB, PostgreSQL, Redis cache, GPU acceleration, etc.)
+  are available in each variant and why. Cross-linked from
+  `QUICKSTART.md`, `LOCAL_DEMO.md`, `docs/deployment/DEPLOYMENT.md`,
+  and `docs/guides/deployment.md` so the doc is discoverable
+  from the existing deployment entry points.
+
+### Notes
+
+- `.gitignore` now explicitly excludes `last.md` (and similar
+  `*.claude-session.md` patterns) so Claude / AI session
+  transcripts can never accidentally be committed.
+
 ## [5.0.7] - 2026-06-05
 
 ### Fixed

@@ -34,6 +34,10 @@ trae_config.yml
 .claude/settings.local.json
 .claude/CLAUDE.local.md
 .claude/memory*.json
+# Session transcripts (last.md and similar) — keep AI-tooling artefacts out of the repo
+last.md
+.last.md
+*.claude-session.md
 
 # Other local AI/IDE tooling
 .cursor/
