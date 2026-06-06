@@ -164,6 +164,7 @@ curl -X POST https://your-frontend.onrender.com/api/v1/verify-auth \
 
 ## Related
 
+- [DEPLOYMENT_VARIANTS.md](../../DEPLOYMENT_VARIANTS.md) — comparison of Local Docker, VPS, and Render free tier (feature matrix)
 - [Docker Deployment Guide](../guides/deployment.md)
 - [CI/CD Pipeline](../guides/ci-cd.md)
 - [Troubleshooting](../guides/troubleshooting.md)

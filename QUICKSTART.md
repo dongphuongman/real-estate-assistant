@@ -2,6 +2,8 @@
 
 > 🚀 Three ways to run AI Real Estate Assistant
 
+> Not sure which one to pick? See [DEPLOYMENT_VARIANTS.md](DEPLOYMENT_VARIANTS.md) for a feature-by-feature comparison of Local Docker, VPS, and Render free tier.
+
 ---
 
 ## 1. Local Development (Без Docker)

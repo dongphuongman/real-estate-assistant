@@ -413,6 +413,7 @@ docker compose logs backend
 
 ## Next Steps
 
+- Compare against other deployment options: [DEPLOYMENT_VARIANTS.md](../../DEPLOYMENT_VARIANTS.md) (Local Docker vs VPS vs Render free tier)
 - Configure [CI/CD Pipeline](ci-cd.md)
 - Review [Monitoring](#monitoring)
 - Read [Troubleshooting Guide](troubleshooting.md)
