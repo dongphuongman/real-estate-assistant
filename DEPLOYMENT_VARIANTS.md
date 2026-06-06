@@ -175,6 +175,29 @@ The public staging demo at <https://ai-real-estate-assistant-api.onrender.com> r
 | GPU acceleration | ❌ | Render free has no GPU instances |
 | Multi-worker backend | ⚠️ tight at 512 MB | Set `WEB_CONCURRENCY=1` to avoid OOM |
 
+### Free-tier memory configuration (diploma demo mode)
+
+The `render.yaml` at the repo root already pins the env vars below so the service can boot and stay under 512 MB. This is the "diploma demo" recipe — the app runs, the demo flows work, but a lot of optional features are intentionally turned off.
+
+| Env var | Value | Why |
+|---------|-------|-----|
+| `DEMO_MODE` | `true` | Use `MockLLM` instead of real provider calls. **No external LLM API needed for the demo flow.** |
+| `INTERNET_ENABLED` | `false` | Don't start SearXNG. Saves the agent process ~1 GB it would otherwise need for the search worker. |
+| `SEED_ON_STARTUP` | `true` | Populate demo data on first boot so the chat and search UIs have something to show. |
+| `VECTOR_PERSIST_ENABLED` | `false` | ChromaDB stays in-memory; no disk writes. |
+| `WEB_CONCURRENCY` | `1` | **Single uvicorn worker.** Default would spawn 2+, each duplicating the FastAPI + LangChain + ONNX runtime heap (~400 MB / worker). 2 workers OOMs immediately at 512 MB. |
+| `UPTIME_MONITOR_ENABLED` | `false` | Don't start the in-process uptime monitor worker. Use an external service (UptimeRobot, Better Stack) for actual monitoring. |
+| `ENABLE_NOTIFICATIONS` | `false` | Don't start the notifications scheduler — another background worker that holds heap resident. |
+| `DB_POOL_SIZE` | `3` | Smaller SQLAlchemy pool (default 10) — each connection holds memory. |
+| `DB_MAX_OVERFLOW` | `3` | Match the smaller pool ceiling. |
+| `CHROMA_INDEXING_WORKERS` | `1` | Single-threaded ChromaDB indexing. |
+| `POOL_MAX_WORKERS` | `2` | Smaller global thread pool. |
+| `CACHE_ENABLED` | `false` | Don't try to initialize the response cache (no Redis sidecar exists on the free plan). |
+
+**Net effect of the knobs above:** the backend boots in ~250–350 MB of RSS (vs. ~600–800 MB with defaults), which fits under the 512 MB cap with ~150–250 MB of headroom for request bursts. The frontend is a Next.js standalone build (~150 MB RSS) and fits well within the same plan.
+
+**Trade-off:** in this mode, the demo can't answer questions that need real LLM reasoning, real embeddings, or real web search. The UI works end-to-end (chat, search, favorites, leads) but the LLM replies are scripted (MockLLM). For a diploma demo, that's usually fine — the goal is to show the architecture and UX, not the model quality.
+
 ### How to deploy to Render
 
 See [docs/deployment/DEPLOYMENT.md](docs/deployment/DEPLOYMENT.md) for step-by-step instructions. The `render.yaml` at the repository root is the source of truth for the staging service config.
@@ -184,6 +207,7 @@ See [docs/deployment/DEPLOYMENT.md](docs/deployment/DEPLOYMENT.md) for step-by-s
 - You want a public URL that anyone can hit without setting up Docker
 - Marketing screenshots, link sharing, a "look, it works" demo
 - A cheap staging environment to verify a PR end-to-end
+- A **diploma / coursework demo** — the configured knobs (DEMO_MODE, no Ollama, no SearXNG, single worker) keep the service under 512 MB so the full UI is reachable end-to-end without paying for a Render plan. The trade-off is that the LLM replies are scripted (MockLLM), not real. See "Free-tier memory configuration" below.
 
 ### When Render free is the wrong choice
 
