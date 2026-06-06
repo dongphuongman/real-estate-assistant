@@ -29,12 +29,15 @@ USER appuser
 # already has internet for `uv pip install`, so the cost is ~30s of
 # build time and ~33 MB of image size.
 #
-# v5.0.8: switched to a Python helper (deploy/docker/prebundle_fastembed.py)
+# v5.0.8: switched to a Python helper (apps/api/prebundle_fastembed.py)
 # that retries the download with exponential backoff (8 attempts, 5-60s
 # delays, ~5 min worst case). The previous one-liner only retried 3x
 # internally, and HuggingFace's CloudFront was returning HTTP 429 to the
 # CI runner — enough to push the smoke test past its 40s window.
-COPY deploy/docker/prebundle_fastembed.py /tmp/prebundle_fastembed.py
+#
+# The script lives in apps/api/ (not deploy/docker/) because the root
+# .dockerignore excludes the deploy/ directory from the build context.
+COPY apps/api/prebundle_fastembed.py /tmp/prebundle_fastembed.py
 RUN python /tmp/prebundle_fastembed.py && rm /tmp/prebundle_fastembed.py
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app

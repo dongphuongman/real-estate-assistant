@@ -38,8 +38,7 @@ def _download_with_retry() -> bool:
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             print(
-                f"[pre-bundle] attempt {attempt}/{MAX_RETRIES}: "
-                "instantiating TextEmbedding...",
+                f"[pre-bundle] attempt {attempt}/{MAX_RETRIES}: instantiating TextEmbedding...",
                 flush=True,
             )
             TextEmbedding()
@@ -67,9 +66,7 @@ def _download_with_retry() -> bool:
 
 
 def main() -> int:
-    cache_dir = Path(
-        os.environ.get("FASTEMBED_CACHE_PATH", Path.home() / ".cache" / "fastembed")
-    )
+    cache_dir = Path(os.environ.get("FASTEMBED_CACHE_PATH", Path.home() / ".cache" / "fastembed"))
     cache_dir.mkdir(parents=True, exist_ok=True)
     print(f"[pre-bundle] cache dir: {cache_dir}", flush=True)
 
