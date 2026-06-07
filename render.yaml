@@ -36,8 +36,13 @@ services:
         generateValue: true
       - key: INTERNET_ENABLED
         value: "false"
+      # SEED_ON_STARTUP=false: full DB seed at startup (loads FastEmbed,
+      # embeds thousands of properties) OOMs the 512 MB Render free
+      # tier. Set to true only on instances with >= 2 GB RAM. The
+      # diploma demo runs without seeded data — search/chat UIs work,
+      # the database is just empty.
       - key: SEED_ON_STARTUP
-        value: "true"
+        value: "false"
       - key: VECTOR_PERSIST_ENABLED
         value: "false"
       - key: SENTRY_DSN
