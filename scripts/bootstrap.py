@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 def _project_root() -> Path:
-    return Path(__file__).resolve().parents[1]
+    return Path(__file__).resolve().parents[2]
 
 
 def _run(cmd: list[str], cwd: Path) -> None:
@@ -26,7 +26,7 @@ def main() -> int:
     if shutil.which("uv") is None:
         print("uv is not installed or not on PATH.", file=sys.stderr)
         print(
-            "See docs/scripts/LOCAL_DEVELOPMENT.md for installation options.",
+            "See docs/development/LOCAL_DEVELOPMENT.md for installation options.",
             file=sys.stderr,
         )
         return 2

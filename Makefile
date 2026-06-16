@@ -233,22 +233,16 @@ docker-internet:
 ## CI/CD
 ## ============================================================================
 
-## docs: Generate OpenAPI documentation (Task #54)
+## docs: OpenAPI spec lives in docs/api/openapi.json (hand-maintained; generator scripts removed)
 docs:
-	mkdir -p docs/api
-	$(PYTHON) scripts/docs/export_openapi.py --output docs/api/openapi.json
-	$(PYTHON) scripts/docs/generate_api_reference.py --schema docs/api/openapi.json --output docs/api/API_REFERENCE.generated.md
-	@echo "Documentation generated in docs/api/"
-	@echo "  - docs/api/openapi.json"
-	@echo "  - docs/api/API_REFERENCE.generated.md"
+	@test -f docs/api/openapi.json && echo "OpenAPI spec: docs/api/openapi.json (committed)" || (echo "ERROR: docs/api/openapi.json missing" && exit 1)
 
 ## api-diff: Check OpenAPI schema for breaking changes vs baseline (Task #70)
 api-diff:
-	$(PYTHON) scripts/openapi_diff.py --baseline docs/api-v1-baseline.json
+	$(PYTHON) scripts/api/openapi_diff.py --baseline docs/api-v1-baseline.json
 
 ## api-diff-baseline: Regenerate the API baseline schema (run after intentional breaking changes)
 api-diff-baseline:
-	$(PYTHON) scripts/docs/export_openapi.py --output docs/api/openapi.json
 	$(PYTHON) -c "import json; schema=json.load(open('docs/api/openapi.json','r')); paths={k:v for k,v in schema.get('paths',{}).items() if k.startswith('/api/v1/')}; schema['paths']=paths; json.dump(schema, open('docs/api-v1-baseline.json','w'), indent=2)"
 	@echo "Baseline updated: docs/api-v1-baseline.json"
 
@@ -294,9 +288,9 @@ clean-all: clean
 	rm -rf node_modules
 	rm -rf .venv venv .venv_ci
 
-## smoke-test: Run deployment smoke tests against a running instance (Task #69)
+## smoke-test: Build + bring up compose stack and verify health (Task #69)
 smoke-test:
-	bash scripts/smoke_test.sh
+	$(PYTHON) scripts/docker/compose_smoke.py
 
 ## test-resilience: Run graceful degradation and resilience tests (Task #69)
 test-resilience:
