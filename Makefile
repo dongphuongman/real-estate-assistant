@@ -26,11 +26,10 @@ RESET := \033[0m
 # Phony targets
 .PHONY: help security security-quick test test-api test-web e2e lint lint-api lint-web format
 .PHONY: docker-up docker-down docker-logs docker-build
-.PHONY: ci ci-quick dev dev-api dev-web setup clean install docs
+.PHONY: ci ci-quick setup clean install docs
 .PHONY: sprav sprav-quick sprav-json benchmark-search benchmark-chat load-test
 .PHONY: migrate-check migrate-up migrate-down smoke-test test-resilience quickstart
 .PHONY: api-diff api-diff-baseline
-.PHONY: seed
 
 # Default target
 .DEFAULT_GOAL := help
@@ -168,38 +167,23 @@ format:
 ## DEVELOPMENT
 ## ============================================================================
 
-## dev: Start development servers (auto-detect Docker or local)
-dev:
-	$(PYTHON) $(SCRIPTS_DIR)/start.py --mode auto
-
-## dev-api: Start backend development server only
-dev-api:
-	$(PYTHON) $(SCRIPTS_DIR)/start.py --mode local --service backend
-
-## dev-web: Start frontend development server only
-dev-web:
-	$(PYTHON) $(SCRIPTS_DIR)/start.py --mode local --service frontend
+# Note: dev / dev-api / dev-web targets were removed on 2026-06-17.
+# They referenced scripts/start.py which no longer exists in this repo.
+# Use the cross-platform launchers directly:
+#   bash scripts/dev/run.sh                 # both backend + frontend (Linux/macOS)
+#   pwsh scripts/dev/run.ps1                # both (Windows PowerShell)
+#   bash scripts/dev/{be,fe}.sh              # backend/frontend only (Linux/macOS)
+#   pwsh scripts/dev/{be,fe}.ps1             # backend/frontend only (Windows)
+# Standalone (no auto-bootstrap) variants in scripts/local/.
 
 ## setup: Run environment setup (first-time setup)
 setup:
-	$(PYTHON) $(SCRIPTS_DIR)/bootstrap.py
+	$(PYTHON) $(SCRIPTS_DIR)/setup/bootstrap.py
 
 ## install: Install all dependencies
 install:
 	cd apps/api && uv pip install -e .[dev]
 	cd apps/web && npm install
-
-## seed: Seed ChromaDB with sample property data (60 listings)
-seed:
-	cd apps/api && $(PYTHON) scripts/seed_properties.py
-
-## seed-force: Re-seed ChromaDB even if data already exists
-seed-force:
-	cd apps/api && $(PYTHON) scripts/seed_properties.py --force
-
-## seed-100: Seed ChromaDB with 100 property listings
-seed-100:
-	cd apps/api && $(PYTHON) scripts/seed_properties.py --count 100
 
 ## ============================================================================
 ## DOCKER

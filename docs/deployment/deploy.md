@@ -5,7 +5,7 @@
 | Environment | Platform | VPS | Domain |
 |---|---|---|---|
 | Development | Local (scripts/start.sh) | localhost | localhost |
-| Staging | Dokploy | VPS2 | ai-rea.nestlab.tech |
+| Staging | Dokploy | VPS2 | *(staging domain — see ops runbook)* |
 | Production | Dokploy | VPS3 (or Render demo) | *(domain TBD)* |
 
 > **Frozen demo per Rule 09c.** CI auto-triggers are disabled for this repo; deployments
