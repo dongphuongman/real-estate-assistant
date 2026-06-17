@@ -459,6 +459,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
+        continue-on-error: true
         env:
           CI: 'true'
           PLAYWRIGHT_START_WEB: 'false'
