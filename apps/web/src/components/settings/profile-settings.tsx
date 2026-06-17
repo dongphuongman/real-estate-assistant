@@ -293,7 +293,7 @@ export function ProfileSettings({ userEmail }: { userEmail: string | null }) {
               maxLength={500}
             />
             <span className="text-xs text-muted-foreground">
-              {t('profile.charactersCount', { count: bio.length })}
+              {t('profile.charactersCount', { count: bio.length, max: 500 })}
             </span>
           </div>
         </CardContent>
