@@ -6,12 +6,12 @@ PasswordResetTokenRepository, EmailVerificationTokenRepository,
 PushSubscriptionRepository, NotificationPreferenceRepository.
 """
 
-import hashlib
 from datetime import UTC, datetime, timedelta
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.security_utils import hash_fingerprint
 from db.models import (
     User,
 )
@@ -31,7 +31,10 @@ from db.user_repos import (
 
 
 def _hash(token: str) -> str:
-    return hashlib.sha256(token.encode()).hexdigest()
+    # Production uses HMAC-SHA-256 with a server-side pepper (see
+    # core.security_utils.hash_fingerprint). Mirror that here so the
+    # token_hash column matches what the repository actually writes.
+    return hash_fingerprint(token, length=64)
 
 
 # ===========================================================================
@@ -195,7 +198,7 @@ class TestRefreshTokenRepository:
     def test_hash_token(self):
         token = "my-refresh-token"
         result = RefreshTokenRepository._hash_token(token)
-        assert result == hashlib.sha256(token.encode()).hexdigest()
+        assert result == hash_fingerprint(token, length=64)
 
     # -- create --
 
