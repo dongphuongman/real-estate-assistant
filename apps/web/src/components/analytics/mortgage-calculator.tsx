@@ -491,7 +491,7 @@ export function MortgageCalculator() {
                   </span>
                 </div>
                 <div className="flex justify-between text-sm p-2 bg-muted/50 rounded">
-                  <span className="text-muted-foreground">{t('tco.internet')}</span>
+                  <span className="text-muted-foreground">{t('tco.monthlyInternet')}</span>
                   <span className="font-medium">
                     $
                     {tcoResult.monthly_internet.toLocaleString(undefined, {
@@ -500,7 +500,7 @@ export function MortgageCalculator() {
                   </span>
                 </div>
                 <div className="flex justify-between text-sm p-2 bg-muted/50 rounded">
-                  <span className="text-muted-foreground">{t('tco.parking')}</span>
+                  <span className="text-muted-foreground">{t('tco.monthlyParking')}</span>
                   <span className="font-medium">
                     $
                     {tcoResult.monthly_parking.toLocaleString(undefined, {

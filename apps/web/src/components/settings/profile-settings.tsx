@@ -37,7 +37,7 @@ const LANGUAGES = [
   { value: 'fr', label: 'Français' },
 ];
 
-export function ProfileSettings() {
+export function ProfileSettings({ userEmail }: { userEmail: string | null }) {
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -55,8 +55,12 @@ export function ProfileSettings() {
   const [language, setLanguage] = useState('en');
 
   useEffect(() => {
+    if (!userEmail) {
+      setLoading(false);
+      return;
+    }
     fetchProfile();
-  }, []);
+  }, [userEmail]);
 
   const fetchProfile = async () => {
     try {
@@ -79,6 +83,14 @@ export function ProfileSettings() {
     return (
       <div className="rounded-md border border-dashed bg-muted/30 p-4 text-muted-foreground">
         {t('profile.loadingProfile')}
+      </div>
+    );
+  }
+
+  if (!userEmail) {
+    return (
+      <div className="rounded-md border border-dashed bg-muted/30 p-4 text-muted-foreground">
+        {t('emailRequired')}
       </div>
     );
   }

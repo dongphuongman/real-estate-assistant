@@ -25,7 +25,7 @@ import {
   DataExportStatusResponse,
 } from '@/lib/types';
 
-export function PrivacySettings() {
+export function PrivacySettings({ userEmail }: { userEmail: string | null }) {
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -48,8 +48,12 @@ export function PrivacySettings() {
   const [pollingExport, setPollingExport] = useState(false);
 
   useEffect(() => {
+    if (!userEmail) {
+      setLoading(false);
+      return;
+    }
     fetchProfile();
-  }, []);
+  }, [userEmail]);
 
   // Poll export status when job is processing
   useEffect(() => {
@@ -99,6 +103,14 @@ export function PrivacySettings() {
       setLoading(false);
     }
   };
+
+  if (!userEmail) {
+    return (
+      <div className="rounded-md border border-dashed bg-muted/30 p-4 text-muted-foreground">
+        {t('emailRequired')}
+      </div>
+    );
+  }
 
   if (loading) {
     return (
