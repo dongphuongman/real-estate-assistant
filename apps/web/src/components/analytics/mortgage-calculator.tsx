@@ -115,11 +115,11 @@ export function MortgageCalculator() {
   };
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className={result || errorState || loading ? 'grid gap-6 md:grid-cols-2' : 'grid gap-6'}>
       {/* STATE 1: Empty state - guidance before calculation */}
       {!result && !errorState && !loading && (
         <div
-          className="col-span-full md:col-span-2 rounded-lg border bg-muted/30 p-4 text-center"
+          className="rounded-lg border bg-muted/30 p-4 text-center"
           role="status"
           aria-live="polite"
         >
@@ -127,8 +127,8 @@ export function MortgageCalculator() {
         </div>
       )}
 
-      {/* Calculator Form */}
-      <Card>
+      {/* Calculator Form - centered when no results, left column when results present */}
+      <Card className={result || errorState || loading ? undefined : 'mx-auto w-full max-w-2xl'}>
         <CardHeader>
           <CardTitle>{t('title')}</CardTitle>
           <CardDescription>{t('description')}</CardDescription>
