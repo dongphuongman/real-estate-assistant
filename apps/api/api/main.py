@@ -473,7 +473,7 @@ async def shutdown_event():
             logger.error("Error closing connection pools: %s", sanitize_for_log(e))
 
     shutdown_elapsed = asyncio.get_event_loop().time() - shutdown_start_time
-    logger.info("Graceful shutdown completed in %.2fs", sanitize_for_log(shutdown_elapsed))
+    logger.info("Graceful shutdown completed in %.2fs", shutdown_elapsed)
 
 
 # CORS configuration
