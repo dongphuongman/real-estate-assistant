@@ -76,14 +76,18 @@ export function ProfileSettings() {
   };
 
   if (loading) {
-    return <div className="p-4 text-center">{t('profile.loadingProfile')}</div>;
+    return (
+      <div className="rounded-md border border-dashed bg-muted/30 p-4 text-muted-foreground">
+        {t('profile.loadingProfile')}
+      </div>
+    );
   }
 
   if (!profile) {
     return (
-      <div className="p-4 text-center text-red-500">
-        {error || t('profile.somethingWentWrong')}
-        <Button onClick={fetchProfile} className="ml-4">
+      <div className="flex items-center gap-3 rounded-md border border-destructive/20 bg-destructive/5 p-4 text-destructive">
+        <span className="flex-1">{error || t('profile.somethingWentWrong')}</span>
+        <Button onClick={fetchProfile} variant="outline" size="sm">
           {t('profile.retry')}
         </Button>
       </div>

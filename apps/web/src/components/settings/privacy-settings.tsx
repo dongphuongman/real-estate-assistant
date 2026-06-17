@@ -101,7 +101,11 @@ export function PrivacySettings() {
   };
 
   if (loading) {
-    return <div className="p-4 text-center">{t('privacy.loadingPrivacy')}</div>;
+    return (
+      <div className="rounded-md border border-dashed bg-muted/30 p-4 text-muted-foreground">
+        {t('privacy.loadingPrivacy')}
+      </div>
+    );
   }
 
   const handleSave = async () => {

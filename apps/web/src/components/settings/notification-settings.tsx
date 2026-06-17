@@ -61,14 +61,18 @@ export function NotificationSettings() {
   };
 
   if (loading) {
-    return <div className="p-4 text-center">{t('notifications.loadingSettings')}</div>;
+    return (
+      <div className="rounded-md border border-dashed bg-muted/30 p-4 text-muted-foreground">
+        {t('notifications.loadingSettings')}
+      </div>
+    );
   }
 
   if (!settings) {
     return (
-      <div className="p-4 text-center text-red-500">
-        {error || t('notifications.somethingWentWrong')}
-        <Button onClick={fetchSettings} className="ml-4">
+      <div className="flex items-center gap-3 rounded-md border border-destructive/20 bg-destructive/5 p-4 text-destructive">
+        <span className="flex-1">{error || t('notifications.somethingWentWrong')}</span>
+        <Button onClick={fetchSettings} variant="outline" size="sm">
           {t('notifications.retry')}
         </Button>
       </div>
