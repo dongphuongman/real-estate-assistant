@@ -9,7 +9,7 @@
     .\logs-docker.ps1 backend   # Show backend logs only
 #>
 $ErrorActionPreference = "Stop"
-$ProjectRoot = $PSScriptRoot
+$ProjectRoot = Split-Path (Split-Path $PSScriptRoot)
 $ComposeDir = Join-Path $ProjectRoot "deploy/compose"
 
 $service = if ($args.Count -gt 0) { $args[0] } else { "" }

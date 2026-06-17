@@ -6,7 +6,7 @@
     No API keys required for demo functionality.
 #>
 $ErrorActionPreference = "Stop"
-$ProjectRoot = $PSScriptRoot
+$ProjectRoot = Split-Path (Split-Path $PSScriptRoot)
 $ComposeDir = Join-Path $ProjectRoot "deploy/compose"
 $ComposeFile = Join-Path $ComposeDir "docker-compose.yml"
 $EnvFile = Join-Path $ComposeDir ".env"

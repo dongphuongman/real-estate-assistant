@@ -3,7 +3,7 @@
     Stop AI Real Estate Assistant Docker containers
 #>
 $ErrorActionPreference = "Stop"
-$ProjectRoot = $PSScriptRoot
+$ProjectRoot = Split-Path (Split-Path $PSScriptRoot)
 $ComposeDir = Join-Path $ProjectRoot "deploy/compose"
 $EnvFile = Join-Path $ComposeDir ".env"
 
