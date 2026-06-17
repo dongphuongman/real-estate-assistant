@@ -1,9 +1,5 @@
 # AI Real Estate Assistant — Database
 
-> Reference pattern: [02.003 §2](../../../../docs/research/architecture/02.003-large-saas-auth-database-pattern-2026-06-16.md)
-> [ADR-015](../../../../docs/architecture/decisions/015-database-standards.md),
-> [ADR-025](../../../../docs/architecture/decisions/025-postgres-version-pinning.md)
-
 | Item | Value |
 |---|---|
 | Engine | PostgreSQL 16 LTS (prod) / 18 (dev) |

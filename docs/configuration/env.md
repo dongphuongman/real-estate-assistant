@@ -1,8 +1,5 @@
 # AI Real Estate Assistant — Environment Variables
 
-> Reference: [ADR-027](../../../../docs/architecture/decisions/027-hardware-key-secrets-governance.md),
-> [ADR-005](../../../../docs/architecture/decisions/005-secret-management-policy.md).
-
 ## Required
 
 | Variable | Notes |
@@ -24,4 +21,4 @@
 ## Getting secrets
 
 - DB URL: KeePass → `DB/AI-RealEstate/PROD`.
-- AI provider keys: per [ADR-004](../../../../docs/architecture/decisions/004-ai-provider-governance.md).
+- AI provider keys: rotate per secret-management policy.

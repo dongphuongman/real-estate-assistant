@@ -160,7 +160,7 @@ graph LR
     API --> DB[("PostgreSQL / SQLite")]
 ```
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full system design.
+See [docs/architecture/large-saas-overview.md](docs/architecture/large-saas-overview.md) for the full system design.
 
 ## 🚀 Quick Start
 
@@ -199,7 +199,7 @@ cd apps/web && npm install && npm run dev
 # Frontend: http://localhost:3000 · API: http://localhost:8000
 ```
 
-> **[5-Minute Quickstart →](docs/QUICKSTART_5MIN.md)** — Full setup with verification scripts.
+> **[5-Minute Quickstart →](docs/development/QUICKSTART_5MIN.md)** — Full setup with verification scripts.
 
 ## 🧪 Testing
 
@@ -238,7 +238,7 @@ cd apps/web && npm install && npm run dev
 
 | Doc | Description |
 |-----|-------------|
-| [Architecture](docs/ARCHITECTURE.md) | System design, data flow, deployment |
+| [Architecture](docs/architecture/large-saas-overview.md) | System design, data flow, deployment |
 | [API Reference](docs/api/API_REFERENCE.md) | All endpoints with examples |
 | [User Guide](docs/user/USER_GUIDE.md) | How to use the assistant |
 | [Contributing](docs/development/CONTRIBUTING.md) | Development workflow |
