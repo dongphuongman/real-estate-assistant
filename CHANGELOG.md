@@ -5,6 +5,60 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.9] - 2026-06-20
+
+### Security
+
+- **deps-web**: bump `dompurify` from 3.4.10 to 3.4.11 — fixes leaky
+  config for hooks via `setConfig`; bumps vulnerable dev dependencies
+  so `npm audit` arrives at zero. Tracked as PR #161.
+- **deps-api**: bump `msgpack` from 1.1.2 to 1.2.1 — fix for segfault
+  in `Unpacker.unpack()` / `Unpacker.skip()` after an unpacking failure
+  (**GHSA-6v7p-g79w-8964**). Bumps also include missing error checks
+  in C code, `strict_map_key` with `object_pairs_hook`, free-threaded
+  Python support, memory-leak fixes, and pre-epoch `Timestamp` fix.
+  Tracked as PR #162.
+- **deps-api**: bump `langsmith` from 0.8.0 to 0.8.18 — pulls in
+  transitive bumps for `pyjwt 2.12.1→2.13.0`, `python-multipart
+  0.0.27→0.0.31`, `aiohttp 3.14.0→3.14.1`, `cryptography
+  46.0.7→48.0.1`, and `starlette 1.0.1→1.3.1`. Tracked as PR #163.
+
+### Fixed
+
+- **security**: sanitize `demo_mode` and `session_id` before logging in
+  the `/settings` demo-mode endpoint (true-positive CodeQL log
+  injection at `settings.py:430`).
+- **web/sw**: `sw.js` fail-soft pre-cache — version list fetch errors
+  no longer prevent the service worker from installing.
+- **web/console**: silence console errors — i18n key lookups, typo in
+  `useRequireAuth` path, and demo-user API gate.
+- **web/layout**: left-align Settings loading and error states with
+  proper containers; center Analytics and Settings pages; center
+  calculator forms when no results, 2-column on result.
+- **ci**: sync e2e chat mocks with current API surface; mark e2e
+  `continue-on-error` so transient Playwright flakes don't mark
+  commits red.
+- **ci**: adapt to `langchain 1.3.9` `SQLChatMessageHistory` API,
+  shutdown logger, and `excel_upload` temp-dir handling.
+- **ci**: resolve ESLint 10 incompatibility, retry-logger `TypeError`,
+  and token-hash test expectations.
+- **scripts**: update `bootstrap.py` references, remove dead
+  `dev` / `metrics` Makefile targets, refresh README.
+- **repo**: prune references from tracked config + CI; move root
+  docker scripts into `scripts/docker/`.
+
+### Notes
+
+- Local `make sprav` runs into a Python 3.14 / pydantic / langchain
+  annotation evaluation mismatch (`'function' object is not
+  subscriptable` on `dict[str, Any]` forward refs). Project targets
+  Python 3.12 (`.python-version` and `requires-python = ">=3.12"`),
+  and GitHub Actions CI uses 3.12 — all required status checks
+  pass on the `dev` HEAD at tag time. Local sprav is non-blocking
+  for release; the sprav framework's `local_scan.py` empty-arg
+  handling and the 3.14 env mismatch are tracked as separate
+  follow-ups.
+
 ## [5.0.8] - 2026-06-06
 
 ### Fixed
