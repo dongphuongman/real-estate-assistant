@@ -202,6 +202,8 @@ celerybeat.pid
 # Environments
 .env
 .env.ports
+.env.local
+.env.*.local
 .venv
 .venv_ci
 .venv312
@@ -356,8 +358,8 @@ scripts/validation/taskmaster_review.py
 scripts/internal/
 scripts/ci/
 
-# Secret detection baselines (internal tooling)
-.secrets.baseline
+# Secret detection baseline (tracked so pre-commit can use it)
+# .secrets.baseline is intentionally NOT ignored — it must be in the repo.
 
 # Release validation reports (internal)
 docs/releases/
