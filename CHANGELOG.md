@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.11] - 2026-06-22
+
+### Security
+
+- **deps-api**: bump `pydantic-settings` to ≥2.14.2 (PR #165,
+  GHSA-4xgf-cpjx-pc3j) — merged via squash after Dependabot opened
+  it post-v5.0.10.
+
+### Fixed
+
+- **dependabot**: `.github/dependabot.yml` corrected to use top-level
+  `security-updates-only: true` (the documented syntax for disabling
+  non-security version updates). The v5.0.10 attempt used
+  `groups[].applies-to: security-updates`, which was misunderstood —
+  that key is for grouping security updates, not filtering. After the
+  v5.0.10 push, Dependabot opened 10 non-security PRs that had to be
+  manually closed. This fix prevents recurrence.
+
+### Notes
+
+- 10 other Dependabot PRs opened post-v5.0.10 (actions/checkout 6→7,
+  @tailwindcss/postcss, reportlab, eslint 9→10, grpcio, radix-ui,
+  numpy, tailwindcss, langchain-community, mapbox-gl) were closed as
+  non-security routine bumps that violate the frozen-for-demo policy.
+- v5.0.11 contains NO code-path changes — pure config + a single
+  patch-level dependency security fix.
+- This is the first release with a [GitHub Release page](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.0.11)
+  (v5.0.6–v5.0.10 were tag-only).
+
 ## [5.0.10] - 2026-06-20
 
 ### Security
