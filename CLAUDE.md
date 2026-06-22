@@ -360,3 +360,57 @@ The Render staging deployment must remain functional. After any health push, ver
 
 - `https://ai-real-estate-assistant-api.onrender.com/health` returns 200
 - Frontend loads and demo mode works
+
+### Release Verification Workflow (NEVER TAG BEFORE CI IS GREEN)
+
+**Rule:** A tag (and the corresponding GitHub Release page) MUST NOT be created until **all required CI status checks are green AND the GHCR Docker build has succeeded** on the commit being tagged. If you tag a release with known CI failures, you are publishing a broken build as a release — this is a process failure even if the code change itself is correct.
+
+**The wrong order is:** code change → tag → discover CI fails → fix on a follow-up release. This leaves a broken vX.Y.Z release in the public history and forces re-tagging or retroactive patches, both of which break the principle of "tags are immutable release markers."
+
+**The correct order is:** code change → commit on dev → wait for CI run on that commit → confirm `completed/success` for all required checks → tag → push tag → monitor GHCR build → create GitHub Release page.
+
+**Verification checklist (run BEFORE `git tag` for any vX.Y.Z):**
+
+```bash
+# 1. CI on the commit to be tagged must be green
+gh run list --repo AleksNeStu/ai-real-estate-assistant \
+  --branch=dev --workflow="CI/CD AI Real Estate Assistant" --limit=1 \
+  --json status,conclusion,headSha
+# Expect: status=completed, conclusion=success, headSha=<commit-to-tag>
+
+# 2. GHCR publish-ghcr workflow must be green
+gh run list --repo AleksNeStu/ai-real-estate-assistant \
+  --workflow=publish-ghcr.yml --limit=1 \
+  --json status,conclusion
+# Expect: status=completed, conclusion=success
+
+# 3. Open PR count must be 0 (no in-flight security patches)
+gh pr list --repo AleksNeStu/ai-real-estate-assistant --state open --json number | jq 'length'
+# Expect: 0
+
+# 4. Open Dependabot + CodeQL alerts must be 0
+gh api repos/AleksNeStu/ai-real-estate-assistant/dependabot/alerts?state=open --jq 'length'
+gh api repos/AleksNeStu/ai-real-estate-assistant/code-scanning/alerts?state=open --jq 'length'
+# Expect: 0, 0
+```
+
+**If any check fails: do NOT tag.** Either fix the underlying issue and re-verify, or escalate to the user with the specific failure.
+
+**Why this matters:** v5.0.11 was tagged while `frontend-tests` was failing in CI (a 1-test flake on `HeartbeatMonitor.reset`). The tag and GitHub Release page were published before any human noticed the failure. The lesson: **CI green is a precondition for tagging, not a post-tag verification step.**
+
+### Flaky Test Discipline
+
+When a test fails in CI with a tight time-based assertion (`toBeLessThan(N)` where N is small, `< 100ms` etc.):
+
+- Cloud CI runners are consistently 5-15ms slower than local. A threshold of 10ms is almost guaranteed to flake.
+- Quick fix: bump the threshold 5x (e.g. 10ms → 50ms). Catches real bugs (a real perf regression shows 100ms+) while tolerating CI jitter.
+- Proper fix: inject a clock (`jest.useFakeTimers()` works only if the code calls a mockable `Date.now()`, which `HeartbeatMonitor` does not).
+- Do NOT re-run CI and hope — the flake will recur. Fix the threshold first.
+
+### Concurrent-Session Safety
+
+Multiple agent sessions may work in this checkout simultaneously (per [[v5-0-10-dependabot-84-alerts]] 2026-06-17 memory note). To avoid corrupting each other's commits:
+
+- Always `git fetch` before pushing. If the remote SHA changed unexpectedly, stop and reconcile.
+- Never force-push to `AleksNeStu/ai-real-estate-assistant` (see Force-Push Policy above).
+- When tagging, check `git ls-remote origin refs/tags/vX.Y.Z` to verify the tag isn't already moved by another session. If it is, communicate before re-tagging.
