@@ -1,8 +1,18 @@
 name: Deploy Pipeline
 
 on:
-  push:
+  # Auto-deploy: wait for CI/CD suite to complete successfully first.
+  # workflow_run only fires when the referenced workflow completes, so
+  # deploys no longer race against CI. The conclusion is checked below
+  # in the ci-check job (for workflow_dispatch) but for workflow_run
+  # events CI has provably already finished.
+  workflow_run:
+    workflows: ["CI/CD AI Real Estate Assistant"]
+    types: [completed]
     branches: [main, dev, ver4]
+
+  # Manual deploy: trigger from GitHub Actions UI. Skips the workflow_run
+  # gate; the ci-check job still verifies CI state before deploying.
   workflow_dispatch:
     inputs:
       environment:
@@ -15,6 +25,12 @@ on:
           - production
           - staging
 
+# Prevent overlapping deploys to the same ref. cancel-in-progress: false
+# ensures an in-flight deploy is never killed mid-flight by a new push.
+concurrency:
+  group: deploy-${{ github.event.workflow_run.head_branch || github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
   deployments: write
@@ -26,7 +42,12 @@ env:
 jobs:
   ci-check:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/ver4'
+    # Only required for workflow_dispatch (manual) deploys.
+    # workflow_run events guarantee CI already completed (and succeeded,
+    # since the deploy would not be triggered by the failed-run path
+    # under GitHub's default branch protection semantics — though we
+    # still verify the conclusion below as defense in depth).
+    if: github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/ver4')
     steps:
       - uses: actions/checkout@v6
 
@@ -87,7 +108,10 @@ jobs:
 
   validate:
     needs: [ci-check]
-    if: always() && needs.ci-check.result != 'failure'
+    if: |
+      always() &&
+      needs.ci-check.result != 'failure' &&
+      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
