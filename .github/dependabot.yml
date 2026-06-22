@@ -15,6 +15,7 @@ updates:
       prefix: chore(deps-web)
     groups:
       dev-patch-and-minor:
+        applies-to: security-updates
         patterns: ["*"]
         update-types: ["patch", "minor"]
         exclude-patterns:
@@ -37,6 +38,7 @@ updates:
       prefix: chore(deps-api)
     groups:
       dev-patch-and-minor:
+        applies-to: security-updates
         patterns: ["*"]
         update-types: ["patch", "minor"]
         exclude-patterns:
@@ -58,4 +60,5 @@ updates:
       prefix: chore(ci-deps)
     groups:
       actions-updates:
+        applies-to: security-updates
         patterns: ["*"]

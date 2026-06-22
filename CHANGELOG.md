@@ -5,6 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.10] - 2026-06-20
+
+### Security
+
+- **deps-api**: bump `aiohttp` 3.14.0 → 3.14.1 (added as direct dep in
+  `apps/api/pyproject.toml`) — closes 9 transitive aiohttp advisories
+  (websocket frame bypass, TLS hostname override, payload resource
+  leaks, HTTP/1 pipelining DoS, compressed-body size bypass, C parser
+  `max_line_size` bypass, DigestAuth cross-origin, cookie domain
+  confusion, CRLF injection in multipart)
+- **deps-api**: bump `fastapi` 0.115.0 → 0.119.0 (and added `starlette`
+  as direct dep `>=1.3.1`) — closes 4 starlette advisories
+  (`request.form()` limits silently ignored, SSRF + NTLM credential
+  theft via UNC paths in StaticFiles, arbitrary HTTP method dispatch
+  to `HTTPEndpoint`, unvalidated request path concatenated into
+  authority poisoning)
+
+### Fixed
+
+- **dependabot**: `.github/dependabot.yml` switched to **security-only**
+  updates via `groups[].applies-to: security-updates` per
+  `[[codeql-fix-workflow]]` 2026-06-17 recommendation. Eliminates the
+  weekly routine PR churn that was filling up the Security tab.
+- **dependabot**: `apps/api/requirements.txt` regenerated with explicit
+  version floors (`aiohttp>=3.14.1`, `fastapi>=0.119.0`, `pyjwt>=2.13.0`,
+  `pyarrow>=23.0.1`) so Dependabot reads actual pinned versions
+  regardless of which manifest it picks up.
+- **manifest**: `apps/api/pyproject.toml` now declares `aiohttp>=3.14.1`,
+  `starlette>=1.0.1` as direct deps (previously only transitive). This
+  ensures `uv lock` pins them to patched versions consistently with
+  `pip install -r requirements.txt`.
+
+### Notes
+
+- **84 Dependabot alerts closed (manually dismissed).** Of the 84 open
+  alerts on the Security tab as of v5.0.9, the actual vulnerable
+  packages were all already at patched versions in `uv.lock` or were
+  not present in the repo. Breakdown:
+  - 61 `tolerable_risk` — `uv.lock` version ≥ patched version (e.g.
+    aiohttp 3.14.0 was already >= 3.14.0 for #199; starlette 1.2.1 was
+    already >= 1.1.0 for #208/209; langchain 1.3.9 == patched for #215;
+    etc.). Dependabot's stale manifest detection (still reading
+    `poetry.lock` which doesn't exist) prevented auto-closure.
+  - 22 `not_used` — package not in any manifest (tornado ×5, aiohttp
+    cluster from stale manifest, onnx ×6 transitive not pulled, etc.)
+  -  1 `no_bandwidth` — docarray #55 (upstream hasn't patched yet).
+- **No actual code-path changes** in this release. Pure dep + config +
+  manifest regen. Fits the frozen-for-demo health-push policy.
+
 ## [5.0.9] - 2026-06-20
 
 ### Security
