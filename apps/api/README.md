@@ -131,4 +131,4 @@ mypy .              # Type check (strict)
 Docker images are published to GHCR (`ghcr.io/aleksnestu/ai-real-estate-assistant/backend`).
 See the [Deployment Guide](../../docs/deployment/DEPLOYMENT.md) for Dokploy / Render setup.
 
-For the public demo, see [https://ai-real-estate-assistant-api.onrender.com/health](https://ai-real-estate-assistant-api.onrender.com/health).
+For the public demo, see [https://realestate-api-wkm7.onrender.com/health](https://realestate-api-wkm7.onrender.com/health).
