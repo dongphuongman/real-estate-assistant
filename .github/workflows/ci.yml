@@ -6,14 +6,14 @@ permissions:
 
 on:
   push:
-    branches: [main, dev, ver4]
+    branches: [main, dev]
     paths-ignore:
       - '**.md'
       - 'docs/**'
       - '.gitignore'
       - 'LICENSE'
   pull_request:
-    branches: [main, dev, ver4]
+    branches: [main, dev]
     paths-ignore:
       - '**.md'
       - 'docs/**'
@@ -32,7 +32,7 @@ concurrency:
   cancel-in-progress: ${{ github.actor != 'dependabot[bot]' }}
 
 # Condition: skip Stage 4 on Dependabot PRs (dependency-only changes)
-# Condition: Stage 4 on dev/main/ver4 pushes or manual dispatch
+# Condition: Stage 4 on dev/main pushes or manual dispatch
 jobs:
   # ===== STAGE 1: Quick Checks =====
 
@@ -275,11 +275,11 @@ jobs:
           name: pip-audit-report
           path: artifacts/pip-audit.json
 
-  # ===== STAGE 4: Deep Analysis (main/dev/ver4 or manual, skip Dependabot) =====
+  # ===== STAGE 4: Deep Analysis (main/dev or manual, skip Dependabot) =====
 
   codeql-python:
     runs-on: ubuntu-latest
-    if: ${{ github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
+    if: ${{ github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [security-deps]
     timeout-minutes: 30
     permissions:
@@ -307,7 +307,7 @@ jobs:
 
   codeql-javascript:
     runs-on: ubuntu-latest
-    if: ${{ github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
+    if: ${{ github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [security-deps]
     timeout-minutes: 30
     permissions:
@@ -335,7 +335,7 @@ jobs:
 
   container-scan:
     runs-on: ubuntu-latest
-    if: ${{ github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
+    if: ${{ github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [frontend-build]
     steps:
       - name: Checkout
@@ -371,7 +371,7 @@ jobs:
 
   lighthouse:
     runs-on: ubuntu-latest
-    if: ${{ github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
+    if: ${{ github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [frontend-tests]
     timeout-minutes: 15
     defaults:
@@ -422,7 +422,7 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    if: ${{ github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/ver4' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
+    if: ${{ github.actor != 'dependabot[bot]' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || (github.event_name == 'workflow_dispatch' && inputs.enable_deep_analysis == 'true')) }}
     needs: [frontend-build]
     timeout-minutes: 25
     continue-on-error: true
