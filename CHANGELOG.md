@@ -24,10 +24,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **dependabot**: `.github/dependabot.yml` switched to **security-only**
-  updates via `groups[].applies-to: security-updates` per
-  `[[codeql-fix-workflow]]` 2026-06-17 recommendation. Eliminates the
-  weekly routine PR churn that was filling up the Security tab.
+- **dependabot (config fix in v5.0.11)**: `.github/dependabot.yml`
+  corrected to use top-level `security-updates-only: true` (the
+  documented syntax for disabling non-security version updates). The
+  v5.0.10 attempt used `groups[].applies-to: security-updates`, which
+  was misunderstood — that key is for grouping security updates, not
+  filtering. After v5.0.10 push, Dependabot opened 10 non-security PRs
+  that had to be manually closed.
+  (The v5.0.10 release originally claimed this config worked; corrected
+  retroactively in v5.0.11.)
 - **dependabot**: `apps/api/requirements.txt` regenerated with explicit
   version floors (`aiohttp>=3.14.1`, `fastapi>=0.119.0`, `pyjwt>=2.13.0`,
   `pyarrow>=23.0.1`) so Dependabot reads actual pinned versions
@@ -53,6 +58,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   -  1 `no_bandwidth` — docarray #55 (upstream hasn't patched yet).
 - **No actual code-path changes** in this release. Pure dep + config +
   manifest regen. Fits the frozen-for-demo health-push policy.
+- **11 Dependabot PRs opened immediately after v5.0.10 push**, due to
+  the `applies-to: security-updates` config misunderstanding. Action
+  in v5.0.11: merged #165 (pydantic-settings security patch
+  GHSA-4xgf-cpjx-pc3j), closed the other 10 (all non-security bumps
+  that violate the frozen-for-demo policy). The config was fixed in
+  v5.0.11 to prevent recurrence.
 
 ## [5.0.9] - 2026-06-20
 
