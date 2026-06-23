@@ -347,6 +347,14 @@ sprav-quick-test.md
 # Local test artifacts and snapshots
 artifacts/
 resp.html
+
+# Social preview render helpers (local-only, regenerated periodically)
+# NOTE: .runtime/port.txt and .runtime/ports.json are KEPT (used by start scripts)
+.runtime/social-preview.svg
+.runtime/render.mjs
+.runtime/package.json
+.runtime/package-lock.json
+.runtime/node_modules/
 tmp
 data/audit/
 apps/api/data/audit/
