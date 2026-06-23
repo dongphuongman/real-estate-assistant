@@ -123,6 +123,20 @@ English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, and Ukr
 ### 🔒 Enterprise Security
 OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode auth (API Key + JWT). Progressive 5-stage security pipeline with full scanning on all branches.
 
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Backend API | FastAPI (Python 3.12+) |
+| Frontend | Next.js 16 + React 19 |
+| Vector DB | ChromaDB (semantic search + MMR reranking) |
+| Relational DB | PostgreSQL / SQLite |
+| LLM Providers | OpenAI, Anthropic, Google, Grok, DeepSeek, local Ollama |
+| Container | Docker / Docker Compose |
+| Hosting (staging) | Render free tier |
+| CI/CD | GitHub Actions (CI + GHCR + Render deploy) |
+| Monitoring | Uptime Kuma + structured logs |
+
 ## 📈 Project Growth
 
 ### GitHub Stats
@@ -200,6 +214,31 @@ cd apps/web && npm install && npm run dev
 ```
 
 > **[5-Minute Quickstart →](docs/development/QUICKSTART_5MIN.md)** — Full setup with verification scripts.
+
+## 📁 Project Structure
+
+```text
+ai-real-estate-assistant/
+├── apps/
+│   ├── api/                    # FastAPI backend (Python 3.12+)
+│   │   ├── api/                # Routers, main.py, dependencies
+│   │   ├── agents/             # HybridAgent, QueryAnalyzer
+│   │   ├── tools/              # LangChain tools
+│   │   ├── models/             # LLM provider factory
+│   │   ├── db/                 # SQLAlchemy models, repositories
+│   │   ├── vector_store/       # ChromaDB integration
+│   │   └── tests/              # pytest unit/integration/e2e
+│   └── web/                    # Next.js 16 frontend (React 19)
+│       └── src/
+│           ├── app/            # App Router pages
+│           ├── components/     # UI components
+│           ├── contexts/       # React contexts
+│           └── lib/            # API client, utilities
+├── deploy/                     # Dockerfiles, compose files, k8s
+├── docs/                       # Architecture, API, guides
+├── scripts/                    # dev, demo, validation, setup
+└── .github/                    # CI/CD, FUNDING, issue templates
+```
 
 ## 🧪 Testing
 
@@ -301,6 +340,8 @@ See [.env.example](.env.example) for the full list.
 ## 🤝 Contributing
 
 Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow.
+
+Please note that this project is released with a [Contributor Code of Conduct](.github/CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
 
 1. Fork → `git checkout -b feature/short-description`
 2. Run checks locally (`make ci`)
