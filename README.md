@@ -56,6 +56,16 @@ Experience the full power of AI-driven real estate search without any setup:
 
 > **Note:** The demo uses simulated AI responses for instant exploration. Production deployment requires API keys.
 
+## 🆕 What's new in v5.1
+
+Three small but demoable additions, shipped together as a focused release:
+
+- 🔮 **AI Property Valuation with Multi-Year Price Forecast** — paste a property id (or enter features manually) and get an LLM-powered estimate of current value plus projected value at 1y, 3y, 5y, and 10y horizons, with a confidence band and key drivers. Try it at `/valuation`.
+- 🏦 **Inline monthly payment on listing cards** — every property card on the search results page now shows a small "$X / mo" estimate next to the title (20% down, 30-year fixed, 6.5% APR by default; not a lending offer).
+- 🏘️ **AI Neighborhood One-Liner** — property detail pages now feature a short AI-generated summary of the neighborhood's character, lifestyle, and accessibility. Falls back silently if the LLM is unavailable.
+
+All three work in demo mode without any paid external APIs.
+
 ## 💻 Local Demo Setup
 
 Run the full demo locally with comprehensive mock data in minutes:
@@ -112,7 +122,10 @@ Run the full demo locally with comprehensive mock data in minutes:
 Natural language queries with automatic filter extraction. Hybrid semantic + keyword search powered by ChromaDB with MMR reranking for 30-40% better relevance.
 
 ### 📊 Analytics & Financial Tools
-Mortgage calculator, rent-vs-buy comparison, investment ROI analysis, TCO calculator, and Comparative Market Analysis (CMA) reports.
+Mortgage calculator, rent-vs-buy comparison, investment ROI analysis, TCO calculator, Comparative Market Analysis (CMA) reports, and **AI price forecast with multi-year projection** (v5.1).
+
+### 🏘️ AI Neighborhood One-Liner (v5.1)
+Short 2-3 sentence AI summary of any neighborhood's character, lifestyle, and accessibility — appears on property detail pages.
 
 ### 🗺️ Interactive Maps
 Mapbox/Leaflet maps with property clustering, area comparisons, and city-overview analytics.

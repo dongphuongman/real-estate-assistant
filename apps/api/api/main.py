@@ -70,6 +70,7 @@ from api.routers import (
     search,
     tools,
     user_activity,  # Task #82: User Activity Analytics
+    valuation,  # v5.1: AI Price Forecast + Neighborhood One-Liner
     webhooks,  # Task #57: E-Signature Webhooks
 )
 from api.routers import (
@@ -135,6 +136,10 @@ OPENAPI_TAGS = [
     {
         "name": "Tools",
         "description": "Mortgage, TCO, investment, commute, valuation, and other calculators",
+    },
+    {
+        "name": "Valuation",
+        "description": "v5.1: AI price forecast with multi-year projection and neighborhood one-liner",
     },
     # Property management
     {"name": "Favorites", "description": "Property favorites and watchlist"},
@@ -494,6 +499,8 @@ app.include_router(chat.free_router, prefix="/api/v1")
 app.include_router(rag_router.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(settings_router.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(tools.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
+# v5.1: AI valuation endpoints (price forecast + neighborhood summary)
+app.include_router(valuation.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(prompt_templates.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 app.include_router(admin.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
 # Task #79: Data Sources Dashboard
