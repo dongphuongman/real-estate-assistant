@@ -3,10 +3,8 @@
 import React, { useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Sparkles, AlertTriangle, Loader2, TrendingUp, MapPin } from 'lucide-react';
-import {
-  priceForecastApi,
-  type PriceForecastResponse,
-} from '@/lib/api';
+import { priceForecastApi } from '@/lib/api';
+import type { PriceForecastResponse, ForecastPoint } from '@/lib/api/tools';
 
 type FeatureForm = {
   city: string;
@@ -364,7 +362,7 @@ function ForecastResultView({ result }: { result: PriceForecastResponse }) {
             Key drivers
           </div>
           <ul className="flex flex-wrap gap-2">
-            {result.drivers.map((d, i) => (
+            {result.drivers.map((d: string, i: number) => (
               <li
                 key={i}
                 className="rounded-full border bg-muted/30 px-3 py-1 text-xs"
@@ -407,7 +405,7 @@ function ForecastChart({ result }: { result: PriceForecastResponse }) {
   const minX = Math.min(...xs);
   const maxX = Math.max(...xs);
   const allValues = points.flatMap((p) => {
-    const f = result.forecast.find((x) => x.years_ahead === p.years_ahead);
+    const f = result.forecast.find((x: ForecastPoint) => x.years_ahead === p.years_ahead);
     return [p.estimated_value, f?.lower_bound ?? p.estimated_value, f?.upper_bound ?? p.estimated_value];
   });
   const minY = Math.min(...allValues) * 0.95;
@@ -422,7 +420,7 @@ function ForecastChart({ result }: { result: PriceForecastResponse }) {
   const bandPath = (() => {
     const top: string[] = [];
     const bottom: string[] = [];
-    result.forecast.forEach((p) => {
+    result.forecast.forEach((p: ForecastPoint) => {
       top.push(`${x(p.years_ahead)},${y(p.upper_bound)}`);
       bottom.push(`${x(p.years_ahead)},${y(p.lower_bound)}`);
     });

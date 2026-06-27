@@ -55,15 +55,16 @@ export function NeighborhoodSummary({
       language,
       max_sentences: maxSentences,
     })
-      .then((res) => {
+      .then((res: { summary: string }) => {
         if (cancelled) return;
         setSummary(res.summary);
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         if (cancelled) return;
         // Don't surface a noisy error to the user; just log it.
+        const msg = err instanceof Error ? err.message : 'failed';
         console.warn('Neighborhood summary failed:', err);
-        setError(err?.message ?? 'failed');
+        setError(msg);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
