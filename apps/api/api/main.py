@@ -264,17 +264,23 @@ async def startup_event():
 
     # 1.2 Generate comprehensive demo data for maximum feature showcase (if demo mode enabled)
     if os.getenv("DEMO_MODE", "false").lower() == "true":
-        logger.info("DEMO_MODE enabled — generating comprehensive demo data...")
-        try:
-            from alembic.demo_data_generator import generate_comprehensive_demo_data
-            from db.database import get_db_context
+        if os.getenv("SKIP_DEMO_SEED", "false").lower() == "true":
+            logger.info(
+                "SKIP_DEMO_SEED=true — skipping startup demo data generation. "
+                "Demo data will accumulate via live requests as users search/browse."
+            )
+        else:
+            logger.info("DEMO_MODE enabled — generating comprehensive demo data...")
+            try:
+                from alembic.demo_data_generator import generate_comprehensive_demo_data
+                from db.database import get_db_context
 
-            # Get a database session for the generator
-            async with get_db_context() as session:
-                await generate_comprehensive_demo_data(session)
-            logger.info("Comprehensive demo data generated successfully.")
-        except Exception as demo_error:
-            logger.warning("Comprehensive demo data generation failed (non-fatal): %s", demo_error)
+                # Get a database session for the generator
+                async with get_db_context() as session:
+                    await generate_comprehensive_demo_data(session)
+                logger.info("Comprehensive demo data generated successfully.")
+            except Exception as demo_error:
+                logger.warning("Comprehensive demo data generation failed (non-fatal): %s", demo_error)
 
     # 1.5 Initialize Auth Database (if JWT auth enabled)
     if settings.auth_jwt_enabled:
