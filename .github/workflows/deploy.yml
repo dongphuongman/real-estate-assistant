@@ -152,6 +152,38 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}
     steps:
+      - name: Create GitHub deployment record (backend)
+        id: gh_deploy
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ENV_NAME="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
+          SHORT_SHA="${GITHUB_SHA::7}"
+          DEPLOY_ID=$(gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/deployments \
+            -f ref="${{ github.sha }}" \
+            -f environment="$ENV_NAME" \
+            -f description="Backend deploy $SHORT_SHA — ${{ github.event.head_commit.message }}" \
+            -f auto_merge=false \
+            --jq '.id')
+          echo "id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
+          echo "Created GitHub deployment #$DEPLOY_ID in environment $ENV_NAME"
+
+      - name: Mark backend deployment in_progress
+        if: always() && steps.gh_deploy.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/deployments/${{ steps.gh_deploy.outputs.id }}/statuses \
+            -f state=in_progress \
+            -f description="Deploying backend to Render (${{ github.sha }})" \
+            >/dev/null
+
       - name: Select Render service
         id: service
         run: |
@@ -200,6 +232,32 @@ jobs:
           echo "ERROR: Backend health check failed after 15 minutes"
           exit 1
 
+      - name: Mark backend deployment success
+        if: success() && steps.gh_deploy.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/deployments/${{ steps.gh_deploy.outputs.id }}/statuses \
+            -f state=success \
+            -f description="Backend deployed and healthy" \
+            >/dev/null
+
+      - name: Mark backend deployment failure
+        if: failure() && steps.gh_deploy.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/deployments/${{ steps.gh_deploy.outputs.id }}/statuses \
+            -f state=failure \
+            -f description="Backend deploy failed (see job logs)" \
+            >/dev/null
+
       - name: Rollback on failure
         if: failure() && steps.prev-deploy.outputs.id != ''
         run: |
@@ -215,6 +273,38 @@ jobs:
     outputs:
       deploy-url: ${{ steps.resolve-url.outputs.url }}
     steps:
+      - name: Create GitHub deployment record (frontend)
+        id: gh_deploy
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ENV_NAME="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
+          SHORT_SHA="${GITHUB_SHA::7}"
+          DEPLOY_ID=$(gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/deployments \
+            -f ref="${{ github.sha }}" \
+            -f environment="$ENV_NAME" \
+            -f description="Frontend deploy $SHORT_SHA — ${{ github.event.head_commit.message }}" \
+            -f auto_merge=false \
+            --jq '.id')
+          echo "id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
+          echo "Created GitHub deployment #$DEPLOY_ID in environment $ENV_NAME"
+
+      - name: Mark frontend deployment in_progress
+        if: always() && steps.gh_deploy.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/deployments/${{ steps.gh_deploy.outputs.id }}/statuses \
+            -f state=in_progress \
+            -f description="Deploying frontend to Render (${{ github.sha }})" \
+            >/dev/null
+
       - name: Select Render frontend service
         id: service
         run: |
@@ -270,6 +360,32 @@ jobs:
           done
           echo "ERROR: Frontend health check failed after 15 minutes"
           exit 1
+
+      - name: Mark frontend deployment success
+        if: success() && steps.gh_deploy.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/deployments/${{ steps.gh_deploy.outputs.id }}/statuses \
+            -f state=success \
+            -f description="Frontend deployed and live" \
+            >/dev/null
+
+      - name: Mark frontend deployment failure
+        if: failure() && steps.gh_deploy.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/deployments/${{ steps.gh_deploy.outputs.id }}/statuses \
+            -f state=failure \
+            -f description="Frontend deploy failed (see job logs)" \
+            >/dev/null
 
       - name: Rollback on failure
         if: failure() && steps.prev-deploy.outputs.id != ''
