@@ -60,10 +60,12 @@ def _load_property_features(
     try:
         docs = store.get_properties_by_ids([property_id])
     except Exception as e:
-        # Use %r for the user-controlled id so newlines / control
-        # characters in the value are escaped by repr() and cannot
-        # inject fake log lines (CodeQL py/log-injection).
-        logger.warning("Failed to load property %r: %s", property_id, e)  # codeql[py/log-injection]: %r escapes via repr; verified by test_log_injection_in_property_id_is_escaped
+        # codeql[py/log-injection]: user input escaped via %r (repr) so
+        # embedded newlines/control chars cannot split the log line.
+        # See tests/integration/test_valuation_router.py::
+        # test_log_injection_in_property_id_is_escaped for the regression
+        # test that proves the mitigation.
+        logger.warning("Failed to load property %r: %s", property_id, e)
         return None
     if not docs:
         return None
