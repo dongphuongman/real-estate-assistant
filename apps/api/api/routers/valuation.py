@@ -63,6 +63,10 @@ def _load_property_features(
         # Use %r for the user-controlled id so newlines / control
         # characters in the value are escaped by repr() and cannot
         # inject fake log lines (CodeQL py/log-injection).
+        # codeql[py/log-injection]: value escaped via %r (repr) so the
+        # log entry is one line. Regression test in
+        # tests/integration/test_valuation_router.py::test_log_injection_in_property_id_is_escaped
+        # proves a payload with embedded \\n cannot split the log.
         logger.warning("Failed to load property %r: %s", property_id, e)
         return None
     if not docs:
