@@ -103,6 +103,24 @@ Run the full demo locally with comprehensive mock data in minutes:
 
 **[→ Demo Setup Documentation](scripts/demo/README.md)** — Complete guide with troubleshooting.
 
+## 🖥️ Deployment & Memory Notes
+
+The backend uses an **environment-conditional lazy provider load** (`apps/api/models/provider_factory.py`) to stay under Render's free-tier 512 MB memory cap. This is **only triggered when the `RENDER` env var is set to `"true"`** (which Render does automatically on every service).
+
+| Platform / Setup | `RENDER` set? | Provider loading | Memory baseline | Notes |
+|---|---|---|---|---|
+| **Render** (free / starter) | ✅ yes | Lazy — only the active `DEFAULT_PROVIDER` (`zai`) is imported at startup; the other 12 are loaded on first use | ~480 MB | Workaround for 512 MB hard cap |
+| **VPS / bare metal** | ❌ no | Eager — all 13 providers imported at startup | ~530 MB | No memory constraint; full DX |
+| **Docker / docker-compose** (local or self-hosted) | ❌ no (unless you set it) | Eager — all 13 providers imported at startup | ~530 MB | Same as VPS |
+| **Other PaaS** (Fly.io, Railway, Render preview, AWS App Runner, etc.) | ❌ no | Eager — all 13 providers imported at startup | depends on instance type | Pick a plan with ≥1 GB RAM for safety |
+| **Local dev / CI** | ❌ no | Eager | ~530 MB | Tests assume this path |
+
+If you self-host on a VPS, Docker, or any non-Render platform, **you don't need to do anything** — the eager path gives you all 13 providers from the start with no artificial latency. The lazy path is a Render-specific workaround for the 512 MB free-tier cap and is **not** a best practice for memory-constrained production deployments in general.
+
+To override the gate (e.g. force lazy loading on a different platform), set `RENDER=true` in the environment.
+
+
+
 ## 📸 Screenshots
 
 <div align="center">
