@@ -60,7 +60,10 @@ def _load_property_features(
     try:
         docs = store.get_properties_by_ids([property_id])
     except Exception as e:
-        logger.warning("Failed to load property %s: %s", property_id, e)
+        # Use %r for the user-controlled id so newlines / control
+        # characters in the value are escaped by repr() and cannot
+        # inject fake log lines (CodeQL py/log-injection).
+        logger.warning("Failed to load property %r: %s", property_id, e)
         return None
     if not docs:
         return None

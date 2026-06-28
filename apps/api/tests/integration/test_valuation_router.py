@@ -160,6 +160,53 @@ def test_price_forecast_404_when_property_missing(client, mock_vector_store):
     assert resp.status_code == 404
 
 
+def test_log_injection_in_property_id_is_escaped(client, caplog):
+    """Regression for CodeQL alert py/log-injection: a property_id
+    containing newlines / control characters must be escaped (via
+    repr()) so it cannot inject fake log lines. Force the vector
+    store to raise so the logger.warning path is exercised.
+    """
+    from api.dependencies import get_vector_store
+
+    # Replace the dependency for this test only: store raises on lookup.
+    broken_store = MagicMock()
+    broken_store.get_properties_by_ids.side_effect = RuntimeError("boom")
+
+    app.dependency_overrides[get_vector_store] = lambda: broken_store
+    try:
+        # property_id with literal backslash-n (\\n in Python source =
+        # \n string). Python's repr() escapes this; the FIX uses %r
+        # so the log line keeps the raw string but as an escaped
+        # repr, not a real newline.
+        malicious_id = "id_with_\\nnewlines_and_\\rcontrol"
+        with caplog.at_level("WARNING"):
+            resp = client.post(
+                "/api/v1/tools/price-forecast",
+                json={"property_id": malicious_id},
+                headers={"X-API-Key": "test-key"},
+            )
+        # Exception in get_properties_by_ids is caught and surfaced
+        # as 404 by the endpoint (treating 'not loadable' as
+        # 'not found'). The important assertion is on the log line
+        # below.
+        assert resp.status_code == 404
+        # The warning must be present.
+        log_text = caplog.text
+        assert "Failed to load property" in log_text
+        # The escaped repr of the id (with literal backslash-n) is
+        # in the log; a real newline would not appear in the middle
+        # of the message. We assert on the exact escaped fragment.
+        assert "id_with_\\\\nnewlines_and_\\\\rcontrol" in log_text
+        # Defensive: a real \\n in the middle of the log line would
+        # split it; the message we emit is exactly one line.
+        for line in log_text.splitlines():
+            if "Failed to load property" in line:
+                # Single-line record — no embedded raw newline.
+                assert "\\n" not in line.replace("\\\\n", "")
+    finally:
+        app.dependency_overrides.pop(get_vector_store, None)
+
+
 def test_price_forecast_fallback_when_llm_fails(client, mock_vector_store):
     failing = MagicMock()
     failing.invoke.side_effect = RuntimeError("down")
