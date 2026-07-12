@@ -48,6 +48,9 @@ jobs:
         run: python .github/scripts/render_star_history.py
 
       - name: Commit & push to star-history orphan branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
