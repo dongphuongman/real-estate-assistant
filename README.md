@@ -178,9 +178,12 @@ OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode
 
 ### Star Growth
 
-<!-- Chart is regenerated daily by .github/workflows/star-history.yml (self-hosted,
-     uses the repo's own GITHUB_TOKEN). Static SVG on the `star-history` orphan branch —
-     the hosted star-history.com embed broke after GitHub restricted the stargazers API. -->
+<!-- Chart is regenerated daily by .github/workflows/star-history.yml (custom Python
+     step: GitHub REST + matplotlib at 1400x533). Static SVG on the star-history orphan
+     branch. The hosted star-history.com embed broke when GitHub restricted the
+     stargazers API on 2026-06-30; the previous carsteneu/mystarhistory@v1 self-hosted
+     step hardcoded 800x533 and emitted one label per month, causing the X-axis labels
+     to overlap. -->
 <a href="https://star-history.com/#AleksNeStu/ai-real-estate-assistant&Date">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/AleksNeStu/ai-real-estate-assistant/star-history/assets/my-star-history/star-history-dark.svg">
