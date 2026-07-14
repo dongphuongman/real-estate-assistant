@@ -9,6 +9,15 @@ previous carsteneu/mystarhistory@v1 action (which hardcoded 800x533 px and
 emitted one label per calendar month).
 
 Used by .github/workflows/star-history.yml.
+
+Token precedence (set by the workflow):
+  1. GH_STAR_TOKEN — PAT owned by a repo admin/collaborator (required since
+     July 2026, when GitHub restricted the stargazers endpoint to admins/
+     collaborators only). Classic PAT with `public_repo`, or fine-grained
+     PAT with `Contents: Read` on this repo only (no "Starring" permission
+     exists for fine-grained PATs).
+  2. GITHUB_TOKEN — fallback for local dev runs; will return 403 in CI as of
+     2026-07-14 because the bot token is not admin/collaborator.
 """
 
 import argparse
