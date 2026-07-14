@@ -224,13 +224,23 @@ def render_chart(
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--repo", default=os.environ.get("GITHUB_REPOSITORY", "AleksNeStu/ai-real-estate-assistant"))
-    p.add_argument("--token", default=os.environ.get("GITHUB_TOKEN", ""))
+    # Prefer GH_STAR_TOKEN (a PAT) over GITHUB_TOKEN: since GitHub restricted
+    # the stargazers listing endpoint to admins/collaborators in July 2026,
+    # the auto-provided GITHUB_TOKEN no longer has access. GH_STAR_TOKEN
+    # holds a repo-owner PAT that does.
+    p.add_argument(
+        "--token",
+        default=os.environ.get("GH_STAR_TOKEN") or os.environ.get("GITHUB_TOKEN", ""),
+    )
     p.add_argument("--api-base", default=os.environ.get("GITHUB_API_BASE", API_BASE))
     p.add_argument("--out-dir", default=os.environ.get("OUT_DIR", "assets/my-star-history"))
     args = p.parse_args()
 
     if not args.token:
-        print("ERROR: GITHUB_TOKEN (or --token) is required", file=sys.stderr)
+        print(
+            "ERROR: GH_STAR_TOKEN (or GITHUB_TOKEN, or --token) is required",
+            file=sys.stderr,
+        )
         return 2
 
     print(f"Fetching stargazers for {args.repo} ...", flush=True)
