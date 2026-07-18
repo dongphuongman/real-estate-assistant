@@ -500,6 +500,12 @@ app.add_middleware(
 # Include Routers
 app.include_router(search.router, prefix="/api/v1", dependencies=[Depends(get_optional_api_key)])
 app.include_router(chat.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
+# Task #45: Agent/Broker Integration (public list_agents; moved outside
+# the JWT block so /api/v1/agents is always reachable for the demo and
+# the README landing grid -- see agents/page.tsx getAgents() which hits
+# this endpoint. Other agents.py routes still require a session via
+# get_current_active_user inside the router itself.)
+app.include_router(agents.router, prefix="/api/v1")
 # Task #89: Free tier chat (no API key required, rate-limited)
 app.include_router(chat.free_router, prefix="/api/v1")
 app.include_router(rag_router.router, prefix="/api/v1", dependencies=[Depends(get_api_key)])
@@ -541,8 +547,8 @@ if settings.auth_jwt_enabled:
     app.include_router(agent_analytics.router, prefix="/api/v1")
     # Task #63: Push Notifications
     app.include_router(push.router, prefix="/api/v1")
-    # Task #45: Agent/Broker Integration
-    app.include_router(agents.router, prefix="/api/v1")
+    # Task #45: Agent/Broker Integration (moved outside the JWT block --
+    # see line ~503 for the public list_agents route registration.)
     # Task #43: Document Management System
     app.include_router(documents.router, prefix="/api/v1")
     # Task #57: E-Signature Integration

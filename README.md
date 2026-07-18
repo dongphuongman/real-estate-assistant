@@ -130,12 +130,16 @@ To override the gate (e.g. force lazy loading on a different platform), set `REN
 
 ### What it looks like
 
-| Search & Discovery | Conversational Chat | AI Agents |
+| Landing | AI Assistant | AI Agents |
 |---|---|---|
-| ![Search](docs/screenshots/search.png) | ![Chat](docs/screenshots/chat.png) | ![Agents](docs/screenshots/agents.png) |
-| ![Analytics](docs/screenshots/analytics.png) | ![City Overview](docs/screenshots/city-overview.png) | ![Search Results](docs/screenshots/search-results.png) |
+| ![Home](assets/screenshots/home-dark.png) | ![Chat](docs/screenshots/chat.png) | ![Agents](docs/screenshots/agents.png) |
+| Analytics | Knowledge & RAG | Property Search |
+| ![Analytics](docs/screenshots/analytics.png) | ![Knowledge](assets/screenshots/knowledge-dark.png) | ![Search Results](docs/screenshots/search-results.png) |
 
-*Light-theme captures. Mobile and dark-theme variants live in `docs/screenshots/` and `assets/screenshots/`.*
+*Mixed light + dark captures (desktop only, no mobile). Empty welcome screen on
+Assistant is intentional — the chat populates as soon as the user sends a
+message. The working source captures live in `docs/screenshots/` (light) and
+`assets/screenshots/` (dark).*
 
 ## ✨ Features
 
