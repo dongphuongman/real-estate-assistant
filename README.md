@@ -1,6 +1,9 @@
 # 🏠 AI Real Estate Assistant
 
-> AI-powered conversational platform for property search, analytics, and market insights.
+> **AI-powered conversational platform for property search, analytics, and market insights.**
+>
+> Ask in natural language — *"2-bedroom apartment in Kraków under 500k"* — get matched listings.
+> Try the live demo below, no signup needed.
 
 [![Python](https://img.shields.io/badge/Python-3.12+-blue?style=flat&logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -8,12 +11,8 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![CI](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AleksNeStu/ai-real-estate-assistant/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-7000+-green?style=flat)](docs/testing/TESTING_GUIDE.md)
 [![Live Demo](https://img.shields.io/badge/Demo-Live-success?style=flat&logo=render)](https://realestate-web-dz1y.onrender.com/)
-[![Deploy](https://img.shields.io/badge/Deploy-Render-46E3B7?style=flat&logo=render&logoColor=white)](https://render.com)
-[![GitHub contributors](https://img.shields.io/github/contributors/AleksNeStu/ai-real-estate-assistant?style=flat)](https://github.com/AleksNeStu/ai-real-estate-assistant/graphs/contributors)
-[![GitHub commit activity](https://img.shields.io/github/commit-activity/t/AleksNeStu/ai-real-estate-assistant?style=flat&label=commits%2Fweek)](https://github.com/AleksNeStu/ai-real-estate-assistant/commits/dev)
-[![GitHub last commit](https://img.shields.io/github/last-commit/AleksNeStu/ai-real-estate-assistant/dev?style=flat)](https://github.com/AleksNeStu/ai-real-estate-assistant/commits/dev)
+[![Latest Release](https://img.shields.io/github/v/release/AleksNeStu/ai-real-estate-assistant?style=flat&color=2ea44f)](https://github.com/AleksNeStu/ai-real-estate-assistant/releases)
 
 <!-- markdownlint-disable MD051 -->
 ## 📑 Table of Contents
@@ -21,6 +20,7 @@
 - [Live Demo](#-live-demo)
 - [Features](#-features)
 - [Project Growth](#-project-growth)
+- [Releases](#-releases)
 - [Architecture](#-architecture)
 - [Quick Start](#-quick-start)
 - [Testing](#-testing)
@@ -50,9 +50,6 @@ Experience the full power of AI-driven real estate search without any setup:
 - 📊 **Financial Tools** — mortgage calculator, rent-vs-buy comparison, ROI analysis, and TCO calculator
 - 🗺️ **Interactive Maps** — clustered property markers with area analytics
 - 🌍 **9 Languages** — English, Polish, Russian, German, Spanish, Italian, Portuguese, Turkish, and Ukrainian
-
-[![Live Demo](https://img.shields.io/badge/Demo-Live-success?style=flat&logo=render)](https://realestate-web-dz1y.onrender.com/)
-[![Deploy](https://img.shields.io/badge/Deploy-Render-46E3B7?style=flat&logo=render&logoColor=white)](https://render.com)
 
 > **Note:** The demo uses simulated AI responses for instant exploration. Production deployment requires API keys.
 
@@ -131,6 +128,15 @@ To override the gate (e.g. force lazy loading on a different platform), set `REN
 
 </div>
 
+### What it looks like
+
+| Search & Discovery | Conversational Chat | AI Agents |
+|---|---|---|
+| ![Search](docs/screenshots/search.png) | ![Chat](docs/screenshots/chat.png) | ![Agents](docs/screenshots/agents.png) |
+| ![Analytics](docs/screenshots/analytics.png) | ![City Overview](docs/screenshots/city-overview.png) | ![Search Results](docs/screenshots/search-results.png) |
+
+*Light-theme captures. Mobile and dark-theme variants live in `docs/screenshots/` and `assets/screenshots/`.*
+
 ## ✨ Features
 
 ### 🤖 Multi-Provider AI
@@ -201,6 +207,19 @@ OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode
 | **Contributors** | 6                                           |
 | **Languages**    | 9 supported                                 |
 
+## 🚀 Releases
+
+| Version | Date | Highlights |
+|---|---|---|
+| [v5.0.12](CHANGELOG.md#5012---2026-06-22) | 2026-06-22 | Flaky-test fix, deploy independence, release verification workflow |
+| [v5.0.11](CHANGELOG.md#5011---2026-06-22) | 2026-06-22 | `pydantic-settings` CVE, dependabot config fix, first GitHub Release page |
+| [v5.0.10](CHANGELOG.md#5010---2026-06-20) | 2026-06-20 | `aiohttp` 9 advisories, `fastapi` 4 advisories, starlette direct dep |
+
+See [GitHub Releases](https://github.com/AleksNeStu/ai-real-estate-assistant/releases)
+and [CHANGELOG.md](CHANGELOG.md) for the full version history. Going forward, each
+release ships with a themed name and a short narrative paragraph — see
+[`.github/RELEASE_TEMPLATE.md`](.github/RELEASE_TEMPLATE.md).
+
 ## 🏗️ Architecture
 
 ```mermaid
@@ -214,6 +233,29 @@ graph LR
     RAG --> VDB[("ChromaDB")]
     Tools --> LLM["AI Providers"]
     API --> DB[("PostgreSQL / SQLite")]
+```
+
+### Request flow at a glance
+
+```
+You ask in natural language
+            │
+            ▼
+┌───────────────────────┐
+│   Query Analyzer      │  Classifies: Simple / Medium / Complex
+└──────────┬────────────┘
+           │
+   ┌───────┼────────┐
+   ▼       ▼        ▼
+ RAG     Hybrid   Agent+Tools
+ only    (RAG +    (tools,
+          enhance)  memory)
+   │       │        │
+   └───────┴────────┘
+           ▼
+    ChromaDB + LLM providers
+           ▼
+       Matched listings + answer
 ```
 
 See [docs/architecture/large-saas-overview.md](docs/architecture/large-saas-overview.md) for the full system design.
@@ -393,6 +435,12 @@ Please note that this project is released with a [Contributor Code of Conduct](.
 ## 📄 License
 
 MIT License — see [LICENSE](LICENSE).
+
+## 💖 Contributors
+
+[![Contributors](https://contrib.rocks/image?repo=AleksNeStu/ai-real-estate-assistant)](https://github.com/AleksNeStu/ai-real-estate-assistant/graphs/contributors)
+
+Want to help shape the project? See [Contributing](#-contributing) above.
 
 ## 💖 Support
 
