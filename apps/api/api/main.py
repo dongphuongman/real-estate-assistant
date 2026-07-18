@@ -528,38 +528,48 @@ app.include_router(metrics.router)
 # Task #57: Production Monitoring Dashboard (health, readiness, metrics, overview)
 app.include_router(monitoring.router)
 
-# JWT Auth Router (conditionally enabled)
+# User-scoped routers. Most of these were previously gated behind
+# settings.auth_jwt_enabled (so the /api/v1/* endpoints returned 404
+# in deployments with JWT auth disabled -- including the demo image
+# that powers the public landing page). They are now always
+# registered so the public demo can hit these endpoints; per-route
+# auth dependencies inside each router still require a session for
+# user-specific data, so a logged-out visitor sees empty list responses
+# rather than 500/404. Each router keeps its own Depends(...) -- only
+# the conditional registration at startup is removed.
+# Task #37: Favorites and Collections
+app.include_router(favorites.router, prefix="/api/v1")
+app.include_router(collections.router, prefix="/api/v1")
+# Saved searches
+app.include_router(saved_searches.router, prefix="/api/v1")
+# Task #75: Filter Presets
+app.include_router(filter_presets.router, prefix="/api/v1")
+# Task #38: Market analytics (price history, trends, indicators)
+app.include_router(market.router, prefix="/api/v1")
+app.include_router(anomalies.router, prefix="/api/v1")
+# Task #55: Lead Scoring System
+app.include_router(leads.router, prefix="/api/v1")
+# Task #56: Agent Performance Analytics
+app.include_router(agent_analytics.router, prefix="/api/v1")
+# Task #63: Push Notifications
+app.include_router(push.router, prefix="/api/v1")
+# Task #43: Document Management System
+app.include_router(documents.router, prefix="/api/v1")
+# Task #57: E-Signature Integration
+app.include_router(esignatures.router, prefix="/api/v1")
+app.include_router(webhooks.esignatures.router, prefix="/api/v1")
+# Task #82: User Activity Analytics
+app.include_router(user_activity.router, prefix="/api/v1")
+# Task #87: Model Preferences Per-Task
+app.include_router(model_preferences.router, prefix="/api/v1")
+# Task #88: User Profile Management
+app.include_router(profile.router, prefix="/api/v1")
+
+# JWT Auth Router (conditionally enabled -- only the JWT login/logout
+# routes themselves are gated. All other user-scoped routers are
+# always registered above.)
 if settings.auth_jwt_enabled:
     app.include_router(auth_jwt.router, prefix="/api/v1")
-    # Saved searches requires JWT auth
-    app.include_router(saved_searches.router, prefix="/api/v1")
-    # Task #37: Favorites and Collections require JWT auth
-    app.include_router(collections.router, prefix="/api/v1")
-    app.include_router(favorites.router, prefix="/api/v1")
-    # Task #75: Filter Presets
-    app.include_router(filter_presets.router, prefix="/api/v1")
-    # Task #38: Market analytics (price history, trends, indicators)
-    app.include_router(market.router, prefix="/api/v1")
-    app.include_router(anomalies.router, prefix="/api/v1")
-    # Task #55: Lead Scoring System
-    app.include_router(leads.router, prefix="/api/v1")
-    # Task #56: Agent Performance Analytics
-    app.include_router(agent_analytics.router, prefix="/api/v1")
-    # Task #63: Push Notifications
-    app.include_router(push.router, prefix="/api/v1")
-    # Task #45: Agent/Broker Integration (moved outside the JWT block --
-    # see line ~503 for the public list_agents route registration.)
-    # Task #43: Document Management System
-    app.include_router(documents.router, prefix="/api/v1")
-    # Task #57: E-Signature Integration
-    app.include_router(esignatures.router, prefix="/api/v1")
-    app.include_router(webhooks.esignatures.router, prefix="/api/v1")
-    # Task #82: User Activity Analytics
-    app.include_router(user_activity.router, prefix="/api/v1")
-    # Task #87: Model Preferences Per-Task
-    app.include_router(model_preferences.router, prefix="/api/v1")
-    # Task #88: User Profile Management
-    app.include_router(profile.router, prefix="/api/v1")
 else:
     # Fallback /auth/me so frontend gets 401 instead of 404 when JWT is disabled
     @app.get("/api/v1/auth/me", include_in_schema=False)
