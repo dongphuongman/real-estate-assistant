@@ -45,6 +45,15 @@ async function captureScreenshots(browser, screenshots) {
       localStorage.setItem("theme", "dark");
       document.documentElement.classList.add("dark");
     });
+  } else {
+    // Force light mode: the frontend doesn't respect `colorScheme: "light"`
+    // on its own, so we explicitly set localStorage and remove the .dark
+    // class. Without this, every "light" capture was actually rendering in
+    // the default dark theme (because the demo page starts dark).
+    await context.addInitScript(() => {
+      localStorage.setItem("theme", "light");
+      document.documentElement.classList.remove("dark");
+    });
   }
 
   const page = await context.newPage();
