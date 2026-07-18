@@ -65,6 +65,7 @@ services:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api/v1}
       - BACKEND_API_URL=${BACKEND_API_URL:-http://backend:8000/api/v1}
       - API_ACCESS_KEY=${API_ACCESS_KEY:-dev-secret-key}
+      - NEXT_PUBLIC_DEMO_MODE=${NEXT_PUBLIC_DEMO_MODE:-true}
     depends_on:
       backend:
         condition: service_healthy
