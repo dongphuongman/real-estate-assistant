@@ -132,14 +132,13 @@ To override the gate (e.g. force lazy loading on a different platform), set `REN
 
 | Landing | AI Assistant | AI Agents |
 |---|---|---|
-| ![Home](assets/screenshots/home-dark.png) | ![Chat](docs/screenshots/chat.png) | ![Agents](docs/screenshots/agents.png) |
-| Analytics | Knowledge & RAG | Property Search |
-| ![Analytics](docs/screenshots/analytics.png) | ![Knowledge](assets/screenshots/knowledge-dark.png) | ![Search Results](docs/screenshots/search-results.png) |
+| ![Home](assets/screenshots/home-dark.png) | ![Chat](assets/screenshots/chat-dark.png) | ![Agents](assets/screenshots/agents-dark.png) |
+| Analytics | Knowledge & RAG | City Overview |
+| ![Analytics](assets/screenshots/analytics-dark.png) | ![Knowledge](assets/screenshots/knowledge-dark.png) | ![City](assets/screenshots/city-overview-dark.png) |
 
-*Mixed light + dark captures (desktop only, no mobile). Empty welcome screen on
-Assistant is intentional — the chat populates as soon as the user sends a
-message. The working source captures live in `docs/screenshots/` (light) and
-`assets/screenshots/` (dark).*
+*All dark-theme desktop captures (1280x800). Working source files live in
+`assets/screenshots/*-dark.png`. Light-theme variants are available in
+`docs/screenshots/`.*
 
 ## ✨ Features
 

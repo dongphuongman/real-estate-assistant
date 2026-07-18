@@ -1,8 +1,7 @@
-// Regenerate the 5 byte-identical dark-theme placeholder files in
-// assets/screenshots/ (md5 159c54ac...) by capturing them with the
-// running Docker demo (NEXT_PUBLIC_DEMO_MODE=true). Reads from the
-// SCREENSHOTS array used by take_screenshots.js but writes to
-// assets/screenshots/ with the same names.
+// Capture all 6 README grid screenshots in DARK theme with consistent
+// settings (1280x800, fullPage:false). Writes to assets/screenshots/.
+// Same dark-theme injection as take_screenshots.js (localStorage +
+// .dark class on documentElement).
 const { chromium } = require("playwright");
 const path = require("path");
 const fs = require("fs");
@@ -10,14 +9,18 @@ const fs = require("fs");
 const BASE = process.argv[2] || "http://localhost:3082";
 const OUT_DIR = path.join(__dirname, "..", "..", "assets", "screenshots");
 
-// The 5 placeholder routes (same routes as their light counterparts
-// in docs/screenshots/, but with -dark suffix in the filename).
+// 6 README grid slots, all dark theme.
 const SCREENSHOTS = [
-  { name: "agents-dark", path: "/en/agents" },
+  { name: "home-dark",          path: "/" },
+  { name: "chat-dark",          path: "/en/chat" },
+  { name: "agents-dark",        path: "/en/agents" },
+  { name: "analytics-dark",     path: "/en/analytics" },
   { name: "city-overview-dark", path: "/en/city-overview" },
-  { name: "documents-dark", path: "/en/documents" },
-  { name: "favorites-dark", path: "/en/favorites" },
-  { name: "settings-dark", path: "/en/settings" },
+  { name: "knowledge-dark",     path: "/en/knowledge" },
+  // Auth-gated pages (render fine in demo mode via middleware bypass)
+  { name: "favorites-dark",     path: "/en/favorites" },
+  { name: "documents-dark",     path: "/en/documents" },
+  { name: "settings-dark",      path: "/en/settings" },
 ];
 
 async function main() {
@@ -28,7 +31,9 @@ async function main() {
     locale: "en-US",
     colorScheme: "dark",
   });
-  // Apply dark theme before any page renders
+  // Force dark theme (the page's className="dark" default makes
+  // colorScheme: 'dark' work, but we set localStorage + class
+  // explicitly for safety).
   await context.addInitScript(() => {
     localStorage.setItem("theme", "dark");
     document.documentElement.classList.add("dark");
@@ -40,14 +45,9 @@ async function main() {
     console.log(`Capturing ${shot.name}...`);
     try {
       await page.goto(url, { waitUntil: "load", timeout: 30000 });
-      // City-overview fires 5+ parallel search queries; give them time.
+      // city-overview fires 5+ parallel search queries; give them time.
       const wait = shot.name === "city-overview-dark" ? 12000 : 5000;
       await page.waitForTimeout(wait);
-
-      const btn = page.locator("button:has-text('Accept'), button:has-text('Close')");
-      try {
-        if (await btn.isVisible({ timeout: 1000 })) await btn.click();
-      } catch {}
 
       const outPath = path.join(OUT_DIR, `${shot.name}.png`);
       await page.screenshot({ path: outPath, fullPage: false });
@@ -60,7 +60,7 @@ async function main() {
 
   await context.close();
   await browser.close();
-  console.log("\nDone! Dark-theme placeholders regenerated.");
+  console.log("\nDone! Dark-theme captures regenerated.");
 }
 
 main().catch((err) => {
