@@ -603,11 +603,11 @@ class LeadScoringService:
         # (reading 'toFixed')" on .avg_score.toFixed(1) / .conversion_rate.toFixed(1).
         leads = await self.lead_repo.get_list(limit=10000)
         if leads:
-            avg_score = round(sum(l.current_score for l in leads) / len(leads), 2)
+            avg_score = round(sum(lead.current_score for lead in leads) / len(leads), 2)
         else:
             avg_score = 0.0
 
-        converted_leads = sum(1 for l in leads if l.status == "converted")
+        converted_leads = sum(1 for lead in leads if lead.status == "converted")
         conversion_rate = (
             round(converted_leads / total_leads * 100, 2) if total_leads else 0.0
         )
@@ -620,8 +620,8 @@ class LeadScoringService:
             - timedelta(hours=24)
         )
         new_leads_24h = sum(
-            1 for l in leads
-            if l.created_at and l.created_at >= cutoff_24h
+            1 for lead in leads
+            if lead.created_at and lead.created_at >= cutoff_24h
         )
 
         return {
