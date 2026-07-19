@@ -269,6 +269,7 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             repos/${{ github.repository }}/deployments/${{ steps.gh_deploy.outputs.id }}/statuses \
             -f state=success \
+            -F environment_url="${{ steps.service.outputs.url }}/health" \
             -f description="Backend deployed and healthy" \
             >/dev/null
 
@@ -401,6 +402,7 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             repos/${{ github.repository }}/deployments/${{ steps.gh_deploy.outputs.id }}/statuses \
             -f state=success \
+            -F environment_url="${{ steps.resolve-url.outputs.url }}" \
             -f description="Frontend deployed and live" \
             >/dev/null
 
