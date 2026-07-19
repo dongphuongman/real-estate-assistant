@@ -207,7 +207,7 @@ OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode
 | **Commits**      | 1177+                                       |
 | **Tests**        | 7,000+ (6,254 backend + 1,000 frontend)     |
 | **Lines of Code** | 60,000+ (27K Python + 34K TypeScript)      |
-| **Contributors** | 6                                           |
+| **Contributors** | 7                                           |
 | **Languages**    | 9 supported                                 |
 
 ## 🚀 Releases
@@ -441,7 +441,7 @@ MIT License — see [LICENSE](LICENSE).
 
 ## 💖 Contributors
 
-[![Contributors](https://contrib.rocks/image?repo=AleksNeStu/ai-real-estate-assistant)](https://github.com/AleksNeStu/ai-real-estate-assistant/graphs/contributors)
+[![Contributors](https://contrib.nn.ci/api?repo=AleksNeStu/ai-real-estate-assistant)](https://github.com/AleksNeStu/ai-real-estate-assistant/graphs/contributors)
 
 Want to help shape the project? See [Contributing](#-contributing) above.
 
