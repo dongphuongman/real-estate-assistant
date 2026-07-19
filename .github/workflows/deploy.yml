@@ -33,7 +33,7 @@ on:
 # conclusion and itself end up with all jobs skipped (no deployment
 # record created, no actual Render deploy triggered).
 concurrency:
-  group: deploy-${{ github.event.workflow_run.head_branch || github.ref }}
+  group: deploy-${{ github.event.workflow_run.head_branch || github.ref_name }}
   cancel-in-progress: true
 
 permissions:
@@ -192,7 +192,7 @@ jobs:
             -f ref="$DEPLOY_SHA" \
             -f environment="$DEPLOY_ENV" \
             -f description="Backend deploy $SHORT_SHA" \
-            -f auto_merge=false \
+            -F auto_merge=false \
             --jq '.id')
           echo "id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
           echo "Created GitHub deployment #$DEPLOY_ID in environment $DEPLOY_ENV"
@@ -316,7 +316,7 @@ jobs:
             -f ref="$DEPLOY_SHA" \
             -f environment="$DEPLOY_ENV" \
             -f description="Frontend deploy $SHORT_SHA" \
-            -f auto_merge=false \
+            -F auto_merge=false \
             --jq '.id')
           echo "id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
           echo "Created GitHub deployment #$DEPLOY_ID in environment $DEPLOY_ENV"

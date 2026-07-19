@@ -31,7 +31,9 @@ def test_deploy_workflow_ci_check_runs_for_workflow_run() -> None:
     workflow = _load_workflow("deploy.yml")
     ci_check = workflow["jobs"]["ci-check"]
 
-    assert ci_check["if"] == "github.repository_owner == 'AleksNeStu'"
+    condition = ci_check["if"]
+    assert "github.repository_owner == 'AleksNeStu'" in condition
+    assert "workflow_dispatch" not in condition
     guard = next(
         step
         for step in ci_check["steps"]
@@ -41,15 +43,18 @@ def test_deploy_workflow_ci_check_runs_for_workflow_run() -> None:
 
 
 def test_deploy_workflow_uses_triggering_sha_and_branch() -> None:
+    workflow = _load_workflow("deploy.yml")
     text = _workflow_path("deploy.yml").read_text(encoding="utf-8")
+    expected_environment = (
+        "${{ github.event.inputs.environment || "
+        "((github.event.workflow_run.head_branch || github.ref_name) == 'dev' "
+        "&& 'staging') || 'production' }}"
+    )
 
     assert "github.event.workflow_run.head_sha || github.sha" in text
     assert "github.event.workflow_run.head_branch || github.ref_name" in text
-    assert (
-        "github.event.inputs.environment || "
-        "((github.event.workflow_run.head_branch || github.ref_name) == 'dev' "
-        "&& 'staging') || 'production'"
-    ) in text
+    assert workflow["jobs"]["deploy-backend"]["environment"] == expected_environment
+    assert workflow["jobs"]["deploy-frontend"]["environment"] == expected_environment
     assert 'ref="${{ github.sha }}"' not in text
     assert "github.ref == 'refs/heads/dev'" not in text
 
@@ -74,3 +79,18 @@ def test_deploy_workflow_jobs_are_owner_guarded() -> None:
     for name, job in workflow["jobs"].items():
         condition = job.get("if", "")
         assert "github.repository_owner == 'AleksNeStu'" in condition, name
+
+
+def test_deploy_workflow_sends_boolean_auto_merge() -> None:
+    text = _workflow_path("deploy.yml").read_text(encoding="utf-8")
+
+    assert text.count("-F auto_merge=false") == 2
+    assert "-f auto_merge=false" not in text
+
+
+def test_deploy_workflow_serializes_same_branch() -> None:
+    workflow = _load_workflow("deploy.yml")
+
+    assert workflow["concurrency"]["group"] == (
+        "deploy-${{ github.event.workflow_run.head_branch || github.ref_name }}"
+    )
