@@ -46,17 +46,36 @@ env:
 
 jobs:
   ci-check:
+    if: github.repository_owner == 'AleksNeStu'
     runs-on: ubuntu-latest
-    # Only required for workflow_dispatch (manual) deploys.
-    # workflow_run events guarantee CI already completed (and succeeded,
-    # since the deploy would not be triggered by the failed-run path
-    # under GitHub's default branch protection semantics — though we
-    # still verify the conclusion below as defense in depth).
-    if: github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
     steps:
+      - name: Validate triggering CI run
+        if: github.event_name == 'workflow_run'
+        env:
+          CI_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          CI_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          CI_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if [ "$CI_CONCLUSION" != "success" ]; then
+            echo "ERROR: Triggering CI conclusion is $CI_CONCLUSION"
+            exit 1
+          fi
+          case "$CI_HEAD_BRANCH" in
+            main|dev) ;;
+            *) echo "ERROR: Unsupported CI branch: $CI_HEAD_BRANCH"; exit 1 ;;
+          esac
+          if [ -z "$CI_HEAD_SHA" ]; then
+            echo "ERROR: Triggering CI head SHA is empty"
+            exit 1
+          fi
+          echo "CI passed for $CI_HEAD_BRANCH at $CI_HEAD_SHA"
+
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Verify CI passed on target branch
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/github-script@v9
         with:
           script: |
@@ -113,14 +132,13 @@ jobs:
 
   validate:
     needs: [ci-check]
-    if: |
-      always() &&
-      needs.ci-check.result != 'failure' &&
-      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
+    if: github.repository_owner == 'AleksNeStu' && needs.ci-check.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Validate deployment configs
         run: |
@@ -134,8 +152,9 @@ jobs:
             echo "  ✓ $f"
           done
 
-          # Check render.yaml on main/dev
-          if [ "${{ github.ref }}" = "refs/heads/main" ] || [ "${{ github.ref }}" = "refs/heads/dev" ]; then
+          # Check render.yaml for main/dev deployment sources
+          DEPLOY_BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
+          if [ "$DEPLOY_BRANCH" = "main" ] || [ "$DEPLOY_BRANCH" = "dev" ]; then
             if [ ! -f "render.yaml" ]; then
               echo "WARNING: Missing render.yaml (needed for Render deploy)"
             fi
@@ -154,45 +173,48 @@ jobs:
 
   deploy-backend:
     needs: validate
+    if: github.repository_owner == 'AleksNeStu' && needs.validate.result == 'success'
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}
+    environment: ${{ github.event.inputs.environment || ((github.event.workflow_run.head_branch || github.ref_name) == 'dev' && 'staging') || 'production' }}
     steps:
       - name: Create GitHub deployment record (backend)
         id: gh_deploy
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_ENV: ${{ github.event.inputs.environment || ((github.event.workflow_run.head_branch || github.ref_name) == 'dev' && 'staging') || 'production' }}
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
-          ENV_NAME="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
-          SHORT_SHA="${GITHUB_SHA::7}"
+          SHORT_SHA="${DEPLOY_SHA::7}"
           DEPLOY_ID=$(gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
             repos/${{ github.repository }}/deployments \
-            -f ref="${{ github.sha }}" \
-            -f environment="$ENV_NAME" \
-            -f description="Backend deploy $SHORT_SHA — ${{ github.event.head_commit.message }}" \
+            -f ref="$DEPLOY_SHA" \
+            -f environment="$DEPLOY_ENV" \
+            -f description="Backend deploy $SHORT_SHA" \
             -f auto_merge=false \
             --jq '.id')
           echo "id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
-          echo "Created GitHub deployment #$DEPLOY_ID in environment $ENV_NAME"
+          echo "Created GitHub deployment #$DEPLOY_ID in environment $DEPLOY_ENV"
 
       - name: Mark backend deployment in_progress
         if: always() && steps.gh_deploy.outputs.id != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
             repos/${{ github.repository }}/deployments/${{ steps.gh_deploy.outputs.id }}/statuses \
             -f state=in_progress \
-            -f description="Deploying backend to Render (${{ github.sha }})" \
+            -f description="Deploying backend to Render ($DEPLOY_SHA)" \
             >/dev/null
 
       - name: Select Render service
         id: service
         run: |
-          DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
+          DEPLOY_ENV="${{ github.event.inputs.environment || ((github.event.workflow_run.head_branch || github.ref_name) == 'dev' && 'staging') || 'production' }}"
           echo "Deploy environment: $DEPLOY_ENV"
           if [ "$DEPLOY_ENV" = "staging" ]; then
             echo "id=${{ secrets.RENDER_SERVICE_ID_API_STAGING }}" >> $GITHUB_OUTPUT
@@ -273,8 +295,9 @@ jobs:
 
   deploy-frontend:
     needs: validate
+    if: github.repository_owner == 'AleksNeStu' && needs.validate.result == 'success'
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}
+    environment: ${{ github.event.inputs.environment || ((github.event.workflow_run.head_branch || github.ref_name) == 'dev' && 'staging') || 'production' }}
     outputs:
       deploy-url: ${{ steps.resolve-url.outputs.url }}
     steps:
@@ -282,38 +305,40 @@ jobs:
         id: gh_deploy
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_ENV: ${{ github.event.inputs.environment || ((github.event.workflow_run.head_branch || github.ref_name) == 'dev' && 'staging') || 'production' }}
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
-          ENV_NAME="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
-          SHORT_SHA="${GITHUB_SHA::7}"
+          SHORT_SHA="${DEPLOY_SHA::7}"
           DEPLOY_ID=$(gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
             repos/${{ github.repository }}/deployments \
-            -f ref="${{ github.sha }}" \
-            -f environment="$ENV_NAME" \
-            -f description="Frontend deploy $SHORT_SHA — ${{ github.event.head_commit.message }}" \
+            -f ref="$DEPLOY_SHA" \
+            -f environment="$DEPLOY_ENV" \
+            -f description="Frontend deploy $SHORT_SHA" \
             -f auto_merge=false \
             --jq '.id')
           echo "id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
-          echo "Created GitHub deployment #$DEPLOY_ID in environment $ENV_NAME"
+          echo "Created GitHub deployment #$DEPLOY_ID in environment $DEPLOY_ENV"
 
       - name: Mark frontend deployment in_progress
         if: always() && steps.gh_deploy.outputs.id != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
             repos/${{ github.repository }}/deployments/${{ steps.gh_deploy.outputs.id }}/statuses \
             -f state=in_progress \
-            -f description="Deploying frontend to Render (${{ github.sha }})" \
+            -f description="Deploying frontend to Render ($DEPLOY_SHA)" \
             >/dev/null
 
       - name: Select Render frontend service
         id: service
         run: |
-          DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
+          DEPLOY_ENV="${{ github.event.inputs.environment || ((github.event.workflow_run.head_branch || github.ref_name) == 'dev' && 'staging') || 'production' }}"
           echo "Deploy environment: $DEPLOY_ENV"
           if [ "$DEPLOY_ENV" = "staging" ]; then
             echo "id=${{ secrets.RENDER_SERVICE_ID_WEB_STAGING }}" >> $GITHUB_OUTPUT
@@ -324,7 +349,7 @@ jobs:
       - name: Resolve frontend URL
         id: resolve-url
         run: |
-          DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
+          DEPLOY_ENV="${{ github.event.inputs.environment || ((github.event.workflow_run.head_branch || github.ref_name) == 'dev' && 'staging') || 'production' }}"
           if [ "$DEPLOY_ENV" = "staging" ]; then
             URL="${{ secrets.RENDER_FRONTEND_URL_STAGING }}"
           else
@@ -402,18 +427,24 @@ jobs:
 
   smoke-test:
     needs: [deploy-backend, deploy-frontend]
-    if: always() && needs.deploy-backend.result == 'success' && needs.deploy-frontend.result == 'success'
+    if: |
+      always() &&
+      github.repository_owner == 'AleksNeStu' &&
+      needs.deploy-backend.result == 'success' &&
+      needs.deploy-frontend.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Run smoke tests
         run: |
           echo "Running post-deployment smoke tests..."
 
           # Determine environment URLs
-          DEPLOY_ENV="${{ github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'staging') || 'production' }}"
+          DEPLOY_ENV="${{ github.event.inputs.environment || ((github.event.workflow_run.head_branch || github.ref_name) == 'dev' && 'staging') || 'production' }}"
           if [ "$DEPLOY_ENV" = "staging" ]; then
             BACKEND_URL="${{ secrets.RENDER_BACKEND_URL_STAGING }}"
             FRONTEND_URL="${{ secrets.RENDER_FRONTEND_URL_STAGING }}"
