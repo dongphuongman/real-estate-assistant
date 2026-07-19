@@ -780,16 +780,47 @@ class TestLeadScoringService:
 
     @pytest.mark.asyncio
     async def test_get_scoring_statistics(self):
-        self.service.lead_repo.count = AsyncMock(side_effect=[100, 20, 40, 40])
+        now = datetime.now(UTC).replace(tzinfo=None)
+        leads = [
+            _make_lead(
+                current_score=90,
+                status="converted",
+                created_at=now - timedelta(days=30),
+            ),
+            _make_lead(
+                current_score=70,
+                status="new",
+                created_at=now - timedelta(hours=2),
+            ),
+            _make_lead(
+                current_score=55,
+                status="converted",
+                created_at=now - timedelta(days=10),
+            ),
+            _make_lead(
+                current_score=30,
+                status="new",
+                created_at=now - timedelta(hours=1),
+            ),
+        ]
+        self.service.lead_repo.count = AsyncMock(side_effect=[4, 1, 2, 1])
+        self.service.lead_repo.get_list = AsyncMock(return_value=leads)
         self.service.score_repo.count_scores_today = AsyncMock(return_value=15)
 
         result = await self.service.get_scoring_statistics()
-        assert result["total_leads"] == 100
-        assert result["score_distribution"]["high_80_100"] == 20
-        assert result["score_distribution"]["medium_50_79"] == 40
-        assert result["score_distribution"]["low_0_49"] == 40
+
+        assert result["total_leads"] == 4
+        assert result["high_value_leads"] == 1
+        assert result["avg_score"] == 61.25
+        assert result["conversion_rate"] == 50.0
+        assert result["converted_leads"] == 2
+        assert result["new_leads_24h"] == 2
+        assert result["score_distribution"]["high_80_100"] == 1
+        assert result["score_distribution"]["medium_50_79"] == 2
+        assert result["score_distribution"]["low_0_49"] == 1
         assert result["scores_calculated_today"] == 15
         assert result["model_version"] == "1.0.0"
+        self.service.lead_repo.get_list.assert_awaited_once_with(limit=10000)
 
 
 # ===========================================================================
