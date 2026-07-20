@@ -22,9 +22,10 @@ Token precedence (set by the workflow):
 
 import argparse
 import io
+import json
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 import matplotlib
@@ -43,6 +44,109 @@ LINE_COLOR = "#fc6d26"
 
 PER_PAGE = 100
 RATE_LIMIT_FLOOR = 10
+
+
+def summarize_growth(dates: list, now: datetime | None = None) -> dict:
+    """Compute star-growth windows from a list of star datetime objects.
+
+    Args:
+        dates: List of UTC datetime objects when each star was received.
+        now: Reference time (defaults to now in UTC).
+
+    Returns:
+        dict with keys: new_stars_1d, new_stars_7d, new_stars_30d,
+        total_stars, collected_at (ISO string).
+    """
+    now = now or datetime.now(tz=timezone.utc)
+    delta_1d = timedelta(days=1)
+    delta_7d = timedelta(days=7)
+    delta_30d = timedelta(days=30)
+
+    cutoff_1d = now - delta_1d
+    cutoff_7d = now - delta_7d
+    cutoff_30d = now - delta_30d
+
+    count_1d = sum(1 for d in dates if cutoff_1d <= d)
+    count_7d = sum(1 for d in dates if cutoff_7d <= d)
+    count_30d = sum(1 for d in dates if cutoff_30d <= d)
+
+    return {
+        "new_stars_1d": count_1d,
+        "new_stars_7d": count_7d,
+        "new_stars_30d": count_30d,
+        "total_stars": len(dates),
+        "collected_at": now.isoformat(),
+    }
+
+
+def fetch_optional_traffic(
+    repo: str, token: str, api_base: str = API_BASE
+) -> dict:
+    """Fetch GitHub traffic data (views + referrers) for a repository.
+
+    Traffic endpoints return 403/404/429 for repos without access or
+    when traffic data is unavailable. These are best-effort and do NOT
+    cause the caller to fail.
+
+    Args:
+        repo: "owner/repo" string.
+        token: GitHub API token.
+        api_base: Base URL for API (default: API_BASE).
+
+    Returns:
+        dict with keys: traffic_available (bool), traffic_error (str or None),
+        views_14d (int), unique_visitors_14d (int), referrers (list).
+    """
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+
+    result = {
+        "traffic_available": False,
+        "traffic_error": None,
+        "views_14d": 0,
+        "unique_visitors_14d": 0,
+        "referrers": [],
+    }
+
+    try:
+        # Fetch views
+        views_url = f"{api_base}/repos/{repo}/traffic/views"
+        views_resp = requests.get(views_url, headers=headers, timeout=30)
+        if views_resp.status_code == 200:
+            data = views_resp.json()
+            result["views_14d"] = data.get("count", 0)
+            result["unique_visitors_14d"] = data.get("uniques", 0)
+        elif views_resp.status_code in (403, 404, 429):
+            result["traffic_error"] = f"views: HTTP {views_resp.status_code}"
+        else:
+            result["traffic_error"] = f"views: HTTP {views_resp.status_code}"
+
+        # Fetch referrers
+        ref_url = f"{api_base}/repos/{repo}/traffic/popular/referrers"
+        ref_resp = requests.get(ref_url, headers=headers, timeout=30)
+        if ref_resp.status_code == 200:
+            result["referrers"] = ref_resp.json()
+        elif ref_resp.status_code in (403, 404, 429):
+            if result["traffic_error"]:
+                result["traffic_error"] += f"; referrers: HTTP {ref_resp.status_code}"
+            else:
+                result["traffic_error"] = f"referrers: HTTP {ref_resp.status_code}"
+        else:
+            if result["traffic_error"]:
+                result["traffic_error"] += f"; referrers: HTTP {ref_resp.status_code}"
+            else:
+                result["traffic_error"] = f"referrers: HTTP {ref_resp.status_code}"
+
+        if result["traffic_error"] is None:
+            result["traffic_available"] = True
+
+    except requests.RequestException as e:
+        result["traffic_error"] = str(e)
+
+    return result
 
 
 def fetch_stargazers(repo: str, token: str, api_base: str = API_BASE) -> list:
@@ -252,11 +356,52 @@ def main() -> int:
         )
         return 2
 
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
     print(f"Fetching stargazers for {args.repo} ...", flush=True)
     dates = fetch_stargazers(args.repo, args.token, args.api_base)
+
+    now = datetime.now(tz=timezone.utc)
+    growth = summarize_growth(dates, now)
+    print(
+        f"  stars: total={growth['total_stars']}, "
+        f"1d={growth['new_stars_1d']}, "
+        f"7d={growth['new_stars_7d']}, "
+        f"30d={growth['new_stars_30d']}",
+        flush=True,
+    )
+
+    traffic = fetch_optional_traffic(args.repo, args.token, args.api_base)
+    growth["repository"] = args.repo
+    growth["traffic_available"] = traffic["traffic_available"]
+    growth["traffic_error"] = traffic["traffic_error"]
+    if traffic["traffic_available"]:
+        growth["views_14d"] = traffic["views_14d"]
+        growth["unique_visitors_14d"] = traffic["unique_visitors_14d"]
+        growth["referrers"] = traffic["referrers"]
+        print(
+            f"  traffic: views_14d={traffic['views_14d']}, "
+            f"visitors_14d={traffic['unique_visitors_14d']}",
+            flush=True,
+        )
+    else:
+        growth["views_14d"] = 0
+        growth["unique_visitors_14d"] = 0
+        growth["referrers"] = []
+        if traffic["traffic_error"]:
+            print(f"  traffic: unavailable ({traffic['traffic_error']})", flush=True)
+        else:
+            print("  traffic: unavailable (no data)", flush=True)
+
+    # Write growth-metrics.json regardless of star count
+    metrics_path = out_dir / "growth-metrics.json"
+    metrics_path.write_text(json.dumps(growth, indent=2))
+    print(f"  wrote {metrics_path}", flush=True)
+
     if not dates:
-        print("ERROR: no stargazers returned", file=sys.stderr)
-        return 1
+        print("  no stars to render — skipping SVG generation", flush=True)
+        return 0
 
     print(
         f"  fetched {len(dates)} stars from {dates[0].date()} to {dates[-1].date()}",
@@ -271,8 +416,6 @@ def main() -> int:
         flush=True,
     )
 
-    out_dir = Path(args.out_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
     for theme in ("light", "dark"):
         svg = render_chart(xs, ys, label_xs, theme)
         path = out_dir / f"star-history-{theme}.svg"
