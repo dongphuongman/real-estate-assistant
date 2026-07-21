@@ -25,16 +25,19 @@ on:
           - production
           - staging
 
-# Prevent overlapping deploys to the same ref. cancel-in-progress: true
-# supersedes a previous in-flight deploy when a new push arrives, which
-# is the correct behaviour for dev: rapid pushes should deploy the
-# latest commit, not queue behind an older one. With cancel-in-progress:
-# false, the second deploy would wait for the first's skipped
-# conclusion and itself end up with all jobs skipped (no deployment
-# record created, no actual Render deploy triggered).
+# Prevent overlapping deploys to the same ref. cancel-in-progress: false
+# (previous value was true). With cancel-in-progress: true, a new push
+# cancels the previous in-flight deploy, but GitHub leaves the previous
+# deployment record in an orphaned in_progress state — Render receives the
+# new code, the new record succeeds, yet the widget shows the old record
+# as "inactive". With cancel-in-progress: false, the second deploy waits
+# for the first to finish and itself runs to completion, so every push
+# creates a coherent success record and no Render deploy is skipped.
+# The concurrency.group is preserved so simultaneous pushes to the same
+# ref still queue serially (one Render deploy at a time).
 concurrency:
   group: deploy-${{ github.event.workflow_run.head_branch || github.ref_name }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
