@@ -198,6 +198,10 @@ jobs:
             -F auto_merge=false \
             --jq '.id')
           echo "id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
+          # Expose DEPLOY_ENV to subsequent steps so the success POST can
+          # pass auto_inactive=false on staging (so parallel backend+frontend
+          # jobs don't cross-inactivate each other in the staging env).
+          echo "DEPLOY_ENV=$DEPLOY_ENV" >> "$GITHUB_ENV"
           echo "Created GitHub deployment #$DEPLOY_ID in environment $DEPLOY_ENV"
 
       - name: Mark backend deployment in_progress
@@ -267,10 +271,22 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Pass auto_inactive=false on staging so the parallel backend and
+          # frontend jobs in the same run don't cross-inactivate each other
+          # in the shared staging environment (GitHub defaults
+          # auto_inactive=true, which left the newest staging deployment
+          # marked "Inactive" on the repo Environments page even when Render
+          # was live). Production is left at the default (auto_inactive=true)
+          # so a new prod deploy correctly supersedes the prior active one.
+          AUTO_INACTIVE_FLAG=""
+          if [ "${DEPLOY_ENV}" = "staging" ]; then
+            AUTO_INACTIVE_FLAG="-F auto_inactive=false"
+          fi
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
             repos/${{ github.repository }}/deployments/${{ steps.gh_deploy.outputs.id }}/statuses \
+            $AUTO_INACTIVE_FLAG \
             -f state=success \
             -F environment_url="${{ steps.service.outputs.url }}/health" \
             -f description="Backend deployed and healthy" \
@@ -323,6 +339,9 @@ jobs:
             -F auto_merge=false \
             --jq '.id')
           echo "id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
+          # Expose DEPLOY_ENV to subsequent steps so the success POST can
+          # pass auto_inactive=false on staging (see backend twin step).
+          echo "DEPLOY_ENV=$DEPLOY_ENV" >> "$GITHUB_ENV"
           echo "Created GitHub deployment #$DEPLOY_ID in environment $DEPLOY_ENV"
 
       - name: Mark frontend deployment in_progress
@@ -400,10 +419,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Pass auto_inactive=false on staging so the parallel backend and
+          # frontend jobs in the same run don't cross-inactivate each other
+          # in the shared staging environment (see backend twin step).
+          AUTO_INACTIVE_FLAG=""
+          if [ "${DEPLOY_ENV}" = "staging" ]; then
+            AUTO_INACTIVE_FLAG="-F auto_inactive=false"
+          fi
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
             repos/${{ github.repository }}/deployments/${{ steps.gh_deploy.outputs.id }}/statuses \
+            $AUTO_INACTIVE_FLAG \
             -f state=success \
             -F environment_url="${{ steps.resolve-url.outputs.url }}" \
             -f description="Frontend deployed and live" \
