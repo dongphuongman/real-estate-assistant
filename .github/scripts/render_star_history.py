@@ -11,11 +11,12 @@ emitted one label per calendar month).
 Used by .github/workflows/star-history.yml.
 
 Token precedence (set by the workflow):
-  1. GH_STAR_TOKEN — PAT owned by a repo admin/collaborator (required since
-     July 2026, when GitHub restricted the stargazers endpoint to admins/
-     collaborators only). Classic PAT with `public_repo`, or fine-grained
-     PAT with `Contents: Read` on this repo only (no "Starring" permission
-     exists for fine-grained PATs).
+  1. GH_STAR_TOKEN — PAT. Required since July 2026, when GitHub restricted
+     the REST `/stargazers` endpoint to admins/collaborators only. The script
+     uses GraphQL `stargazers { edges { node { starredAt } } }` instead, which
+     accepts a fine-grained PAT scoped to this repo with `Contents: Read` +
+     `Metadata: Read` (and optional `Starring: Read`). The classic PAT with
+     `public_repo` also works.
   2. GITHUB_TOKEN — fallback for local dev runs; will return 403 in CI as of
      2026-07-14 because the bot token is not admin/collaborator.
 """
@@ -152,23 +153,48 @@ def fetch_optional_traffic(
 def fetch_stargazers(repo: str, token: str, api_base: str = API_BASE) -> list:
     """Fetch star timestamps (UTC) for `owner/repo`, paginated, sorted ascending.
 
-    Aborts with non-zero exit on any HTTP error. Honors X-RateLimit-Remaining
-    (refuses to proceed below RATE_LIMIT_FLOOR).
+    Uses the GraphQL `stargazers(first:N, after:cursor){ edges { starredAt } }`
+    connection. REST `GET /repos/{owner}/{repo}/stargazers` was restricted by
+    GitHub in July 2026 to admins/collaborators only — fine-grained PATs (and
+    PATs without admin:org scope) now get HTTP 403 even with Starring: Read.
+    The GraphQL connection accepts any token with Metadata: Read + Contents:
+    Read (the same scopes a fine-grained PAT scoped to a single repo needs),
+    because GraphQL `stargazers` is not gated by the same admin check.
+
+    Aborts with non-zero exit on any HTTP error. Honors `cost` /
+    `rateLimit.remaining` from GraphQL responses (refuses to proceed below
+    RATE_LIMIT_FLOOR).
     """
-    url = f"{api_base}/repos/{repo}/stargazers"
-    # `application/vnd.github.star+json` is required to get the `starred_at`
-    # timestamp on each entry; with the default media type the endpoint
-    # returns user objects only (no timestamps).
+    owner, _, name = repo.partition("/")
+    if not owner or not name:
+        print(f"ERROR: --repo must be 'owner/name', got {repo!r}", file=sys.stderr)
+        sys.exit(1)
+
+    url = f"{api_base}/graphql"
     headers = {
         "Authorization": f"Bearer {token}",
-        "Accept": "application/vnd.github.star+json",
+        "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
     }
-    params = {"per_page": PER_PAGE}
     dates: list = []
 
-    while url:
-        resp = requests.get(url, headers=headers, params=params, timeout=30)
+    query = """
+    query Stargazers($owner: String!, $name: String!, $first: Int!, $after: String) {
+      repository(owner: $owner, name: $name) {
+        stargazers(first: $first, after: $after, orderBy: {field: STARRED_AT, direction: ASC}) {
+          totalCount
+          pageInfo { hasNextPage endCursor }
+          edges { node { ... on User { login } starredAt } }
+        }
+      }
+      rateLimit { remaining resetAt }
+    }
+    """
+
+    cursor: str | None = None
+    while True:
+        variables = {"owner": owner, "name": name, "first": PER_PAGE, "after": cursor}
+        resp = requests.post(url, headers=headers, json={"query": query, "variables": variables}, timeout=30)
         if resp.status_code != 200:
             print(
                 f"ERROR: HTTP {resp.status_code} fetching {url}: {resp.text[:200]}",
@@ -176,7 +202,22 @@ def fetch_stargazers(repo: str, token: str, api_base: str = API_BASE) -> list:
             )
             sys.exit(1)
 
-        remaining = int(resp.headers.get("X-RateLimit-Remaining", "9999"))
+        try:
+            payload = resp.json()
+        except ValueError:
+            print(f"ERROR: non-JSON response from {url}: {resp.text[:200]}", file=sys.stderr)
+            sys.exit(1)
+
+        # GraphQL-level errors (still returned with HTTP 200).
+        if payload.get("errors"):
+            print(
+                f"ERROR: GraphQL errors: {payload['errors'][:3]}",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        rate_limit = (payload.get("data") or {}).get("rateLimit") or {}
+        remaining = rate_limit.get("remaining", 9999)
         if remaining < RATE_LIMIT_FLOOR:
             print(
                 f"ERROR: rate-limit remaining={remaining}; aborting (floor={RATE_LIMIT_FLOOR})",
@@ -184,25 +225,25 @@ def fetch_stargazers(repo: str, token: str, api_base: str = API_BASE) -> list:
             )
             sys.exit(1)
 
-        page = resp.json()
-        if not isinstance(page, list):
-            print(f"ERROR: unexpected payload shape (not a list): {str(page)[:200]}", file=sys.stderr)
+        repo_data = (payload.get("data") or {}).get("repository")
+        if repo_data is None:
+            print(f"ERROR: repository not found (or no access): {repo}", file=sys.stderr)
             sys.exit(1)
 
-        for entry in page:
-            starred_at = entry.get("starred_at")
+        stargazers = repo_data.get("stargazers") or {}
+        for edge in stargazers.get("edges") or []:
+            starred_at = (edge.get("node") or {}).get("starredAt")
             if not starred_at:
                 continue
             dt = datetime.fromisoformat(starred_at.replace("Z", "+00:00"))
             dates.append(dt.astimezone(timezone.utc))
 
-        # Parse Link header for the next page (URL already carries the query string).
-        url = None
-        params = {}
-        for part in resp.headers.get("Link", "").split(","):
-            if 'rel="next"' in part:
-                url = part.split(";")[0].strip(" <>")
-                break
+        page_info = stargazers.get("pageInfo") or {}
+        if not page_info.get("hasNextPage"):
+            break
+        cursor = page_info.get("endCursor")
+        if not cursor:
+            break
 
     dates.sort()
     return dates
