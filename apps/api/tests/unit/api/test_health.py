@@ -1,9 +1,11 @@
+import asyncio
 import sys
 from types import SimpleNamespace
 
 import pytest
 from fastapi import HTTPException
 
+import api.dependencies as api_dependencies
 from api.health import (
     DependencyHealth,
     HealthCheckResponse,
@@ -11,6 +13,7 @@ from api.health import (
     check_database,
     check_llm_provider,
     check_redis,
+    check_vector_store,
     get_health_status,
     require_healthy,
 )
@@ -132,11 +135,11 @@ async def test_check_llm_provider_healthy_with_configured_key(monkeypatch):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(
-    reason="Known test isolation issue with lru_cache on get_vector_store(). Test passes individually but fails in full suite due to cache pollution from other tests. Awaiting fix post-deployment."
-)
 async def test_get_health_status_unhealthy_when_vector_store_unhealthy(monkeypatch):
     """Test that health status is UNHEALTHY when vector store is not initialized."""
+    # The vector-store getter is @lru_cache; clear it to make sure the patched
+    # ChromaPropertyStore=None is observed on the next call.
+    api_dependencies.get_vector_store.cache_clear()
     settings = SimpleNamespace(version="9.9.9", database_url=None)
     monkeypatch.setattr("api.health.get_settings", lambda: settings)
 
@@ -165,6 +168,104 @@ async def test_get_health_status_unhealthy_when_vector_store_unhealthy(monkeypat
     assert result.status == HealthStatus.UNHEALTHY
     assert result.dependencies["vector_store"].status == HealthStatus.UNHEALTHY
     assert result.version == "9.9.9"
+
+
+@pytest.mark.asyncio
+async def test_check_vector_store_uses_thread_for_blocking_count(monkeypatch):
+    """The blocking ChromaDB count must be off the event loop."""
+
+    import threading
+
+    class _CountProbe:
+        def __init__(self):
+            self.invoked_on = None
+            self.call_count = 0
+
+        def count(self):
+            self.call_count += 1
+            self.invoked_on = threading.get_ident()
+            return 42
+
+    probe = _CountProbe()
+    fake_store = SimpleNamespace(_collection=probe)
+
+    # Drop any cached result so the patched callable is exercised.
+    api_dependencies.get_vector_store.cache_clear()
+
+    def _fake_get_vector_store():
+        return fake_store
+
+    # Patch the symbol bound into the api.health module so the new
+    # asyncio.to_thread wrapping is exercised end-to-end.
+    monkeypatch.setattr("api.health.get_vector_store", _fake_get_vector_store)
+
+    loop_thread = threading.get_ident()
+    result = await check_vector_store()
+
+    assert result.status == HealthStatus.HEALTHY
+    assert probe.call_count == 1
+    assert result.details == {"item_count": 42}
+    assert probe.invoked_on is not None
+    assert probe.invoked_on != loop_thread
+
+
+@pytest.mark.asyncio
+async def test_get_health_status_marks_slow_dependency_degraded(monkeypatch):
+    """A slow dependency check must not block the response and must be DEGRADED."""
+
+    import time
+
+    started_event = asyncio.Event()
+    release_event = asyncio.Event()
+
+    async def _slow_vector():
+        started_event.set()
+        # Block long enough to be cancelled by the bounded check.
+        try:
+            await release_event.wait()
+            return DependencyHealth(
+                name="vector_store",
+                status=HealthStatus.HEALTHY,
+                message="slow",
+            )
+        except asyncio.CancelledError:
+            raise
+
+    async def _ok_redis():
+        return None
+
+    async def _ok_database():
+        return None
+
+    async def _ok_llm():
+        return DependencyHealth(
+            name="llm_providers",
+            status=HealthStatus.HEALTHY,
+            message="ok",
+        )
+
+    monkeypatch.setattr("api.health.check_vector_store", _slow_vector)
+    monkeypatch.setattr("api.health.check_redis", _ok_redis)
+    monkeypatch.setattr("api.health.check_database", _ok_database)
+    monkeypatch.setattr("api.health.check_llm_provider", _ok_llm)
+    monkeypatch.setattr("api.health.get_settings", lambda: SimpleNamespace(version="1.0.0"))
+
+    started = time.monotonic()
+    status_task = asyncio.create_task(get_health_status(include_dependencies=True))
+    # Wait until the slow check has actually started before timing.
+    await asyncio.wait_for(started_event.wait(), timeout=1.0)
+    elapsed = time.monotonic() - started
+
+    # The response must arrive well under the 4s vector-store budget.
+    result = await asyncio.wait_for(status_task, timeout=4.5)
+    elapsed = time.monotonic() - started
+
+    # Allow the now-cancelled slow check to complete without leaking warnings.
+    release_event.set()
+
+    assert elapsed < 4.5
+    assert result.dependencies["vector_store"].status == HealthStatus.DEGRADED
+    assert "Timed out" in result.dependencies["vector_store"].message
 
 
 @pytest.mark.asyncio
