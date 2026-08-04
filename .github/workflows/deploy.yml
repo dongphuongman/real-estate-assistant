@@ -75,7 +75,7 @@ jobs:
           INTEGRATION=$(gh api \
             -H "Accept: application/vnd.github+json" \
             "repos/AleksNeStu/ai-real-estate-assistant/actions/runs/${{ github.event.workflow_run.id }}/jobs" \
-            | jq -r '.jobs[] | select(.name | startswith("backend-tests (integration"))) | .conclusion' \
+            | jq -r '.jobs[] | select(.name | test("integration"; "i")) | .conclusion' \
             | head -1)
           echo "integration-tests conclusion: ${INTEGRATION:-not-found}"
           if [ -z "$INTEGRATION" ] || [ "$INTEGRATION" != "success" ]; then
