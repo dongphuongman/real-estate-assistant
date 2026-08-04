@@ -991,10 +991,12 @@ class TestTemplateServicePdfWeasyprint:
         self.service = TemplateService(use_weasyprint=False)
 
     def test_weasyprint_not_available(self, tmp_path):
-        output = tmp_path / "test.pdf"
-        result = self.service.html_to_pdf_weasyprint("<p>Test</p>", output)
-        # weasyprint is disabled in setup, so should return False
-        assert result is False
+        from services import template_service
+        with patch.object(template_service, "WEASYPRINT_AVAILABLE", False):
+            output = tmp_path / "test.pdf"
+            result = self.service.html_to_pdf_weasyprint("<p>Test</p>", output)
+            # weasyprint is disabled via module-level patch, so should return False
+            assert result is False
 
 
 class TestTemplateServiceGeneratePdf:

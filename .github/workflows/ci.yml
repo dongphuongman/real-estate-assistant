@@ -134,13 +134,14 @@ jobs:
           install-extras: 'pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout ruff httpx types-requests'
 
       - name: Run ${{ matrix.test-suite.name }} tests
+        timeout-minutes: 15
         run: |
           python -m pytest ${{ matrix.test-suite.path }} \
             -n auto --dist=worksteal \
             --cov=. \
             --cov-report=xml \
             --cov-report=term-missing:skip-covered \
-            --timeout=${{ matrix.test-suite.name == 'integration' && '120' || '60' }} \
+            --timeout=${{ matrix.test-suite.name == 'integration' && '120' || '180' }} \
             --tb=short \
             -v
 

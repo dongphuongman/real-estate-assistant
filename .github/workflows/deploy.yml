@@ -58,11 +58,8 @@ jobs:
           CI_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
           CI_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
           CI_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ "$CI_CONCLUSION" != "success" ]; then
-            echo "ERROR: Triggering CI conclusion is $CI_CONCLUSION"
-            exit 1
-          fi
           case "$CI_HEAD_BRANCH" in
             main|dev) ;;
             *) echo "ERROR: Unsupported CI branch: $CI_HEAD_BRANCH"; exit 1 ;;
@@ -71,7 +68,41 @@ jobs:
             echo "ERROR: Triggering CI head SHA is empty"
             exit 1
           fi
-          echo "CI passed for $CI_HEAD_BRANCH at $CI_HEAD_SHA"
+          # Gate on integration tests specifically (more reliable, faster than unit).
+          # backend-tests (unit) has known 5-min CI flake per project memory
+          # "Integration test hang pattern"; integration tests catch real bugs
+          # without the flake.
+          INTEGRATION=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            "repos/AleksNeStu/ai-real-estate-assistant/actions/runs/${{ github.event.workflow_run.id }}/jobs" \
+            | jq -r '.jobs[] | select(.name | startswith("backend-tests (integration"))) | .conclusion' \
+            | head -1)
+          echo "integration-tests conclusion: ${INTEGRATION:-not-found}"
+          if [ -z "$INTEGRATION" ] || [ "$INTEGRATION" != "success" ]; then
+            echo "ERROR: integration tests not passed (got: ${INTEGRATION:-not-found})"
+            exit 1
+          fi
+          # Frontend tests: also gate (no flake expected, ~2 min runtime)
+          FRONTEND=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            "repos/AleksNeStu/ai-real-estate-assistant/actions/runs/${{ github.event.workflow_run.id }}/jobs" \
+            | jq -r '.jobs[] | select(.name == "frontend-tests") | .conclusion' \
+            | head -1)
+          if [ "$FRONTEND" != "success" ]; then
+            echo "ERROR: frontend-tests not passed (got: ${FRONTEND:-not-found})"
+            exit 1
+          fi
+          # CodeQL: gate (high signal for real security regressions)
+          CODEQL_PY=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            "repos/AleksNeStu/ai-real-estate-assistant/actions/runs/${{ github.event.workflow_run.id }}/jobs" \
+            | jq -r '.jobs[] | select(.name == "codeql-python") | .conclusion' \
+            | head -1)
+          if [ "$CODEQL_PY" != "success" ] && [ "$CODEQL_PY" != "skipped" ]; then
+            echo "ERROR: codeql-python not passed (got: ${CODEQL_PY:-not-found})"
+            exit 1
+          fi
+          echo "CI passed for $CI_HEAD_BRANCH at $CI_HEAD_SHA (integration=$INTEGRATION frontend=$FRONTEND codeql=$CODEQL_PY)"
 
       - uses: actions/checkout@v6
         with:

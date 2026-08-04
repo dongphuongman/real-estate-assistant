@@ -247,7 +247,7 @@ class TestGetBackendPort:
         env_file.write_text("BACKEND_PORT=9000\n", encoding="utf-8")
 
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_backend_port()
@@ -265,7 +265,7 @@ class TestGetBackendPort:
         (docs_dir / "PORT_REGISTRY.json").write_text(json.dumps(registry), encoding="utf-8")
 
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_backend_port()
@@ -274,7 +274,7 @@ class TestGetBackendPort:
     def test_returns_default_8000(self, tmp_path: Path):
         """Default port 8000 when nothing is configured."""
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_backend_port()
@@ -295,7 +295,7 @@ class TestGetBackendPort:
         env_file.write_text("BACKEND_PORT=abc\n", encoding="utf-8")
 
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_backend_port()
@@ -334,7 +334,7 @@ class TestGetFrontendUrl:
         env_file.write_text("FRONTEND_URL=http://custom:4000\n", encoding="utf-8")
 
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_frontend_url()
@@ -346,7 +346,7 @@ class TestGetFrontendUrl:
         env_file.write_text("FRONTEND_PORT=4000\n", encoding="utf-8")
 
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_frontend_url()
@@ -364,7 +364,7 @@ class TestGetFrontendUrl:
         (docs_dir / "PORT_REGISTRY.json").write_text(json.dumps(registry), encoding="utf-8")
 
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_frontend_url()
@@ -373,7 +373,7 @@ class TestGetFrontendUrl:
     def test_returns_default_localhost_3000(self, tmp_path: Path):
         """Default URL when nothing is configured."""
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_frontend_url()
@@ -385,7 +385,7 @@ class TestGetFrontendUrl:
         env_file.write_text("FRONTEND_PORT=abc\n", encoding="utf-8")
 
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_frontend_url()
@@ -443,7 +443,7 @@ class TestGetCorsOrigins:
             patch.dict(
                 os.environ,
                 {"CORS_ALLOW_ORIGINS": "", "ENVIRONMENT": "development"},
-                clear=False,
+                clear=True,
             ),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
@@ -508,7 +508,7 @@ class TestGetAllPortConfig:
     def test_returns_all_config_keys(self, tmp_path: Path):
         """Returns dict with backend_port, frontend_url, and cors_origins."""
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             result = get_all_port_config()
@@ -568,7 +568,7 @@ class TestGetFrontendUrlForSettings:
     def test_returns_default_when_no_config(self, tmp_path: Path):
         """Returns default URL when nothing is configured."""
         with (
-            patch.dict(os.environ, {}, clear=False),
+            patch.dict(os.environ, {}, clear=True),
             patch("config.port_config._find_project_root", return_value=tmp_path),
         ):
             assert get_frontend_url_for_settings() == "http://localhost:3000"
