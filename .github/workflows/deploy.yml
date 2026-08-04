@@ -269,30 +269,151 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" | jq -r '.[0].id // empty')
           echo "id=$PREV" >> $GITHUB_OUTPUT
 
+      - name: Wait for any prior deploy to finish (Render API mutex)
+        run: |
+          # If a previous deploy to this Render service is still in-flight,
+          # POST /services/$id/deploys returns HTTP 409 Conflict. Poll
+          # GET /deploys?limit=1 until the most recent deploy status is not
+          # in {build_in_progress, pre_deploy_in_progress, queued}, or there
+          # are no prior deploys at all. 20 attempts × 30 s = 10 min cap.
+          echo "Draining prior Render deploys (if any)..."
+          for i in $(seq 1 20); do
+            STATUS=$(curl -s -m 10 \
+              "https://api.render.com/v1/services/${{ steps.service.outputs.id }}/deploys?limit=1" \
+              -H "Accept: application/json" \
+              -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+              | jq -r '.[0].status // empty')
+            echo "  Attempt $i/20 - most recent deploy status: ${STATUS:-none}"
+            case "$STATUS" in
+              build_in_progress|pre_deploy_in_progress|queued)
+                echo "    Still in-flight; waiting 30 s..."
+                sleep 30
+                ;;
+              "")
+                echo "    No prior deploys; safe to proceed."
+                break
+                ;;
+              *)
+                echo "    Terminal state ($STATUS); safe to trigger a new deploy."
+                break
+                ;;
+            esac
+          done
+          if [ "$i" -eq 20 ]; then
+            echo "ERROR: Prior deploy stuck in '$STATUS' for 10 min - bailing."
+            exit 1
+          fi
+
       - name: Trigger Render backend deploy
         if: steps.service.outputs.id != ''
         run: |
-          curl -s -X POST "https://api.render.com/v1/services/${{ steps.service.outputs.id }}/deploys" \
-            -H "Accept: application/json" \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-            -d '{"clearCache": "clear"}' | jq .
+          # POST /services/$id/deploys can return HTTP 409 Conflict when a
+          # prior deploy is still in-flight (race between deploy-backend and
+          # deploy-frontend running in parallel). Retry up to 5 times, with
+          # Retry-After honoured when Render provides it; default 15 s backoff.
+          for i in $(seq 1 5); do
+            HTTP=$(curl -s -D /tmp/render-deploy-h.txt -o /tmp/render-deploy.json -w "%{http_code}" \
+              -X POST "https://api.render.com/v1/services/${{ steps.service.outputs.id }}/deploys" \
+              -H "Accept: application/json" \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+              -d '{"clearCache": "clear"}')
+            echo "  Attempt $i/5 - HTTP $HTTP"
+            if [ "$HTTP" = "201" ] || [ "$HTTP" = "200" ]; then
+              jq . /tmp/render-deploy.json
+              exit 0
+            fi
+            if [ "$HTTP" = "409" ]; then
+              RA=$(tr -d '\r' < /tmp/render-deploy-h.txt | awk -F': ' 'tolower($1)=="retry-after"{print $2; exit}')
+              WAIT=${RA:-15}
+              echo "    409 Conflict; sleeping ${WAIT}s (Retry-After='${RA:-none}')..."
+              sleep "$WAIT"
+              continue
+            fi
+            echo "ERROR: Unexpected HTTP $HTTP - body:"
+            cat /tmp/render-deploy.json || true
+            exit 1
+          done
+          echo "ERROR: Trigger failed after 5 attempts"
+          exit 1
+
+      - name: Warm-up ping (Render free-tier hibernate)
+        run: |
+          # Render free-tier hibernates after ~15 min of no traffic; the first
+          # request returns 503 with a Retry-After header while the container
+          # cold-starts. Distinguish that 503 (cold-start, transient) from a
+          # real 5xx (502/504/500/404) by checking the Retry-After header and
+          # status code. 10 attempts, 503 sleeps Retry-After (default 30 s),
+          # real 5xx bails out early so the main health-wait loop can fail
+          # closed. This step never fails by itself.
+          URL="${{ steps.service.outputs.url }}/health"
+          for i in $(seq 1 10); do
+            HTTP=$(curl -s -m 10 -o /tmp/warmup.json -w "%{http_code}" \
+              -D /tmp/warmup-h.txt "$URL")
+            echo "  Warm-up attempt $i/10 - HTTP $HTTP"
+            case "$HTTP" in
+              200|204)
+                echo "  Already warm."
+                exit 0
+                ;;
+              503)
+                RA=$(tr -d '\r' < /tmp/warmup-h.txt | awk -F': ' 'tolower($1)=="retry-after"{print $2; exit}')
+                WAIT=${RA:-30}
+                echo "    Cold-start 503; sleeping ${WAIT}s (Retry-After='${RA:-none}')..."
+                sleep "$WAIT"
+                ;;
+              502|504|500|404)
+                echo "    Real 5xx (not a cold-start); bailing warm-up early so the health loop can diagnose."
+                break
+                ;;
+              *)
+                echo "    Unhandled HTTP $HTTP; bailing warm-up."
+                break
+                ;;
+            esac
+          done
+          # Fall through to the full health wait loop below.
 
       - name: Wait for backend health
         run: |
           echo "Waiting for backend to become healthy..."
+          # 30 iterations × 30 s = 15 min total budget. Each iteration
+          # branches on HTTP status: 200+healthy (success), 503 cold-start
+          # (Retry-After sleep + retry), other 5xx (fail closed immediately).
+          # -m 10 caps curl runtime so a hung host cannot stall the loop.
           for i in $(seq 1 30); do
-            # -m 10 = 10s curl timeout so a hung Render cold-start
-            # doesn't block the loop forever. -f = silent on HTTP
-            # errors. Without -m, the previous loop hung for 75+ min
-            # against a Render free-tier service that wasn't returning
-            # /health, blocking the deploy pipeline.
-            if curl -m 10 -sf "${{ steps.service.outputs.url }}/health" | jq -e '.status == "healthy"' >/dev/null 2>&1; then
-              echo "Backend is healthy!"
-              exit 0
-            fi
-            echo "  Attempt $i/30 - waiting 30s..."
-            sleep 30
+            HTTP=$(curl -s -m 10 -o /tmp/health.json -w "%{http_code}" \
+              -D /tmp/health-h.txt "${{ steps.service.outputs.url }}/health")
+            echo "  Attempt $i/30 - HTTP $HTTP"
+            case "$HTTP" in
+              200)
+                if jq -e '.status == "healthy"' /tmp/health.json >/dev/null 2>&1; then
+                  echo "Backend is healthy!"
+                  exit 0
+                fi
+                echo "    200 but body says not healthy; retrying..."
+                sleep 15
+                ;;
+              503)
+                RA=$(tr -d '\r' < /tmp/health-h.txt | awk -F': ' 'tolower($1)=="retry-after"{print $2; exit}')
+                WAIT=${RA:-30}
+                echo "    Cold-start 503; sleeping ${WAIT}s (Retry-After='${RA:-none}')..."
+                sleep "$WAIT"
+                ;;
+              502|504|500|404)
+                echo "ERROR: Backend returned HTTP $HTTP - body:"
+                cat /tmp/health.json || true
+                exit 1
+                ;;
+              000)
+                echo "    Curl timed out / connection refused; retrying..."
+                sleep 30
+                ;;
+              *)
+                echo "    Unhandled HTTP $HTTP; retrying..."
+                sleep 30
+                ;;
+            esac
           done
           echo "ERROR: Backend health check failed after 15 minutes"
           exit 1
@@ -420,27 +541,148 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" | jq -r '.[0].id // empty')
           echo "id=$PREV" >> $GITHUB_OUTPUT
 
+      - name: Wait for any prior deploy to finish (Render API mutex)
+        run: |
+          # If a previous deploy to this Render service is still in-flight,
+          # POST /services/$id/deploys returns HTTP 409 Conflict. Poll
+          # GET /deploys?limit=1 until the most recent deploy status is not
+          # in {build_in_progress, pre_deploy_in_progress, queued}, or there
+          # are no prior deploys at all. 20 attempts × 30 s = 10 min cap.
+          echo "Draining prior Render deploys (if any)..."
+          for i in $(seq 1 20); do
+            STATUS=$(curl -s -m 10 \
+              "https://api.render.com/v1/services/${{ steps.service.outputs.id }}/deploys?limit=1" \
+              -H "Accept: application/json" \
+              -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+              | jq -r '.[0].status // empty')
+            echo "  Attempt $i/20 - most recent deploy status: ${STATUS:-none}"
+            case "$STATUS" in
+              build_in_progress|pre_deploy_in_progress|queued)
+                echo "    Still in-flight; waiting 30 s..."
+                sleep 30
+                ;;
+              "")
+                echo "    No prior deploys; safe to proceed."
+                break
+                ;;
+              *)
+                echo "    Terminal state ($STATUS); safe to trigger a new deploy."
+                break
+                ;;
+            esac
+          done
+          if [ "$i" -eq 20 ]; then
+            echo "ERROR: Prior deploy stuck in '$STATUS' for 10 min - bailing."
+            exit 1
+          fi
+
       - name: Trigger Render frontend deploy
         if: steps.service.outputs.id != ''
         run: |
-          curl -s -X POST "https://api.render.com/v1/services/${{ steps.service.outputs.id }}/deploys" \
-            -H "Accept: application/json" \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-            -d '{"clearCache": "clear"}' | jq .
+          # POST /services/$id/deploys can return HTTP 409 Conflict when a
+          # prior deploy is still in-flight (race between deploy-backend and
+          # deploy-frontend running in parallel). Retry up to 5 times, with
+          # Retry-After honoured when Render provides it; default 15 s backoff.
+          for i in $(seq 1 5); do
+            HTTP=$(curl -s -D /tmp/render-deploy-h.txt -o /tmp/render-deploy.json -w "%{http_code}" \
+              -X POST "https://api.render.com/v1/services/${{ steps.service.outputs.id }}/deploys" \
+              -H "Accept: application/json" \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+              -d '{"clearCache": "clear"}')
+            echo "  Attempt $i/5 - HTTP $HTTP"
+            if [ "$HTTP" = "201" ] || [ "$HTTP" = "200" ]; then
+              jq . /tmp/render-deploy.json
+              exit 0
+            fi
+            if [ "$HTTP" = "409" ]; then
+              RA=$(tr -d '\r' < /tmp/render-deploy-h.txt | awk -F': ' 'tolower($1)=="retry-after"{print $2; exit}')
+              WAIT=${RA:-15}
+              echo "    409 Conflict; sleeping ${WAIT}s (Retry-After='${RA:-none}')..."
+              sleep "$WAIT"
+              continue
+            fi
+            echo "ERROR: Unexpected HTTP $HTTP - body:"
+            cat /tmp/render-deploy.json || true
+            exit 1
+          done
+          echo "ERROR: Trigger failed after 5 attempts"
+          exit 1
+
+      - name: Warm-up ping (Render free-tier hibernate)
+        run: |
+          # Render free-tier hibernates after ~15 min of no traffic; the first
+          # request returns 503 with a Retry-After header while the container
+          # cold-starts. Distinguish that 503 (cold-start, transient) from a
+          # real 5xx (502/504/500/404) by checking the Retry-After header and
+          # status code. 10 attempts, 503 sleeps Retry-After (default 30 s),
+          # real 5xx bails out early so the main health-wait loop can fail
+          # closed. This step never fails by itself.
+          FRONTEND_URL=$(cat /tmp/frontend_url.txt)
+          for i in $(seq 1 10); do
+            HTTP=$(curl -s -m 10 -o /tmp/warmup.json -w "%{http_code}" \
+              -D /tmp/warmup-h.txt "$FRONTEND_URL")
+            echo "  Warm-up attempt $i/10 - HTTP $HTTP"
+            case "$HTTP" in
+              200|301|302|304)
+                echo "  Already warm."
+                exit 0
+                ;;
+              503)
+                RA=$(tr -d '\r' < /tmp/warmup-h.txt | awk -F': ' 'tolower($1)=="retry-after"{print $2; exit}')
+                WAIT=${RA:-30}
+                echo "    Cold-start 503; sleeping ${WAIT}s (Retry-After='${RA:-none}')..."
+                sleep "$WAIT"
+                ;;
+              502|504|500|404)
+                echo "    Real 5xx (not a cold-start); bailing warm-up early so the health loop can diagnose."
+                break
+                ;;
+              *)
+                echo "    Unhandled HTTP $HTTP; bailing warm-up."
+                break
+                ;;
+            esac
+          done
+          # Fall through to the full health wait loop below.
 
       - name: Wait for frontend health
         run: |
           FRONTEND_URL=$(cat /tmp/frontend_url.txt)
           echo "Waiting for frontend to become healthy at $FRONTEND_URL..."
+          # 30 iterations × 30 s = 15 min total budget. Each iteration
+          # branches on HTTP status: 200/301/302/304 (live), 503 cold-start
+          # (Retry-After sleep + retry), other 5xx (fail closed immediately).
+          # -m 10 caps curl runtime so a hung host cannot stall the loop.
           for i in $(seq 1 30); do
-            # -m 10 = 10s curl timeout (see Wait for backend health above)
-            if curl -m 10 -sf "$FRONTEND_URL" -o /dev/null; then
-              echo "Frontend is live!"
-              exit 0
-            fi
-            echo "  Attempt $i/30 - waiting 30s..."
-            sleep 30
+            HTTP=$(curl -s -m 10 -o /tmp/health.json -w "%{http_code}" \
+              -D /tmp/health-h.txt "$FRONTEND_URL")
+            echo "  Attempt $i/30 - HTTP $HTTP"
+            case "$HTTP" in
+              200|301|302|304)
+                echo "Frontend is live!"
+                exit 0
+                ;;
+              503)
+                RA=$(tr -d '\r' < /tmp/health-h.txt | awk -F': ' 'tolower($1)=="retry-after"{print $2; exit}')
+                WAIT=${RA:-30}
+                echo "    Cold-start 503; sleeping ${WAIT}s (Retry-After='${RA:-none}')..."
+                sleep "$WAIT"
+                ;;
+              502|504|500|404)
+                echo "ERROR: Frontend returned HTTP $HTTP - body:"
+                cat /tmp/health.json || true
+                exit 1
+                ;;
+              000)
+                echo "    Curl timed out / connection refused; retrying..."
+                sleep 30
+                ;;
+              *)
+                echo "    Unhandled HTTP $HTTP; retrying..."
+                sleep 30
+                ;;
+            esac
           done
           echo "ERROR: Frontend health check failed after 15 minutes"
           exit 1
