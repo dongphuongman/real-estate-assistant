@@ -220,9 +220,11 @@ async def test_get_health_status_marks_slow_dependency_degraded(monkeypatch):
 
     async def _slow_vector():
         started_event.set()
-        # Block long enough to be cancelled by the bounded check.
+        # Block long enough to be cancelled by the bounded check (4s).
+        # Use explicit sleep (not event-wait) for deterministic timing on CI
+        # runners that may not schedule the bounded-check coroutine in time.
         try:
-            await release_event.wait()
+            await asyncio.sleep(10)
             return DependencyHealth(
                 name="vector_store",
                 status=HealthStatus.HEALTHY,
