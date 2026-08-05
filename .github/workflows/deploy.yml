@@ -635,7 +635,7 @@ jobs:
               -D /tmp/warmup-h.txt "$FRONTEND_URL" || echo "")
             echo "  Warm-up attempt $i/10 - HTTP ${HTTP:-timeout}"
             case "$HTTP" in
-              200|301|302|304)
+              200|301|302|304|307|308)
                 echo "  Already warm."
                 exit 0
                 ;;
