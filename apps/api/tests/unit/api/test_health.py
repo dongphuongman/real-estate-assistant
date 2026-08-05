@@ -1,5 +1,4 @@
 import asyncio
-import functools
 import sys
 import time
 from types import SimpleNamespace
@@ -143,14 +142,11 @@ async def test_get_health_status_unhealthy_when_vector_store_unhealthy(monkeypat
 
     api.health does `from api.dependencies import get_vector_store` (a
     module-level binding), so check_vector_store calls api.health's local
-    reference. Patch api.health.get_vector_store directly with a None-returning
-    @functools.lru_cache()-wrapped callable — no chromadb touch, deterministic
-    across local and CI.
+    reference. Patch api.health.get_vector_store directly with a plain
+    None-returning function — no chromadb touch, deterministic across local
+    and CI. Mirrors the working test_check_vector_store_uses_thread_for_blocking_count
+    pattern at line 207 (which passes on both local and CI).
     """
-    # Wrap the None-returning fake in @lru_cache() so the autouse
-    # clear_lru_caches fixture's post-yield cache_clear() remains a no-op
-    # instead of AttributeError on a plain lambda.
-    @functools.lru_cache()
     def _no_vector_store():
         return None
 
@@ -225,18 +221,18 @@ async def test_check_vector_store_uses_thread_for_blocking_count(monkeypatch):
 async def test_get_health_status_marks_slow_dependency_degraded(monkeypatch):
     """A slow dependency check is bounded and reported DEGRADED, not HEALTHY.
 
-    The slow check hangs on an unsignalled Event (no real sleep). The bounded
-    check is shimmed to use a 50 ms timeout for vector_store only, so the test
-    always crosses the timeout without depending on CI scheduling. The real
-    _bounded_dependency_check (wait_for + TimeoutError -> DEGRADED) is
-    exercised unchanged.
+    The slow check hangs on an unsignalled Event created per-call inside the
+    coroutine (no real sleep). The bounded check is shimmed to use a 50 ms
+    timeout for vector_store only, so the test always crosses the timeout
+    without depending on CI scheduling. The real _bounded_dependency_check
+    (wait_for + TimeoutError -> DEGRADED) is exercised unchanged.
     """
-    hang_event = asyncio.Event()  # never set; drained at test teardown
+    import sys
 
     async def _slow_vector():
-        # Blocks indefinitely; only asyncio.wait_for timeout will release it.
-        await hang_event.wait()
-        # Unreachable in the test — kept so static checkers see a return.
+        # Per-call event: never set; only asyncio.wait_for timeout will release.
+        e = asyncio.Event()
+        await e.wait()
         return DependencyHealth(  # pragma: no cover
             name="vector_store",
             status=HealthStatus.HEALTHY,
@@ -277,11 +273,12 @@ async def test_get_health_status_marks_slow_dependency_degraded(monkeypatch):
     result = await get_health_status(include_dependencies=True)
     elapsed = time.monotonic() - started
 
-    # Let the hung coroutine finish cleanly (avoids "Task was destroyed but it
-    # is pending!" warnings under pytest-asyncio).
-    hang_event.set()
-    # Drain the cancelled coroutine.
-    await asyncio.sleep(0)
+    # Sanity log for debugging CI flake: which dependency status came back?
+    print(
+        f"DEBUG slowness test: elapsed={elapsed:.3f}s "
+        f"deps={{k: v.status.value for k, v in result.dependencies.items()}}",
+        file=sys.stderr,
+    )
 
     assert elapsed < 1.0
     assert result.dependencies["vector_store"].status == HealthStatus.DEGRADED
