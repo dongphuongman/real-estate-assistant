@@ -346,11 +346,16 @@ jobs:
           # status code. 10 attempts, 503 sleeps Retry-After (default 30 s),
           # real 5xx bails out early so the main health-wait loop can fail
           # closed. This step never fails by itself.
+          #
+          # Note: curl is invoked with `|| echo ""` so that any non-2xx exit
+          # code (e.g., 28 = timeout) does NOT propagate under `set -e` (the
+          # GitHub Actions runner uses `shell: bash -e {0}`). -m 60 gives a
+          # fully cold-starting Render container enough time to come online.
           URL="${{ steps.service.outputs.url }}/health"
           for i in $(seq 1 10); do
-            HTTP=$(curl -s -m 10 -o /tmp/warmup.json -w "%{http_code}" \
-              -D /tmp/warmup-h.txt "$URL")
-            echo "  Warm-up attempt $i/10 - HTTP $HTTP"
+            HTTP=$(curl -s -m 60 -o /tmp/warmup.json -w "%{http_code}" \
+              -D /tmp/warmup-h.txt "$URL" || echo "")
+            echo "  Warm-up attempt $i/10 - HTTP ${HTTP:-timeout}"
             case "$HTTP" in
               200|204)
                 echo "  Already warm."
@@ -381,10 +386,12 @@ jobs:
           # branches on HTTP status: 200+healthy (success), 503 cold-start
           # (Retry-After sleep + retry), other 5xx (fail closed immediately).
           # -m 10 caps curl runtime so a hung host cannot stall the loop.
+          # `|| echo ""` swallows curl exit codes under set -e so timeouts
+          # fall into the 000 (retry) branch instead of failing the step.
           for i in $(seq 1 30); do
             HTTP=$(curl -s -m 10 -o /tmp/health.json -w "%{http_code}" \
-              -D /tmp/health-h.txt "${{ steps.service.outputs.url }}/health")
-            echo "  Attempt $i/30 - HTTP $HTTP"
+              -D /tmp/health-h.txt "${{ steps.service.outputs.url }}/health" || echo "")
+            echo "  Attempt $i/30 - HTTP ${HTTP:-timeout}"
             case "$HTTP" in
               200)
                 if jq -e '.status == "healthy"' /tmp/health.json >/dev/null 2>&1; then
@@ -618,11 +625,15 @@ jobs:
           # status code. 10 attempts, 503 sleeps Retry-After (default 30 s),
           # real 5xx bails out early so the main health-wait loop can fail
           # closed. This step never fails by itself.
+          #
+          # Frontend probe accepts 2xx and 3xx (Render often returns 307 for
+          # HTTP→HTTPS upgrade or www→apex redirect). `|| echo ""` swallows
+          # curl exit codes under set -e.
           FRONTEND_URL=$(cat /tmp/frontend_url.txt)
           for i in $(seq 1 10); do
-            HTTP=$(curl -s -m 10 -o /tmp/warmup.json -w "%{http_code}" \
-              -D /tmp/warmup-h.txt "$FRONTEND_URL")
-            echo "  Warm-up attempt $i/10 - HTTP $HTTP"
+            HTTP=$(curl -s -m 60 -o /tmp/warmup.json -w "%{http_code}" \
+              -D /tmp/warmup-h.txt "$FRONTEND_URL" || echo "")
+            echo "  Warm-up attempt $i/10 - HTTP ${HTTP:-timeout}"
             case "$HTTP" in
               200|301|302|304)
                 echo "  Already warm."
@@ -651,15 +662,17 @@ jobs:
           FRONTEND_URL=$(cat /tmp/frontend_url.txt)
           echo "Waiting for frontend to become healthy at $FRONTEND_URL..."
           # 30 iterations × 30 s = 15 min total budget. Each iteration
-          # branches on HTTP status: 200/301/302/304 (live), 503 cold-start
+          # branches on HTTP status: 2xx/3xx (live — Render often returns
+          # 307 for HTTP→HTTPS or www→apex redirect), 503 cold-start
           # (Retry-After sleep + retry), other 5xx (fail closed immediately).
           # -m 10 caps curl runtime so a hung host cannot stall the loop.
+          # `|| echo ""` swallows curl exit codes under set -e.
           for i in $(seq 1 30); do
             HTTP=$(curl -s -m 10 -o /tmp/health.json -w "%{http_code}" \
-              -D /tmp/health-h.txt "$FRONTEND_URL")
-            echo "  Attempt $i/30 - HTTP $HTTP"
+              -D /tmp/health-h.txt "$FRONTEND_URL" || echo "")
+            echo "  Attempt $i/30 - HTTP ${HTTP:-timeout}"
             case "$HTTP" in
-              200|301|302|304)
+              200|301|302|304|307|308)
                 echo "Frontend is live!"
                 exit 0
                 ;;
