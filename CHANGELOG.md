@@ -48,12 +48,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 7 open Dependabot alerts (6 HIGH + 1 MEDIUM) at start of session —
   6 closed by these bumps, 1 (extract-zip) dismissed as `tolerable_risk`
   (no upstream fix; only reachable via dev-only Lighthouse CI CLI).
-- ESLint plugin-react-hooks upgrade pulled in two new opt-in rules
-  (`react-hooks/set-state-in-effect`, `react-hooks/static-components`)
-  that 15 admin/chat/agent pages violate. Both temporarily disabled in
-  `apps/web/eslint.config.mjs` to unblock CI (v5.1.1 release). Per-page
+- ESLint plugin-react-hooks upgrade pulled in four new opt-in rules
+  (`react-hooks/set-state-in-effect`, `react-hooks/static-components`,
+  `react-hooks/immutability`, `react-hooks/preserve-manual-memoization`)
+  that admin/chat/agent/component pages violate. All 4 temporarily
+  disabled in `apps/web/eslint.config.mjs` to unblock CI. Per-page
   re-enablement requires refactoring to SWR / React Query — out of scope
-  for the v5.1.1 security-patch release.
+  for v5.1.1.
+- CodeQL `init` step previously passed `queries: security-extended`
+  alongside `config-file: ./.github/codeql/codeql-config.yml`. The two
+  inputs are mutually exclusive per the codeql-action docs (see
+  [INITIALIZE-CONFIG-FILE.md](https://github.com/github/codeql-action/blob/main/INITIALIZE-CONFIG-FILE.md));
+  GitHub surfaces this as "CodeQL is reporting errors" in the security
+  status. Removed the redundant `queries:` line from both CodeQL jobs.
 
 ## [5.0.12] - 2026-06-22
 
