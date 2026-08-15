@@ -202,14 +202,6 @@ OWASP-hardened with rate limiting, audit logging, SSRF protection, and dual-mode
  </picture>
 </a>
 
-> **Note (2026-08-15):** The chart above is rendered via the official
-> [star-history.com](https://star-history.com/) embed with a
-> `sealed_token` (encrypted PAT, per their
-> [setup guide](https://www.star-history.com/blog/how-to-use-github-star-history#how-to-add-your-github-access-token)).
-> GitHub restricted the stargazer API in
-> [2026-07](https://star-history.com/blog/github-stargazer-api-restriction)
-> to owners/collaborators only; the embed is the path forward.
-
 ### Key Metrics
 
 | Metric           | Value                                       |
