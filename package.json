@@ -66,6 +66,9 @@
     "prettier": "^3.5.2",
     "wait-on": "^8.0.5"
   },
+  "overrides": {
+    "js-yaml": "^4.3.1"
+  },
   "lint-staged": {
     "apps/web/**/*.{ts,tsx,js,jsx}": [
       "prettier --write",

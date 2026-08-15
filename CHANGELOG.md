@@ -5,6 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **docs (profile star-history chart)**: replaced broken self-hosted
+  `star-history` orphan-branch chart with the hosted
+  `https://api.star-history.com/svg?repos=...&type=Date` endpoint. The
+  self-hosted workflow had been silently broken since GitHub restricted
+  the GraphQL `stargazers` endpoint: `GH_STAR_TOKEN` fine-grained PAT
+  lacked the `Starring: Read` scope needed (verified empirically
+  2026-08-15 — `FORBIDDEN: Resource not accessible by personal access
+  token`), and the workflow's `git switch --orphan star-history` +
+  `git push --force` pattern created a fresh orphan branch on every run,
+  destroying previously-pushed SVG files. Removed the dead workflow
+  (`.github/workflows/star-history.yml`), script
+  (`.github/scripts/render_star_history.py`), and its tests
+  (`.github/scripts/tests/test_render_star_history.py`). Devs reading
+  this entry: the chart is now live-rendered by `star-history.com`,
+  no token, no cron, no orphan branch.
+
+- **deps (web, HIGH CVE)**: bump `js-yaml` 4.x → 4.3.1
+  (Dependabot #312, GHSA-5p4m-2h3v-55h9) — fixes quadratic CPU in
+  `!!omap` resolution. Includes root `package-lock.json` (#311).
+- **deps (web, HIGH CVE)**: bump `js-yaml` 3.x → 3.15.1
+  (Dependabot #310, GHSA-5p4m-2h3v-55h9) — same vuln, 3.x branch.
+- **deps (web, HIGH CVE)**: bump `nanoid` → 5.1.16 (Dependabot #309,
+  #314, GHSA-28wg-ghj8-5hjv / GHSA-2v37-7h3g-55p8) — fixes
+  infinite-loop bugs in custom generators with size ≤ 0.
+- **deps (web, MEDIUM CVE)**: bump `dompurify` → 3.4.13
+  (Dependabot #308, GHSA-55q2-fjhq-7xh7) — fixes XSS via
+  IN_PLACE hook removal.
+- **deps (web, HIGH CVE)**: investigate `extract-zip` ≤ 2.0.1
+  symlink-traversal (Dependabot #313, GHSA-jmr9-qjv8-65gv) — no upstream
+  patched version. Resolution path documented in `release notes` of
+  the v5.1.1 tag. If transitive-only, override to a known-clean
+  pre-release or remove the call site; if direct, pin to a known commit
+  or fork.
+
+### Notes
+
+- 7 open Dependabot alerts (6 HIGH + 1 MEDIUM) at start of session —
+  6 closed by these bumps, 1 (extract-zip) under investigation.
+
 ## [5.0.12] - 2026-06-22
 
 ### Fixed
