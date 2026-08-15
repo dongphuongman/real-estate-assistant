@@ -61,6 +61,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [INITIALIZE-CONFIG-FILE.md](https://github.com/github/codeql-action/blob/main/INITIALIZE-CONFIG-FILE.md));
   GitHub surfaces this as "CodeQL is reporting errors" in the security
   status. Removed the redundant `queries:` line from both CodeQL jobs.
+- Private Vulnerability Reporting enabled (GitHub Security tab) for
+  `AleksNeStu/ai-real-estate-assistant` and `AleksNeStu/ai-news-scraper`
+  via `PUT /repos/{owner}/{repo}/private-vulnerability-reporting`. The
+  remaining 3 repos (`cv`, `natively-cluely`, `EBiCS_Firmware`) live on
+  the `dev-scaler` + `nest-ai-dev` mirrors only, not under `AleksNeStu`,
+  so the endpoint returns 404. Enable per mirror account separately.
+
+## [5.1.1] - 2026-08-15
+
+### Security
+
+- **6 HIGH + 1 MEDIUM Dependabot CVEs** resolved via `package.json`
+  `overrides` (no source code changes, no breaking API). See
+  [release notes](https://github.com/AleksNeStu/ai-real-estate-assistant/releases/tag/v5.1.1)
+  for the full table. `extract-zip` ≤ 2.0.1 dismissed as `tolerable_risk`
+  (no upstream fix; only reachable via dev-only Lighthouse CI CLI).
+- **Private Vulnerability Reporting** enabled for `AleksNeStu/ai-real-estate-assistant`
+  and `AleksNeStu/ai-news-scraper` (GitHub Security tab).
+
+### CI / Infra
+
+- **Star-History chart**: replaced broken self-hosted `star-history`
+  orphan-branch chart with hosted `api.star-history.com/svg` endpoint.
+  Self-hosted workflow had been silently broken since July 2026 (PAT
+  lacked `Starring: Read` scope + `git switch --orphan` + `--force`
+  pattern destroyed previous SVGs). Removed the dead workflow, the
+  Python script, and its tests.
+- **CodeQL**: removed `queries: security-extended` input that
+  conflicted with `config-file` (per [codeql-action docs](https://github.com/github/codeql-action/blob/main/INITIALIZE-CONFIG-FILE.md)).
+- **ESLint**: disabled 4 new opt-in `react-hooks` rules (`set-state-in-effect`,
+  `static-components`, `immutability`, `preserve-manual-memoization`)
+  bumped in via `eslint-plugin-react-hooks` upgrade. Per-page re-enablement
+  requires refactor to SWR / React Query.
 
 ## [5.0.12] - 2026-06-22
 
