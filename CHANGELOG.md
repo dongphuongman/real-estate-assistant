@@ -68,6 +68,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the `dev-scaler` + `nest-ai-dev` mirrors only, not under `AleksNeStu`,
   so the endpoint returns 404. Enable per mirror account separately.
 
+## [5.1.2] - 2026-08-15
+
+### Fixed
+
+- **Star-History chart (Round 3)**: the `api.star-history.com/svg`
+  endpoint introduced in v5.1.1 returns the "GitHub restricted
+  access to star data" placeholder image for ALL token configurations
+  including `?secret=<fine-grained-PAT>` — verified live 2026-08-15
+  with the same `GITHUB_TOKEN_AVN` PAT that successfully fetches
+  stargazers from `GET /repos/{owner}/{repo}/stargazers` (200 OK with
+  data). The service is broken at the upstream level
+  ([star-history.com/blog](https://star-history.com/blog/github-stargazer-api-restriction))
+  regardless of repo ownership. Replaced the broken chart with the
+  static `img.shields.io` star badge (which correctly shows the current
+  count) + a note linking to the GitHub restriction blog. A working
+  self-hosted chart is on the v5.2+ roadmap.
+
 ## [5.1.1] - 2026-08-15
 
 ### Security
