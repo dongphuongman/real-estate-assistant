@@ -134,21 +134,29 @@ async def test_check_llm_provider_healthy_with_configured_key(monkeypatch):
     assert result.details == {"configured_providers": ["openai"], "default": "openai"}
 
 
-@pytest.mark.xfail(
-    reason="Flaky on CI: depends on ChromaPropertyStore internals + asyncio scheduling. "
-           "Works locally with chromadb unavailable, but on CI ChromaDB is available, "
-           "so the monkeypatched None doesn't propagate. See project memory "
-           "'Integration test hang pattern' for context.",
-    strict=False,
-)
 @pytest.mark.asyncio
 async def test_get_health_status_unhealthy_when_vector_store_unhealthy(monkeypatch):
-    """Test that health status is UNHEALTHY when vector store is not initialized."""
-    # The vector-store getter is @lru_cache; clear it to make sure the patched
-    # ChromaPropertyStore=None is observed on the next call.
-    api_dependencies.get_vector_store.cache_clear()
+    """Test that health status is UNHEALTHY when the vector store dependency
+    check reports UNHEALTHY.
+
+    Patches ``api.health.check_vector_store`` directly rather than going
+    through ``api.dependencies.get_vector_store()`` / ``ChromaPropertyStore``
+    so the test does not depend on whether chromadb is installed in the
+    current environment. On Linux CI chromadb IS installed (FastEmbed ships
+    in the test image); the prior monkeypatch on ``ChromaPropertyStore=None``
+    lost the race against the module-level import there, producing
+    result.status == HEALTHY where the spec required UNHEALTHY. Mocking the
+    dependency check at the seam ``get_health_status`` actually calls is
+    deterministic across Windows / Linux / chromadb-present / chromadb-absent.
+    """
     settings = SimpleNamespace(version="9.9.9", database_url=None)
-    monkeypatch.setattr("api.health.get_settings", lambda: settings)
+
+    async def _vector_unhealthy():
+        return DependencyHealth(
+            name="vector_store",
+            status=HealthStatus.UNHEALTHY,
+            message="vector store not initialized",
+        )
 
     async def _redis_healthy():
         return DependencyHealth(
@@ -164,10 +172,8 @@ async def test_get_health_status_unhealthy_when_vector_store_unhealthy(monkeypat
             message="ok",
         )
 
-    # Patch ChromaPropertyStore class to None so get_vector_store() returns None
-    # This bypasses the lru_cache by making the class check at line 54 return None
-    monkeypatch.setattr("api.dependencies.ChromaPropertyStore", None)
-
+    monkeypatch.setattr("api.health.get_settings", lambda: settings)
+    monkeypatch.setattr("api.health.check_vector_store", _vector_unhealthy)
     monkeypatch.setattr("api.health.check_redis", _redis_healthy)
     monkeypatch.setattr("api.health.check_llm_provider", _llm_healthy)
 
@@ -216,37 +222,35 @@ async def test_check_vector_store_uses_thread_for_blocking_count(monkeypatch):
     assert probe.invoked_on != loop_thread
 
 
-@pytest.mark.xfail(
-    reason="Flaky on CI: asyncio bounded check timing is sensitive to "
-           "coroutine scheduling. asyncio.sleep(10) made it more reliable "
-           "locally but on CI it can still complete before the bounded check fires. "
-           "Marked xfail per 'no flaky tests' policy — fix needs proper "
-           "deterministic test of bounded-check behavior, not asyncio timing.",
-    strict=False,
-)
 @pytest.mark.asyncio
 async def test_get_health_status_marks_slow_dependency_degraded(monkeypatch):
-    """A slow dependency check must not block the response and must be DEGRADED."""
+    """A slow dependency check must not block the response and must be DEGRADED.
+
+    The slow check waits on an ``asyncio.Event`` rather than sleeping. The
+    bounded check (``asyncio.wait_for(check(), timeout=4.0)``) cancels the
+    slow check at 4s and reports ``DEGRADED`` with ``"Timed out"``. The test
+    sets the event after verification so the (now-cancelled) coroutine
+    cleans up without an asyncio warning. Event-based blocking is
+    deterministic across asyncio Mode.AUTO + pytest-xdist + Linux CI; the
+    previous ``asyncio.sleep(10)``-based version could complete before the
+    bounded check fired under xdist on Linux runners.
+    """
 
     import time
 
-    started_event = asyncio.Event()
-    release_event = asyncio.Event()
+    block_event = asyncio.Event()
 
     async def _slow_vector():
-        started_event.set()
-        # Block long enough to be cancelled by the bounded check (4s).
-        # Use explicit sleep (not event-wait) for deterministic timing on CI
-        # runners that may not schedule the bounded-check coroutine in time.
-        try:
-            await asyncio.sleep(10)
-            return DependencyHealth(
-                name="vector_store",
-                status=HealthStatus.HEALTHY,
-                message="slow",
-            )
-        except asyncio.CancelledError:
-            raise
+        # Block indefinitely until the bounded check cancels us. asyncio.Event.wait
+        # is the simplest awaitable that (a) cannot complete "early" the way a
+        # sleep can, and (b) propagates CancelledError cleanly when wait_for
+        # cancels the parent task.
+        await block_event.wait()
+        return DependencyHealth(
+            name="vector_store",
+            status=HealthStatus.HEALTHY,
+            message="should not be reached",
+        )
 
     async def _ok_redis():
         return None
@@ -269,18 +273,16 @@ async def test_get_health_status_marks_slow_dependency_degraded(monkeypatch):
 
     started = time.monotonic()
     status_task = asyncio.create_task(get_health_status(include_dependencies=True))
-    # Wait until the slow check has actually started before timing.
-    await asyncio.wait_for(started_event.wait(), timeout=1.0)
+
+    # The bounded check fires at 4s. The status task should complete well under
+    # 5s with vector_store reported as DEGRADED + "Timed out".
+    result = await asyncio.wait_for(status_task, timeout=5.0)
     elapsed = time.monotonic() - started
 
-    # The response must arrive well under the 4s vector-store budget.
-    result = await asyncio.wait_for(status_task, timeout=4.5)
-    elapsed = time.monotonic() - started
+    # Release the (cancelled) slow check so its await unblocks cleanly.
+    block_event.set()
 
-    # Allow the now-cancelled slow check to complete without leaking warnings.
-    release_event.set()
-
-    assert elapsed < 4.5
+    assert elapsed < 5.0
     assert result.dependencies["vector_store"].status == HealthStatus.DEGRADED
     assert "Timed out" in result.dependencies["vector_store"].message
 
