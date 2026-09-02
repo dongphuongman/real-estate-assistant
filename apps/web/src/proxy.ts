@@ -5,9 +5,12 @@ import { routing } from './i18n/routing';
 const { locales: routingLocales, defaultLocale } = routing;
 
 /**
- * Next.js Middleware for i18n routing and authentication protection.
+ * Next.js Proxy for i18n routing and authentication protection.
  *
- * This middleware:
+ * (Renamed from `middleware` to `proxy` per Next.js 16 — the `middleware`
+ *  file convention is deprecated in v16.0.0.)
+ *
+ * This proxy:
  * 1. Handles locale detection and redirection
  * 2. Protects routes that require authentication
  *
@@ -25,7 +28,7 @@ const { locales: routingLocales, defaultLocale } = routing;
 // Create the next-intl middleware
 const intlMiddleware = createMiddleware(routing);
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Handle API routes separately (no i18n)
@@ -132,7 +135,7 @@ export async function middleware(request: NextRequest) {
 }
 
 /**
- * Configure which routes the middleware should run on.
+ * Configure which routes the proxy should run on.
  *
  * Matches all request paths except:
  * - api routes (handled by backend)
@@ -145,7 +148,7 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except:
-     * - api routes that don't need middleware (handled by backend)
+     * - api routes that don't need proxy (handled by backend)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
