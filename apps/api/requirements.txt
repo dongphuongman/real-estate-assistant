@@ -98,10 +98,10 @@ jinja2>=3.1.0
 python-docx>=1.1.2  # For DOCX text extraction
 pytesseract>=0.3.13  # OCR engine wrapper
 pdf2image>=1.17.0  # PDF to image conversion
-Pillow>=12.2.0  # Image processing (fastembed pins pillow<12.3)
+Pillow>=12.3.0  # Image processing — closes CVE-2026-59205/-59204/-59200/-59199/-59197 (heap OOB writes, decompression bomb)
 
 # Security patches for transitive dependencies
 urllib3>=2.7.0  # fastembed pins urllib3<2.8
 GitPython>=3.1.57  # CVE-2024-22190: RCE via config_writer (latest available)
-pyasn1>=0.6.3  # latest available (CVE-2024-xxx DoS mitigated)
+pyasn1>=0.6.4  # closes CVE-2026-59886 (uncontrolled resource consumption) + CVE-2026-59885 (quadratic OID DoS)
 orjson>=3.11.9
