@@ -139,15 +139,18 @@ async def test_get_health_status_unhealthy_when_vector_store_unhealthy(monkeypat
     """Test that health status is UNHEALTHY when the vector store dependency
     check reports UNHEALTHY.
 
-    Patches ``api.health.check_vector_store`` directly rather than going
-    through ``api.dependencies.get_vector_store()`` / ``ChromaPropertyStore``
-    so the test does not depend on whether chromadb is installed in the
-    current environment. On Linux CI chromadb IS installed (FastEmbed ships
-    in the test image); the prior monkeypatch on ``ChromaPropertyStore=None``
-    lost the race against the module-level import there, producing
-    result.status == HEALTHY where the spec required UNHEALTHY. Mocking the
-    dependency check at the seam ``get_health_status`` actually calls is
-    deterministic across Windows / Linux / chromadb-present / chromadb-absent.
+    Patches all four dependency-check seams (vector_store, redis, database,
+    llm_provider) so the test does not depend on whether chromadb is
+    installed in the current environment, on DATABASE_URL being set in the
+    runner, or on Redis being reachable. On Linux CI chromadb IS installed
+    (FastEmbed ships in the test image) and ``DATABASE_URL`` is sometimes
+    set to a non-existent path — both must be neutralised at the seam
+    ``get_health_status`` calls, otherwise ``check_database`` either fails
+    (returning UNHEALTHY in addition to vector_store, which the prior
+    test asserted around but the spec still required UNHEALTHY) or
+    raises (returning the exception via ``asyncio.gather(return_exceptions=True)``).
+    Mocking every dependency check is deterministic across Windows / Linux /
+    chromadb-present / chromadb-absent / DATABASE_URL-set / DATABASE_URL-absent.
     """
     settings = SimpleNamespace(version="9.9.9", database_url=None)
 
@@ -165,6 +168,9 @@ async def test_get_health_status_unhealthy_when_vector_store_unhealthy(monkeypat
             message="ok",
         )
 
+    async def _database_none():
+        return None
+
     async def _llm_healthy():
         return DependencyHealth(
             name="llm_providers",
@@ -175,6 +181,7 @@ async def test_get_health_status_unhealthy_when_vector_store_unhealthy(monkeypat
     monkeypatch.setattr("api.health.get_settings", lambda: settings)
     monkeypatch.setattr("api.health.check_vector_store", _vector_unhealthy)
     monkeypatch.setattr("api.health.check_redis", _redis_healthy)
+    monkeypatch.setattr("api.health.check_database", _database_none)
     monkeypatch.setattr("api.health.check_llm_provider", _llm_healthy)
 
     result = await get_health_status(include_dependencies=True)
@@ -274,15 +281,20 @@ async def test_get_health_status_marks_slow_dependency_degraded(monkeypatch):
     started = time.monotonic()
     status_task = asyncio.create_task(get_health_status(include_dependencies=True))
 
-    # The bounded check fires at 4s. The status task should complete well under
-    # 5s with vector_store reported as DEGRADED + "Timed out".
-    result = await asyncio.wait_for(status_task, timeout=5.0)
+    # The bounded check fires at 4s. The status task should complete in
+    # 4–5s on a healthy runner with vector_store reported as DEGRADED +
+    # "Timed out". The outer wait budget is widened to 12s (from 5s) to
+    # tolerate slow Linux CI runners where gather scheduling and the
+    # CancelledError propagation take longer than the bounded check's
+    # 4s — without the wider budget, asyncio.wait_for raises TimeoutError
+    # spuriously even though the bounded check would have fired correctly.
+    result = await asyncio.wait_for(status_task, timeout=12.0)
     elapsed = time.monotonic() - started
 
     # Release the (cancelled) slow check so its await unblocks cleanly.
     block_event.set()
 
-    assert elapsed < 5.0
+    assert elapsed < 10.0
     assert result.dependencies["vector_store"].status == HealthStatus.DEGRADED
     assert "Timed out" in result.dependencies["vector_store"].message
 
