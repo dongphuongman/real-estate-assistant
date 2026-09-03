@@ -219,6 +219,18 @@ jobs:
           DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
           SHORT_SHA="${DEPLOY_SHA::7}"
+          # auto_inactive=false on staging keeps the latest backend deployment
+          # from being auto-marked Inactive when the parallel frontend job (or
+          # any newer staging push) lands in the same environment. The same
+          # flag on the status POST below is a no-op (not a valid parameter
+          # on /deployments/:id/statuses); the correct surface is on the
+          # deployment creation call here. Without it the Environments page
+          # shows every backend staging deployment as Inactive within
+          # minutes of success, even when Render is live.
+          AUTO_INACTIVE_FLAG=""
+          if [ "$DEPLOY_ENV" = "staging" ]; then
+            AUTO_INACTIVE_FLAG="-F auto_inactive=false"
+          fi
           DEPLOY_ID=$(gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
@@ -227,13 +239,12 @@ jobs:
             -f environment="$DEPLOY_ENV" \
             -f description="Backend deploy $SHORT_SHA" \
             -F auto_merge=false \
+            $AUTO_INACTIVE_FLAG \
             --jq '.id')
           echo "id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
-          # Expose DEPLOY_ENV to subsequent steps so the success POST can
-          # pass auto_inactive=false on staging (so parallel backend+frontend
-          # jobs don't cross-inactivate each other in the staging env).
+          # Expose DEPLOY_ENV to subsequent steps.
           echo "DEPLOY_ENV=$DEPLOY_ENV" >> "$GITHUB_ENV"
-          echo "Created GitHub deployment #$DEPLOY_ID in environment $DEPLOY_ENV"
+          echo "Created GitHub deployment #$DEPLOY_ID in environment $DEPLOY_ENV (auto_inactive=${AUTO_INACTIVE_FLAG:-true})"
 
       - name: Mark backend deployment in_progress
         if: always() && steps.gh_deploy.outputs.id != ''
@@ -488,6 +499,15 @@ jobs:
           DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
           SHORT_SHA="${DEPLOY_SHA::7}"
+          # auto_inactive=false on staging keeps the latest frontend deployment
+          # from being auto-marked Inactive when the parallel backend job (or
+          # any newer staging push) lands. See backend twin step for the
+          # full rationale — the flag is meaningful on the deployment
+          # CREATION call (here), not on the status POST below.
+          AUTO_INACTIVE_FLAG=""
+          if [ "$DEPLOY_ENV" = "staging" ]; then
+            AUTO_INACTIVE_FLAG="-F auto_inactive=false"
+          fi
           DEPLOY_ID=$(gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
@@ -496,12 +516,12 @@ jobs:
             -f environment="$DEPLOY_ENV" \
             -f description="Frontend deploy $SHORT_SHA" \
             -F auto_merge=false \
+            $AUTO_INACTIVE_FLAG \
             --jq '.id')
           echo "id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
-          # Expose DEPLOY_ENV to subsequent steps so the success POST can
-          # pass auto_inactive=false on staging (see backend twin step).
+          # Expose DEPLOY_ENV to subsequent steps.
           echo "DEPLOY_ENV=$DEPLOY_ENV" >> "$GITHUB_ENV"
-          echo "Created GitHub deployment #$DEPLOY_ID in environment $DEPLOY_ENV"
+          echo "Created GitHub deployment #$DEPLOY_ID in environment $DEPLOY_ENV (auto_inactive=${AUTO_INACTIVE_FLAG:-true})"
 
       - name: Mark frontend deployment in_progress
         if: always() && steps.gh_deploy.outputs.id != ''
